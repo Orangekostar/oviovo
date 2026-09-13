@@ -37,3 +37,31 @@ Office2 is the first full scene launched with capture enabled. The already runni
 Room0/office0/office1 jobs are unmodified and remain retained-cache runs. Capturing new
 runs does not retroactively recover the historical Room0 172 discarded query identities.
 Full-scene history readout and validation remain pending.
+
+## Paired full-history readout
+
+`run_static_ovmap_readout.py` supports opt-in `S1a_FULL`, `RANDOM8_FULL`, `QUALITY8_FULL`
+and `ALL_VIEWS_FULL` alongside the unchanged retained-cache conditions. Supply
+`--full-query-cache`, `--history-receipt` and `--full-enrichment`, while `--native-cache`
+and `--native-binding` still describe the original retained top-ten baseline.
+The receipt must bind both actual cache hashes and the native mapper source hash.
+Enrich the full cache using the existing enrichment script before running these conditions.
+
+The reader validates every original observation against its full-history index, keeps
+original IDs for B0, and names full-pool observations `owner:full:index`. The mapping is
+saved in `input_binding.json`. No full-pool condition changes B0's order or eligibility.
+K remains eight except for the explicitly different-budget `ALL_VIEWS_FULL` control.
+These are larger-candidate-pool experiments, not silently substituted S1/C1 results.
+
+The real two-frame captured bank passes paired versus standalone B0 equality for all
+18 owners (11 eligible). All four full-pool conditions execute with the measured quality
+of 29 observations and add zero image calls. This verifies the interface, not a full-scene
+gain. Evidence and exact argv are under `artifacts/static_ovmap/full_history_readout_smoke`.
+16 targeted history/readout/enrichment tests pass, including an invalid bridge rejection.
+
+Fresh text encoding binds the rebuilt image-encoder source to a separate feature-space
+identifier: `sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713`.
+The existing text-cache script ran on CPU in 20.636 s including model load. This avoids
+assigning the historical source identifier to a different implementation. No historical
+and rebuilt feature vectors are mixed. The capture smoke's original source hashes refer
+to commit d3a9898; the later readout-only identity bridge does not alter its executed hook.

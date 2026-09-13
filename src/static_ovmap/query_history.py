@@ -2,9 +2,39 @@
 import ast
 import json
 import pickle
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+
+
+def align_history_queries(native, full, receipt):
+    """Namespace full-pool IDs and prove the original cache's observation bridge."""
+    if receipt.get('status') != 'PASS' or receipt.get('history_scope') != 'complete_executed_native_queries':
+        raise ValueError('complete native query history receipt required')
+    mapping = receipt['native_to_full_indices']
+    if set(native) != set(full) or set(mapping) != {str(k) for k in native}:
+        raise ValueError('query identity owner sets differ')
+    bridge, tagged = {}, {}
+    for owner, observations in native.items():
+        indices = mapping[str(owner)]
+        if len(indices) != len(observations) or len(set(indices)) != len(indices):
+            raise ValueError('query identity index count differs')
+        tagged[owner] = [replace(o, source_query_id=f'{owner}:full:{i}') for i, o in enumerate(full[owner])]
+        for original, index in zip(observations, indices):
+            if not isinstance(index, int) or not 0 <= index < len(full[owner]):
+                raise ValueError('query identity index out of range')
+            candidate = full[owner][index]
+            fields = ('scene_id', 'instance_id', 'frame_id', 'feature_space_id',
+                      'visible_area_px', 'crop_bbox_xyxy', 'source_config_hash')
+            if (any(getattr(original, k) != getattr(candidate, k) for k in fields)
+                    or not np.array_equal(original.feature, candidate.feature)):
+                raise ValueError('native/full query identity differs')
+            bridge[original.source_query_id] = tagged[owner][index].source_query_id
+    if (sum(map(len, native.values())) != receipt['retained_query_count']
+            or sum(map(len, full.values())) != receipt['full_query_count']):
+        raise ValueError('query identity total count differs')
+    return tagged, bridge
 
 
 def instrument_mapper(source, filename):

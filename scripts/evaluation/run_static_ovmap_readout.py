@@ -13,6 +13,7 @@ from src.static_ovmap.cache_io import load_native_cache, sha256_file, validate_n
 from src.static_ovmap.readout import classify
 from src.static_ovmap.enrichment import apply_enrichment
 from src.static_ovmap.fallback import apply_fallback
+from src.static_ovmap.query_history import align_history_queries
 
 
 CONDITIONS = {'B0': ('last8', 'vis_area'), 'RANDOM8': ('random8', 'vis_area'),
@@ -22,6 +23,11 @@ CONDITIONS = {'B0': ('last8', 'vis_area'), 'RANDOM8': ('random8', 'vis_area'),
               'C1': ('quality_coverage8', 'vis_area'),
               'S2': ('last8', 'vis_area'),
               'ALL_VIEWS': ('all_views', 'vis_area')}
+FULL_CONDITIONS = {'S1a_FULL': ('quality_coverage8', 'vis_area'),
+                   'RANDOM8_FULL': ('random8', 'vis_area'),
+                   'QUALITY8_FULL': ('quality8', 'vis_area'),
+                   'ALL_VIEWS_FULL': ('all_views', 'vis_area')}
+CONDITIONS.update(FULL_CONDITIONS)
 
 
 def main():
@@ -34,11 +40,19 @@ def main():
     parser.add_argument('--history-scope', required=True)
     parser.add_argument('--enrichment', type=Path)
     parser.add_argument('--fallback-support', type=Path)
+    parser.add_argument('--full-query-cache', type=Path)
+    parser.add_argument('--history-receipt', type=Path)
+    parser.add_argument('--full-enrichment', type=Path)
     parser.add_argument('--conditions', nargs='+', choices=list(CONDITIONS),
-                        default=[c for c in CONDITIONS if c not in ('S2', 'C1')])
+                        default=[c for c in CONDITIONS if c not in ('S2', 'C1') and c not in FULL_CONDITIONS])
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    use_full = bool(set(args.conditions) & FULL_CONDITIONS.keys())
+    if use_full and not all((args.full_query_cache, args.history_receipt, args.full_enrichment)):
+        parser.error('full-history conditions require --full-query-cache, --history-receipt and --full-enrichment')
+    if use_full and args.history_scope != 'retained_native_top10':
+        parser.error('paired full-history readout requires original retained_native_top10 B0 input')
     if 'C1' in args.conditions and args.enrichment is None:
         parser.error('frozen C1 requires measured --enrichment')
     if 'S2' in args.conditions and (args.fallback_support is None or args.enrichment is None):
@@ -80,13 +94,33 @@ def main():
             raise ValueError('fallback geometry mesh/pixel convention mismatch')
         metadata['fallback_support_path'] = str(args.fallback_support.resolve())
         metadata['fallback_support_sha256'] = sha256_file(args.fallback_support)
+    if use_full:
+        history = json.loads(args.history_receipt.read_text())
+        full_sha = sha256_file(args.full_query_cache)
+        if (history.get('native_cache_sha256') != metadata['source_sha256']
+                or history.get('full_cache_sha256') != full_sha
+                or history.get('native_mapper_sha256') != metadata['source_config_sha256']):
+            raise ValueError('complete history cache/source binding mismatch')
+        full_bank, full_metadata = load_native_cache(args.full_query_cache, scene_id=args.scene,
+            feature_space_id=space, source_config_hash=metadata['source_config_sha256'],
+            history_scope='full_query_history')
+        full_enrichment = json.loads(args.full_enrichment.read_text())
+        if args.enrichment and full_enrichment['native_mesh_sha256'] != enrichment['native_mesh_sha256']:
+            raise ValueError('retained/full enrichment geometry differs')
+        full_bank = apply_enrichment(full_bank, full_enrichment, full_sha)
+        full_bank, bridge = align_history_queries(bank, full_bank, history)
+        metadata['full_history'] = {**full_metadata, 'history_receipt_sha256': sha256_file(args.history_receipt),
+                                  'enrichment_sha256': sha256_file(args.full_enrichment),
+                                  'native_query_to_full_query': bridge,
+                                  'enrichment_preparation_seconds': full_enrichment['total_preparation_seconds']}
     (args.output / 'input_binding.json').write_text(json.dumps(metadata, indent=2)+'\n')
     for condition in args.conditions:
         strategy, weighting = CONDITIONS[condition]
+        active_bank = full_bank if condition in FULL_CONDITIONS else bank
         start = time.perf_counter()
         result = {str(k): classify(obs, text['text'], text['valid_ids'], space,
                    strategy=strategy, weighting=weighting, seed=args.seed,
-                   canonical_features=text['canonical']) for k, obs in bank.items()}
+                   canonical_features=text['canonical']) for k, obs in active_bank.items()}
         ledger = None
         if condition == 'S2':
             result, ledger = apply_fallback(bank, result, support, text['text'], text['valid_ids'],
@@ -104,6 +138,12 @@ def main():
         if ledger is not None:
             document['fallback_ledger'] = ledger
             document['fallback_support_sha256'] = metadata['fallback_support_sha256']
+        if condition in FULL_CONDITIONS:
+            document.update({'history_scope': 'full_query_history',
+                             'quality_mode': full_enrichment['quality_mode'],
+                             'direction_mode': full_enrichment['direction_mode'],
+                             'candidate_pool_source_sha256': full_sha,
+                             'comparison_boundary': 'larger executed-query pool; K unchanged except ALL_VIEWS_FULL'})
         if condition == 'C1':
             document['frozen_combination'] = {
                 'revision': 'room0-development-v1', 'equivalent_condition': 'S1a',

@@ -4,7 +4,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from src.static_ovmap.query_history import capture_history, instrument_mapper
+from src.static_ovmap.query_history import capture_history, instrument_mapper, align_history_queries
+from src.static_ovmap.cache_io import load_native_cache
 
 
 def records():
@@ -42,3 +43,21 @@ def test_instrumentation_only_adds_normal_completion_capture():
     assert captured == [5]
     with pytest.raises(ValueError, match='return'):
         instrument_mapper('def main(args):\n    return args\n', 'bad.py')
+
+
+def test_history_identity_bridge_preserves_native_baseline(tmp_path):
+    full, native, selected = records()
+    receipt = capture_history(full, native, tmp_path/'history', max_top_vis=10)
+    native_path = tmp_path/'native.pkl'
+    native_path.write_bytes(pickle.dumps(native))
+    kwargs = dict(scene_id='room0', feature_space_id='fixture', source_config_hash='fixture')
+    baseline, _ = load_native_cache(native_path, history_scope='retained_native_top10', **kwargs)
+    complete, _ = load_native_cache(tmp_path/'history/full_query_cache.pkl', history_scope='full_query_history', **kwargs)
+    tagged, bridge = align_history_queries(baseline, complete, receipt)
+    assert baseline[5][0].source_query_id == '5:0'
+    assert bridge['5:0'] == f'5:full:{selected[0]}'
+    assert len(tagged[5]) == 12
+    assert set(o.source_query_id for o in tagged[5]).isdisjoint(o.source_query_id for o in baseline[5])
+    receipt['native_to_full_indices']['5'][0] = 1
+    with pytest.raises(ValueError, match='query identity'):
+        align_history_queries(baseline, complete, receipt)

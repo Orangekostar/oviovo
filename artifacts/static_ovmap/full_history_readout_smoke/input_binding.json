@@ -1,0 +1,433 @@
+{
+  "source_path": "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/mapping/cropformer_inst/inst_sem_siglip-l-16-384_2_incre_combine.pkl",
+  "source_sha256": "c970178dbe213ff5c4201a1db22bf78e03d385e72afdbfacc43b0b1fe67fb7bd",
+  "history_scope": "retained_native_top10",
+  "instance_colors": {
+    "1": [
+      103,
+      105,
+      198
+    ],
+    "2": [
+      115,
+      255,
+      81
+    ],
+    "3": [
+      74,
+      41,
+      236
+    ],
+    "4": [
+      205,
+      171,
+      186
+    ],
+    "5": [
+      242,
+      227,
+      251
+    ],
+    "6": [
+      70,
+      194,
+      124
+    ],
+    "7": [
+      84,
+      27,
+      248
+    ],
+    "8": [
+      232,
+      141,
+      231
+    ],
+    "9": [
+      118,
+      46,
+      90
+    ],
+    "10": [
+      99,
+      159,
+      51
+    ],
+    "11": [
+      201,
+      102,
+      154
+    ],
+    "12": [
+      50,
+      183,
+      13
+    ],
+    "13": [
+      49,
+      163,
+      88
+    ],
+    "14": [
+      90,
+      93,
+      37
+    ],
+    "15": [
+      5,
+      88,
+      23
+    ],
+    "16": [
+      233,
+      212,
+      94
+    ],
+    "17": [
+      171,
+      205,
+      178
+    ],
+    "23": [
+      62,
+      65,
+      161
+    ]
+  },
+  "query_count_histogram": {
+    "1": 7,
+    "2": 11
+  },
+  "instance_count": 18,
+  "stored_query_count": 29,
+  "instances_above_k8": 0,
+  "mode": "STATIC_OFFLINE_READOUT",
+  "text_cache_sha256": "7c2f9653b87505b1114a5883b2fd5d14ce35451ae6819a6a91a81b7a3d102038",
+  "text_metadata": {
+    "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+    "feature_space_identity": {
+      "model": "google/siglip-large-patch16-384",
+      "model_sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+      "layer": "get_image_features",
+      "feature_dim": 1024,
+      "image_encoder_source_sha256": "b0925c0c78fd46be779fb9fbcde171fcaef58bd89a7f7d99b8fc1b24a1836ba2",
+      "crop": "native_six_crops_expand_0_0.1_0.2_black_and_rgb_exclusive_slice",
+      "crop_fusion": "mean_of_l2_normalized_crop_features",
+      "preprocessor_sha256": "f59da2f87c3cd079bd4f8f3037e81b277c60c498e279a8020331f67a5a3157e8"
+    },
+    "labels": [
+      "wall",
+      "ceiling",
+      "floor",
+      "chair",
+      "blinds",
+      "sofa",
+      "table",
+      "rug",
+      "window",
+      "lamp",
+      "door",
+      "pillow",
+      "bench",
+      "tv-screen",
+      "cabinet",
+      "pillar",
+      "blanket",
+      "tv-stand",
+      "cushion",
+      "bin",
+      "vent",
+      "bed",
+      "stool",
+      "picture",
+      "indoor-plant",
+      "desk",
+      "comforter",
+      "nightstand",
+      "shelf",
+      "vase",
+      "plant-stand",
+      "basket",
+      "plate",
+      "monitor",
+      "pipe",
+      "panel",
+      "desk-organizer",
+      "wall-plug",
+      "book",
+      "box",
+      "clock",
+      "sculpture",
+      "tissue-paper",
+      "camera",
+      "tablet",
+      "pot",
+      "bottle",
+      "candle",
+      "bowl",
+      "cloth",
+      "switch"
+    ],
+    "valid_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51
+    ],
+    "canonical_phrases": [
+      "object",
+      "things",
+      "stuff",
+      "texture"
+    ],
+    "semantic_const_sha256": "476eed29eedbfd387a7727cbfe7d85c081856aa1ec079644eca12f8ab8bc603b",
+    "tokenizer_sha256": "c6e405cb7c670d56636a9402c81023a55bc6c3c53d89cf02b92f5c5005bfe920",
+    "dataset": "Replica",
+    "text_prompt": "bare_class_name",
+    "tokenization": {
+      "padding": "max_length",
+      "max_length": 64
+    },
+    "torch": "2.1.1",
+    "transformers": "4.49.0",
+    "text_cache_seconds_with_model_load": 20.63587003853172,
+    "device": "cpu",
+    "additional_image_queries": 0,
+    "output_sha256": "7c2f9653b87505b1114a5883b2fd5d14ce35451ae6819a6a91a81b7a3d102038",
+    "command": [
+      "scripts/evaluation/cache_static_ovmap_text.py",
+      "--model",
+      "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/siglip-large-patch16-384",
+      "--semantic-const",
+      "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/scripts/utils/semantic_const.py",
+      "--image-encoder-source",
+      "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/scripts/vl_models.py",
+      "--device",
+      "cpu",
+      "--output",
+      "/mnt/shared/ww/ovimap-static-20260913/text/replica51_rebuilt.npz"
+    ]
+  },
+  "source_config_sha256": "b7157708d21ebff123a15cc10be14b3b149ebb3b19fea8f2349b3c6eb8a4b410",
+  "source_config_path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/scripts/panoptic_mapping_.py",
+  "quality_mode": "area_only_no_quality_measurements",
+  "direction_mode": "missing_no_object_relative_geometry",
+  "additional_image_queries": 0,
+  "command": [
+    "scripts/evaluation/run_static_ovmap_readout.py",
+    "--native-cache",
+    "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/mapping/cropformer_inst/inst_sem_siglip-l-16-384_2_incre_combine.pkl",
+    "--native-binding",
+    "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/native_binding.json",
+    "--text-cache",
+    "/mnt/shared/ww/ovimap-static-20260913/text/replica51_rebuilt.npz",
+    "--scene",
+    "room0",
+    "--source-config",
+    "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/scripts/panoptic_mapping_.py",
+    "--history-scope",
+    "retained_native_top10",
+    "--full-query-cache",
+    "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/query_history/full_query_cache.pkl",
+    "--history-receipt",
+    "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/query_history/history_receipt.json",
+    "--full-enrichment",
+    "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/full_enrichment.json",
+    "--conditions",
+    "B0",
+    "S1a_FULL",
+    "RANDOM8_FULL",
+    "QUALITY8_FULL",
+    "ALL_VIEWS_FULL",
+    "--output",
+    "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/paired_full_readout"
+  ],
+  "native_binding_path": "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/native_binding.json",
+  "native_binding_sha256": "5928c52b50939ad8ec47e680c8577e172fb377a4b9d7c3e3c409c7432f4ca8cf",
+  "full_history": {
+    "source_path": "/mnt/shared/ww/ovimap-static-20260913/history_capture_smoke/query_history/full_query_cache.pkl",
+    "source_sha256": "88ca5a27216e6da71e656b51b5b89e276df42f8112fdbf9f182f43d45b6d2e22",
+    "history_scope": "full_query_history",
+    "instance_colors": {
+      "1": [
+        103,
+        105,
+        198
+      ],
+      "2": [
+        115,
+        255,
+        81
+      ],
+      "3": [
+        74,
+        41,
+        236
+      ],
+      "4": [
+        205,
+        171,
+        186
+      ],
+      "5": [
+        242,
+        227,
+        251
+      ],
+      "6": [
+        70,
+        194,
+        124
+      ],
+      "7": [
+        84,
+        27,
+        248
+      ],
+      "8": [
+        232,
+        141,
+        231
+      ],
+      "9": [
+        118,
+        46,
+        90
+      ],
+      "10": [
+        99,
+        159,
+        51
+      ],
+      "11": [
+        201,
+        102,
+        154
+      ],
+      "12": [
+        50,
+        183,
+        13
+      ],
+      "13": [
+        49,
+        163,
+        88
+      ],
+      "14": [
+        90,
+        93,
+        37
+      ],
+      "15": [
+        5,
+        88,
+        23
+      ],
+      "16": [
+        233,
+        212,
+        94
+      ],
+      "17": [
+        171,
+        205,
+        178
+      ],
+      "23": [
+        62,
+        65,
+        161
+      ]
+    },
+    "query_count_histogram": {
+      "1": 7,
+      "2": 11
+    },
+    "instance_count": 18,
+    "stored_query_count": 29,
+    "instances_above_k8": 0,
+    "mode": "STATIC_OFFLINE_READOUT",
+    "history_receipt_sha256": "a9219cf8a80236e2c9007068749cec27cdd8fa58c2e1070bccfc5149fc5cd53e",
+    "enrichment_sha256": "d121da2ffc5fbd0e6a7f2173df9af27a45c1b156b22b55bc30719f8d0f42127a",
+    "native_query_to_full_query": {
+      "1:0": "1:full:0",
+      "2:0": "2:full:0",
+      "2:1": "2:full:1",
+      "3:0": "3:full:0",
+      "4:0": "4:full:0",
+      "4:1": "4:full:1",
+      "5:0": "5:full:1",
+      "5:1": "5:full:0",
+      "6:0": "6:full:0",
+      "6:1": "6:full:1",
+      "7:0": "7:full:0",
+      "7:1": "7:full:1",
+      "8:0": "8:full:0",
+      "9:0": "9:full:1",
+      "9:1": "9:full:0",
+      "10:0": "10:full:0",
+      "11:0": "11:full:0",
+      "11:1": "11:full:1",
+      "12:0": "12:full:0",
+      "12:1": "12:full:1",
+      "13:0": "13:full:1",
+      "13:1": "13:full:0",
+      "14:0": "14:full:1",
+      "14:1": "14:full:0",
+      "15:0": "15:full:0",
+      "16:0": "16:full:1",
+      "16:1": "16:full:0",
+      "17:0": "17:full:0",
+      "23:0": "23:full:0"
+    },
+    "enrichment_preparation_seconds": 1.9739622939378023
+  }
+}
