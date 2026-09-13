@@ -1,0 +1,160 @@
+{
+  "condition": "QUALITY8",
+  "scene": "room0",
+  "semantic_miou": 0.3328571797388748,
+  "semantic_macc": 0.38158672082870415,
+  "per_class": {
+    "1": {
+      "iou": 0.7893043007292165,
+      "accuracy": 0.8798386532269354,
+      "gt_vertices": 228576
+    },
+    "2": {
+      "iou": 0.8726558478502343,
+      "accuracy": 0.9584662445248524,
+      "gt_vertices": 168032
+    },
+    "3": {
+      "iou": 0.43042338138796216,
+      "accuracy": 0.687308327435716,
+      "gt_vertices": 101736
+    },
+    "4": {
+      "iou": 0.5282758254309773,
+      "accuracy": 0.5446528823771053,
+      "gt_vertices": 36515
+    },
+    "5": {
+      "iou": 0.8696505885702505,
+      "accuracy": 1.0,
+      "gt_vertices": 88580
+    },
+    "6": {
+      "iou": 0.5357612617504737,
+      "accuracy": 0.5497115122700146,
+      "gt_vertices": 80766
+    },
+    "7": {
+      "iou": 0.4907171000788022,
+      "accuracy": 0.5047171340573837,
+      "gt_vertices": 30845
+    },
+    "8": {
+      "iou": 0.008427995602784902,
+      "accuracy": 0.008437974219153868,
+      "gt_vertices": 59967
+    },
+    "9": {
+      "iou": 0.2743664717348928,
+      "accuracy": 0.33939253419893345,
+      "gt_vertices": 21565
+    },
+    "10": {
+      "iou": 0.2389506481517098,
+      "accuracy": 0.24971860427721498,
+      "gt_vertices": 24876
+    },
+    "11": {
+      "iou": 0.9249706916764361,
+      "accuracy": 0.9776194532641524,
+      "gt_vertices": 12913
+    },
+    "15": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 18858
+    },
+    "16": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 10030
+    },
+    "17": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 4588
+    },
+    "19": {
+      "iou": 0.25775978407557354,
+      "accuracy": 0.25830757341576505,
+      "gt_vertices": 15528
+    },
+    "21": {
+      "iou": 0.8617760617760618,
+      "accuracy": 0.9230769230769231,
+      "gt_vertices": 1209
+    },
+    "23": {
+      "iou": 0.6258790436005626,
+      "accuracy": 0.6373075546007877,
+      "gt_vertices": 13965
+    },
+    "24": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 14370
+    },
+    "25": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1512
+    },
+    "30": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1437
+    },
+    "31": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 327
+    },
+    "32": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 4039
+    },
+    "33": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1463
+    },
+    "38": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 309
+    },
+    "39": {
+      "iou": 0.47734553775743704,
+      "accuracy": 0.5140463282405126,
+      "gt_vertices": 2029
+    },
+    "46": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1050
+    },
+    "48": {
+      "iou": 0.4389312977099237,
+      "accuracy": 0.9189497716894978,
+      "gt_vertices": 876
+    },
+    "51": {
+      "iou": 0.6948051948051948,
+      "accuracy": 0.7328767123287672,
+      "gt_vertices": 146
+    }
+  },
+  "changed_observations": [],
+  "readout_seconds": 0.07577714044600725,
+  "geometry_and_instance_ids": "FROZEN_IDENTICAL_PROJECTED_INPUT",
+  "original_semantic_exact_match": true,
+  "quality_mode": "area_only_no_quality_measurements",
+  "direction_mode": "missing_no_object_relative_geometry",
+  "history_scope": "retained_native_top10",
+  "mode": "STATIC_OFFLINE_READOUT",
+  "class_agnostic_ap50": null,
+  "class_aware_ap50": null,
+  "missing_metric_reason": "instance_evaluation_not_run_in_semantic_smoke",
+  "status": "COMPLETE_SEMANTIC_SMOKE"
+}

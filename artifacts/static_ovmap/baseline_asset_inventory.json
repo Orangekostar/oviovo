@@ -1,0 +1,108 @@
+{
+  "status": "PARTIAL_ROOM0_BOUND_OTHER_SCENES_PENDING",
+  "assets": {
+    "native_mesh": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply",
+      "exists": true,
+      "bytes": 698368528,
+      "sha256": "58617e29c0720edc0086490a6c43dd6b47bf84d493c8b6adb2c7045d42fb6382",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "not_gt"
+    },
+    "native_feature_cache": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "exists": true,
+      "bytes": 2508915,
+      "sha256": "edf0194f01bf854a4555f213173240c93cdd6b14ed0d21b15b70ef102aceb89d",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "not_gt"
+    },
+    "native_mapping_log": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/log/gms_py.a515dce8f984.root.log.INFO.20260615-061652.577816",
+      "exists": true,
+      "bytes": 127751,
+      "sha256": "ea6038cbf48acffc9e94fab5e2a61a3a1c8de5995622da18abae1cf199c295c3",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "not_gt"
+    },
+    "projected_instance_map": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/instance_map_gt_200.ply",
+      "exists": true,
+      "bytes": 32438624,
+      "sha256": "908d69604d50ec8c1ad79a83c15fd5bdc6dca36ed28f7ccabbef8859a7a11371",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "not_gt"
+    },
+    "original_semantic_map": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/semantic_map_gt_200.ply",
+      "exists": true,
+      "bytes": 32438624,
+      "sha256": "dda31e14b27e9b0365557f4a49b19437709ea3a972b612d5e47f9cc5bab0e4ef",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "not_gt"
+    },
+    "gt_semantic_mesh": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply",
+      "exists": true,
+      "bytes": 32438624,
+      "sha256": "c086272c07a9db9e14f32249cee10c61e6cc3fb5140f811eb367e7386142da88",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "evaluation_only"
+    },
+    "gt_instance_mesh": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_instance_mesh.ply",
+      "exists": true,
+      "bytes": 32438624,
+      "sha256": "da094a09c9a60551b94695bf6b8ef7ea841ea96c2fe78f3997ce45bff173a2d1",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "evaluation_only"
+    },
+    "original_instance_semantic_mapping": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/pred_inst_sem_mapping.txt",
+      "exists": true,
+      "bytes": 1960,
+      "sha256": "932c8faced62a556ce0fe2a13d8041eefc0e4e87055a1c3e9a74e2f523264baf",
+      "reuse_this_round": true,
+      "source": "local_native_room0_20260615",
+      "gt_access": "not_gt"
+    },
+    "replica_pose": {
+      "path": "/home/ww/vv/dataset/Replica/room0/traj.txt",
+      "exists": true,
+      "bytes": 811033,
+      "sha256": "5692a60076e426b403dc64025ff38c443606a506704545ee192d4dbadedaaca2",
+      "reuse_this_round": true,
+      "source": "replica_pose",
+      "gt_access": "not_gt"
+    },
+    "text_cache": {
+      "path": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+      "exists": true,
+      "bytes": 226998,
+      "sha256": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+      "reuse_this_round": true,
+      "source": "text_cache",
+      "gt_access": "not_gt"
+    },
+    "siglip_model": {
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/model.safetensors",
+      "exists": true,
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+      "source": "google/siglip-large-patch16-384; historical download revision unverified",
+      "reuse_this_round": true
+    }
+  },
+  "frame_asset_validation": "pending_all_200_rgb_depth_mask_pose_checks",
+  "unknown": [
+    "historical_model_download_revision",
+    "original_native_runtime_source_diff",
+    "other_scene_cache_identity"
+  ]
+}

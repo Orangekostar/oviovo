@@ -1,0 +1,33 @@
+{
+  "task": "OVI-MAP static benchmark 0913_1",
+  "base_head": "d5c0688bc662f8e65455cb9c62909de87c941b43",
+  "branch": "research/ovimap-static-benchmark-v1",
+  "worktree": "/home/ww/crove/ovimap-static",
+  "remote_base_sha": "d5c0688bc662f8e65455cb9c62909de87c941b43",
+  "remote_task_branch_at_start": null,
+  "source_checkout": "/home/ww/tmp/oviovo-pr",
+  "source_checkout_dirty": true,
+  "source_checkout_preserved": true,
+  "reference_core_available": false,
+  "baseline_tests": {
+    "command": "python -m pytest -q tests/evaluation/test_ovimap_native.py tests/evaluation/test_ovimap_paper_audit.py",
+    "passed": 28
+  },
+  "room0_cache": {
+    "instance_count": 77,
+    "query_count_histogram": {
+      "1": 6,
+      "2": 3,
+      "3": 6,
+      "5": 3,
+      "6": 4,
+      "7": 6,
+      "8": 2,
+      "9": 5,
+      "10": 42
+    },
+    "history": "retained_top10_sorted_by_area_not_full_history",
+    "proof": "scripts/panoptic_mapping_.py top_indices = np.argsort(vis_scores)[-max_top_vis:]",
+    "source_checkout_head": "9830c345f86d2daecd59d54a406e35f7e9a8c7bc"
+  }
+}
