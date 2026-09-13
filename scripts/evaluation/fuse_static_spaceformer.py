@@ -38,7 +38,9 @@ def main():
     owners = np.where(squared < .05**2, native_owners[nearest], 0)
     projection_seconds = time.perf_counter()-start
     readout = json.loads(args.readout.read_text())
-    fused = fuse_proposals(owners, readout['observations'], masks, labels, scores, query_ids)
+    fused = fuse_proposals(owners, readout['observations'], masks, labels, scores, query_ids,
+        scene_id=readout.get('scene', 'unspecified'), prediction_run=args.t0.parent.name,
+        ovi_readout_id='sha256:'+sha256_file(args.readout))
     np.savez_compressed(args.output/'T1.npz', coord=coord, masks=fused['masks'], class_ids=fused['class_ids'],
         scores=fused['scores'], candidate_ids=fused['candidate_ids'], score_definition='common_domain_source_area')
     np.savez_compressed(args.output/'native_projection.npz', owners=owners, nearest=nearest, distance_squared=squared)

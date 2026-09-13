@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "scene": "room0",
+  "reviewed_commit": "8cefe6b4bca464e0478f82e6ef1e6d0e3783e347",
+  "reuse_iou": 0.5,
+  "nms_iou": 0.7,
+  "new_inference_allowed": false,
+  "runs": [
+    {
+      "id": "fp32_primary",
+      "t0": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/T0.npz",
+      "receipt": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/receipt.json",
+      "identity": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/identity.json"
+    },
+    {
+      "id": "fp32_repeat",
+      "t0": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16_repeat/T0.npz",
+      "receipt": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16_repeat/receipt.json",
+      "identity": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16_repeat/identity.json"
+    }
+  ],
+  "readout": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_readout/S1a.json",
+  "native_readout": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_readout/B0.json",
+  "native_mesh": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply",
+  "geometry_support": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json",
+  "historical_t1_receipt": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1/receipt.json",
+  "historical_t1": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1/T1.npz",
+  "historical_ledger": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1/proposal_ledger.json",
+  "native_projection": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1/native_projection.npz",
+  "historical_evaluation": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1_evaluation/metrics.json",
+  "evaluation_projection": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1_evaluation/projection.npz",
+  "evaluator_root": "/home/ww/vv/paper2/OVI-MAP",
+  "gt_instance_map": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_instance_mesh.ply",
+  "gt_semantic_map": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply",
+  "reference_gt_ids": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/gt_sem_inst_id.npy",
+  "text_cache": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+  "historical_s1a_manifest": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_instances/S1a/pred_inst_sem_mapping.txt",
+  "historical_s1a_metrics": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_instances/S1a/metrics.json",
+  "historical_s1a_semantic": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_evaluation/S1a_semantic_labels.npy",
+  "historical_native_instances_receipt": "/home/ww/crove/ovimap-t1-attribution/artifacts/static_ovmap/room0_enriched/instance_summary.json",
+  "prediction_conditions": [
+    "AT_O_AREA",
+    "AT_S_RELEASED",
+    "AT_S_AREA",
+    "AT_U00",
+    "AT_U10",
+    "AT_U01",
+    "AT_U11",
+    "AT_ASSIGN_RAW",
+    "AT_ASSIGN_CLASS_NORM",
+    "AT_ASSIGN_OVI_FILL",
+    "AT_RANK_CLASS_NORM",
+    "AT_NMS_SF_FIRST",
+    "AT_NATIVE_O_AREA",
+    "AT_NATIVE_U11"
+  ],
+  "geometry_bridge_conditions": [
+    "AT_GEO_NATIVE",
+    "AT_GEO_TRANSFER",
+    "AT_GEO_AREA"
+  ],
+  "repair": "NOT_RUN_PENDING_DIAGNOSIS"
+}
