@@ -1,0 +1,227 @@
+{
+  "accepted_native_single_query_instances": 3,
+  "exported_added_instances": 2,
+  "diagnostics": [
+    {
+      "instance_id": 34,
+      "class_id": 2,
+      "predicted_class_in_instance_vocabulary": false,
+      "export_confidence": 0.000664,
+      "vertices": 108,
+      "best_class_consistent_iou": 0.0,
+      "best_class_consistent_gt": null,
+      "best_class_agnostic_iou": 0.0,
+      "ignored_fraction": 1.0,
+      "thresholds": {
+        "0.25": {
+          "outcome": "IGNORED",
+          "best_gt_already_covered_by_B0": false
+        },
+        "0.5": {
+          "outcome": "IGNORED",
+          "best_gt_already_covered_by_B0": false
+        },
+        "0.75": {
+          "outcome": "IGNORED",
+          "best_gt_already_covered_by_B0": false
+        }
+      }
+    },
+    {
+      "instance_id": 103,
+      "class_id": 49,
+      "predicted_class_in_instance_vocabulary": true,
+      "export_confidence": 1.0,
+      "vertices": 173,
+      "best_class_consistent_iou": 0.0,
+      "best_class_consistent_gt": null,
+      "best_class_agnostic_iou": 0.0,
+      "ignored_fraction": 1.0,
+      "thresholds": {
+        "0.25": {
+          "outcome": "IGNORED",
+          "best_gt_already_covered_by_B0": false
+        },
+        "0.5": {
+          "outcome": "IGNORED",
+          "best_gt_already_covered_by_B0": false
+        },
+        "0.75": {
+          "outcome": "IGNORED",
+          "best_gt_already_covered_by_B0": false
+        }
+      }
+    }
+  ],
+  "accepted_but_not_exported": [
+    17
+  ],
+  "nonexport_reason": "released min_region=100 or no projected geometry",
+  "threshold_counts": {
+    "0.25": {
+      "NOVEL_TP": 0,
+      "FP": 0,
+      "DUPLICATE_FP": 0,
+      "IGNORED": 2
+    },
+    "0.5": {
+      "NOVEL_TP": 0,
+      "FP": 0,
+      "DUPLICATE_FP": 0,
+      "IGNORED": 2
+    },
+    "0.75": {
+      "NOVEL_TP": 0,
+      "FP": 0,
+      "DUPLICATE_FP": 0,
+      "IGNORED": 2
+    }
+  },
+  "fallback_ledger": [
+    {
+      "accepted": true,
+      "semantic_query_count": 1,
+      "geometry_support_frames": 6,
+      "geometry_frame_ids": [
+        1670,
+        1680,
+        1690,
+        1720,
+        1730,
+        1740
+      ],
+      "thresholds": {
+        "min_geometry_frames": 2,
+        "min_visible_area_px": 500,
+        "min_depth_valid_ratio": 0.9,
+        "min_sharpness_proxy": 0.5
+      },
+      "visible_area_px": 2353.0,
+      "depth_valid_ratio": 1.0,
+      "sharpness_proxy": 0.9507818744985114,
+      "source_query_id": "17:0",
+      "reason": "single_query_with_independent_geometry_and_measured_context_quality",
+      "instance_id": 17,
+      "class_id": 50,
+      "confidence": 0.5011335041853126,
+      "confidence_type": "native_canonical_relative_cosine_not_calibrated_probability"
+    },
+    {
+      "accepted": false,
+      "semantic_query_count": 1,
+      "geometry_support_frames": 0,
+      "geometry_frame_ids": [],
+      "thresholds": {
+        "min_geometry_frames": 2,
+        "min_visible_area_px": 500,
+        "min_depth_valid_ratio": 0.9,
+        "min_sharpness_proxy": 0.5
+      },
+      "visible_area_px": 1102.0,
+      "depth_valid_ratio": 1.0,
+      "sharpness_proxy": 0.9586623780037489,
+      "source_query_id": "68:0",
+      "reason": "insufficient_independent_geometry",
+      "instance_id": 68
+    },
+    {
+      "accepted": true,
+      "semantic_query_count": 1,
+      "geometry_support_frames": 11,
+      "geometry_frame_ids": [
+        70,
+        80,
+        90,
+        100,
+        110,
+        120,
+        130,
+        650,
+        660,
+        670,
+        680
+      ],
+      "thresholds": {
+        "min_geometry_frames": 2,
+        "min_visible_area_px": 500,
+        "min_depth_valid_ratio": 0.9,
+        "min_sharpness_proxy": 0.5
+      },
+      "visible_area_px": 1072.0,
+      "depth_valid_ratio": 1.0,
+      "sharpness_proxy": 0.7756122500031919,
+      "source_query_id": "34:0",
+      "reason": "single_query_with_independent_geometry_and_measured_context_quality",
+      "instance_id": 34,
+      "class_id": 2,
+      "confidence": 0.5080618476904631,
+      "confidence_type": "native_canonical_relative_cosine_not_calibrated_probability"
+    },
+    {
+      "accepted": true,
+      "semantic_query_count": 1,
+      "geometry_support_frames": 7,
+      "geometry_frame_ids": [
+        850,
+        860,
+        870,
+        880,
+        890,
+        900,
+        910
+      ],
+      "thresholds": {
+        "min_geometry_frames": 2,
+        "min_visible_area_px": 500,
+        "min_depth_valid_ratio": 0.9,
+        "min_sharpness_proxy": 0.5
+      },
+      "visible_area_px": 942.0,
+      "depth_valid_ratio": 1.0,
+      "sharpness_proxy": 0.7312272827140269,
+      "source_query_id": "103:0",
+      "reason": "single_query_with_independent_geometry_and_measured_context_quality",
+      "instance_id": 103,
+      "class_id": 49,
+      "confidence": 0.5048137708387475,
+      "confidence_type": "native_canonical_relative_cosine_not_calibrated_probability"
+    },
+    {
+      "accepted": false,
+      "semantic_query_count": 1,
+      "geometry_support_frames": 0,
+      "geometry_frame_ids": [],
+      "thresholds": {
+        "min_geometry_frames": 2,
+        "min_visible_area_px": 500,
+        "min_depth_valid_ratio": 0.9,
+        "min_sharpness_proxy": 0.5
+      },
+      "visible_area_px": 530.0,
+      "depth_valid_ratio": 1.0,
+      "sharpness_proxy": 0.8078607047104545,
+      "source_query_id": "110:0",
+      "reason": "insufficient_independent_geometry",
+      "instance_id": 110
+    },
+    {
+      "accepted": false,
+      "semantic_query_count": 1,
+      "geometry_support_frames": 0,
+      "geometry_frame_ids": [],
+      "thresholds": {
+        "min_geometry_frames": 2,
+        "min_visible_area_px": 500,
+        "min_depth_valid_ratio": 0.9,
+        "min_sharpness_proxy": 0.5
+      },
+      "visible_area_px": 5049.0,
+      "depth_valid_ratio": 1.0,
+      "sharpness_proxy": 0.448282506710241,
+      "source_query_id": "39:0",
+      "reason": "insufficient_independent_geometry",
+      "instance_id": 39
+    }
+  ],
+  "definition": "best class-consistent GT IoU > t; already-covered GT reported as duplicate; diagnostic not PR-curve attribution"
+}

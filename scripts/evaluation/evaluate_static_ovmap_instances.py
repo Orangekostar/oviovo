@@ -46,6 +46,7 @@ def main():
     parser.add_argument('--evaluator-root', type=Path, required=True)
     parser.add_argument('--semantic-results', type=Path, required=True)
     parser.add_argument('--projected-instance-map', type=Path, required=True)
+    parser.add_argument('--projected-owner-array', type=Path)
     parser.add_argument('--original-semantic-map', type=Path, required=True)
     parser.add_argument('--gt-instance-map', type=Path, required=True)
     parser.add_argument('--gt-semantic-map', type=Path, required=True)
@@ -53,7 +54,21 @@ def main():
     parser.add_argument('--reference-gt-ids', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    semantic_files = sorted(args.semantic_results.glob('*_semantic_labels.npy'))
+    if not semantic_files or not (args.semantic_results/'B0_semantic_labels.npy').is_file():
+        raise ValueError('completed B0 semantic evaluation and semantic arrays are required')
     args.output.mkdir(parents=True, exist_ok=True)
+    instance_map = args.projected_instance_map
+    if args.projected_owner_array:
+        mesh = PlyData.read(instance_map)
+        owners = np.load(args.projected_owner_array, allow_pickle=False)
+        target = mesh['vertex']['label']
+        if (owners.shape != target.shape or not np.issubdtype(owners.dtype, np.integer)
+                or np.any(owners < 0) or np.any(owners > np.iinfo(target.dtype).max)):
+            raise ValueError('native owner projection cannot be exported without overflow or misalignment')
+        target[:] = owners
+        instance_map = args.output/'full_native_instance_projection.ply'
+        mesh.write(instance_map)
     source = args.evaluator_root / 'scripts'
     exports = load_exports(source / 'eval_sem_seg.py')
     sys.path.insert(0, str(source))
@@ -67,7 +82,7 @@ def main():
     with (args.output/'released_instance_stdout.txt').open('w') as handle:
         with contextlib.redirect_stdout(handle):
             released['assign_pred_inst_to_gt_inst'](str(args.gt_instance_map),
-                  str(args.projected_instance_map), str(args.output))
+                  str(instance_map), str(args.output))
     values = [float(x) for x in (args.output/'released_instance_stdout.txt').read_text().split()]
     names = ['instance_miou', 'area_weighted_instance_iou', 'mP@0.75', 'mR@0.75',
              'mP@0.50', 'mR@0.50', 'mP@0.25', 'mR@0.25']
@@ -75,7 +90,7 @@ def main():
         raise ValueError('released instance output layout changed')
     class_agnostic = dict(zip(names, values))
     rows = []
-    for array_path in sorted(args.semantic_results.glob('*_semantic_labels.npy')):
+    for array_path in semantic_files:
         condition = array_path.stem.removesuffix('_semantic_labels')
         destination = args.output / condition
         destination.mkdir(exist_ok=True)
@@ -87,7 +102,7 @@ def main():
         mesh['vertex']['label'][:] = prediction
         semantic_path = destination/'semantic_map_gt_200.ply'
         mesh.write(semantic_path)
-        pred_file = exports['map_pred_mesh']({'inst_mesh_f': str(args.projected_instance_map),
+        pred_file = exports['map_pred_mesh']({'inst_mesh_f': str(instance_map),
              'sem_mesh_f': str(semantic_path), 'res_folder': str(destination)})
         if condition == 'B0':
             if Path(pred_file).read_bytes() != args.reference_pred_mapping.read_bytes():
@@ -99,7 +114,8 @@ def main():
         averages = evaluator['evaluate'](str(destination), [pred_file], [gt_file], str(destination))
         record = {'condition': condition, 'released_semantic_instance': finite_json(averages),
                   'released_class_agnostic': class_agnostic,
-                  'class_agnostic_geometry': 'identical_frozen_native_projected_ids_all_conditions',
+                  'class_agnostic_geometry': ('identical_full_native_owners_including_unknown_all_conditions'
+                        if args.projected_owner_array else 'identical_frozen_native_projected_ids_all_conditions'),
                   'ap_score_definition': 'native_area_divided_by_largest_same_class_area_rounded_6dp',
                   'canonical_class_agnostic_ap': None,
                   'canonical_class_agnostic_ap_reason': 'released_precision_not_integrated_AP',
@@ -118,6 +134,8 @@ def main():
         'input_sha256': {str(p):sha256_file(p) for p in (args.projected_instance_map,
             args.original_semantic_map, args.gt_instance_map, args.gt_semantic_map,
             args.reference_pred_mapping, args.reference_gt_ids)}}
+    if args.projected_owner_array:
+        receipt['input_sha256'][str(args.projected_owner_array)] = sha256_file(args.projected_owner_array)
     (args.output/'instance_summary.json').write_text(json.dumps(receipt,indent=2,allow_nan=False)+'\n')
 
 

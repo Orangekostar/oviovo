@@ -34,8 +34,9 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
 
 ## Remaining staged deliverables (must not disappear after S1)
 
-- [ ] R3 fallback: independent geometric support and observed quality only; preserve unknown
-  geometry; explicit threshold config; evaluate added TP/FP and per-object confidence/support.
+- [x] R3 Room0 fallback: independent geometric support and measured context quality; unknown
+  geometry preserved; thresholds and added-instance diagnosis recorded in R3_RESULTS.md.
+  Negative result: AP unchanged, S2 off. Full-scene validation remains outstanding.
 - [ ] R4 instance_graph.py, hierarchy.py, native_export.py: derive RGB-D whole-object evidence,
   component-wide cannot-link merge then evidence-supported split; reversible mapping and wide IDs.
   Tests: transitive cannot-link, ID export bounds, fixed coordinates, GT-free edge generation.

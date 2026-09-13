@@ -12,12 +12,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.static_ovmap.cache_io import load_native_cache, sha256_file, validate_native_binding
 from src.static_ovmap.readout import classify
 from src.static_ovmap.enrichment import apply_enrichment
+from src.static_ovmap.fallback import apply_fallback
 
 
 CONDITIONS = {'B0': ('last8', 'vis_area'), 'RANDOM8': ('random8', 'vis_area'),
               'QUALITY8': ('quality8', 'vis_area'),
               'S1a': ('quality_coverage8', 'vis_area'),
               'S1b': ('last8', 'quality'), 'S1c': ('quality_coverage8', 'quality'),
+              'S2': ('last8', 'vis_area'),
               'ALL_VIEWS': ('all_views', 'vis_area')}
 
 
@@ -30,10 +32,16 @@ def main():
     parser.add_argument('--source-config', type=Path, required=True)
     parser.add_argument('--history-scope', required=True)
     parser.add_argument('--enrichment', type=Path)
-    parser.add_argument('--conditions', nargs='+', choices=list(CONDITIONS), default=list(CONDITIONS))
+    parser.add_argument('--fallback-support', type=Path)
+    parser.add_argument('--conditions', nargs='+', choices=list(CONDITIONS),
+                        default=[c for c in CONDITIONS if c != 'S2'])
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    if 'S2' in args.conditions and (args.fallback_support is None or args.enrichment is None):
+        parser.error('S2 requires --enrichment and --fallback-support')
+    if args.fallback_support is not None and args.enrichment is None:
+        parser.error('--fallback-support requires --enrichment')
     text = np.load(args.text_cache, allow_pickle=False)
     space = str(text['feature_space_id'])
     binding = json.loads(args.native_binding.read_text())
@@ -62,6 +70,13 @@ def main():
                          'quality_mode': enrichment['quality_mode'],
                          'direction_mode': enrichment['direction_mode'],
                          'enrichment_preparation_seconds': enrichment['total_preparation_seconds']})
+    if args.fallback_support:
+        support = json.loads(args.fallback_support.read_text())
+        if (support.get('native_mesh_sha256') != enrichment['native_mesh_sha256']
+                or support.get('pixel_convention') != 'native_integer_pixels_camera_z_depth'):
+            raise ValueError('fallback geometry mesh/pixel convention mismatch')
+        metadata['fallback_support_path'] = str(args.fallback_support.resolve())
+        metadata['fallback_support_sha256'] = sha256_file(args.fallback_support)
     (args.output / 'input_binding.json').write_text(json.dumps(metadata, indent=2)+'\n')
     for condition in args.conditions:
         strategy, weighting = CONDITIONS[condition]
@@ -69,6 +84,10 @@ def main():
         result = {str(k): classify(obs, text['text'], text['valid_ids'], space,
                    strategy=strategy, weighting=weighting, seed=args.seed,
                    canonical_features=text['canonical']) for k, obs in bank.items()}
+        ledger = None
+        if condition == 'S2':
+            result, ledger = apply_fallback(bank, result, support, text['text'], text['valid_ids'],
+                                            space, canonical_features=text['canonical'])
         seconds = time.perf_counter() - start
         document = {'condition': condition, 'scene': args.scene, 'seed': args.seed,
                     'observations': result, 'readout_seconds': seconds,
@@ -79,6 +98,9 @@ def main():
                     'frontend_seconds': None, 'vlm_image_seconds': None,
                     'end_to_end_seconds': None,
                     'cost_missing_reason': 'historical_frontend_reused_not_timed_this_run'}
+        if ledger is not None:
+            document['fallback_ledger'] = ledger
+            document['fallback_support_sha256'] = metadata['fallback_support_sha256']
         (args.output / (condition+'.json')).write_text(json.dumps(document, indent=2)+'\n')
         print(condition, 'eligible_instances', sum(v is not None for v in result.values()),
               'readout_seconds', round(seconds, 6))

@@ -1,3 +1,7 @@
+## Latest checkpoint: R3 Room0
+
+See [R3_RESULTS.md](R3_RESULTS.md): independent native RGB-D support and single-query fallback were evaluated. Instance AP is unchanged; S2 remains off. Full-history replay failed at frame 70 and no replay metadata was promoted. R4–R6 and the full scene tables remain outstanding. The historical status below is superseded by S1_RESULTS.md and R3_RESULTS.md.
+
 # 0913_1 static OVI-MAP development checkpoint
 
 Historical checkpoint at cf4cdf3. See [S1_RESULTS.md](S1_RESULTS.md) and

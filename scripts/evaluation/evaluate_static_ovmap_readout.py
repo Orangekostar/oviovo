@@ -40,6 +40,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--readout', type=Path, required=True)
     parser.add_argument('--projected-instance-map', type=Path, required=True)
+    parser.add_argument('--projected-owner-array', type=Path)
     parser.add_argument('--original-semantic-map', type=Path, required=True)
     parser.add_argument('--gt-semantic-map', type=Path, required=True)
     parser.add_argument('--text-cache', type=Path, required=True)
@@ -53,6 +54,11 @@ def main():
         if len(vertices) != len(base_vertices) or any(not np.array_equal(vertices[c], base_vertices[c]) for c in ('x', 'y', 'z')):
             raise ValueError('evaluation vertex coordinates/order differ')
     instance_ids, original, gt = [np.asarray(v['label'], dtype=np.int64) for v in meshes]
+    if args.projected_owner_array:
+        owners = np.load(args.projected_owner_array, allow_pickle=False)
+        if owners.shape != instance_ids.shape or not np.issubdtype(owners.dtype, np.integer) or np.any(owners < 0):
+            raise ValueError('projected native owners must be aligned nonnegative integers')
+        instance_ids = owners.astype(np.int64)
     text = np.load(args.text_cache, allow_pickle=False)
     baseline = json.loads((args.readout/'B0.json').read_text())['observations']
     args.output.mkdir(parents=True, exist_ok=True)
@@ -71,12 +77,15 @@ def main():
             if instance < len(labels):
                 labels[instance] = value['class_id']
             before = baseline[key]
-            removed = sorted(set(before['selected_query_ids']) - set(value['selected_query_ids']))
-            added = sorted(set(value['selected_query_ids']) - set(before['selected_query_ids']))
-            if removed or added or before['class_id'] != value['class_id'] or before['margin'] != value['margin']:
+            old_queries = before['selected_query_ids'] if before else []
+            old_class = before['class_id'] if before else 0
+            old_margin = before['margin'] if before else None
+            removed = sorted(set(old_queries) - set(value['selected_query_ids']))
+            added = sorted(set(value['selected_query_ids']) - set(old_queries))
+            if removed or added or old_class != value['class_id'] or old_margin != value['margin']:
                 diagnostics.append({'instance_id': instance, 'removed': removed, 'added': added,
-                                    'old_class': before['class_id'], 'new_class': value['class_id'],
-                                    'old_margin': before['margin'], 'new_margin': value['margin']})
+                                    'old_class': old_class, 'new_class': value['class_id'],
+                                    'old_margin': old_margin, 'new_margin': value['margin']})
         prediction = labels[instance_ids]
         if condition == 'B0' and not np.array_equal(prediction, original):
             raise ValueError(f'baseline parity failed on {np.count_nonzero(prediction != original)} vertices')
@@ -84,7 +93,8 @@ def main():
         metrics = semantic_metrics(gt, prediction, text['valid_ids'])
         row = {'condition': condition, 'scene': doc['scene'], **metrics,
                'changed_observations': diagnostics, 'readout_seconds': doc['readout_seconds'],
-               'geometry_and_instance_ids': 'FROZEN_IDENTICAL_PROJECTED_INPUT',
+               'geometry_and_instance_ids': ('FROZEN_FULL_NATIVE_OWNERS_INCLUDING_UNKNOWN' if args.projected_owner_array
+                                             else 'FROZEN_IDENTICAL_PROJECTED_INPUT'),
                'original_semantic_exact_match': bool(np.array_equal(prediction, original)),
                'quality_mode': doc['quality_mode'], 'direction_mode': doc['direction_mode'],
                'history_scope': doc['history_scope'], 'mode': doc['mode'],
@@ -98,6 +108,8 @@ def main():
                  (args.projected_instance_map, args.original_semantic_map, args.gt_semantic_map, args.text_cache)},
                'projection_status': 'REUSED_NATIVE_PROJECTION_PENDING_1NN_PARITY_AUDIT',
                'protocol_scope': 'Replica51_Room0_development_not_Replica8'}
+    if args.projected_owner_array:
+        receipt['inputs'][str(args.projected_owner_array)] = sha256_file(args.projected_owner_array)
     (args.output/'paired_summary.json').write_text(json.dumps(receipt, indent=2)+'\n')
     print(json.dumps(rows, indent=2))
 

@@ -30,7 +30,7 @@ def fuse_features(observations, weighting='vis_area'):
 
 def classify(observations, text_features, valid_ids, feature_space_id,
              *, strategy='last8', weighting='vis_area', seed=0,
-             canonical_features=None):
+             canonical_features=None, min_queries=2):
     obs = list(observations)
     if not obs:
         return None
@@ -44,7 +44,9 @@ def classify(observations, text_features, valid_ids, feature_space_id,
             or not np.issubdtype(ids.dtype, np.integer) or np.any(ids <= 0)
             or len(np.unique(ids)) != len(ids)):
         raise ValueError('text features and explicit foreground valid IDs must align')
-    if len(obs) < 2:
+    if min_queries not in (1, 2):
+        raise ValueError('min_queries must be one (gated fallback) or two (native)')
+    if len(obs) < min_queries:
         return None
     chosen = select_observations(obs, strategy, seed=seed)
     fused = fuse_features(chosen, weighting)
