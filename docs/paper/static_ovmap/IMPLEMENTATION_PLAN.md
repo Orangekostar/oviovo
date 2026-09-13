@@ -37,9 +37,11 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
 - [x] R3 Room0 fallback: independent geometric support and measured context quality; unknown
   geometry preserved; thresholds and added-instance diagnosis recorded in R3_RESULTS.md.
   Negative result: AP unchanged, S2 off. Full-scene validation remains outstanding.
-- [ ] R4 instance_graph.py, hierarchy.py, native_export.py: derive RGB-D whole-object evidence,
-  component-wide cannot-link merge then evidence-supported split; reversible mapping and wide IDs.
-  Tests: transitive cannot-link, ID export bounds, fixed coordinates, GT-free edge generation.
+- [x] R4 Room0: instance_graph.py, hierarchy.py, native_export.py and split_evidence.py implement
+  RGB-D entity evidence, component-wide constrained merge and multiview native surface split.
+  Real B0/G1/G2 evaluation and native restoration/export pass; negative/mixed results keep
+  G1/G2 off. R4_RESULTS.md records canonical AP separately from released mP/mR and semantic AP.
+  Full-scene validation remains part of the outstanding Replica8/ScanNet18 deliverable.
 - [ ] R5 choose one released dense checkpoint after interface/asset checks; separate ROI, pooled
   dense, AnyUp and sparse owner/depth/visibility-gated refinement; T=1 and lambda 0.1/0.2/0.3
   selected on Room0 only; measure K-observation/prototype storage and actual costs.

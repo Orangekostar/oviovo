@@ -1,0 +1,437 @@
+{
+  "command": [
+    "scripts/evaluation/readout_static_ovmap_graph.py",
+    "--graph",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/instance_graph/graph.json",
+    "--geometry-support",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json",
+    "--native-cache",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+    "--native-binding",
+    "artifacts/static_ovmap/room0_native_binding.json",
+    "--source-config",
+    "/home/ww/vv/paper2/OVI-MAP/scripts/panoptic_mapping_.py",
+    "--text-cache",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/graph_split_readout",
+    "--split",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/graph_split/split.json"
+  ],
+  "native_cache": {
+    "source_path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+    "source_sha256": "edf0194f01bf854a4555f213173240c93cdd6b14ed0d21b15b70ef102aceb89d",
+    "history_scope": "retained_native_top10",
+    "instance_colors": {
+      "1": [
+        99,
+        193,
+        53
+      ],
+      "2": [
+        199,
+        36,
+        228
+      ],
+      "3": [
+        131,
+        216,
+        103
+      ],
+      "4": [
+        237,
+        18,
+        150
+      ],
+      "5": [
+        236,
+        57,
+        69
+      ],
+      "6": [
+        2,
+        229,
+        216
+      ],
+      "7": [
+        10,
+        157,
+        248
+      ],
+      "8": [
+        119,
+        209,
+        9
+      ],
+      "9": [
+        165,
+        193,
+        150
+      ],
+      "10": [
+        244,
+        149,
+        31
+      ],
+      "11": [
+        170,
+        202,
+        130
+      ],
+      "12": [
+        108,
+        174,
+        73
+      ],
+      "13": [
+        144,
+        22,
+        205
+      ],
+      "14": [
+        243,
+        70,
+        88
+      ],
+      "15": [
+        104,
+        172,
+        186
+      ],
+      "16": [
+        122,
+        242,
+        166
+      ],
+      "17": [
+        180,
+        202,
+        168
+      ],
+      "18": [
+        153,
+        194,
+        178
+      ],
+      "25": [
+        237,
+        211,
+        210
+      ],
+      "26": [
+        153,
+        121,
+        76
+      ],
+      "27": [
+        139,
+        34,
+        0
+      ],
+      "28": [
+        86,
+        212,
+        154
+      ],
+      "29": [
+        24,
+        254,
+        209
+      ],
+      "30": [
+        228,
+        205,
+        217
+      ],
+      "19": [
+        55,
+        203,
+        42
+      ],
+      "38": [
+        124,
+        98,
+        19
+      ],
+      "40": [
+        114,
+        205,
+        129
+      ],
+      "42": [
+        6,
+        43,
+        71
+      ],
+      "41": [
+        113,
+        166,
+        101
+      ],
+      "22": [
+        94,
+        3,
+        110
+      ],
+      "23": [
+        40,
+        76,
+        218
+      ],
+      "36": [
+        47,
+        21,
+        238
+      ],
+      "46": [
+        62,
+        73,
+        171
+      ],
+      "47": [
+        207,
+        75,
+        113
+      ],
+      "48": [
+        206,
+        117,
+        58
+      ],
+      "21": [
+        201,
+        128,
+        195
+      ],
+      "20": [
+        8,
+        97,
+        207
+      ],
+      "57": [
+        255,
+        235,
+        129
+      ],
+      "58": [
+        97,
+        254,
+        253
+      ],
+      "61": [
+        191,
+        233,
+        13
+      ],
+      "60": [
+        195,
+        103,
+        155
+      ],
+      "63": [
+        140,
+        78,
+        126
+      ],
+      "64": [
+        50,
+        249,
+        189
+      ],
+      "65": [
+        124,
+        106,
+        140
+      ],
+      "66": [
+        199,
+        164,
+        91
+      ],
+      "67": [
+        60,
+        244,
+        2
+      ],
+      "68": [
+        38,
+        13,
+        14
+      ],
+      "69": [
+        178,
+        114,
+        237
+      ],
+      "73": [
+        0,
+        139,
+        16
+      ],
+      "78": [
+        80,
+        23,
+        91
+      ],
+      "34": [
+        201,
+        217,
+        42
+      ],
+      "77": [
+        210,
+        178,
+        235
+      ],
+      "79": [
+        159,
+        212,
+        142
+      ],
+      "80": [
+        152,
+        97,
+        10
+      ],
+      "81": [
+        3,
+        188,
+        209
+      ],
+      "76": [
+        103,
+        153,
+        207
+      ],
+      "82": [
+        167,
+        190,
+        13
+      ],
+      "84": [
+        14,
+        152,
+        213
+      ],
+      "85": [
+        1,
+        229,
+        214
+      ],
+      "86": [
+        242,
+        246,
+        214
+      ],
+      "91": [
+        30,
+        172,
+        168
+      ],
+      "92": [
+        31,
+        58,
+        108
+      ],
+      "70": [
+        22,
+        243,
+        236
+      ],
+      "97": [
+        222,
+        86,
+        12
+      ],
+      "49": [
+        59,
+        84,
+        192
+      ],
+      "71": [
+        1,
+        240,
+        77
+      ],
+      "103": [
+        137,
+        43,
+        26
+      ],
+      "105": [
+        33,
+        1,
+        27
+      ],
+      "110": [
+        42,
+        186,
+        171
+      ],
+      "90": [
+        2,
+        185,
+        198
+      ],
+      "83": [
+        155,
+        171,
+        191
+      ],
+      "109": [
+        253,
+        22,
+        139
+      ],
+      "108": [
+        7,
+        216,
+        13
+      ],
+      "87": [
+        125,
+        197,
+        62
+      ],
+      "127": [
+        237,
+        19,
+        222
+      ],
+      "39": [
+        158,
+        252,
+        105
+      ],
+      "147": [
+        235,
+        36,
+        102
+      ]
+    },
+    "query_count_histogram": {
+      "1": 6,
+      "2": 3,
+      "3": 6,
+      "5": 3,
+      "6": 4,
+      "7": 6,
+      "8": 2,
+      "9": 5,
+      "10": 42
+    },
+    "instance_count": 77,
+    "stored_query_count": 592,
+    "instances_above_k8": 47,
+    "mode": "STATIC_OFFLINE_READOUT"
+  },
+  "input_sha256": {
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/instance_graph/graph.json": "9ddaf549a9d3b1a49110996d805a6716580f6b0955572a469475c76f1327071c",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json": "34eaa7a47202e3b0b9a4496eaf87b9ce12bff00532fbbfaac3d2f9ec044db298",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/inst_sem_siglip-l-16-384_200_incre_combine.pkl": "edf0194f01bf854a4555f213173240c93cdd6b14ed0d21b15b70ef102aceb89d",
+    "artifacts/static_ovmap/room0_native_binding.json": "d91b19ffc3ed6b02fcf01b7eb25281db585c861e617955d7575afcd4a8b28fe0",
+    "/home/ww/vv/paper2/OVI-MAP/scripts/panoptic_mapping_.py": "7031814ed7da49dfe439a34df6d377ccc993676fc4373848fc112f1fb2eebdfc",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/graph_split/split.json": "da6bd3fbecd5d96c833663ee5d76e52bc25f2c090ac1add57b3da4341e1e365b"
+  }
+}

@@ -1,3 +1,7 @@
+## Latest checkpoint: R4 Room0
+
+See [R4_RESULTS.md](R4_RESULTS.md): real G1 merge and G2 multiview surface split, restored native geometry, separately named canonical AP, and original released metrics are evaluated. G1 is negative; G2 has mixed results and remains off. R5/R6, full-scene tables and final A–I audit are still outstanding. Historical statuses below are superseded by the stage result reports.
+
 ## Latest checkpoint: R3 Room0
 
 See [R3_RESULTS.md](R3_RESULTS.md): independent native RGB-D support and single-query fallback were evaluated. Instance AP is unchanged; S2 remains off. Full-history replay failed at frame 70 and no replay metadata was promoted. R4–R6 and the full scene tables remain outstanding. The historical status below is superseded by S1_RESULTS.md and R3_RESULTS.md.
