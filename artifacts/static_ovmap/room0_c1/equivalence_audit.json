@@ -1,0 +1,29 @@
+{
+  "status": "COMPLETE",
+  "scope": "Room0 readout execution and exact equality to evaluated S1a; not an independent gain or a new evaluator run",
+  "observation_records_exact": true,
+  "reference_readout": {
+    "path": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_readout/S1a.json",
+    "sha256": "bdaae9055afaa5cf665da0ac0452c4666b03be72f194e8122a2027e650e7cb63"
+  },
+  "executed_readout": {
+    "path": "artifacts/static_ovmap/room0_c1/C1.json",
+    "sha256": "12a5e405828a93f2f54ab486283d6d955428f180ba46c3d20340ba858398d504"
+  },
+  "readout_source": {
+    "path": "scripts/evaluation/run_static_ovmap_readout.py",
+    "sha256": "f76a4b6593ded8ac2b4f70fb327175f6884f49355f41ddaf4984cffae92b0cbd"
+  },
+  "metric_reuse_basis": "all observation records including labels, scores and selected IDs identical; same frozen geometry and evaluator inputs",
+  "semantic_metrics": {
+    "path": "artifacts/static_ovmap/room0_enriched/S1a_metrics.json",
+    "sha256": "b3c30ded0bf8f17497b14d3b60f5ae14682eec201d6cf278406fb92914916c7d"
+  },
+  "instance_metrics": {
+    "path": "artifacts/static_ovmap/room0_enriched/instance_summary.json",
+    "sha256": "0b54dc67224138de15a577829251d05db5972ee7be218dbfef3c1de20c245ced"
+  },
+  "extra_image_queries": 0,
+  "replica8_status": "NOT_RUN",
+  "scannet18_status": "BLOCKED_INPUTS_NOT_BOUND"
+}

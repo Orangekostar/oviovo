@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "scope": "explicit experiment routing/status, not a universal launcher",
+  "status_enum": [
+    "COMPLETE",
+    "NOT_RUN",
+    "BLOCKED",
+    "FAILED"
+  ],
+  "status_scope": "room0_status describes executed development unit only; NOT_RUN includes in-progress units without verified results",
+  "frozen_combination_revision": "room0-development-v1",
+  "seed": 0,
+  "K": 8,
+  "history_scope": "retained_native_top10; complete discarded-query provenance unresolved",
+  "geometry": "B0/S1/C1 frozen; G and T tracks explicitly separate",
+  "conditions": {
+    "B0": {
+      "description": "Historical native OVI and exact original readout",
+      "entrypoint": "scripts/evaluation/run_static_ovmap_readout.py",
+      "selection": {
+        "--conditions": [
+          "B0"
+        ]
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "native_static",
+      "decision_reason": "historical source/binary identity limitations remain explicit"
+    },
+    "B1": {
+      "description": "Current native rebuild, original readout",
+      "entrypoint": "scripts/evaluation/run_ovimap_native.py",
+      "selection": {
+        "--stage": "room",
+        "--scene": "room0"
+      },
+      "room0_status": "NOT_RUN",
+      "enabled_in_frozen_C1": false,
+      "track": "native_static",
+      "decision_reason": "execution in progress; manifest and evaluated version-drift comparison pending"
+    },
+    "S1": {
+      "description": "Quality/coverage selection, original area fusion",
+      "entrypoint": "scripts/evaluation/run_static_ovmap_readout.py",
+      "selection": {
+        "--conditions": [
+          "S1a"
+        ]
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": true,
+      "track": "native_static",
+      "decision_reason": "Room0 development gain; no extra weighting gain established"
+    },
+    "S2": {
+      "description": "Single-query fallback",
+      "entrypoint": "scripts/evaluation/run_static_ovmap_readout.py",
+      "selection": {
+        "--conditions": [
+          "S2"
+        ],
+        "requires": [
+          "--enrichment",
+          "--fallback-support"
+        ]
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "native_static",
+      "decision_reason": "Room0 adds no true positives; off"
+    },
+    "G1": {
+      "description": "Constrained merge",
+      "entrypoint": "scripts/evaluation/readout_static_ovmap_graph.py",
+      "selection": {
+        "--split": null
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "native_static",
+      "decision_reason": "Room0 canonical AP degraded; off"
+    },
+    "G2": {
+      "description": "Constrained merge and multiview split",
+      "entrypoint": "scripts/evaluation/readout_static_ovmap_graph.py",
+      "selection": {
+        "--split": "measured split artifact required"
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "native_static",
+      "decision_reason": "mixed AP50/AP75 and semantic result; off"
+    },
+    "D1": {
+      "description": "GLA-CLIP plus bilinear",
+      "entrypoint": "scripts/evaluation/run_static_ovmap_dense.py",
+      "selection": {
+        "readout_artifact": "D1.json",
+        "generation": "shared fixed-slot pass emits distinct artifacts; evaluate selected readout with B0 parity control"
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "dense_encoder_replacement",
+      "decision_reason": "below native Room0 baseline; D3 labels equal D2 for all three lambdas; off"
+    },
+    "D2": {
+      "description": "GLA-CLIP plus AnyUp",
+      "entrypoint": "scripts/evaluation/run_static_ovmap_dense.py",
+      "selection": {
+        "readout_artifact": "D2.json",
+        "generation": "shared fixed-slot pass emits distinct artifacts; evaluate selected readout with B0 parity control"
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "dense_encoder_replacement",
+      "decision_reason": "below native Room0 baseline; D3 labels equal D2 for all three lambdas; off"
+    },
+    "D3": {
+      "description": "AnyUp plus sparse same-owner refinement",
+      "entrypoint": "scripts/evaluation/run_static_ovmap_dense.py",
+      "selection": {
+        "readout_artifact": [
+          "D3_L01.json",
+          "D3_L02.json",
+          "D3_L03.json"
+        ],
+        "generation": "shared fixed-slot pass emits distinct artifacts; evaluate selected readout with B0 parity control"
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "dense_encoder_replacement",
+      "decision_reason": "below native Room0 baseline; D3 labels equal D2 for all three lambdas; off"
+    },
+    "C1": {
+      "description": "Frozen effective set: S1a only",
+      "entrypoint": "scripts/evaluation/run_static_ovmap_readout.py",
+      "selection": {
+        "--conditions": [
+          "C1"
+        ],
+        "requires": [
+          "--enrichment"
+        ]
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": true,
+      "track": "native_static",
+      "decision_reason": "exact S1a equivalence; no additive or multi-module synergy claim"
+    },
+    "T0": {
+      "description": "Complete SpaCeFormer",
+      "entrypoint": "scripts/evaluation/run_static_spaceformer.py",
+      "selection": {
+        "--precision": "fp32",
+        "--attention-query-chunk": 16
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "extra_3d_pretrained",
+      "decision_reason": "first FP32 result retained; repeated process variability documented"
+    },
+    "T1": {
+      "description": "SpaCeFormer plus OVI proposals and S1a labels",
+      "entrypoint": "scripts/evaluation/fuse_static_spaceformer.py",
+      "selection": {
+        "--readout": "S1a.json"
+      },
+      "room0_status": "COMPLETE",
+      "enabled_in_frozen_C1": false,
+      "track": "extra_3d_pretrained",
+      "decision_reason": "semantic AP improves but overlap/score sensitivity and extra training prohibit main-track equivalence"
+    },
+    "Q0": {
+      "description": "Optional fixed-budget random difficult-case review",
+      "entrypoint": null,
+      "selection": {
+        "enabled": false,
+        "trigger": "fixed-budget random",
+        "budget": null
+      },
+      "room0_status": "NOT_RUN",
+      "enabled_in_frozen_C1": false,
+      "track": "optional_query_conditioned",
+      "decision_reason": "optional R7 not implemented or executed; no unbudgeted mask queries allowed"
+    },
+    "Q1": {
+      "description": "Optional fixed-budget uncertainty difficult-case review",
+      "entrypoint": null,
+      "selection": {
+        "enabled": false,
+        "trigger": "fixed-budget uncertainty",
+        "budget": null
+      },
+      "room0_status": "NOT_RUN",
+      "enabled_in_frozen_C1": false,
+      "track": "optional_query_conditioned",
+      "decision_reason": "optional R7 not implemented or executed; no unbudgeted mask queries allowed"
+    }
+  },
+  "replica8": {
+    "status": "NOT_RUN",
+    "reason": "Room0 and office0 native rebuilds currently live; full-scene evaluation pending"
+  },
+  "scannet18": {
+    "status": "BLOCKED",
+    "reason": "actual inputs/frame schedules not bound; see scoped inventory"
+  },
+  "receipts": "artifacts/static_ovmap/room0_{enriched,fallback,graph,dense,spaceformer,c1} and stage result documents"
+}

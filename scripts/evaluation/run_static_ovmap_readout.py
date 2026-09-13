@@ -19,6 +19,7 @@ CONDITIONS = {'B0': ('last8', 'vis_area'), 'RANDOM8': ('random8', 'vis_area'),
               'QUALITY8': ('quality8', 'vis_area'),
               'S1a': ('quality_coverage8', 'vis_area'),
               'S1b': ('last8', 'quality'), 'S1c': ('quality_coverage8', 'quality'),
+              'C1': ('quality_coverage8', 'vis_area'),
               'S2': ('last8', 'vis_area'),
               'ALL_VIEWS': ('all_views', 'vis_area')}
 
@@ -34,10 +35,12 @@ def main():
     parser.add_argument('--enrichment', type=Path)
     parser.add_argument('--fallback-support', type=Path)
     parser.add_argument('--conditions', nargs='+', choices=list(CONDITIONS),
-                        default=[c for c in CONDITIONS if c != 'S2'])
+                        default=[c for c in CONDITIONS if c not in ('S2', 'C1')])
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    if 'C1' in args.conditions and args.enrichment is None:
+        parser.error('frozen C1 requires measured --enrichment')
     if 'S2' in args.conditions and (args.fallback_support is None or args.enrichment is None):
         parser.error('S2 requires --enrichment and --fallback-support')
     if args.fallback_support is not None and args.enrichment is None:
@@ -101,6 +104,14 @@ def main():
         if ledger is not None:
             document['fallback_ledger'] = ledger
             document['fallback_support_sha256'] = metadata['fallback_support_sha256']
+        if condition == 'C1':
+            document['frozen_combination'] = {
+                'revision': 'room0-development-v1', 'equivalent_condition': 'S1a',
+                'enabled': ['quality_coverage8_selection'],
+                'disabled': ['quality_weighting', 'single_query_fallback', 'merge', 'split',
+                             'dense_encoder', 'AnyUp', 'geometry_refinement',
+                             'extra_3d_pretraining', 'query_conditioned_review'],
+                'interpretation': 'one retained effective component; no additive combination claim'}
         (args.output / (condition+'.json')).write_text(json.dumps(document, indent=2)+'\n')
         print(condition, 'eligible_instances', sum(v is not None for v in result.values()),
               'readout_seconds', round(seconds, 6))
