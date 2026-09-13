@@ -1,0 +1,19 @@
+{
+  "native_cache_sha256": "f59f142b116e6fcf0a24f4f16cda41ca28f166b7e44c94fe7818d6e9a47d7059",
+  "source_config_sha256": "b7157708d21ebff123a15cc10be14b3b149ebb3b19fea8f2349b3c6eb8a4b410",
+  "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+  "feature_dim": 1024,
+  "feature_space_identity": {
+    "model": "google/siglip-large-patch16-384",
+    "model_sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+    "layer": "get_image_features",
+    "feature_dim": 1024,
+    "image_encoder_source_sha256": "b0925c0c78fd46be779fb9fbcde171fcaef58bd89a7f7d99b8fc1b24a1836ba2",
+    "crop": "native_six_crops_expand_0_0.1_0.2_black_and_rgb_exclusive_slice",
+    "crop_fusion": "mean_of_l2_normalized_crop_features",
+    "preprocessor_sha256": "f59da2f87c3cd079bd4f8f3037e81b277c60c498e279a8020331f67a5a3157e8"
+  },
+  "native_manifest_path": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/native_mapping_manifest.json",
+  "native_manifest_sha256": "89bffc99d7ddf3fee085f8f170f45245e26f5b3ef34a5eb5486ec15e6b97aae6",
+  "evidence_scope": "fresh rebuilt B1; no historical binary parity claim"
+}

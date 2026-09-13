@@ -1,0 +1,2087 @@
+{
+  "status": "COMPLETE_ROOM0_B1_RELEASED_METRICS",
+  "scope": "single rebuilt Room0 development run; Replica8 remaining seven scenes not evaluated yet",
+  "rows": [
+    {
+      "condition": "B1+ALL_VIEWS",
+      "internal_condition": "ALL_VIEWS",
+      "semantic_miou": 0.30807278345617123,
+      "semantic_macc": 0.34462667542540387,
+      "semantic_instance": {
+        "all_ap": 0.15361368312757204,
+        "all_ap_50%": 0.33217592592592593,
+        "all_ap_25%": 0.39336557539682543,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.021604938271604937,
+            "ap50%": 0.027777777777777776,
+            "ap25%": 0.2222222222222222
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.06378859654068947
+    },
+    {
+      "condition": "B1",
+      "internal_condition": "B0",
+      "semantic_miou": 0.33337272102572685,
+      "semantic_macc": 0.37080296925031764,
+      "semantic_instance": {
+        "all_ap": 0.15361368312757204,
+        "all_ap_50%": 0.33217592592592593,
+        "all_ap_25%": 0.39336557539682543,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.021604938271604937,
+            "ap50%": 0.027777777777777776,
+            "ap25%": 0.2222222222222222
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.05864405166357756
+    },
+    {
+      "condition": "B1+C1",
+      "internal_condition": "C1",
+      "semantic_miou": 0.3355863366951622,
+      "semantic_macc": 0.3730937619197811,
+      "semantic_instance": {
+        "all_ap": 0.15579989711934156,
+        "all_ap_50%": 0.3348765432098766,
+        "all_ap_25%": 0.397995205026455,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.07407407407407407,
+            "ap50%": 0.09259259259259259,
+            "ap25%": 0.3333333333333333
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.06499739177525043
+    },
+    {
+      "condition": "B1+QUALITY8",
+      "internal_condition": "QUALITY8",
+      "semantic_miou": 0.33337272102572685,
+      "semantic_macc": 0.37080296925031764,
+      "semantic_instance": {
+        "all_ap": 0.15361368312757204,
+        "all_ap_50%": 0.33217592592592593,
+        "all_ap_25%": 0.39336557539682543,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.021604938271604937,
+            "ap50%": 0.027777777777777776,
+            "ap25%": 0.2222222222222222
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.07591678015887737
+    },
+    {
+      "condition": "B1+RANDOM8",
+      "internal_condition": "RANDOM8",
+      "semantic_miou": 0.30807278345617123,
+      "semantic_macc": 0.34462667542540387,
+      "semantic_instance": {
+        "all_ap": 0.15361368312757204,
+        "all_ap_50%": 0.33217592592592593,
+        "all_ap_25%": 0.39336557539682543,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.021604938271604937,
+            "ap50%": 0.027777777777777776,
+            "ap25%": 0.2222222222222222
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.08160148095339537
+    },
+    {
+      "condition": "B1+S1a",
+      "internal_condition": "S1a",
+      "semantic_miou": 0.3355863366951622,
+      "semantic_macc": 0.3730937619197811,
+      "semantic_instance": {
+        "all_ap": 0.15579989711934156,
+        "all_ap_50%": 0.3348765432098766,
+        "all_ap_25%": 0.397995205026455,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.07407407407407407,
+            "ap50%": 0.09259259259259259,
+            "ap25%": 0.3333333333333333
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.06247159093618393
+    },
+    {
+      "condition": "B1+S1b",
+      "internal_condition": "S1b",
+      "semantic_miou": 0.33337272102572685,
+      "semantic_macc": 0.37080296925031764,
+      "semantic_instance": {
+        "all_ap": 0.15361368312757204,
+        "all_ap_50%": 0.33217592592592593,
+        "all_ap_25%": 0.39336557539682543,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.021604938271604937,
+            "ap50%": 0.027777777777777776,
+            "ap25%": 0.2222222222222222
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.055547889322042465
+    },
+    {
+      "condition": "B1+S1c",
+      "internal_condition": "S1c",
+      "semantic_miou": 0.3355863366951622,
+      "semantic_macc": 0.3730937619197811,
+      "semantic_instance": {
+        "all_ap": 0.15579989711934156,
+        "all_ap_50%": 0.3348765432098766,
+        "all_ap_25%": 0.397995205026455,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "blinds": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.03125
+          },
+          "book": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 1.0
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.07407407407407407,
+            "ap50%": 0.09259259259259259,
+            "ap25%": 0.3333333333333333
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 1.0,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.11574074074074073,
+            "ap50%": 0.3333333333333333,
+            "ap25%": 0.3333333333333333
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "stool": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.6
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.8888888888888888,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.04938271604938271,
+            "ap50%": 0.1111111111111111,
+            "ap25%": 0.1111111111111111
+          },
+          "rug": {
+            "ap": 0.3333333333333333,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          }
+        }
+      },
+      "readout_seconds": 0.06397923361510038
+    }
+  ],
+  "released_class_agnostic": {
+    "instance_miou": 0.3922,
+    "area_weighted_instance_iou": 0.5846,
+    "mP@0.75": 0.3774,
+    "mR@0.75": 0.2174,
+    "mP@0.50": 0.717,
+    "mR@0.50": 0.413,
+    "mP@0.25": 0.8868,
+    "mR@0.25": 0.5109
+  },
+  "canonical_class_agnostic_AP": null,
+  "canonical_AP_reason": "full-native-owner diagnostic not yet evaluated for B1; released precision/recall is not AP",
+  "source_drift": {
+    "historical_native_vertices": 9282303,
+    "rebuilt_native_vertices": 9158364,
+    "historical_retained_queries": 592,
+    "rebuilt_retained_queries": 481,
+    "historical_cache_owners": 77,
+    "rebuilt_cache_owners": 70,
+    "historical_unmatched_vertices": 116029,
+    "rebuilt_unmatched_vertices": 124345,
+    "causal_attribution": "not isolated; different native source/build/runtime and produced geometry/query records; not method gain"
+  },
+  "selection_changes": {
+    "subsets": 7,
+    "label_changes": [
+      {
+        "owner": 85,
+        "before": 12,
+        "after": 19,
+        "before_label": "pillow",
+        "after_label": "cushion"
+      }
+    ]
+  },
+  "cost": {
+    "frontend_wall_seconds": 339.051187,
+    "geometry_wall_seconds": 1175.39007,
+    "mapping_with_vlm_and_native_export_wall_seconds": 1504.612335,
+    "sequential_stage_sum_seconds": 3019.053592,
+    "clock": "recorded UTC process start/finish timestamps",
+    "GPU_peak_bytes": null,
+    "GPU_peak_missing_reason": "native runner does not sample peak device allocations",
+    "isolated_image_vlm_seconds": null,
+    "isolated_export_seconds": null,
+    "scope": "fresh mask/geometry/query computation with local weights; shared-host concurrent scene jobs; not a controlled speed comparison or complete evaluator-inclusive E2E FPS",
+    "postprocess_seconds": 53.11132253613323,
+    "enrichment_seconds": 14.262004347518086
+  }
+}

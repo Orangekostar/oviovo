@@ -20,6 +20,7 @@ from plyfile import PlyData
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.static_ovmap.cache_io import sha256_file
+from src.static_ovmap.released_loader import load_released_module
 
 
 def load_exports(source):
@@ -72,7 +73,7 @@ def main():
     source = args.evaluator_root / 'scripts'
     exports = load_exports(source / 'eval_sem_seg.py')
     sys.path.insert(0, str(source))
-    evaluator = runpy.run_path(str(source/'eval_utils.py'))
+    evaluator = load_released_module(source/'eval_utils.py')
     released = runpy.run_path(str(source/'eval_inst_seg.py'))
     evaluator['init']('Replica')
     gt_file = exports['map_gt_mesh']({'inst_mesh_f': str(args.gt_instance_map),

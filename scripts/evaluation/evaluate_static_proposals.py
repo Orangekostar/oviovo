@@ -48,7 +48,8 @@ def main():
     source = args.evaluator_root/'scripts'
     sys.path.insert(0, str(source))
     exports = load_exports(source/'eval_sem_seg.py')
-    evaluator = runpy.run_path(str(source/'eval_utils.py'))
+    from src.static_ovmap.released_loader import load_released_module
+    evaluator = load_released_module(source/'eval_utils.py')
     evaluator['init']('Replica')
     gt_file = exports['map_gt_mesh']({'inst_mesh_f': str(args.gt_instance_map), 'sem_mesh_f': str(args.gt_semantic_map),
                                    'res_folder': str(args.output)})

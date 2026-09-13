@@ -1,0 +1,738 @@
+{
+  "condition": "S1c",
+  "scene": "room0",
+  "semantic_miou": 0.3355863366951622,
+  "semantic_macc": 0.3730937619197811,
+  "per_class": {
+    "1": {
+      "iou": 0.4944193049980539,
+      "accuracy": 0.5501889962200756,
+      "gt_vertices": 228576
+    },
+    "2": {
+      "iou": 0.8407428806404431,
+      "accuracy": 0.9612514282993716,
+      "gt_vertices": 168032
+    },
+    "3": {
+      "iou": 0.7083982519475585,
+      "accuracy": 0.7329362270975859,
+      "gt_vertices": 101736
+    },
+    "4": {
+      "iou": 0.5072886297376094,
+      "accuracy": 0.5098726550732575,
+      "gt_vertices": 36515
+    },
+    "5": {
+      "iou": 0.8764994655370363,
+      "accuracy": 0.9997516369383608,
+      "gt_vertices": 88580
+    },
+    "6": {
+      "iou": 0.5289327831628293,
+      "accuracy": 0.5364509818487978,
+      "gt_vertices": 80766
+    },
+    "7": {
+      "iou": 0.4694868021417165,
+      "accuracy": 0.4861079591505917,
+      "gt_vertices": 30845
+    },
+    "8": {
+      "iou": 0.3553531907337768,
+      "accuracy": 0.9344472793369687,
+      "gt_vertices": 59967
+    },
+    "9": {
+      "iou": 0.2060187331911342,
+      "accuracy": 0.2060282865754695,
+      "gt_vertices": 21565
+    },
+    "10": {
+      "iou": 0.22513648684763105,
+      "accuracy": 0.23705579675188937,
+      "gt_vertices": 24876
+    },
+    "11": {
+      "iou": 0.9332820315505964,
+      "accuracy": 0.9392085495237358,
+      "gt_vertices": 12913
+    },
+    "15": {
+      "iou": 0.6228918140682846,
+      "accuracy": 0.642379891823099,
+      "gt_vertices": 18858
+    },
+    "16": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 10030
+    },
+    "17": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 4588
+    },
+    "19": {
+      "iou": 0.353117238744189,
+      "accuracy": 0.3570968572900567,
+      "gt_vertices": 15528
+    },
+    "21": {
+      "iou": 0.8857589984350548,
+      "accuracy": 0.9363110008271298,
+      "gt_vertices": 1209
+    },
+    "23": {
+      "iou": 0.609595417114214,
+      "accuracy": 0.609595417114214,
+      "gt_vertices": 13965
+    },
+    "24": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 14370
+    },
+    "25": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1512
+    },
+    "30": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1437
+    },
+    "31": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 327
+    },
+    "32": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 4039
+    },
+    "33": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1463
+    },
+    "38": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 309
+    },
+    "39": {
+      "iou": 0.09528487229862476,
+      "accuracy": 0.09561360275998028,
+      "gt_vertices": 2029
+    },
+    "46": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1050
+    },
+    "48": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 876
+    },
+    "51": {
+      "iou": 0.6842105263157895,
+      "accuracy": 0.7123287671232876,
+      "gt_vertices": 146
+    }
+  },
+  "changed_observations": [
+    {
+      "instance_id": 1,
+      "removed": [],
+      "added": [],
+      "old_class": 1,
+      "new_class": 1,
+      "old_margin": 0.0007362450212687888,
+      "new_margin": 0.000740391635854265
+    },
+    {
+      "instance_id": 2,
+      "removed": [],
+      "added": [],
+      "old_class": 3,
+      "new_class": 3,
+      "old_margin": 8.32584361865063e-05,
+      "new_margin": 0.00019195385976389367
+    },
+    {
+      "instance_id": 3,
+      "removed": [],
+      "added": [],
+      "old_class": 23,
+      "new_class": 23,
+      "old_margin": 0.006626452089406709,
+      "new_margin": 0.00663216487640772
+    },
+    {
+      "instance_id": 4,
+      "removed": [],
+      "added": [],
+      "old_class": 8,
+      "new_class": 8,
+      "old_margin": 0.004143870583870335,
+      "new_margin": 0.0041241230839687
+    },
+    {
+      "instance_id": 5,
+      "removed": [],
+      "added": [],
+      "old_class": 15,
+      "new_class": 15,
+      "old_margin": 0.0001525190192639414,
+      "new_margin": 0.00015491537866130223
+    },
+    {
+      "instance_id": 6,
+      "removed": [],
+      "added": [],
+      "old_class": 23,
+      "new_class": 23,
+      "old_margin": 0.0012059228854554016,
+      "new_margin": 0.001246256135473911
+    },
+    {
+      "instance_id": 7,
+      "removed": [
+        "7:2"
+      ],
+      "added": [
+        "7:1"
+      ],
+      "old_class": 11,
+      "new_class": 11,
+      "old_margin": 0.014408466529378106,
+      "new_margin": 0.013839282580403123
+    },
+    {
+      "instance_id": 8,
+      "removed": [],
+      "added": [],
+      "old_class": 6,
+      "new_class": 6,
+      "old_margin": 0.0026112855157505166,
+      "new_margin": 0.0026506988710452983
+    },
+    {
+      "instance_id": 9,
+      "removed": [],
+      "added": [],
+      "old_class": 1,
+      "new_class": 1,
+      "old_margin": 0.0030185492694482785,
+      "new_margin": 0.0030394495467794824
+    },
+    {
+      "instance_id": 10,
+      "removed": [],
+      "added": [],
+      "old_class": 10,
+      "new_class": 10,
+      "old_margin": 0.00538506495883373,
+      "new_margin": 0.005302256381107151
+    },
+    {
+      "instance_id": 11,
+      "removed": [],
+      "added": [],
+      "old_class": 9,
+      "new_class": 9,
+      "old_margin": 0.0028077771214052305,
+      "new_margin": 0.002895175394680871
+    },
+    {
+      "instance_id": 12,
+      "removed": [
+        "12:2"
+      ],
+      "added": [
+        "12:0"
+      ],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.0012914917909657708,
+      "new_margin": 0.001441205291722869
+    },
+    {
+      "instance_id": 13,
+      "removed": [],
+      "added": [],
+      "old_class": 7,
+      "new_class": 7,
+      "old_margin": 0.0007594826873099647,
+      "new_margin": 0.0007302190785480889
+    },
+    {
+      "instance_id": 14,
+      "removed": [],
+      "added": [],
+      "old_class": 25,
+      "new_class": 25,
+      "old_margin": 0.0008276635563901902,
+      "new_margin": 0.000815209041211129
+    },
+    {
+      "instance_id": 16,
+      "removed": [],
+      "added": [],
+      "old_class": 10,
+      "new_class": 10,
+      "old_margin": 0.0006080419594640674,
+      "new_margin": 0.0005929066025138763
+    },
+    {
+      "instance_id": 23,
+      "removed": [],
+      "added": [],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.0017965314699731616,
+      "new_margin": 0.0018120224170685706
+    },
+    {
+      "instance_id": 24,
+      "removed": [],
+      "added": [],
+      "old_class": 2,
+      "new_class": 2,
+      "old_margin": 0.011501467627107798,
+      "new_margin": 0.011595679323635144
+    },
+    {
+      "instance_id": 26,
+      "removed": [],
+      "added": [],
+      "old_class": 2,
+      "new_class": 2,
+      "old_margin": 0.001788875950812896,
+      "new_margin": 0.0018294440142830881
+    },
+    {
+      "instance_id": 28,
+      "removed": [],
+      "added": [],
+      "old_class": 2,
+      "new_class": 2,
+      "old_margin": 0.0034875524852551187,
+      "new_margin": 0.003475407773250394
+    },
+    {
+      "instance_id": 19,
+      "removed": [],
+      "added": [],
+      "old_class": 9,
+      "new_class": 9,
+      "old_margin": 0.005894949611106148,
+      "new_margin": 0.005903425610180091
+    },
+    {
+      "instance_id": 33,
+      "removed": [],
+      "added": [],
+      "old_class": 21,
+      "new_class": 21,
+      "old_margin": 0.003676096125610373,
+      "new_margin": 0.0036725656097894577
+    },
+    {
+      "instance_id": 34,
+      "removed": [],
+      "added": [],
+      "old_class": 5,
+      "new_class": 5,
+      "old_margin": 0.005780804573237597,
+      "new_margin": 0.0057640625892955155
+    },
+    {
+      "instance_id": 21,
+      "removed": [],
+      "added": [],
+      "old_class": 35,
+      "new_class": 35,
+      "old_margin": 0.0012268812294536913,
+      "new_margin": 0.0011911351159329397
+    },
+    {
+      "instance_id": 20,
+      "removed": [
+        "20:3"
+      ],
+      "added": [
+        "20:0"
+      ],
+      "old_class": 51,
+      "new_class": 51,
+      "old_margin": 0.0035984430095761244,
+      "new_margin": 0.003535939451046355
+    },
+    {
+      "instance_id": 40,
+      "removed": [
+        "40:3"
+      ],
+      "added": [
+        "40:1"
+      ],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.0027195437783134047,
+      "new_margin": 0.002770586143155729
+    },
+    {
+      "instance_id": 41,
+      "removed": [],
+      "added": [],
+      "old_class": 6,
+      "new_class": 6,
+      "old_margin": 0.0026901297578063588,
+      "new_margin": 0.003137549315159638
+    },
+    {
+      "instance_id": 42,
+      "removed": [],
+      "added": [],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.0001105326252865968,
+      "new_margin": 0.00010509050655171936
+    },
+    {
+      "instance_id": 18,
+      "removed": [],
+      "added": [],
+      "old_class": 35,
+      "new_class": 35,
+      "old_margin": 0.0007953922229706478,
+      "new_margin": 0.00076362413089337
+    },
+    {
+      "instance_id": 50,
+      "removed": [],
+      "added": [],
+      "old_class": 39,
+      "new_class": 39,
+      "old_margin": 0.0019240030125130536,
+      "new_margin": 0.0017856866050920406
+    },
+    {
+      "instance_id": 60,
+      "removed": [],
+      "added": [],
+      "old_class": 19,
+      "new_class": 19,
+      "old_margin": 0.0006403442080885613,
+      "new_margin": 0.0006441561925516481
+    },
+    {
+      "instance_id": 61,
+      "removed": [],
+      "added": [],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.0009939856913792067,
+      "new_margin": 0.000993493498402498
+    },
+    {
+      "instance_id": 66,
+      "removed": [],
+      "added": [],
+      "old_class": 7,
+      "new_class": 7,
+      "old_margin": 0.009471159204530455,
+      "new_margin": 0.009473895103881858
+    },
+    {
+      "instance_id": 65,
+      "removed": [],
+      "added": [],
+      "old_class": 8,
+      "new_class": 8,
+      "old_margin": 0.0010155277570174093,
+      "new_margin": 0.0009879363008857833
+    },
+    {
+      "instance_id": 68,
+      "removed": [],
+      "added": [],
+      "old_class": 5,
+      "new_class": 5,
+      "old_margin": 0.006171040620497337,
+      "new_margin": 0.006169859464072003
+    },
+    {
+      "instance_id": 69,
+      "removed": [],
+      "added": [],
+      "old_class": 30,
+      "new_class": 30,
+      "old_margin": 0.003809398802570363,
+      "new_margin": 0.0038148781714589797
+    },
+    {
+      "instance_id": 71,
+      "removed": [],
+      "added": [],
+      "old_class": 4,
+      "new_class": 4,
+      "old_margin": 0.004214595872343185,
+      "new_margin": 0.004207680275721493
+    },
+    {
+      "instance_id": 72,
+      "removed": [],
+      "added": [],
+      "old_class": 21,
+      "new_class": 21,
+      "old_margin": 0.00010287466715308557,
+      "new_margin": 8.171992363903424e-05
+    },
+    {
+      "instance_id": 73,
+      "removed": [],
+      "added": [],
+      "old_class": 46,
+      "new_class": 46,
+      "old_margin": 0.0003657499032035938,
+      "new_margin": 0.00034627872767023504
+    },
+    {
+      "instance_id": 75,
+      "removed": [],
+      "added": [],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.00019557384109980536,
+      "new_margin": 0.00023186877232861391
+    },
+    {
+      "instance_id": 76,
+      "removed": [],
+      "added": [],
+      "old_class": 2,
+      "new_class": 2,
+      "old_margin": 0.005265771189630786,
+      "new_margin": 0.00527590003577616
+    },
+    {
+      "instance_id": 78,
+      "removed": [],
+      "added": [],
+      "old_class": 21,
+      "new_class": 21,
+      "old_margin": 0.002234405272967366,
+      "new_margin": 0.0023197770961960185
+    },
+    {
+      "instance_id": 81,
+      "removed": [],
+      "added": [],
+      "old_class": 4,
+      "new_class": 4,
+      "old_margin": 0.003947222872214384,
+      "new_margin": 0.003923949423928819
+    },
+    {
+      "instance_id": 84,
+      "removed": [],
+      "added": [],
+      "old_class": 4,
+      "new_class": 4,
+      "old_margin": 0.003977943627929692,
+      "new_margin": 0.004009885623042719
+    },
+    {
+      "instance_id": 85,
+      "removed": [
+        "85:4"
+      ],
+      "added": [
+        "85:1"
+      ],
+      "old_class": 12,
+      "new_class": 19,
+      "old_margin": 0.00013649709908336582,
+      "new_margin": 3.693327860809781e-05
+    },
+    {
+      "instance_id": 86,
+      "removed": [],
+      "added": [],
+      "old_class": 2,
+      "new_class": 2,
+      "old_margin": 0.004419331856372888,
+      "new_margin": 0.0044930821426075185
+    },
+    {
+      "instance_id": 89,
+      "removed": [
+        "89:2"
+      ],
+      "added": [
+        "89:1"
+      ],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.0018406386095802807,
+      "new_margin": 0.0018339122323010049
+    },
+    {
+      "instance_id": 90,
+      "removed": [],
+      "added": [],
+      "old_class": 6,
+      "new_class": 6,
+      "old_margin": 0.00024180780679639025,
+      "new_margin": 0.00025948355881699747
+    },
+    {
+      "instance_id": 91,
+      "removed": [],
+      "added": [],
+      "old_class": 10,
+      "new_class": 10,
+      "old_margin": 0.008153173090783672,
+      "new_margin": 0.008261313184639851
+    },
+    {
+      "instance_id": 92,
+      "removed": [],
+      "added": [],
+      "old_class": 19,
+      "new_class": 19,
+      "old_margin": 0.00014500837364850305,
+      "new_margin": 0.00013574867921040124
+    },
+    {
+      "instance_id": 96,
+      "removed": [],
+      "added": [],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.0023247147363593124,
+      "new_margin": 0.002343924523251384
+    },
+    {
+      "instance_id": 102,
+      "removed": [],
+      "added": [],
+      "old_class": 10,
+      "new_class": 10,
+      "old_margin": 0.00027044278485977014,
+      "new_margin": 0.0002932817233594065
+    },
+    {
+      "instance_id": 117,
+      "removed": [],
+      "added": [],
+      "old_class": 12,
+      "new_class": 12,
+      "old_margin": 0.003909043901935805,
+      "new_margin": 0.0038956212678333824
+    },
+    {
+      "instance_id": 126,
+      "removed": [],
+      "added": [],
+      "old_class": 5,
+      "new_class": 5,
+      "old_margin": 0.005014514194894404,
+      "new_margin": 0.005014461078193144
+    },
+    {
+      "instance_id": 147,
+      "removed": [
+        "147:2"
+      ],
+      "added": [
+        "147:1"
+      ],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.0023948419253234654,
+      "new_margin": 0.0021156585858045363
+    },
+    {
+      "instance_id": 149,
+      "removed": [],
+      "added": [],
+      "old_class": 20,
+      "new_class": 20,
+      "old_margin": 0.0008256598274271054,
+      "new_margin": 0.0008553586069742769
+    },
+    {
+      "instance_id": 191,
+      "removed": [],
+      "added": [],
+      "old_class": 30,
+      "new_class": 30,
+      "old_margin": 0.0021151254471905023,
+      "new_margin": 0.0021282038114239787
+    },
+    {
+      "instance_id": 203,
+      "removed": [],
+      "added": [],
+      "old_class": 7,
+      "new_class": 7,
+      "old_margin": 0.0006287273969644569,
+      "new_margin": 0.0006206419482889802
+    },
+    {
+      "instance_id": 206,
+      "removed": [],
+      "added": [],
+      "old_class": 39,
+      "new_class": 39,
+      "old_margin": 0.0012932847561294425,
+      "new_margin": 0.0013058761524037399
+    },
+    {
+      "instance_id": 207,
+      "removed": [],
+      "added": [],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.000438308561141576,
+      "new_margin": 0.00043822377163682535
+    },
+    {
+      "instance_id": 62,
+      "removed": [],
+      "added": [],
+      "old_class": 19,
+      "new_class": 19,
+      "old_margin": 0.0005568378168070431,
+      "new_margin": 0.0006527422464615018
+    },
+    {
+      "instance_id": 143,
+      "removed": [],
+      "added": [],
+      "old_class": 2,
+      "new_class": 2,
+      "old_margin": 0.004000383510073813,
+      "new_margin": 0.003999819852381625
+    }
+  ],
+  "readout_seconds": 0.06397923361510038,
+  "geometry_and_instance_ids": "FROZEN_IDENTICAL_PROJECTED_INPUT",
+  "original_semantic_exact_match": false,
+  "quality_mode": "legacy_context_bbox_depth_fraction_and_laplacian_variance",
+  "direction_mode": "final_native_mesh_triangle_vertex_centroid_to_camera",
+  "history_scope": "retained_native_top10",
+  "mode": "STATIC_OFFLINE_READOUT",
+  "class_agnostic_ap50": null,
+  "class_aware_ap50": null,
+  "missing_metric_reason": "instance_evaluation_not_run_in_semantic_smoke",
+  "status": "COMPLETE_SEMANTIC_SMOKE"
+}

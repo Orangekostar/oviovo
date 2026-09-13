@@ -34,10 +34,10 @@
         "--stage": "room",
         "--scene": "room0"
       },
-      "room0_status": "NOT_RUN",
+      "room0_status": "COMPLETE",
       "enabled_in_frozen_C1": false,
       "track": "native_static",
-      "decision_reason": "execution in progress; manifest and evaluated version-drift comparison pending"
+      "decision_reason": "Room0 native 200-frame audit, exact projection/semantic/mask parity and released metrics complete; version drift documented in room0_b1/summary.json"
     },
     "S1": {
       "description": "Quality/coverage selection, original area fusion",
@@ -199,7 +199,7 @@
   },
   "replica8": {
     "status": "NOT_RUN",
-    "reason": "Room0 and office0 native rebuilds currently live; full-scene evaluation pending"
+    "reason": "all eight native runs started; Room0 evaluated, remaining seven pending"
   },
   "scannet18": {
     "status": "BLOCKED",

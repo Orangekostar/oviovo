@@ -1,0 +1,30 @@
+{
+  "stage_policy": "same released runner final-color membership and remap; raw readout cache retained separately",
+  "native_manifest": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/native_mapping_manifest.json",
+  "stale_ids": [
+    15,
+    17,
+    43,
+    61,
+    72,
+    73,
+    81,
+    90,
+    95,
+    96,
+    126,
+    209
+  ],
+  "raw_cache_sha256": "f59f142b116e6fcf0a24f4f16cda41ca28f166b7e44c94fe7818d6e9a47d7059",
+  "staged_cache_sha256": "64bac721c5cceaae172c62274f12a71e27f6e7c469a1df25ecbc2b8fb2d5c8e9",
+  "reused_gt": {
+    "gt_instance_mesh.ply": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_instance_mesh.ply",
+      "sha256": "da094a09c9a60551b94695bf6b8ef7ea841ea96c2fe78f3997ce45bff173a2d1"
+    },
+    "gt_semantic_mesh.ply": {
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply",
+      "sha256": "c086272c07a9db9e14f32249cee10c61e6cc3fb5140f811eb367e7386142da88"
+    }
+  }
+}

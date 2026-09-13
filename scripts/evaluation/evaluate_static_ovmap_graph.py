@@ -17,6 +17,7 @@ from scripts.evaluation.evaluate_static_ovmap_instances import load_exports, fin
 from scripts.evaluation.evaluate_static_ovmap_readout import semantic_metrics
 from src.evaluation.static_projected_instances import projected_instance_metrics
 from src.static_ovmap.cache_io import sha256_file
+from src.static_ovmap.released_loader import load_released_module
 from src.static_ovmap.native_export import compact_export, remap_partition, restore_partition
 
 
@@ -100,7 +101,7 @@ def main():
     source = args.evaluator_root/'scripts'
     exports = load_exports(source/'eval_sem_seg.py')
     sys.path.insert(0, str(source))
-    evaluator = runpy.run_path(str(source/'eval_utils.py'))
+    evaluator = load_released_module(source/'eval_utils.py')
     released = runpy.run_path(str(source/'eval_inst_seg.py'))
     evaluator['init']('Replica')
     gt_file = exports['map_gt_mesh']({'inst_mesh_f': str(args.gt_instance_map),
