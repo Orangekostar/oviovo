@@ -1,0 +1,403 @@
+{
+  "checked_at_utc": "2026-09-13T11:34:08.615813+00:00",
+  "status": "EVALUATION_ASSETS_PRESENT",
+  "GT_policy": "read by evaluation/preflight only; not supplied to generation",
+  "scenes": [
+    {
+      "scene": "office0",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/office0_mesh.ply",
+        "size_bytes": 25926155,
+        "sha256": "cdb6ede0b9d455f491ef8fd63cd916a86a505b777842aabd6aa428edf9ff9032"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_office0.txt",
+        "size_bytes": 1768551,
+        "sha256": "a55f1bf13fbb2057f3ab1a7f92180e9b19e400104f55c47130ab20cd3f72c4d2"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_office0.txt",
+        "size_bytes": 3325501,
+        "sha256": "cde5be82996a0e2c0ab5ad0822ac354e2d67e3fab543b7bd130de6bdcf676a86"
+      },
+      "vertex_count": 589517,
+      "face_count": 588759,
+      "raw_semantic_ids": [
+        -2,
+        -1,
+        10,
+        12,
+        17,
+        20,
+        22,
+        31,
+        35,
+        37,
+        40,
+        44,
+        47,
+        56,
+        60,
+        63,
+        76,
+        79,
+        80,
+        82,
+        83,
+        87,
+        92,
+        93,
+        95,
+        98
+      ],
+      "raw_instance_count": 68,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    },
+    {
+      "scene": "office1",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/office1_mesh.ply",
+        "size_bytes": 18607229,
+        "sha256": "4f0354fdf7b23ba07c136e81c0a0694f5815d8d6870ff9c3748010e740a82c75"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_office1.txt",
+        "size_bytes": 1269021,
+        "sha256": "39ca76b1f59873af6ffacb6f8dc64e5ab19924c24b3d0c117ece9f0fb80126c0"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_office1.txt",
+        "size_bytes": 2434045,
+        "sha256": "3b0c560f9564c4dbb64f83c7197e1867e52eb38eab9d501e98c323e9c345e147"
+      },
+      "vertex_count": 423007,
+      "face_count": 422691,
+      "raw_semantic_ids": [
+        -2,
+        -1,
+        10,
+        11,
+        12,
+        14,
+        20,
+        23,
+        31,
+        34,
+        35,
+        37,
+        40,
+        47,
+        52,
+        56,
+        60,
+        61,
+        79,
+        80,
+        83,
+        92,
+        93,
+        95
+      ],
+      "raw_instance_count": 52,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    },
+    {
+      "scene": "office2",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/office2_mesh.ply",
+        "size_bytes": 37766479,
+        "sha256": "b5cd58e54584a5f244ea0c8e02e0a0e1853de287acc95327a8c863f7b8c3e4e8"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_office2.txt",
+        "size_bytes": 2575869,
+        "sha256": "0dab4c76896e5b31c31a2d4b81a5336366ac0b7e12b7bdff0cd026daebcaf4dc"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_office2.txt",
+        "size_bytes": 5095841,
+        "sha256": "b6ee0f20a2f40a5e05accd47674ea7c3b0b114063e61a5c6a684828e88743eb8"
+      },
+      "vertex_count": 858623,
+      "face_count": 857845,
+      "raw_semantic_ids": [
+        -2,
+        -1,
+        10,
+        14,
+        17,
+        20,
+        22,
+        29,
+        31,
+        37,
+        40,
+        47,
+        56,
+        76,
+        78,
+        80,
+        82,
+        83,
+        87,
+        92,
+        93,
+        95,
+        97
+      ],
+      "raw_instance_count": 94,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    },
+    {
+      "scene": "office3",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/office3_mesh.ply",
+        "size_bytes": 52214939,
+        "sha256": "fe7b647a968f76a4fb31b5a6628ed6b9ff9ed143b30491ed344bd1d1204deb38"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_office3.txt",
+        "size_bytes": 3535128,
+        "sha256": "0056c42dc114308862a391dc40d31ba0c9577fe729ee9c80bd05803b6ceabfe8"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_office3.txt",
+        "size_bytes": 7055329,
+        "sha256": "21d1385bc36f7dabaaac3aead1c3f7313ab06396bcb7ce4c857309ab9ab7ad45"
+      },
+      "vertex_count": 1187140,
+      "face_count": 1185992,
+      "raw_semantic_ids": [
+        -2,
+        -1,
+        8,
+        10,
+        12,
+        14,
+        15,
+        17,
+        20,
+        22,
+        29,
+        31,
+        35,
+        37,
+        40,
+        47,
+        56,
+        62,
+        76,
+        79,
+        80,
+        82,
+        83,
+        88,
+        92,
+        93,
+        95,
+        97
+      ],
+      "raw_instance_count": 113,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    },
+    {
+      "scene": "office4",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/office4_mesh.ply",
+        "size_bytes": 43690962,
+        "sha256": "bcc3aebb76cb5a5c802117554ba7231a4b2321554e814c74a0e4ff100e0295d4"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_office4.txt",
+        "size_bytes": 2952574,
+        "sha256": "a058ecb4da5ba51af99dd43f6b37d5901f03f195ac0086372754e7bee90f4783"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_office4.txt",
+        "size_bytes": 5652006,
+        "sha256": "70e2cd9ad686e69ee0dd82ec52d1a0070f0bb7e4fb72c4571e8e237010f0c28d"
+      },
+      "vertex_count": 993008,
+      "face_count": 992909,
+      "raw_semantic_ids": [
+        -1,
+        8,
+        10,
+        17,
+        20,
+        22,
+        31,
+        37,
+        40,
+        47,
+        56,
+        80,
+        87,
+        92,
+        93,
+        95,
+        97
+      ],
+      "raw_instance_count": 71,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    },
+    {
+      "scene": "room0",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/room0_mesh.ply",
+        "size_bytes": 41983576,
+        "sha256": "9b5398080977ef236c4142104150ab4a6b742426cc5ef566b021cd66dc5d73ee"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_room0.txt",
+        "size_bytes": 2859437,
+        "sha256": "0408668499ab5e6afd426eba4bee98d1d571918aedcd3014cb43c8efe521b343"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_room0.txt",
+        "size_bytes": 5696496,
+        "sha256": "a985f461b003e15cfb5fa6a731193dc03841579b89a95d7ccb53c9fc52cf3571"
+      },
+      "vertex_count": 954492,
+      "face_count": 953647,
+      "raw_semantic_ids": [
+        -2,
+        -1,
+        3,
+        11,
+        12,
+        13,
+        18,
+        19,
+        20,
+        29,
+        31,
+        37,
+        40,
+        44,
+        47,
+        59,
+        60,
+        63,
+        64,
+        65,
+        76,
+        78,
+        79,
+        80,
+        91,
+        92,
+        93,
+        95,
+        97,
+        98
+      ],
+      "raw_instance_count": 94,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    },
+    {
+      "scene": "room1",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/room1_mesh.ply",
+        "size_bytes": 28395443,
+        "sha256": "21695deccc1fe76051d90178eccc1609ee1bab8b5dc715683dd17f7903cf6ee0"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_room1.txt",
+        "size_bytes": 1908673,
+        "sha256": "a8a3f69c7eeddfda8c8ec32ee3218fbd9b469bbbe90a56156a8791f65bc82556"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_room1.txt",
+        "size_bytes": 3829005,
+        "sha256": "2f36fa56a3a46f16f1feec5ea96014892f7ff2cf2459df01c48a37a452bacc0b"
+      },
+      "vertex_count": 645512,
+      "face_count": 645078,
+      "raw_semantic_ids": [
+        -2,
+        -1,
+        3,
+        7,
+        11,
+        12,
+        13,
+        18,
+        26,
+        31,
+        37,
+        40,
+        44,
+        47,
+        54,
+        56,
+        59,
+        61,
+        64,
+        79,
+        91,
+        92,
+        93,
+        95,
+        97,
+        98
+      ],
+      "raw_instance_count": 57,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    },
+    {
+      "scene": "room2",
+      "status": "PASS_VERTEX_LABEL_LENGTHS",
+      "mesh": {
+        "path": "/home/ww/vv/dataset/Replica/room2_mesh.ply",
+        "size_bytes": 31788451,
+        "sha256": "e58a7c717c7922e1300ba20ae8053c5dbfdf9bd5f2515e10c71edad98bcb7e44"
+      },
+      "semantic_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_semantics/semantic_labels_room2.txt",
+        "size_bytes": 2167488,
+        "sha256": "d4c3c54b79ad14688984fcc91b5e7f27dcef390d5ea8b5611c3aec2b7a3114e8"
+      },
+      "instance_labels": {
+        "path": "/home/ww/vv/paper2/OVI-MAP/scripts/datasets/replica_gt_instances/instance_labels_room2.txt",
+        "size_bytes": 4300026,
+        "sha256": "2e2e1b7e0af957fb45dc5da1e95dbf6de74b027fb05989ceb3c6f8f0e12c3d40"
+      },
+      "vertex_count": 722496,
+      "face_count": 722398,
+      "raw_semantic_ids": [
+        -1,
+        12,
+        14,
+        15,
+        16,
+        20,
+        31,
+        37,
+        40,
+        44,
+        47,
+        64,
+        70,
+        71,
+        79,
+        80,
+        91,
+        92,
+        93,
+        95,
+        97,
+        98
+      ],
+      "raw_instance_count": 61,
+      "scope": "evaluation inputs only; length agreement does not prove coordinate alignment or prediction parity"
+    }
+  ]
+}

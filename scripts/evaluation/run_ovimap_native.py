@@ -63,6 +63,7 @@ class NativeConfig:
     ovimap_root: Path
     cropformer_weights: Path
     siglip_model: Path
+    capture_query_history: bool = False
 
     @property
     def cropformer_root(self) -> Path:
@@ -284,6 +285,11 @@ def build_scene_commands(
         "--log",
         "ubuntu24-native",
     )
+    if config.capture_query_history:
+        mapper = config.ovimap_root / "scripts/panoptic_mapping_.py"
+        mapping = (mapping[0], str(REPO_ROOT / "scripts/evaluation/capture_static_native_history.py"),
+                   "--mapper", str(mapper), "--expected-sha256", hashlib.sha256(mapper.read_bytes()).hexdigest(),
+                   "--output", str(root / "query_history"), "--", *mapping[2:])
     return SceneCommands(frame_ids, geometry, frontend, mapping, root, dataset, scene_root)
 
 
@@ -743,6 +749,9 @@ def _mapping_artifacts(commands: SceneCommands) -> dict[str, Any]:
         "instance_color_log": commands.attempt_root
         / "native_audit/instance_colors_cpp.tsv",
     }
+    if (commands.attempt_root / "query_history").is_dir():
+        expected["full_query_cache"] = commands.attempt_root / "query_history/full_query_cache.pkl"
+        expected["query_history_receipt"] = commands.attempt_root / "query_history/history_receipt.json"
     for name, path in expected.items():
         _require_file(path, f"mapping {name}")
     return {name: _content_binding(path) for name, path in expected.items()}
@@ -937,6 +946,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--end", type=int, default=2000)
     parser.add_argument("--step", type=int, default=10)
     parser.add_argument("--run-root", type=Path)
+    parser.add_argument("--capture-query-history", action="store_true")
     parser.add_argument("--internal-geometry", action="store_true")
     parser.add_argument("--scene-data", type=Path)
     parser.add_argument("--geometry-output", type=Path)
@@ -955,6 +965,9 @@ def main(argv: Iterable[str] | None = None) -> int:
     if args.stage is None or args.scene is None or args.run_root is None:
         raise GateFailure("--stage, --scene, and --run-root are required")
     config = default_config(args.run_root, data_root=args.data_root)
+    if args.capture_query_history:
+        from dataclasses import replace
+        config = replace(config, capture_query_history=True)
     try:
         manifest = run_scene(
             config,
