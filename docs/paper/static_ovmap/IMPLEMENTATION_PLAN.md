@@ -14,7 +14,7 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
 - [x] Run existing protocol/export tests: 28 passed.
 - [x] Locate Room0 native mesh and 77-instance feature pickle. Stored records are top-10
   sorted by area, NOT temporal order or full query history. Preserve source index for last8.
-- [ ] Bind actual input assets, source changes, vocabulary IDs, model identity and protocol.
+- [x] Bind available Replica input assets, source changes, vocabulary IDs, model identity and protocol.
   Add protocol_manifest.json and baseline_asset_inventory.json under artifacts/static_ovmap.
   Reuse PAPER_PROTOCOL; add exact ScanNet18 with explicit unknown frame schedules until found.
 - [x] Add contracts.py, cache_io.py, observation_bank.py and readout.py under src/static_ovmap.
@@ -28,8 +28,10 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
   S1a changes selection only; S1b weights only; S1c both. No extra encoder inference.
 - [x] Reproduce original labels using matching text embeddings, evaluate paired native geometry
   and save metrics, changed observations, semantic margins, raw outputs and measured readout costs.
-- [ ] Recover discarded query ownership/area: all 764 temp feature files exist and the 592
+- [ ] BLOCKED: recover historical discarded query ownership/area: all 764 temp feature files exist and the 592
   retained files match exactly, but 172 have no saved owner/area. No extra encoder inference.
+  New complete-query capture and its paired Replica8 evaluation are complete, but do not
+  recover this historical run; see QUERY_HISTORY_CAPTURE.md and REPLICA8_RESULTS.md.
 - [x] Commit and push first real stage; verify remote SHA. R0–R4 stage commits are published;
   the overall task remains active.
 
@@ -37,12 +39,14 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
 
 - [x] R3 Room0 fallback: independent geometric support and measured context quality; unknown
   geometry preserved; thresholds and added-instance diagnosis recorded in R3_RESULTS.md.
-  Negative result: AP unchanged, S2 off. Full-scene validation remains outstanding.
+  Negative result: AP unchanged, S2 off. Additional S2 scenes are NOT_RUN under the prompt
+  section F allowance not to run every no-gain branch across all scenes.
 - [x] R4 Room0: instance_graph.py, hierarchy.py, native_export.py and split_evidence.py implement
   RGB-D entity evidence, component-wide constrained merge and multiview native surface split.
   Real B0/G1/G2 evaluation and native restoration/export pass; negative/mixed results keep
   G1/G2 off. R4_RESULTS.md records canonical AP separately from released mP/mR and semantic AP.
-  Full-scene validation remains part of the outstanding Replica8/ScanNet18 deliverable.
+  Additional G1/G2 scenes are NOT_RUN under section F; the frozen native/readout
+  Replica8 matrix is complete and ScanNet inputs remain BLOCKED.
 - [x] R5 Room0: released GLA-CLIP + original AnyUp, 172 frames/497 attempted slots,
   ROI and matched-support ROI controls, sparse refinement at T=1/lambda .1/.2/.3,
   exact native B0 parity, full semantic AP, retained storage and measured costs.
@@ -50,15 +54,22 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
 - [x] R6 Room0 complete segmentation/checkpoint/SigLIP2-1152, observed RGB-D point cloud,
   FP32 query-chunk runtime, T0/T1 and repeated T0 evaluation. R6_RESULTS.md preserves OOMs,
   extra-3D-training boundaries, score/overlap sensitivity and fixed-seed variability.
-  Full-scene validation remains outstanding; this checkbox covers the Room0 stage only.
-- [ ] R7 is optional and NOT_RUN by default; never silently add query-conditioned masks.
-- [ ] Keep B0/B1/S1/S2/G1/G2/D1/D2/D3/C1/T0/T1/Q0/Q1 individually selectable and status-labelled.
-- [ ] Replica8 main table and 7-scene diagnostic; ScanNet18 uses physical-scene development split,
-  explicit sampling, ScanNet200 IDs; unavailable cells null+reason, never substitute Room0 table.
-- [ ] Complete main/ablation/cost/per-scene tables with source/config/model/frame identity,
+  Additional T0/T1 scenes are NOT_RUN; this checkbox covers the Room0 independent
+  extra-3D track only, not a Replica8 result.
+- [x] Record R7 as optional, NOT_RUN and disabled; no query-conditioned masks were added.
+- [x] Keep implemented B0/B1/S1/S2/G1/G2/D1/D2/D3/C1/T0/T1 selectable and status-labelled;
+  optional Q0/Q1 are explicitly disabled with null entrypoints, not implemented launchers.
+- [x] Replica8 main table and 7-scene diagnostic: 8 native runs, 12 readout conditions,
+  released pooled AP and pooled confusion completed; see REPLICA8_RESULTS.md.
+- [ ] BLOCKED: ScanNet18 inputs and actual frame schedules. Physical-scene grouping and
+  ScanNet200 IDs are locked; unavailable cells remain null+reason, not Replica substitution.
+- [x] Complete available main/ablation/cost/per-scene tables with source/config/model/frame identity,
   cache scope, elapsed time, GPU memory and original metric files. Preserve negative results.
-- [ ] Final audit against every A–I requirement; verify relevant tests and real scene smoke;
-  final handoff includes actual commands, stage status, limitations, git commit/push evidence.
+  Unmeasured historical VLM/export/peak-memory fields are null with explicit reasons.
+- [x] Audit every A–I requirement; verify relevant tests and real scene smoke;
+  handoff includes actual commands, stage status, limitations, git commit/push evidence.
+  REQUIREMENTS_AUDIT.md retains BLOCKED items; audit completion is not full goal completion.
+- [ ] BLOCKED: source package reference/test_static_core.py is absent; cannot run its 8 tests.
 
 ## Verified source trace
 
