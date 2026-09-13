@@ -11,7 +11,7 @@
   "frozen_combination_revision": "room0-development-v1",
   "seed": 0,
   "K": 8,
-  "history_scope": "retained_native_top10; complete discarded-query provenance unresolved",
+  "history_scope": "frozen C1 retained_native_top10; separately evaluated full executed-query pool from fresh captured runs; historical discarded-query provenance unresolved",
   "geometry": "B0/S1/C1 frozen; G and T tracks explicitly separate",
   "conditions": {
     "B0": {
@@ -198,8 +198,11 @@
     }
   },
   "replica8": {
-    "status": "NOT_RUN",
-    "reason": "all eight native runs started; Room0 evaluated, remaining seven pending"
+    "status": "COMPLETE",
+    "reason": "all eight selected full-capture native runs, 12-condition scene pipelines and released pooled 8/7-scene aggregates completed; no stable cross-scene gain",
+    "per_scene_evidence": "artifacts/static_ovmap/replica8_full_history",
+    "selection_policy": "first successful complete-query capture in declared roots; never select by GT score",
+    "aggregate_evidence": "artifacts/static_ovmap/replica8_full_history/aggregate"
   },
   "scannet18": {
     "status": "BLOCKED",

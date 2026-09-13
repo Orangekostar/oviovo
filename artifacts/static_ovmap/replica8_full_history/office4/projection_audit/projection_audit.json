@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "native_vertex_count": 9232032,
+  "target_vertex_count": 993008,
+  "voxel_center_lattice_diagnostic": {
+    "0.01": {
+      "vertices_on_two_voxel_center_axes": 9232032,
+      "fraction": 1.0
+    },
+    "0.02": {
+      "vertices_on_two_voxel_center_axes": 0,
+      "fraction": 0.0
+    }
+  },
+  "lattice_tolerance_m": 2e-06,
+  "semantic_mismatched_vertices": 0,
+  "instance_mismatched_vertices": 0,
+  "unmatched_vertices": 160069,
+  "at_threshold_vertices": 0,
+  "threshold": "distance_squared < 0.05**2",
+  "unmatched_id": 0,
+  "ownership_rule": "native_first_face_vertex_color_assign_all_face_vertices_in_cache_order",
+  "instance_filter": "native_min_two_semantic_queries; geometry_id_readout_coupling_preserved",
+  "open3d_version": "0.19.0",
+  "nn_device": "CPU:0",
+  "seconds": 37.59051156882197,
+  "command": [
+    "/home/ww/crove/ovimap-static/scripts/evaluation/audit_static_ovmap_projection.py",
+    "--native-mesh",
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/mapping/cropformer_inst/instance_mesh_200.ply",
+    "--native-cache",
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+    "--baseline-readout",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_full_replica8/office4/readout/B0.json",
+    "--original-instance-map",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_full_replica8/office4/layout/office4/cropformer_inst/instance_map_gt_200.ply",
+    "--original-semantic-map",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_full_replica8/office4/layout/office4/cropformer_inst/semantic_map_gt_200.ply",
+    "--output",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_full_replica8/office4/projection_audit"
+  ]
+}

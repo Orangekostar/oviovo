@@ -1,0 +1,65 @@
+{
+  "status": "COMPLETE_CANONICAL_GEOMETRY_DIAGNOSTIC",
+  "scene": "office4",
+  "canonical_class_agnostic": {
+    "ground_truth_instance_count": 51,
+    "predicted_instance_count": 37,
+    "definition": "full_projected_domain_IoU_including_void; greedy_1to1_IoU_ge_t; precision_envelope_AP",
+    "min_region": 100,
+    "zero_GT_policy": "undefined_null",
+    "ap25": 0.5435695432018962,
+    "recall25": 0.5686274509803921,
+    "ap50": 0.17356891474538533,
+    "recall50": 0.29411764705882354,
+    "ap75": 0.09752567693744164,
+    "recall75": 0.19607843137254902
+  },
+  "paper_AP": null,
+  "paper_AP_reason": "canonical diagnostic does not verify paper AP implementation",
+  "confidence": "native_vertex_count_divided_by_largest_native_object_no_GT",
+  "geometry_scope": "full_native_owners_including_unknown_semantics; no min_two_query_filter",
+  "strict_projection": "distance_squared < 0.05**2",
+  "native_vertices": 9232032,
+  "target_vertices": 993008,
+  "mesh_backed_owners": 48,
+  "cache_only_color_ids": [
+    33,
+    37,
+    48,
+    56,
+    62
+  ],
+  "unmatched_vertices": 160069,
+  "seconds_including_export": 33.91173729673028,
+  "command": [
+    "/home/ww/crove/ovimap-static/scripts/evaluation/evaluate_static_native_geometry.py",
+    "--native-mesh",
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/mapping/cropformer_inst/instance_mesh_200.ply",
+    "--native-cache",
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+    "--color-log",
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/native_audit/instance_colors_cpp.tsv",
+    "--gt-instance-map",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_full_replica8/office4/layout/office4/gt_instance_mesh.ply",
+    "--scene",
+    "office4",
+    "--output",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_full_replica8/office4/geometry"
+  ],
+  "input_sha256": {
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/mapping/cropformer_inst/instance_mesh_200.ply": "d219678279753977d15a605df743ba201455ee69075a09ea0d8c87ac3861f84a",
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl": "c85c0685f097976118a01654116f62cc100bf2a8019fa1c94fd8f67502053fd3",
+    "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z/native_audit/instance_colors_cpp.tsv": "b1059b5e822555cc144edd3ea53a08a75c11d9ada801355f2f43e9702ecd42ce",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_full_replica8/office4/layout/office4/gt_instance_mesh.ply": "a60d3cbf567b7d7a90214291462c1053d06e9085f4e424336b4f479b4ee45db3"
+  },
+  "source_sha256": {
+    "/home/ww/crove/ovimap-static/scripts/evaluation/evaluate_static_native_geometry.py": "5555f4b94a00ad20c3d2bccf55b7228fb4908dafa7e10f4ee4f1f9cd02ef387b",
+    "/home/ww/crove/ovimap-static/src/static_ovmap/native_partition.py": "2762a40d8ae9596f1f755bc13a0a31ea8c48f27a8701c486107862c9c0049812",
+    "/home/ww/crove/ovimap-static/src/evaluation/static_projected_instances.py": "5ea29e8a1370dfbc822719101fd07e616499a016e18ece08bae82364c32eba0b"
+  },
+  "output_sha256": {
+    "native_owners.npy": "4597d9278b127030a3a336f2b41763b2b0894b8469df42c995bf689da684d8ce",
+    "projected_owners.npy": "c743ef3b33a02abe21b7ba23075f14b3a5d0ec4b23237c68ecead7479c6046fd",
+    "confidence.json": "0b3bd6b16c663d2246d6e001a6975c6c197320c42fdd6a678024566f8bce81cd"
+  }
+}

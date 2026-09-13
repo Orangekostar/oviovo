@@ -1,6 +1,6 @@
 # 0913_1：A–I 要求核对
 
-这是逐项证据索引，不是“全部完成”声明。Replica8 最终汇总及交接尚在进行。
+这是逐项证据索引，不是“全部完成”声明。Replica8 最终汇总已完成；剩余局部缺失项在表中明确标为 BLOCKED。
 任务分支 `research/ovimap-static-benchmark-v1`；基底
 `d5c0688bc662f8e65455cb9c62909de87c941b43`。
 
@@ -18,10 +18,10 @@
 | E/R6：独立 3D 轨道 | COMPLETE（Room0） | `R6_RESULTS.md`；完整 SpaCeFormer checkpoint、同 RGB-D 预测点云、1152 维独立文本空间、T0/T1；预训练排除与重复运行差异未解决，不声明未见场景泛化或确定性。 |
 | E/R7：预算难例复核 | NOT_RUN | 原文可选；Q0/Q1 明确未实现、关闭，没有额外类别条件 mask 查询。 |
 | F：独立条件与冻结组合 | COMPLETE（路由与开发实验） | `ovimap_static_conditions_v1.json`、`C1_FREEZE.md`；C1 仅 S1a，未按测试场景 GT 改配置；无收益分支不要求全部跑满。 |
-| F：Replica8 / 额外7场景 | NOT_RUN（最终汇总尚未验证） | 8 个完整查询 native 均 exit 0；评测正在完成。最终须调用跨场景 released AP，另列 pooled semantic confusion；额外7场景不叫独立新测试集。 |
+| F：Replica8 / 额外7场景 | COMPLETE | 8 个完整查询 native 与逐场景评测均 exit 0、全部核验通过；跨场景 released AP 和 pooled semantic confusion 均完成；额外7场景不叫独立新测试集。 |
 | F：耗时与资源 | COMPLETE（可测部分）；BLOCKED（历史分项） | R5/R6 实测成本及各 native stage 日志；前端复用与新增 mapping 分开。未独立测量的 VLM、导出、显存列 null；共享机器场景并行结果不作隔离硬件端到端 FPS 比较。 |
-| G：相关测试和真实试跑 | COMPLETE（已执行单元） | 各阶段报告列出相关测试、真实 Room0 和 office0 pipeline；包括语义空间、选择、互斥传递、小图 owner 边界、投影/格式回归。无全动态测试或无关扫描。Replica8 新聚合 CLI 仍须真实运行。 |
-| H：阶段提交 / 最终交接 | COMPLETE（阶段提交）；NOT_RUN（最终交接） | 代码、小结果和阶段文档已分阶段提交；大 mesh/权重留在外部路径。最终主表、逐场景、成本及 SHA 核验仍需完成。 |
+| G：相关测试和真实试跑 | COMPLETE（已执行单元） | 各阶段报告列出相关测试、真实 Room0 和 office0 pipeline；包括语义空间、选择、互斥传递、小图 owner 边界、投影/格式回归。无全动态测试或无关扫描。Replica8 聚合 CLI 已真实运行并 exit 0。 |
+| H：阶段提交 / 最终交接 | COMPLETE（交接内容）；最终 PUSH 核验见终端 | 代码、小结果和阶段文档已分阶段提交；大 mesh/权重留在外部路径。主表、逐场景、成本及来源索引见 REPLICA8_RESULTS.md；最终 SHA 以实际远端核验输出为准。 |
 | I：提示包参考测试 | BLOCKED | `/home/ww/crove/docs/0913_1` 实际只有三份 Markdown，没有 `reference/test_static_core.py`。不能用自写测试冒充原包 8 项测试。 |
 
 原始小结果位于仓库 `artifacts/static_ovmap/`；表内相对 JSON 名称均以该目录为根。

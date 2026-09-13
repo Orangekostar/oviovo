@@ -1,11 +1,11 @@
-## Current checkpoint: complete-query Replica8 evaluation
+## Current checkpoint: Replica8 results and handoff
 
-R0–R6 development experiments and the frozen C1 are now recorded in their stage reports.
-All eight selected native runs completed with full-query capture; remaining scene evaluations
-and the pooled Replica8 table are in progress. See `REPLICA8_EXECUTION.md` and
-`REQUIREMENTS_AUDIT.md` for current scope and A–I evidence. ScanNet inputs and the supplied
-reference test file remain locally blocked. The sections below are historical checkpoints,
-not current outstanding-work lists. No final completion claim is made.
+All eight selected native runs, 12-condition scene pipelines, and released pooled Replica8 /
+extra-seven-scene aggregation completed. Frozen C1 shows only a tiny overall gain and a small
+decline on the extra seven scenes; no stable cross-scene superiority claim is supported.
+See `REPLICA8_RESULTS.md`, `HANDOFF.md`, and `REQUIREMENTS_AUDIT.md` for the current evidence.
+ScanNet inputs, the supplied reference tests, and unverified historical/paper-specific provenance
+remain locally blocked. Historical sections below are retained as execution history only.
 
 ## Historical checkpoint: R4 Room0
 
