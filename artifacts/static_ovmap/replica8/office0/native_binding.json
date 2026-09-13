@@ -1,0 +1,17 @@
+{
+  "native_cache_sha256": "ac5c3b91c270b82a2533024b1808794abdcbd281a5258145ec67c4dac11b5a1a",
+  "source_config_sha256": "b7157708d21ebff123a15cc10be14b3b149ebb3b19fea8f2349b3c6eb8a4b410",
+  "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+  "feature_dim": 1024,
+  "feature_space_identity": {
+    "model": "google/siglip-large-patch16-384",
+    "model_sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+    "layer": "get_image_features",
+    "feature_dim": 1024,
+    "image_encoder_source_sha256": "b0925c0c78fd46be779fb9fbcde171fcaef58bd89a7f7d99b8fc1b24a1836ba2",
+    "crop": "native_six_crops_expand_0_0.1_0.2_black_and_rgb_exclusive_slice",
+    "crop_fusion": "mean_of_l2_normalized_crop_features",
+    "preprocessor_sha256": "f59da2f87c3cd079bd4f8f3037e81b277c60c498e279a8020331f67a5a3157e8"
+  },
+  "evidence_scope": "fresh manifest-bound native run"
+}

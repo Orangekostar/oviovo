@@ -1,0 +1,2006 @@
+{
+  "condition": "C1",
+  "scene": "office0",
+  "seed": 0,
+  "observations": {
+    "1": {
+      "class_id": 1,
+      "score": 0.5026544911500636,
+      "margin": 0.0007276924367386473,
+      "selected_query_ids": [
+        "1:2",
+        "1:3",
+        "1:4",
+        "1:5",
+        "1:6",
+        "1:7",
+        "1:8",
+        "1:9"
+      ],
+      "selected_frame_ids": [
+        1800,
+        120,
+        1590,
+        0,
+        10,
+        1710,
+        1720,
+        1730
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "2": {
+      "class_id": 6,
+      "score": 0.5050971991445895,
+      "margin": 0.002242173884429266,
+      "selected_query_ids": [
+        "2:0",
+        "2:1",
+        "2:2",
+        "2:3",
+        "2:4"
+      ],
+      "selected_frame_ids": [
+        1140,
+        1330,
+        70,
+        0,
+        10
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 5,
+      "selected_count": 5,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "3": {
+      "class_id": 3,
+      "score": 0.5049661025198567,
+      "margin": 0.0022243396374624913,
+      "selected_query_ids": [
+        "3:2",
+        "3:3",
+        "3:4",
+        "3:5",
+        "3:6",
+        "3:7",
+        "3:8",
+        "3:9"
+      ],
+      "selected_frame_ids": [
+        0,
+        1220,
+        1130,
+        820,
+        1110,
+        1120,
+        840,
+        850
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "4": {
+      "class_id": 14,
+      "score": 0.5093800760522862,
+      "margin": 0.005289466158928446,
+      "selected_query_ids": [
+        "4:2",
+        "4:3",
+        "4:4",
+        "4:5",
+        "4:6",
+        "4:7",
+        "4:8",
+        "4:9"
+      ],
+      "selected_frame_ids": [
+        1870,
+        80,
+        290,
+        170,
+        200,
+        180,
+        230,
+        140
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "5": {
+      "class_id": 50,
+      "score": 0.4998459281975107,
+      "margin": 0.004326345119518182,
+      "selected_query_ids": [
+        "5:0",
+        "5:1",
+        "5:2",
+        "5:3",
+        "5:4",
+        "5:5",
+        "5:6"
+      ],
+      "selected_frame_ids": [
+        980,
+        960,
+        380,
+        700,
+        390,
+        10,
+        0
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 7,
+      "selected_count": 7,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "6": {
+      "class_id": 50,
+      "score": 0.5048628773425222,
+      "margin": 0.004874674278918023,
+      "selected_query_ids": [
+        "6:0",
+        "6:1"
+      ],
+      "selected_frame_ids": [
+        0,
+        990
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 2,
+      "selected_count": 2,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "7": {
+      "class_id": 14,
+      "score": 0.5159720957497774,
+      "margin": 0.006509871167617032,
+      "selected_query_ids": [
+        "7:1",
+        "7:2",
+        "7:3",
+        "7:4",
+        "7:5",
+        "7:6",
+        "7:7",
+        "7:8"
+      ],
+      "selected_frame_ids": [
+        880,
+        1400,
+        1000,
+        10,
+        0,
+        70,
+        200,
+        160
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 9,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "8": {
+      "class_id": 50,
+      "score": 0.5055873391321947,
+      "margin": 0.006513890511049392,
+      "selected_query_ids": [
+        "8:0",
+        "8:1",
+        "8:2"
+      ],
+      "selected_frame_ids": [
+        760,
+        0,
+        10
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 3,
+      "selected_count": 3,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "9": {
+      "class_id": 11,
+      "score": 0.5160954705782882,
+      "margin": 0.009060496776963967,
+      "selected_query_ids": [
+        "9:2",
+        "9:3",
+        "9:4",
+        "9:5",
+        "9:6",
+        "9:7",
+        "9:8",
+        "9:9"
+      ],
+      "selected_frame_ids": [
+        50,
+        1430,
+        0,
+        40,
+        30,
+        20,
+        90,
+        80
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "10": {
+      "class_id": 50,
+      "score": 0.5049141962227309,
+      "margin": 0.004368984103921392,
+      "selected_query_ids": [
+        "10:1",
+        "10:2",
+        "10:3",
+        "10:4",
+        "10:5",
+        "10:6",
+        "10:7",
+        "10:8"
+      ],
+      "selected_frame_ids": [
+        390,
+        850,
+        400,
+        20,
+        30,
+        700,
+        0,
+        40
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 9,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "11": {
+      "class_id": 50,
+      "score": 0.49855538029794216,
+      "margin": 0.002398146335895135,
+      "selected_query_ids": [
+        "11:1",
+        "11:2",
+        "11:3",
+        "11:4",
+        "11:5",
+        "11:6",
+        "11:7",
+        "11:8"
+      ],
+      "selected_frame_ids": [
+        1820,
+        800,
+        70,
+        40,
+        970,
+        50,
+        1940,
+        0
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 9,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "12": {
+      "class_id": 50,
+      "score": 0.5023281651614434,
+      "margin": 0.0014788326225430026,
+      "selected_query_ids": [
+        "12:0",
+        "12:1",
+        "12:2",
+        "12:3",
+        "12:4"
+      ],
+      "selected_frame_ids": [
+        1180,
+        1130,
+        840,
+        1190,
+        0
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 5,
+      "selected_count": 5,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "13": {
+      "class_id": 50,
+      "score": 0.5056889826321999,
+      "margin": 9.562505364701934e-05,
+      "selected_query_ids": [
+        "13:1",
+        "13:3",
+        "13:4",
+        "13:5",
+        "13:6",
+        "13:7",
+        "13:8",
+        "13:9"
+      ],
+      "selected_frame_ids": [
+        870,
+        50,
+        1840,
+        60,
+        70,
+        200,
+        210,
+        1940
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "14": {
+      "class_id": 20,
+      "score": 0.5154014003898887,
+      "margin": 0.011607115908464749,
+      "selected_query_ids": [
+        "14:0",
+        "14:1",
+        "14:2",
+        "14:3",
+        "14:4",
+        "14:5",
+        "14:6"
+      ],
+      "selected_frame_ids": [
+        90,
+        1120,
+        0,
+        10,
+        1440,
+        1470,
+        80
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 7,
+      "selected_count": 7,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "15": {
+      "class_id": 20,
+      "score": 0.5114211993467461,
+      "margin": 0.011013656328615729,
+      "selected_query_ids": [
+        "15:0",
+        "15:1",
+        "15:2",
+        "15:3",
+        "15:4",
+        "15:5",
+        "15:6"
+      ],
+      "selected_frame_ids": [
+        130,
+        1080,
+        750,
+        0,
+        10,
+        70,
+        1450
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 7,
+      "selected_count": 7,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "16": {
+      "class_id": 41,
+      "score": 0.5064995568614026,
+      "margin": 0.007364213505800299,
+      "selected_query_ids": [
+        "16:0",
+        "16:1",
+        "16:2",
+        "16:3",
+        "16:5",
+        "16:6",
+        "16:7",
+        "16:9"
+      ],
+      "selected_frame_ids": [
+        30,
+        1150,
+        40,
+        1750,
+        100,
+        90,
+        110,
+        1540
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "22": {
+      "class_id": 50,
+      "score": 0.49870281172172015,
+      "margin": 0.003834624848086221,
+      "selected_query_ids": [
+        "22:2",
+        "22:3",
+        "22:4",
+        "22:5",
+        "22:6",
+        "22:7",
+        "22:8",
+        "22:9"
+      ],
+      "selected_frame_ids": [
+        1460,
+        760,
+        780,
+        50,
+        70,
+        60,
+        80,
+        10
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "23": {
+      "class_id": 11,
+      "score": 0.5141651057682604,
+      "margin": 0.007346983005272034,
+      "selected_query_ids": [
+        "23:1",
+        "23:2",
+        "23:4",
+        "23:5",
+        "23:6",
+        "23:7",
+        "23:8",
+        "23:9"
+      ],
+      "selected_frame_ids": [
+        1180,
+        1820,
+        1810,
+        1190,
+        1750,
+        70,
+        10,
+        1420
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "17": {
+      "class_id": 43,
+      "score": 0.5012283711262827,
+      "margin": 0.002576631042528865,
+      "selected_query_ids": [
+        "17:0",
+        "17:1",
+        "17:2",
+        "17:3",
+        "17:4"
+      ],
+      "selected_frame_ids": [
+        70,
+        80,
+        110,
+        90,
+        100
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 5,
+      "selected_count": 5,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "25": {
+      "class_id": 41,
+      "score": 0.5145283669975126,
+      "margin": 0.00978994418020629,
+      "selected_query_ids": [
+        "25:2",
+        "25:3",
+        "25:4",
+        "25:5",
+        "25:6",
+        "25:7",
+        "25:8",
+        "25:9"
+      ],
+      "selected_frame_ids": [
+        90,
+        160,
+        170,
+        180,
+        190,
+        1260,
+        1280,
+        200
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "26": {
+      "class_id": 14,
+      "score": 0.5008501214774624,
+      "margin": 0.0018519105814630565,
+      "selected_query_ids": [
+        "26:0",
+        "26:2",
+        "26:4",
+        "26:5",
+        "26:6",
+        "26:7",
+        "26:8",
+        "26:9"
+      ],
+      "selected_frame_ids": [
+        190,
+        180,
+        140,
+        220,
+        110,
+        230,
+        130,
+        120
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "27": {
+      "class_id": 2,
+      "score": 0.5035743005707044,
+      "margin": 0.005049606955621733,
+      "selected_query_ids": [
+        "27:0",
+        "27:1",
+        "27:2",
+        "27:3",
+        "27:4"
+      ],
+      "selected_frame_ids": [
+        90,
+        120,
+        1740,
+        100,
+        110
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 5,
+      "selected_count": 5,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "28": {
+      "class_id": 50,
+      "score": 0.5038814612322756,
+      "margin": 0.0030965288636281008,
+      "selected_query_ids": [
+        "28:1",
+        "28:3",
+        "28:4",
+        "28:5",
+        "28:6",
+        "28:7",
+        "28:8",
+        "28:9"
+      ],
+      "selected_frame_ids": [
+        1840,
+        190,
+        140,
+        210,
+        230,
+        1960,
+        850,
+        130
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "29": {
+      "class_id": 10,
+      "score": 0.49545621134975026,
+      "margin": 0.0006453690233715892,
+      "selected_query_ids": [
+        "29:0",
+        "29:1",
+        "29:2"
+      ],
+      "selected_frame_ids": [
+        120,
+        100,
+        110
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 3,
+      "selected_count": 3,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "31": null,
+    "34": {
+      "class_id": 50,
+      "score": 0.4993157881087013,
+      "margin": 0.00021877289126448485,
+      "selected_query_ids": [
+        "34:2",
+        "34:3",
+        "34:4",
+        "34:5",
+        "34:6",
+        "34:7",
+        "34:8",
+        "34:9"
+      ],
+      "selected_frame_ids": [
+        120,
+        890,
+        260,
+        110,
+        1110,
+        1130,
+        880,
+        1120
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "36": {
+      "class_id": 21,
+      "score": 0.50413308348056,
+      "margin": 0.0008146888880677938,
+      "selected_query_ids": [
+        "36:2",
+        "36:3",
+        "36:4",
+        "36:5",
+        "36:6",
+        "36:7",
+        "36:8",
+        "36:9"
+      ],
+      "selected_frame_ids": [
+        1260,
+        150,
+        1270,
+        130,
+        1280,
+        1290,
+        1300,
+        160
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "37": {
+      "class_id": 25,
+      "score": 0.50169881384177,
+      "margin": 0.0037964321011852986,
+      "selected_query_ids": [
+        "37:0",
+        "37:1"
+      ],
+      "selected_frame_ids": [
+        130,
+        120
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 2,
+      "selected_count": 2,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "39": {
+      "class_id": 25,
+      "score": 0.5156347597853815,
+      "margin": 0.009551905501480773,
+      "selected_query_ids": [
+        "39:0",
+        "39:1",
+        "39:2",
+        "39:3",
+        "39:4"
+      ],
+      "selected_frame_ids": [
+        1780,
+        1790,
+        130,
+        1030,
+        140
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 5,
+      "selected_count": 5,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "42": {
+      "class_id": 14,
+      "score": 0.5084036462392646,
+      "margin": 0.000702357877866544,
+      "selected_query_ids": [
+        "42:2",
+        "42:3",
+        "42:4",
+        "42:5",
+        "42:6",
+        "42:7",
+        "42:8",
+        "42:9"
+      ],
+      "selected_frame_ids": [
+        410,
+        380,
+        370,
+        250,
+        350,
+        320,
+        280,
+        300
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "47": null,
+    "48": {
+      "class_id": 1,
+      "score": 0.5016654142354656,
+      "margin": 0.004927313722749127,
+      "selected_query_ids": [
+        "48:1",
+        "48:3",
+        "48:4",
+        "48:5",
+        "48:6",
+        "48:7",
+        "48:8",
+        "48:9"
+      ],
+      "selected_frame_ids": [
+        1990,
+        1040,
+        290,
+        300,
+        310,
+        710,
+        760,
+        460
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "50": {
+      "class_id": 6,
+      "score": 0.509389180915978,
+      "margin": 0.004664904489662947,
+      "selected_query_ids": [
+        "50:0",
+        "50:1",
+        "50:2",
+        "50:3",
+        "50:4",
+        "50:5"
+      ],
+      "selected_frame_ids": [
+        1250,
+        300,
+        310,
+        320,
+        1570,
+        690
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 6,
+      "selected_count": 6,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "51": {
+      "class_id": 10,
+      "score": 0.500904778180106,
+      "margin": 0.0029443778461827885,
+      "selected_query_ids": [
+        "51:0",
+        "51:1",
+        "51:2",
+        "51:3",
+        "51:4",
+        "51:5",
+        "51:6",
+        "51:7"
+      ],
+      "selected_frame_ids": [
+        640,
+        650,
+        660,
+        670,
+        310,
+        680,
+        300,
+        690
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 8,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "54": null,
+    "55": {
+      "class_id": 35,
+      "score": 0.5029705033435156,
+      "margin": 0.0011683078391486745,
+      "selected_query_ids": [
+        "55:2",
+        "55:3",
+        "55:4",
+        "55:5",
+        "55:6",
+        "55:7",
+        "55:8",
+        "55:9"
+      ],
+      "selected_frame_ids": [
+        370,
+        870,
+        450,
+        380,
+        390,
+        350,
+        690,
+        360
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "62": {
+      "class_id": 50,
+      "score": 0.5025064521706555,
+      "margin": 0.0013934365106612612,
+      "selected_query_ids": [
+        "62:2",
+        "62:3",
+        "62:4",
+        "62:5",
+        "62:6",
+        "62:7",
+        "62:8",
+        "62:9"
+      ],
+      "selected_frame_ids": [
+        370,
+        800,
+        840,
+        360,
+        790,
+        760,
+        780,
+        770
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "63": {
+      "class_id": 50,
+      "score": 0.5003762950654319,
+      "margin": 0.0015295431688450156,
+      "selected_query_ids": [
+        "63:2",
+        "63:3",
+        "63:4",
+        "63:5",
+        "63:6",
+        "63:7",
+        "63:8",
+        "63:9"
+      ],
+      "selected_frame_ids": [
+        670,
+        850,
+        430,
+        380,
+        390,
+        400,
+        680,
+        700
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "64": {
+      "class_id": 43,
+      "score": 0.5062664182631706,
+      "margin": 0.007249993630763396,
+      "selected_query_ids": [
+        "64:2",
+        "64:3",
+        "64:4",
+        "64:5",
+        "64:6",
+        "64:7",
+        "64:8",
+        "64:9"
+      ],
+      "selected_frame_ids": [
+        400,
+        370,
+        360,
+        830,
+        850,
+        790,
+        1210,
+        780
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "66": {
+      "class_id": 50,
+      "score": 0.5026147350801128,
+      "margin": 0.002469126837972735,
+      "selected_query_ids": [
+        "66:0",
+        "66:1"
+      ],
+      "selected_frame_ids": [
+        380,
+        370
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 2,
+      "selected_count": 2,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "67": {
+      "class_id": 43,
+      "score": 0.5045406506742083,
+      "margin": 0.005403623244745082,
+      "selected_query_ids": [
+        "67:2",
+        "67:3",
+        "67:4",
+        "67:5",
+        "67:6",
+        "67:7",
+        "67:8",
+        "67:9"
+      ],
+      "selected_frame_ids": [
+        1520,
+        930,
+        880,
+        950,
+        1390,
+        770,
+        780,
+        1190
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "68": {
+      "class_id": 43,
+      "score": 0.49855202962544354,
+      "margin": 0.0018303190263621594,
+      "selected_query_ids": [
+        "68:2",
+        "68:3",
+        "68:4",
+        "68:5",
+        "68:6",
+        "68:7",
+        "68:8",
+        "68:9"
+      ],
+      "selected_frame_ids": [
+        1110,
+        1120,
+        1130,
+        380,
+        400,
+        390,
+        410,
+        420
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "71": {
+      "class_id": 25,
+      "score": 0.5014032601862871,
+      "margin": 0.0032933826483315665,
+      "selected_query_ids": [
+        "71:2",
+        "71:3",
+        "71:4",
+        "71:5",
+        "71:6",
+        "71:7",
+        "71:8",
+        "71:9"
+      ],
+      "selected_frame_ids": [
+        420,
+        1430,
+        1440,
+        430,
+        1480,
+        440,
+        450,
+        1570
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "76": null,
+    "75": {
+      "class_id": 1,
+      "score": 0.49867993932729027,
+      "margin": 0.0011099659038792398,
+      "selected_query_ids": [
+        "75:0",
+        "75:3",
+        "75:4",
+        "75:5",
+        "75:6",
+        "75:7",
+        "75:8",
+        "75:9"
+      ],
+      "selected_frame_ids": [
+        1540,
+        1600,
+        650,
+        1530,
+        520,
+        460,
+        690,
+        470
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "77": {
+      "class_id": 50,
+      "score": 0.4976762964886352,
+      "margin": 0.0018192857915863003,
+      "selected_query_ids": [
+        "77:0",
+        "77:2",
+        "77:3",
+        "77:4",
+        "77:5",
+        "77:7",
+        "77:8",
+        "77:9"
+      ],
+      "selected_frame_ids": [
+        670,
+        570,
+        680,
+        560,
+        690,
+        700,
+        710,
+        720
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "78": {
+      "class_id": 50,
+      "score": 0.4948376004239264,
+      "margin": 0.00037280877167256143,
+      "selected_query_ids": [
+        "78:1",
+        "78:3",
+        "78:4",
+        "78:5",
+        "78:6",
+        "78:7",
+        "78:8",
+        "78:9"
+      ],
+      "selected_frame_ids": [
+        520,
+        620,
+        630,
+        640,
+        650,
+        660,
+        690,
+        670
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "49": {
+      "class_id": 10,
+      "score": 0.5007374137939796,
+      "margin": 0.0034197726310205567,
+      "selected_query_ids": [
+        "49:0",
+        "49:1",
+        "49:2",
+        "49:3",
+        "49:4",
+        "49:5"
+      ],
+      "selected_frame_ids": [
+        630,
+        640,
+        650,
+        660,
+        670,
+        680
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 6,
+      "selected_count": 6,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "52": {
+      "class_id": 1,
+      "score": 0.5008580990239351,
+      "margin": 0.0024622492805838614,
+      "selected_query_ids": [
+        "52:0",
+        "52:1",
+        "52:2",
+        "52:3"
+      ],
+      "selected_frame_ids": [
+        650,
+        660,
+        670,
+        680
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 4,
+      "selected_count": 4,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "86": {
+      "class_id": 1,
+      "score": 0.49725623918887435,
+      "margin": 0.0006569882953939565,
+      "selected_query_ids": [
+        "86:1",
+        "86:2",
+        "86:3",
+        "86:4",
+        "86:5",
+        "86:6",
+        "86:7",
+        "86:8"
+      ],
+      "selected_frame_ids": [
+        1500,
+        1660,
+        1520,
+        1650,
+        660,
+        650,
+        1680,
+        1510
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 9,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "65": {
+      "class_id": 43,
+      "score": 0.5051652225920701,
+      "margin": 0.001695111970330121,
+      "selected_query_ids": [
+        "65:0",
+        "65:1",
+        "65:2",
+        "65:3"
+      ],
+      "selected_frame_ids": [
+        660,
+        690,
+        670,
+        680
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 4,
+      "selected_count": 4,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "60": null,
+    "93": null,
+    "94": {
+      "class_id": 14,
+      "score": 0.496576119263393,
+      "margin": 6.402111514813846e-05,
+      "selected_query_ids": [
+        "94:2",
+        "94:3",
+        "94:4",
+        "94:5",
+        "94:6",
+        "94:7",
+        "94:8",
+        "94:9"
+      ],
+      "selected_frame_ids": [
+        1660,
+        1700,
+        1630,
+        1670,
+        1610,
+        1640,
+        1590,
+        750
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "95": null,
+    "99": {
+      "class_id": 50,
+      "score": 0.5029015251436023,
+      "margin": 0.0009857372832463573,
+      "selected_query_ids": [
+        "99:0",
+        "99:1"
+      ],
+      "selected_frame_ids": [
+        800,
+        790
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 2,
+      "selected_count": 2,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "104": {
+      "class_id": 50,
+      "score": 0.5048049718294514,
+      "margin": 0.0038449230026826875,
+      "selected_query_ids": [
+        "104:1",
+        "104:3",
+        "104:4",
+        "104:5",
+        "104:6",
+        "104:7",
+        "104:8",
+        "104:9"
+      ],
+      "selected_frame_ids": [
+        920,
+        1150,
+        930,
+        1140,
+        940,
+        1220,
+        950,
+        960
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "111": {
+      "class_id": 25,
+      "score": 0.4982639871484895,
+      "margin": 0.0015081066455940317,
+      "selected_query_ids": [
+        "111:0",
+        "111:1",
+        "111:3",
+        "111:4",
+        "111:5",
+        "111:6",
+        "111:7",
+        "111:8"
+      ],
+      "selected_frame_ids": [
+        1930,
+        1840,
+        1800,
+        1790,
+        1050,
+        1060,
+        1070,
+        1080
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 9,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "125": null,
+    "18": {
+      "class_id": 43,
+      "score": 0.49936706921770635,
+      "margin": 0.0003899309146023211,
+      "selected_query_ids": [
+        "18:0",
+        "18:1",
+        "18:2",
+        "18:3",
+        "18:4"
+      ],
+      "selected_frame_ids": [
+        1440,
+        1450,
+        1460,
+        1480,
+        1490
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 5,
+      "selected_count": 5,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "138": {
+      "class_id": 50,
+      "score": 0.49936327929456936,
+      "margin": 0.0034009109939419635,
+      "selected_query_ids": [
+        "138:1",
+        "138:2",
+        "138:3",
+        "138:4",
+        "138:5",
+        "138:6",
+        "138:7",
+        "138:8"
+      ],
+      "selected_frame_ids": [
+        1570,
+        1650,
+        1560,
+        1660,
+        1670,
+        1680,
+        1690,
+        1700
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 9,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "148": null,
+    "43": {
+      "class_id": 16,
+      "score": 0.5062086293513518,
+      "margin": 0.00020322067258260468,
+      "selected_query_ids": [
+        "43:0",
+        "43:1",
+        "43:2",
+        "43:3",
+        "43:4",
+        "43:5",
+        "43:6"
+      ],
+      "selected_frame_ids": [
+        1860,
+        1850,
+        1790,
+        1870,
+        1780,
+        1770,
+        1750
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 7,
+      "selected_count": 7,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "33": {
+      "class_id": 14,
+      "score": 0.49552449002357357,
+      "margin": 0.00020482285870276895,
+      "selected_query_ids": [
+        "33:0",
+        "33:1",
+        "33:2",
+        "33:3",
+        "33:4",
+        "33:5",
+        "33:6",
+        "33:7"
+      ],
+      "selected_frame_ids": [
+        1770,
+        1840,
+        1780,
+        1790,
+        1850,
+        1880,
+        1860,
+        1870
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 8,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "154": {
+      "class_id": 2,
+      "score": 0.502502193972152,
+      "margin": 0.004688681559264496,
+      "selected_query_ids": [
+        "154:0",
+        "154:1",
+        "154:2",
+        "154:3"
+      ],
+      "selected_frame_ids": [
+        1780,
+        1790,
+        1820,
+        1800
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 4,
+      "selected_count": 4,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "44": null,
+    "158": {
+      "class_id": 50,
+      "score": 0.5007595150920544,
+      "margin": 0.00279461549252219,
+      "selected_query_ids": [
+        "158:0",
+        "158:1"
+      ],
+      "selected_frame_ids": [
+        1950,
+        1850
+      ],
+      "missing_fields": [
+        "camera_direction",
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path",
+        "view_bin"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 2,
+      "selected_count": 2,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    },
+    "162": {
+      "class_id": 1,
+      "score": 0.5034569570394507,
+      "margin": 0.0034050569411155918,
+      "selected_query_ids": [
+        "162:2",
+        "162:3",
+        "162:4",
+        "162:5",
+        "162:6",
+        "162:7",
+        "162:8",
+        "162:9"
+      ],
+      "selected_frame_ids": [
+        1960,
+        1890,
+        1950,
+        1970,
+        1900,
+        1910,
+        1920,
+        1930
+      ],
+      "missing_fields": [
+        "geometry_support_frames",
+        "mask_quality_proxy",
+        "source_mask_id_or_path"
+      ],
+      "feature_space_id": "sha256:f26a6f0eafda897bcfb5ac2b2319f8747a02425c7e39017bec9454317d3f1713",
+      "candidate_count": 10,
+      "selected_count": 8,
+      "strategy": "quality_coverage8",
+      "weighting": "vis_area",
+      "mode": "STATIC_OFFLINE_READOUT"
+    }
+  },
+  "readout_seconds": 0.07000262383371592,
+  "mode": "STATIC_OFFLINE_READOUT",
+  "history_scope": "retained_native_top10",
+  "query_budget": 8,
+  "quality_mode": "legacy_context_bbox_depth_fraction_and_laplacian_variance",
+  "direction_mode": "final_native_mesh_triangle_vertex_centroid_to_camera",
+  "cache_scope": "warm_image_and_text_features",
+  "peak_gpu_memory_bytes": 0,
+  "frontend_seconds": null,
+  "vlm_image_seconds": null,
+  "end_to_end_seconds": null,
+  "cost_missing_reason": "historical_frontend_reused_not_timed_this_run",
+  "frozen_combination": {
+    "revision": "room0-development-v1",
+    "equivalent_condition": "S1a",
+    "enabled": [
+      "quality_coverage8_selection"
+    ],
+    "disabled": [
+      "quality_weighting",
+      "single_query_fallback",
+      "merge",
+      "split",
+      "dense_encoder",
+      "AnyUp",
+      "geometry_refinement",
+      "extra_3d_pretraining",
+      "query_conditioned_review"
+    ],
+    "interpretation": "one retained effective component; no additive combination claim"
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "condition": "S1a",
+  "scene": "office0",
+  "semantic_miou": 0.16946109184755195,
+  "semantic_macc": 0.29430991739636336,
+  "per_class": {
+    "1": {
+      "iou": 0.5432364266894859,
+      "accuracy": 0.5613804418018815,
+      "gt_vertices": 171887
+    },
+    "2": {
+      "iou": 0.004824341689717509,
+      "accuracy": 0.004844124175788127,
+      "gt_vertices": 91451
+    },
+    "3": {
+      "iou": 0.08095790407313912,
+      "accuracy": 0.7372934012675532,
+      "gt_vertices": 8047
+    },
+    "4": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 15836
+    },
+    "5": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 33569
+    },
+    "6": {
+      "iou": 0.852301272182157,
+      "accuracy": 0.8548990124761247,
+      "gt_vertices": 49214
+    },
+    "7": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 17710
+    },
+    "8": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 67286
+    },
+    "10": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 4161
+    },
+    "11": {
+      "iou": 0.4837422232656415,
+      "accuracy": 0.9359527594821713,
+      "gt_vertices": 8806
+    },
+    "14": {
+      "iou": 0.12224749192314233,
+      "accuracy": 0.900571518045878,
+      "gt_vertices": 12773
+    },
+    "16": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 4095
+    },
+    "20": {
+      "iou": 0.7539046010975095,
+      "accuracy": 0.7633566035047727,
+      "gt_vertices": 7019
+    },
+    "21": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 2671
+    },
+    "25": {
+      "iou": 0.4419145753697856,
+      "accuracy": 0.6746590548683793,
+      "gt_vertices": 15765
+    },
+    "31": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 6822
+    },
+    "36": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 132
+    },
+    "37": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 1400
+    },
+    "38": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 555
+    },
+    "41": {
+      "iou": 0.6068965517241379,
+      "accuracy": 0.760806916426513,
+      "gt_vertices": 347
+    },
+    "43": {
+      "iou": 0.17704081632653063,
+      "accuracy": 0.8696741854636592,
+      "gt_vertices": 399
+    },
+    "44": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 347
+    },
+    "45": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 235
+    },
+    "51": {
+      "iou": 0.0,
+      "accuracy": 0.0,
+      "gt_vertices": 143
+    }
+  },
+  "changed_observations": [
+    {
+      "instance_id": 13,
+      "removed": [
+        "13:2"
+      ],
+      "added": [
+        "13:1"
+      ],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.0002642308056755027,
+      "new_margin": 9.562505364701934e-05
+    },
+    {
+      "instance_id": 16,
+      "removed": [
+        "16:4",
+        "16:8"
+      ],
+      "added": [
+        "16:0",
+        "16:1"
+      ],
+      "old_class": 41,
+      "new_class": 41,
+      "old_margin": 0.006713191626449677,
+      "new_margin": 0.007364213505800299
+    },
+    {
+      "instance_id": 23,
+      "removed": [
+        "23:3"
+      ],
+      "added": [
+        "23:1"
+      ],
+      "old_class": 11,
+      "new_class": 11,
+      "old_margin": 0.0070166374334630355,
+      "new_margin": 0.007346983005272034
+    },
+    {
+      "instance_id": 26,
+      "removed": [
+        "26:3"
+      ],
+      "added": [
+        "26:0"
+      ],
+      "old_class": 14,
+      "new_class": 14,
+      "old_margin": 0.0016232401909351268,
+      "new_margin": 0.0018519105814630565
+    },
+    {
+      "instance_id": 28,
+      "removed": [
+        "28:2"
+      ],
+      "added": [
+        "28:1"
+      ],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.0031057224655567373,
+      "new_margin": 0.0030965288636281008
+    },
+    {
+      "instance_id": 48,
+      "removed": [
+        "48:2"
+      ],
+      "added": [
+        "48:1"
+      ],
+      "old_class": 1,
+      "new_class": 1,
+      "old_margin": 0.004935990455061323,
+      "new_margin": 0.004927313722749127
+    },
+    {
+      "instance_id": 75,
+      "removed": [
+        "75:2"
+      ],
+      "added": [
+        "75:0"
+      ],
+      "old_class": 1,
+      "new_class": 1,
+      "old_margin": 0.0006716835975709157,
+      "new_margin": 0.0011099659038792398
+    },
+    {
+      "instance_id": 77,
+      "removed": [
+        "77:6"
+      ],
+      "added": [
+        "77:0"
+      ],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.002420609256124362,
+      "new_margin": 0.0018192857915863003
+    },
+    {
+      "instance_id": 78,
+      "removed": [
+        "78:2"
+      ],
+      "added": [
+        "78:1"
+      ],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.0004413771274791034,
+      "new_margin": 0.00037280877167256143
+    },
+    {
+      "instance_id": 104,
+      "removed": [
+        "104:2"
+      ],
+      "added": [
+        "104:1"
+      ],
+      "old_class": 50,
+      "new_class": 50,
+      "old_margin": 0.0043705663545291484,
+      "new_margin": 0.0038449230026826875
+    },
+    {
+      "instance_id": 111,
+      "removed": [
+        "111:2"
+      ],
+      "added": [
+        "111:0"
+      ],
+      "old_class": 25,
+      "new_class": 25,
+      "old_margin": 0.0016078801840955226,
+      "new_margin": 0.0015081066455940317
+    }
+  ],
+  "readout_seconds": 0.0717890178784728,
+  "geometry_and_instance_ids": "FROZEN_IDENTICAL_PROJECTED_INPUT",
+  "original_semantic_exact_match": true,
+  "quality_mode": "legacy_context_bbox_depth_fraction_and_laplacian_variance",
+  "direction_mode": "final_native_mesh_triangle_vertex_centroid_to_camera",
+  "history_scope": "retained_native_top10",
+  "mode": "STATIC_OFFLINE_READOUT",
+  "class_agnostic_ap50": null,
+  "class_aware_ap50": null,
+  "missing_metric_reason": "instance_evaluation_not_run_in_semantic_smoke",
+  "status": "COMPLETE_SEMANTIC_SMOKE"
+}

@@ -1,0 +1,85 @@
+{
+  "status": "COMPLETE",
+  "scene": "office0",
+  "baseline_role": "B1 rebuilt native run; internal B0 is original readout",
+  "rows": [
+    {
+      "condition": "ALL_VIEWS",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    },
+    {
+      "condition": "B0",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    },
+    {
+      "condition": "C1",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    },
+    {
+      "condition": "QUALITY8",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    },
+    {
+      "condition": "RANDOM8",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    },
+    {
+      "condition": "S1a",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    },
+    {
+      "condition": "S1b",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    },
+    {
+      "condition": "S1c",
+      "semantic_miou": 0.16946109184755195,
+      "semantic_macc": 0.29430991739636336,
+      "semantic_instance_AP": 0.09097222222222222,
+      "semantic_instance_AP50": 0.15,
+      "semantic_instance_AP25": 0.3125
+    }
+  ],
+  "canonical_geometry": {
+    "ground_truth_instance_count": 43,
+    "predicted_instance_count": 33,
+    "definition": "full_projected_domain_IoU_including_void; greedy_1to1_IoU_ge_t; precision_envelope_AP",
+    "min_region": 100,
+    "zero_GT_policy": "undefined_null",
+    "ap25": 0.45796503238363706,
+    "recall25": 0.4883720930232558,
+    "ap50": 0.2656834121950401,
+    "recall50": 0.3488372093023256,
+    "ap75": 0.05759924829692271,
+    "recall75": 0.13953488372093023
+  },
+  "scope": "per-scene result; not a Replica8 aggregate; frozen selector, no scene-GT tuning"
+}
