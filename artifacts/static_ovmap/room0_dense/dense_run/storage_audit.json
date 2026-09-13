@@ -1,0 +1,53 @@
+{
+  "all_array_bytes_including_object_ids": 9629446,
+  "all_file_bytes": 7646193,
+  "binding_sidecar_bytes": 101655,
+  "per_condition": [
+    {
+      "condition": "D0_ROI",
+      "array_bytes": 1605381,
+      "file_bytes": 941738,
+      "valid_observations": 497,
+      "valid_prototypes": 272
+    },
+    {
+      "condition": "D1",
+      "array_bytes": 1605381,
+      "file_bytes": 1343024,
+      "valid_observations": 451,
+      "valid_prototypes": 252
+    },
+    {
+      "condition": "D2",
+      "array_bytes": 1605381,
+      "file_bytes": 1343097,
+      "valid_observations": 451,
+      "valid_prototypes": 252
+    },
+    {
+      "condition": "D3_L01",
+      "array_bytes": 1605381,
+      "file_bytes": 1342929,
+      "valid_observations": 451,
+      "valid_prototypes": 252
+    },
+    {
+      "condition": "D3_L02",
+      "array_bytes": 1605381,
+      "file_bytes": 1342706,
+      "valid_observations": 451,
+      "valid_prototypes": 252
+    },
+    {
+      "condition": "D3_L03",
+      "array_bytes": 1605381,
+      "file_bytes": 1341625,
+      "valid_observations": 451,
+      "valid_prototypes": 252
+    }
+  ],
+  "producer_payload_array_bytes_scope": "feature/validity/prototype provenance arrays only; excludes 568 bytes of object_ids, included in this audit",
+  "object_observation_budget": 8,
+  "prototype_budget": 4,
+  "prototype_type": "observed_image_quadrant_features_not_canonical_object_parts"
+}

@@ -1,0 +1,26 @@
+{
+  "status": "COMPLETE_T0_PENDING_EVALUATION",
+  "text_seconds": 4.229375245980918,
+  "model_load_seconds": 1.13117066770792,
+  "forward_seconds": 8.493096886202693,
+  "postprocessing_seconds": 1.2036996250972152,
+  "text_peak_gpu_bytes": 2301729280,
+  "forward_peak_gpu_bytes": 28935596032,
+  "peak_rss_bytes": 5911924736,
+  "input_points": 1862429,
+  "output_points": 1862429,
+  "processed_instances": 142,
+  "missing_keys": [],
+  "unexpected_keys": [],
+  "attention_modules_adapted": 2,
+  "full_parameter_count": 85801090,
+  "coordinate_alignment": "returned_backbone_pc_rows_restored_center_shift",
+  "cost_scope": "text_load_encode_model_load_forward_postprocessing_separate; RGBD_fusion_separate_receipt",
+  "identity_sha256": "990d4d1793cee42c60f47e26ac17d7f4b8a9b00fec0c3c2fbd7019a1c2bc4794",
+  "payload_sha256": {
+    "T0.npz": "ff3b40079c82d72a321579ea38cc5f8dbd989af40a4bdf09bc3bbc45e3a39143",
+    "raw_mask_logits.npy": "a78d51a94cbc6a94e663e00a2ab142f3d545c038fd77b4bc52a45bb558914707",
+    "text.npz": "9a8a1c10a6b1a91e1e4611529ea32214090911298647c0a32e1664a9a81615bc",
+    "raw_queries.npz": "cc7cd51359e3af12bbaaeae05526db7f70904396a34631ae1eda030b25f598fa"
+  }
+}

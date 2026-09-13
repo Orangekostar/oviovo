@@ -274,7 +274,6 @@
       "switch"
     ],
     "valid_ids": [
-      0,
       1,
       2,
       3,
@@ -426,7 +425,9 @@
       "wall-plug",
       "window",
       "rug"
-    ]
+    ],
+    "void_id": 0,
+    "valid_id_scope": "one_to_one_text_labels_excluding_void; source palette additionally contains void 0"
   },
   "ScanNet": {
     "scene_ids": [
@@ -469,7 +470,7 @@
       "scene0378_02": null,
       "scene0518_00": null
     },
-    "frame_schedule_reason": "not_yet_bound_to_original_sequence_config",
+    "frame_schedule_reason": "native sampling rule verified; per-scene sequence assets/index_max not yet available locally",
     "labels": [
       "wall",
       "chair",
@@ -673,7 +674,6 @@
       "mattress"
     ],
     "valid_ids": [
-      0,
       1,
       2,
       3,
@@ -874,7 +874,23 @@
       1189,
       1190,
       1191
-    ]
+    ],
+    "void_id": 0,
+    "valid_id_scope": "one_to_one_text_labels_excluding_void; source palette additionally contains void 0",
+    "sampling_rule": {
+      "start": 0,
+      "end_exclusive": "ScannetLoader.index_max + 1",
+      "step": "floor((end_exclusive-start)/200)",
+      "frame_ids": "range(start,end_exclusive,step)",
+      "actual_frame_count": "ceil((end_exclusive-start)/step), not necessarily 200",
+      "missing_input_frames": "native loader skips unavailable RGB/depth/pose; record attempted and processed lists separately",
+      "status": "SOURCE_RULE_VERIFIED_SCENE_INDEX_MAX_NOT_BOUND",
+      "source_sha256": {
+        "/home/ww/vv/paper2/OVI-MAP/scripts/run_scannet_eval.sh": "ef7c93d05d57e3ca810934478489541e58adb4e66e61afc8b12aa4354ebdf128",
+        "/home/ww/vv/paper2/OVI-MAP/scripts/panoptic_mapping_.py": "7031814ed7da49dfe439a34df6d377ccc993676fc4373848fc112f1fb2eebdfc",
+        "/home/ww/vv/paper2/OVI-MAP/scripts/utils/data_loaders.py": "64e20d4491b1f9298807601f067334cbe7b0a8261f072222d2aeb49ed7b141c8"
+      }
+    }
   },
   "voxel_size_m": 0.01,
   "voxel_status": "source_cpp_0.01_and_full_mesh_lattice_diagnostic",

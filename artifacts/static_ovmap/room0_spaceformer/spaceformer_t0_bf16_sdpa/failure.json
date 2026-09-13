@@ -1,0 +1,7 @@
+{
+  "process_exit_code": 1,
+  "stage": "complete_BF16_SDPA_decoder_forward",
+  "error": "CUDA OOM in SDPA: requested 11.10 GiB, 129.75 MiB free, process 44.29 GiB",
+  "input_points": 1862429,
+  "resolution": "query-axis chunk16 with all keys and matching masks; tested output equivalence"
+}

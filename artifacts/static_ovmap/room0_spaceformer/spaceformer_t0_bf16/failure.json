@@ -1,0 +1,7 @@
+{
+  "process_exit_code": 1,
+  "stage": "complete_BF16_decoder_forward",
+  "error": "CUDA OOM in attention softmax: requested 11.10 GiB, 10.78 GiB free, process 33.64 GiB",
+  "input_points": 1862429,
+  "resolution": "omit unused attention weights after masked output equivalence test; full input preserved"
+}

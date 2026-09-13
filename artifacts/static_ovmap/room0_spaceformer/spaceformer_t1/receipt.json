@@ -1,0 +1,42 @@
+{
+  "status": "COMPLETE_T1_PENDING_EVALUATION",
+  "GT_input": false,
+  "extra_3D_training": true,
+  "image_encoder_queries_added": 0,
+  "readout": "S1a",
+  "point_count": 1862429,
+  "proposal_count": 160,
+  "candidate_count": 205,
+  "reuse_iou": 0.5,
+  "NMS_iou": 0.7,
+  "ordering": "OVI_area_ownerID_then_T0_released_score",
+  "score_definition": "common_domain_source_area_not_calibrated_cross_model_confidence",
+  "feature_space_handling": "geometric_label_reuse_only_never_average_SigLIP_and_SigLIP2",
+  "projection_seconds": 12.894092698581517,
+  "elapsed_seconds": 22.52961642667651,
+  "command": [
+    "scripts/evaluation/fuse_static_spaceformer.py",
+    "--t0",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/T0.npz",
+    "--readout",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_readout/S1a.json",
+    "--native-mesh",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply",
+    "--geometry-support",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1"
+  ],
+  "input_sha256": {
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/T0.npz": "8a896f8ea2aeb6275210e24954c11d24fb501918ba9170c2cbb06718872f821b",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_readout/S1a.json": "bdaae9055afaa5cf665da0ac0452c4666b03be72f194e8122a2027e650e7cb63",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply": "58617e29c0720edc0086490a6c43dd6b47bf84d493c8b6adb2c7045d42fb6382",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json": "34eaa7a47202e3b0b9a4496eaf87b9ce12bff00532fbbfaac3d2f9ec044db298",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/native_vertex_owners.npy": "f4280415c55a88040c604ceb04d63a6fa7384c7b396d42d4c01fb05233f78049"
+  },
+  "source_sha256": {
+    "/home/ww/crove/ovimap-static/scripts/evaluation/fuse_static_spaceformer.py": "074f8365ddecb2c70d50dd464902d8ea8e30fe26b1783f0ff4bfa6b680076b34",
+    "/home/ww/crove/ovimap-static/src/static_ovmap/proposal_fusion.py": "5b01b646ee3d761f498be9d54fa03c3a28550da47f96accd9dfd50d8bc51f82e"
+  },
+  "output_sha256": "f5649e4ac8b50280c268fa66f6a91b2503305d6197e0084bb81986c27e836aa0"
+}

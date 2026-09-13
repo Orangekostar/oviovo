@@ -1,0 +1,863 @@
+{
+  "status": "COMPLETE_OVERLAPPING_PROPOSAL_EVALUATION",
+  "canonical_class_agnostic": {
+    "provided_score": {
+      "ground_truth_instance_count": 84,
+      "predicted_instance_count": 138,
+      "definition": "full_projected_domain_IoU_including_void; overlapping_proposals; greedy_1to1_IoU_ge_t; precision_envelope_AP",
+      "min_region": 100,
+      "zero_GT_policy": "undefined_null",
+      "ap25": 0.6477572724241897,
+      "recall25": 0.7261904761904762,
+      "ap50": 0.48631034376875737,
+      "recall50": 0.5833333333333334,
+      "ap75": 0.11509880322848508,
+      "recall75": 0.2857142857142857
+    },
+    "common_source_area_score": {
+      "ground_truth_instance_count": 84,
+      "predicted_instance_count": 138,
+      "definition": "full_projected_domain_IoU_including_void; overlapping_proposals; greedy_1to1_IoU_ge_t; precision_envelope_AP",
+      "min_region": 100,
+      "zero_GT_policy": "undefined_null",
+      "ap25": 0.3299062859281836,
+      "recall25": 0.7261904761904762,
+      "ap50": 0.20863746958637472,
+      "recall50": 0.5833333333333334,
+      "ap75": 0.050347584289190124,
+      "recall75": 0.2857142857142857
+    }
+  },
+  "rows": [
+    {
+      "confidence": "provided_score",
+      "released_semantic_instance": {
+        "all_ap": 0.14095534336419752,
+        "all_ap_50%": 0.3100818452380953,
+        "all_ap_25%": 0.36164847883597884,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.2037037037037037,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "blinds": {
+            "ap": 0.016967041446208114,
+            "ap50%": 0.049107142857142856,
+            "ap25%": 0.3486111111111111
+          },
+          "book": {
+            "ap": 0.06349206349206349,
+            "ap50%": 0.14285714285714285,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.1111111111111111,
+            "ap50%": 0.5,
+            "ap25%": 0.5
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 0.7777777777777778,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.23765432098765432,
+            "ap50%": 0.5,
+            "ap25%": 0.5
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.027777777777777776,
+            "ap50%": 0.25,
+            "ap25%": 0.25
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.4444444444444444,
+            "ap50%": 0.5,
+            "ap25%": 0.5
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 0.5
+          },
+          "stool": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.9380952380952381
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.5555555555555556,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "rug": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          }
+        }
+      },
+      "semantic": {
+        "semantic_miou": 0.283307239748115,
+        "semantic_macc": 0.33707835981002515,
+        "per_class": {
+          "1": {
+            "iou": 0.8068820748076811,
+            "accuracy": 0.8525960730785385,
+            "gt_vertices": 228576
+          },
+          "2": {
+            "iou": 0.8696318356424533,
+            "accuracy": 0.9592696629213483,
+            "gt_vertices": 168032
+          },
+          "3": {
+            "iou": 0.51839363100745,
+            "accuracy": 0.837166784619014,
+            "gt_vertices": 101736
+          },
+          "4": {
+            "iou": 0.28428221193135383,
+            "accuracy": 0.28580035601807474,
+            "gt_vertices": 36515
+          },
+          "5": {
+            "iou": 0.7859037715928348,
+            "accuracy": 1.0,
+            "gt_vertices": 88580
+          },
+          "6": {
+            "iou": 0.21968266371470122,
+            "accuracy": 0.25062526310576233,
+            "gt_vertices": 80766
+          },
+          "7": {
+            "iou": 0.5177231484097831,
+            "accuracy": 0.5346085265034851,
+            "gt_vertices": 30845
+          },
+          "8": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 59967
+          },
+          "9": {
+            "iou": 0.009158926728586172,
+            "accuracy": 0.009877115696730814,
+            "gt_vertices": 21565
+          },
+          "10": {
+            "iou": 0.38902023642556605,
+            "accuracy": 0.39025566811384466,
+            "gt_vertices": 24876
+          },
+          "11": {
+            "iou": 0.6446941323345817,
+            "accuracy": 0.999767675985441,
+            "gt_vertices": 12913
+          },
+          "15": {
+            "iou": 0.6931141533920301,
+            "accuracy": 0.7221868702937745,
+            "gt_vertices": 18858
+          },
+          "16": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 10030
+          },
+          "17": {
+            "iou": 0.543368700265252,
+            "accuracy": 0.8929816913687881,
+            "gt_vertices": 4588
+          },
+          "19": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 15528
+          },
+          "21": {
+            "iou": 0.6799007444168734,
+            "accuracy": 0.6799007444168734,
+            "gt_vertices": 1209
+          },
+          "23": {
+            "iou": 0.666595059076262,
+            "accuracy": 0.666595059076262,
+            "gt_vertices": 13965
+          },
+          "24": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 14370
+          },
+          "25": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 1512
+          },
+          "30": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 1437
+          },
+          "31": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 327
+          },
+          "32": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 4039
+          },
+          "33": {
+            "iou": 0.2047930283224401,
+            "accuracy": 0.25700615174299385,
+            "gt_vertices": 1463
+          },
+          "38": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 309
+          },
+          "39": {
+            "iou": 0.09945839487936976,
+            "accuracy": 0.09955643173977329,
+            "gt_vertices": 2029
+          },
+          "46": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 1050
+          },
+          "48": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 876
+          },
+          "51": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 146
+          }
+        }
+      },
+      "semantic_overlap_resolution": "descending_proposal_confidence_first_assignment"
+    },
+    {
+      "confidence": "native_area_control",
+      "released_semantic_instance": {
+        "all_ap": 0.12656445197677837,
+        "all_ap_50%": 0.3130270337301588,
+        "all_ap_25%": 0.375176917989418,
+        "classes": {
+          "basket": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "bed": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bench": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bin": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "blanket": {
+            "ap": 0.25,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "blinds": {
+            "ap": 0.012635030864197531,
+            "ap50%": 0.029513888888888888,
+            "ap25%": 0.3277777777777778
+          },
+          "book": {
+            "ap": 0.06349206349206349,
+            "ap50%": 0.14285714285714285,
+            "ap25%": 0.14285714285714285
+          },
+          "bottle": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "box": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "bowl": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "camera": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cabinet": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "candle": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "chair": {
+            "ap": 0.1111111111111111,
+            "ap50%": 0.5,
+            "ap25%": 0.5
+          },
+          "clock": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cloth": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "comforter": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "cushion": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "desk": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "desk-organizer": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "door": {
+            "ap": 0.7777777777777778,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "indoor-plant": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "lamp": {
+            "ap": 0.13734567901234568,
+            "ap50%": 0.2569444444444444,
+            "ap25%": 0.2569444444444444
+          },
+          "monitor": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "nightstand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "panel": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "picture": {
+            "ap": 0.1111111111111111,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "pillar": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "pillow": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "pipe": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "plant-stand": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "plate": {
+            "ap": 0.07407407407407407,
+            "ap50%": 0.08333333333333333,
+            "ap25%": 0.5
+          },
+          "pot": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "sculpture": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "shelf": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "sofa": {
+            "ap": 0.05555555555555555,
+            "ap50%": 0.5,
+            "ap25%": 0.5
+          },
+          "stool": {
+            "ap": 0.4444444444444444,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "switch": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "table": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.7766666666666666
+          },
+          "tablet": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tissue-paper": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-screen": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "tv-stand": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "vase": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "vent": {
+            "ap": 0.5555555555555556,
+            "ap50%": 1.0,
+            "ap25%": 1.0
+          },
+          "wall-plug": {
+            "ap": null,
+            "ap50%": null,
+            "ap25%": null
+          },
+          "window": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          },
+          "rug": {
+            "ap": 0.0,
+            "ap50%": 0.0,
+            "ap25%": 0.0
+          }
+        }
+      },
+      "semantic": {
+        "semantic_miou": 0.21593757146691844,
+        "semantic_macc": 0.2904052635743325,
+        "per_class": {
+          "1": {
+            "iou": 0.5151548933714556,
+            "accuracy": 0.687360002799944,
+            "gt_vertices": 228576
+          },
+          "2": {
+            "iou": 0.8789324618736384,
+            "accuracy": 0.9603646924395354,
+            "gt_vertices": 168032
+          },
+          "3": {
+            "iou": 0.4363701011378002,
+            "accuracy": 0.5428461901391838,
+            "gt_vertices": 101736
+          },
+          "4": {
+            "iou": 0.28254697850479926,
+            "accuracy": 0.28618376009858965,
+            "gt_vertices": 36515
+          },
+          "5": {
+            "iou": 0.7944746102183879,
+            "accuracy": 0.9762135922330097,
+            "gt_vertices": 88580
+          },
+          "6": {
+            "iou": 0.21640979727569226,
+            "accuracy": 0.25139291285937154,
+            "gt_vertices": 80766
+          },
+          "7": {
+            "iou": 0.36988589710920466,
+            "accuracy": 0.4235370400389042,
+            "gt_vertices": 30845
+          },
+          "8": {
+            "iou": 0.023142285904698433,
+            "accuracy": 0.023162739506728702,
+            "gt_vertices": 59967
+          },
+          "9": {
+            "iou": 0.004933841668535546,
+            "accuracy": 0.00612102944586135,
+            "gt_vertices": 21565
+          },
+          "10": {
+            "iou": 0.19095493125371918,
+            "accuracy": 0.2450956745457469,
+            "gt_vertices": 24876
+          },
+          "11": {
+            "iou": 0.6357772416170171,
+            "accuracy": 0.9999225586618137,
+            "gt_vertices": 12913
+          },
+          "15": {
+            "iou": 0.21179481543123616,
+            "accuracy": 0.7152932442464737,
+            "gt_vertices": 18858
+          },
+          "16": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 10030
+          },
+          "17": {
+            "iou": 0.5401874092648805,
+            "accuracy": 0.8921098517872711,
+            "gt_vertices": 4588
+          },
+          "19": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 15528
+          },
+          "21": {
+            "iou": 0.33829611248966085,
+            "accuracy": 0.33829611248966085,
+            "gt_vertices": 1209
+          },
+          "23": {
+            "iou": 0.3598997493734336,
+            "accuracy": 0.3598997493734336,
+            "gt_vertices": 13965
+          },
+          "24": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 14370
+          },
+          "25": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 1512
+          },
+          "30": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 1437
+          },
+          "31": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 327
+          },
+          "32": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 4039
+          },
+          "33": {
+            "iou": 0.14803247970018737,
+            "accuracy": 0.3239917976760082,
+            "gt_vertices": 1463
+          },
+          "38": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 309
+          },
+          "39": {
+            "iou": 0.09945839487936976,
+            "accuracy": 0.09955643173977329,
+            "gt_vertices": 2029
+          },
+          "46": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 1050
+          },
+          "48": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 876
+          },
+          "51": {
+            "iou": 0.0,
+            "accuracy": 0.0,
+            "gt_vertices": 146
+          }
+        }
+      },
+      "semantic_overlap_resolution": "descending_proposal_confidence_first_assignment"
+    }
+  ],
+  "provided_score_definition": "released_objectness_mask_quality_times_class_probability",
+  "unmatched_gt_vertices": 111427,
+  "gt_vertex_count": 954492,
+  "point_geometry": "same_RGBD_frames_new_observed_cloud_NOT_frozen_B0_geometry",
+  "projection": "strict_distance_lt_0.05m_world_coordinates_1NN",
+  "metric_scope": "canonical_diagnostic_AP_and_released_semantic_AP; no_paper_AP_parity_claim",
+  "elapsed_seconds": 41.836722280830145,
+  "command": [
+    "scripts/evaluation/evaluate_static_proposals.py",
+    "--proposals",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/T0.npz",
+    "--gt-instance-map",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_instance_mesh.ply",
+    "--gt-semantic-map",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply",
+    "--text-cache",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+    "--evaluator-root",
+    "/home/ww/vv/paper2/OVI-MAP",
+    "--reference-gt-ids",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/gt_sem_inst_id.npy",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_evaluation"
+  ],
+  "input_sha256": {
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/T0.npz": "8a896f8ea2aeb6275210e24954c11d24fb501918ba9170c2cbb06718872f821b",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_instance_mesh.ply": "da094a09c9a60551b94695bf6b8ef7ea841ea96c2fe78f3997ce45bff173a2d1",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply": "c086272c07a9db9e14f32249cee10c61e6cc3fb5140f811eb367e7386142da88",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/gt_sem_inst_id.npy": "6f12f27625f8395367cf06f6a395016d97b0fd9fb6fbfcbcd04fb8845def1888"
+  },
+  "source_sha256": {
+    "/home/ww/crove/ovimap-static/scripts/evaluation/evaluate_static_proposals.py": "400e98f9dc0dbe478e4aa9f967c96e2cd726dc981283defbd00e1909b535f438",
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_utils.py": "34c468979525eef0eb83f8dce48bb94fa6c34d677341ea4a46e4e52e82aaf88c",
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_sem_seg.py": "1e9e5286aa9b3885a3a134366ee7871b793d5b73befcc3b7e110a66153251584"
+  }
+}

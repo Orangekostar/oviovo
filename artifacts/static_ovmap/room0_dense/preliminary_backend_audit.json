@@ -1,0 +1,99 @@
+{
+  "status": "PASS_RELEASED_SINGLE_FRAME_INTERFACES",
+  "command": [
+    "scripts/evaluation/audit_static_dense_backend.py",
+    "--gla-root",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/GLA-CLIP",
+    "--dino-root",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/dino",
+    "--anyup-root",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/anyup",
+    "--weights",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/weights",
+    "--image",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000000.jpg",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/dense_backend_audit"
+  ],
+  "identity": {
+    "sources_and_weights": {
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/GLA-CLIP/gla_clip_segmentor.py": "1decdafd496daa4ff9181034f8ea5f6627f3d65baa943a6014ce6562686f2db6",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/GLA-CLIP/open_clip/transformer.py": "0f803b3de0c73aacc6cae4ab522dad40cbad8c8e41a3986fb9a105922075063c",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/GLA-CLIP/myutils.py": "4d7a71a6707f0d0cf0a8e0bc27bae590c9735dc3a73613715785a3f55f41d368",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/dino/vision_transformer.py": "b1f998d5f49ab43666b9fc6d007c5f6540c3ead2e8645e144f74045f63ff44d7",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/anyup/anyup/model.py": "103b12b65c6603a841f31314f1c0b7a4e0460efec51130cfc8fc83b4a1d3baec",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/anyup/anyup/layers/attention/chunked_attention.py": "3aaaf194c7c9b90c3a68510d4f99903912415e2a7ea3ceaf32c8ef98fea96465",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/weights/ViT-B-16.pt": "5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/weights/dino_vitbase8_pretrain.pth": "575f0efc4838938314afa09897a62ed2b87919928b5edcd133abb907328995eb",
+      "/home/ww/oviovo_baseline_builds/static_ovmap_r5/weights/anyup_paper.pth": "9d035c0f27114a6f32bdd3d8ed93b6cd39dad4b8f8bf94e69fddbfbf022901b2"
+    },
+    "dense_preprocess": "PIL_bilinear_short336_nearest8_grid_CLIP_norm_windows224_stride112",
+    "dense_layer": "GLA_ProxyCLIP_classification_preceding_normalized_window_tokens",
+    "text": "OpenAI_CLIP_B16_ImageNet_template_ensemble",
+    "anyup": "paper_non_NATTEN_q_chunk4096",
+    "native_SigLIP_compatibility": false
+  },
+  "feature_space_id": "sha256:875cd09a70aacdf8db4a9995f3687904ef028e0d3157c07e2154e12240a8207f",
+  "roi_feature_space_id": "sha256:7cd478e2e1681d381507170da957eecc44b870eebd4228fd33eeb9f77ccd1a37",
+  "input_sha256": "72e4fe75bb83c51d0471a1eb1b0a50a59b854838b05fac219f2006d5b6530c19",
+  "load_seconds": 11.471077599562705,
+  "timings": {
+    "dense_seconds": 1.3260788712650537,
+    "bilinear_seconds": 0.0039520058780908585,
+    "anyup_seconds": 3.2092227125540376
+  },
+  "dense_info": {
+    "resized_shape": [
+      336,
+      592
+    ],
+    "window_count": 10,
+    "output_shape": [
+      1,
+      512,
+      42,
+      74
+    ],
+    "qkv_hook_count_after": 0
+  },
+  "upsampler_stats": {
+    "bilinear": {
+      "shape": [
+        1,
+        512,
+        680,
+        1200
+      ],
+      "mean": 0.001324585871770978,
+      "std": 0.04375283047556877,
+      "peak_gpu_allocated_bytes": 5510843904
+    },
+    "anyup": {
+      "shape": [
+        1,
+        512,
+        680,
+        1200
+      ],
+      "mean": 0.0013064686208963394,
+      "std": 0.04345666617155075,
+      "peak_gpu_allocated_bytes": 8508991488
+    }
+  },
+  "repeat_dense_max_abs_difference": 0.0,
+  "ROI_dim": 512,
+  "text_shape": [
+    3,
+    512
+  ],
+  "torch_version": "2.4.0",
+  "gpu": "NVIDIA A40",
+  "device": "cuda:0",
+  "anyup_output_size": [
+    680,
+    1200
+  ],
+  "anyup_q_chunk_size": 4096,
+  "use_natten": false,
+  "inference_semantic_scope": "features_extracted_before_text_queries_no_GT"
+}

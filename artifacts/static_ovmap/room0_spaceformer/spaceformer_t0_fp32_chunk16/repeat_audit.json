@@ -1,0 +1,39 @@
+{
+  "coord": {
+    "shape": [
+      1862429,
+      3
+    ],
+    "exact": true,
+    "max_abs": 0.0
+  },
+  "objectness_logits": {
+    "shape": [
+      200,
+      2
+    ],
+    "exact": false,
+    "max_abs": 3.081458330154419
+  },
+  "clip_features": {
+    "shape": [
+      200,
+      1152
+    ],
+    "exact": false,
+    "max_abs": 3.2561917304992676
+  },
+  "center_shift": {
+    "shape": [
+      3
+    ],
+    "exact": true,
+    "max_abs": 0.0
+  },
+  "raw_masks": {
+    "changed_sign_entries": 633226,
+    "total_entries": 372485800,
+    "max_abs": 21.660709381103516
+  },
+  "policy": "Keep first FP32 run selected before GT; report fixed-seed run variability, no cherry-picking."
+}

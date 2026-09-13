@@ -1,0 +1,17 @@
+{
+  "command": [
+    "scripts/evaluation/diagnose_static_dense_budget.py",
+    "--dense-run",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/dense_run",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/dense_matched_readout"
+  ],
+  "valid_slots": 451,
+  "encoder_calls_added": 0,
+  "source_sha256": "f1fe424cad163f5f88ec6fd375a8d8192c371946689e75bed2cd74d34f43e78d",
+  "input_sha256": {
+    "binding.json": "fe6ec3a9f3cd9a7ecd97a1d5ac93d49ec4f6ea7b65699fa0500437d6d63c3c38",
+    "retained_features.npz": "a1d9360720fcba52f27605e299feb75ccce026b28bc83aecf0de17ede51fa574",
+    "dense_text.npz": "2c9d405caf4a3a1c6a397d0df59f6775438ce3c8500ade002b8d7a66db93141d"
+  }
+}

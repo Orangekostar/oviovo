@@ -1,0 +1,65 @@
+{
+  "rows": [
+    {
+      "condition": "B0",
+      "scene": "room0",
+      "semantic_miou": 0.3328571797388748,
+      "semantic_macc": 0.38158672082870415,
+      "readout_seconds": 0.08747401461005211,
+      "geometry_and_instance_ids": "FROZEN_FULL_NATIVE_OWNERS_INCLUDING_UNKNOWN",
+      "original_semantic_exact_match": true,
+      "quality_mode": "legacy_context_bbox_depth_fraction_and_laplacian_variance",
+      "direction_mode": "final_native_mesh_triangle_vertex_centroid_to_camera",
+      "history_scope": "retained_native_top10",
+      "mode": "STATIC_OFFLINE_READOUT",
+      "class_agnostic_ap50": null,
+      "class_aware_ap50": null,
+      "missing_metric_reason": "instance_evaluation_not_run_in_semantic_smoke",
+      "status": "COMPLETE_SEMANTIC_SMOKE"
+    },
+    {
+      "condition": "D0_MATCHED_VISIBLE",
+      "scene": "room0",
+      "semantic_miou": 0.1849435809098868,
+      "semantic_macc": 0.2769526644715315,
+      "readout_seconds": 2.4091965816915035,
+      "geometry_and_instance_ids": "FROZEN_FULL_NATIVE_OWNERS_INCLUDING_UNKNOWN",
+      "original_semantic_exact_match": false,
+      "quality_mode": "new_encoder_features_no_GT_selection",
+      "direction_mode": "native_fixed_slots",
+      "history_scope": "fixed_native_B0_selected_slots_from_retained_top10",
+      "mode": "STATIC_OFFLINE_DENSE_NATIVE_OWNER_READOUT",
+      "class_agnostic_ap50": null,
+      "class_aware_ap50": null,
+      "missing_metric_reason": "instance_evaluation_not_run_in_semantic_smoke",
+      "status": "COMPLETE_SEMANTIC_SMOKE"
+    }
+  ],
+  "evaluation_seconds": 16.471170025877655,
+  "command": [
+    "scripts/evaluation/evaluate_static_ovmap_readout.py",
+    "--readout",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/dense_matched_readout",
+    "--projected-instance-map",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/instance_map_gt_200.ply",
+    "--projected-owner-array",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/projected_full_owners.npy",
+    "--original-semantic-map",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/semantic_map_gt_200.ply",
+    "--gt-semantic-map",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply",
+    "--text-cache",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/dense_matched_evaluation"
+  ],
+  "inputs": {
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/instance_map_gt_200.ply": "908d69604d50ec8c1ad79a83c15fd5bdc6dca36ed28f7ccabbef8859a7a11371",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/semantic_map_gt_200.ply": "dda31e14b27e9b0365557f4a49b19437709ea3a972b612d5e47f9cc5bab0e4ef",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply": "c086272c07a9db9e14f32249cee10c61e6cc3fb5140f811eb367e7386142da88",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/projected_full_owners.npy": "a62cecba478253b0f751a9a42afe5e914400824cdfb2274300c0e6f29ae79630"
+  },
+  "projection_status": "REUSED_NATIVE_PROJECTION_PENDING_1NN_PARITY_AUDIT",
+  "protocol_scope": "Replica51_Room0_development_not_Replica8"
+}

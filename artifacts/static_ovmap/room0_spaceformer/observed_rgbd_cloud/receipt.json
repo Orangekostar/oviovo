@@ -1,0 +1,1638 @@
+{
+  "status": "COMPLETE_MEASURED_RGBD_CLOUD",
+  "input_frame_ids": [
+    0,
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90,
+    100,
+    110,
+    120,
+    130,
+    140,
+    150,
+    160,
+    170,
+    180,
+    190,
+    200,
+    210,
+    220,
+    230,
+    240,
+    250,
+    260,
+    270,
+    280,
+    290,
+    300,
+    310,
+    320,
+    330,
+    340,
+    350,
+    360,
+    370,
+    380,
+    390,
+    400,
+    410,
+    420,
+    430,
+    440,
+    450,
+    460,
+    470,
+    480,
+    490,
+    500,
+    510,
+    520,
+    530,
+    540,
+    550,
+    560,
+    570,
+    580,
+    590,
+    600,
+    610,
+    620,
+    630,
+    640,
+    650,
+    660,
+    670,
+    680,
+    690,
+    700,
+    710,
+    720,
+    730,
+    740,
+    750,
+    760,
+    770,
+    780,
+    790,
+    800,
+    810,
+    820,
+    830,
+    840,
+    850,
+    860,
+    870,
+    880,
+    890,
+    900,
+    910,
+    920,
+    930,
+    940,
+    950,
+    960,
+    970,
+    980,
+    990,
+    1000,
+    1010,
+    1020,
+    1030,
+    1040,
+    1050,
+    1060,
+    1070,
+    1080,
+    1090,
+    1100,
+    1110,
+    1120,
+    1130,
+    1140,
+    1150,
+    1160,
+    1170,
+    1180,
+    1190,
+    1200,
+    1210,
+    1220,
+    1230,
+    1240,
+    1250,
+    1260,
+    1270,
+    1280,
+    1290,
+    1300,
+    1310,
+    1320,
+    1330,
+    1340,
+    1350,
+    1360,
+    1370,
+    1380,
+    1390,
+    1400,
+    1410,
+    1420,
+    1430,
+    1440,
+    1450,
+    1460,
+    1470,
+    1480,
+    1490,
+    1500,
+    1510,
+    1520,
+    1530,
+    1540,
+    1550,
+    1560,
+    1570,
+    1580,
+    1590,
+    1600,
+    1610,
+    1620,
+    1630,
+    1640,
+    1650,
+    1660,
+    1670,
+    1680,
+    1690,
+    1700,
+    1710,
+    1720,
+    1730,
+    1740,
+    1750,
+    1760,
+    1770,
+    1780,
+    1790,
+    1800,
+    1810,
+    1820,
+    1830,
+    1840,
+    1850,
+    1860,
+    1870,
+    1880,
+    1890,
+    1900,
+    1910,
+    1920,
+    1930,
+    1940,
+    1950,
+    1960,
+    1970,
+    1980,
+    1990
+  ],
+  "input_sha256": {
+    "/home/ww/vv/dataset/Replica/cam_params.json": "ffbefdeb53755e1490d6936dffdee253510e68d5e443e1ba91e60202addc1a0a",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json": "34eaa7a47202e3b0b9a4496eaf87b9ce12bff00532fbbfaac3d2f9ec044db298",
+    "/home/ww/vv/dataset/Replica/room0/traj.txt": "5692a60076e426b403dc64025ff38c443606a506704545ee192d4dbadedaaca2",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000000.jpg": "72e4fe75bb83c51d0471a1eb1b0a50a59b854838b05fac219f2006d5b6530c19",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000000.png": "3360ac8e70ddebcf4e0b883cdd62ae320e16e58b09225e7db9cac41d6382d1c8",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000010.jpg": "3a4400c9a4eb3e766ef45822e97609c475a6340758c45336ceb7638e855ba705",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000010.png": "e57237b63892be563ea17c305eb02d0f6a0d5c4b2e942789085eaac99f2d12bf",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000020.jpg": "449c6ae5559fdd174b612930361c43411a9eed9967039896436ab11370b04c14",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000020.png": "9906f38d15504e7f109353eaa1f5d5e13527f71236a56ebd3b435daeb3f5e060",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000030.jpg": "352b6a16c492f66ebd8673623d593c76484f021e63e2f67332996ceb9d7f502c",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000030.png": "642f749840d16f049f9d0ae4a64a0e3f13020334811ee400ed656d2ebbac7bd6",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000040.jpg": "d689919dec187334c9cbeaeab02cc4322fba214874bb6761dd7aab48d1eb7a22",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000040.png": "f8b4cc2da4e13ea465d057b7cc41f81e39beeea184c8ef4a5b5abaceb570acdc",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000050.jpg": "eea6aaca21ee0596bc01af858c180cb46cfdab2d947270e20afeb0541201be2f",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000050.png": "43a1805e70edf95d2610f7d5af2178e165f24f872e9ba58685ca5d0a58fcbe17",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000060.jpg": "1f6105e2b8e55455da7204971a51652844a3c455fc25f8c930f09d78dde2d7eb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000060.png": "a0603bbf8a613bae96e61743ae661f6f2c54a60e040976354bdb25fe6f6c87fe",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000070.jpg": "7b06c6ae70ab0c86863a1c7dfd7370ec5a15aa780b9211ebb06ce9bfa8735d1a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000070.png": "24f319db2ca7d295dae132adc38d06332fca8873c0e57bae113249ed45ce3b59",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000080.jpg": "10d1633b9edfc3dc3e81ec753195ec6a67f636a15d106de0c0a5d6b5f7ecd102",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000080.png": "83b219bfa69c00c0b6658bdc4822f2049736cc6059c2c59daf06aa878edfa8b5",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000090.jpg": "b627e62ced6f76bd2b91765aab5918c046460434245fd37d0e818600aea8c283",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000090.png": "ae5788e740c5989924da2e4fff276dee04555a7199289c7956e7982bba221dad",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000100.jpg": "8d37d7ad41e939aab68b323f1f693b9ef88fd2ad58f13c31e6f01980648eb716",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000100.png": "0d846749818ce9e489fb679d149dde121c1c6f50079c6a3206e29707e5edb8fb",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000110.jpg": "da96204d28522ddfc390a559faa50219e339d3fbf958f0ebc76937560ab30e6a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000110.png": "eb03776f6a5b1b8090c92c468df19d298fe54bc5dcc1113a89c7561a6cf917cc",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000120.jpg": "2a9c30307be355a24e176224d6a4f99ae96dc6f728831665f0a4b54e8728f021",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000120.png": "08368e7d90100e559fb3f5893931a8d2f79a28dea0ce9ea24ed82181fa390033",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000130.jpg": "91897cc4082cd772295686c0de31c196b6335ed3f1bc70d0e0bdbaddb31fe616",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000130.png": "1bfce7114c13f1600a29e97f51fa0db240045314d58fac4bcc7d70bdc5d9e1ef",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000140.jpg": "752771d2827894d7f01bc8769405e5ecc94eadf7b2205a5be7bc5aa20f5a98dc",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000140.png": "5329c122ff1028434c5eed6d24b7faba5d5fce163f6be6bab935029e671f8e05",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000150.jpg": "6cd0e2417ad14f102e31dbf5e9bc8d03457cc198ee31f8b71c86445f32c65ac1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000150.png": "3ec7f3421faf5e9620742378c56df874f153b36589b66d51babff99f0b19559f",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000160.jpg": "b1d9da4dd56082a2836497919fcc6a2f7a9da86431cae00af859dfaf3b99ced1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000160.png": "2f25dd6eb47df446fd7a5a3fda04dc4d0d3f2742e4054d57cbb26e15a3a8f737",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000170.jpg": "79073ea34e69da1f33ff987908df1b08b26fa02832f77c98607417810792131f",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000170.png": "f08b322c51b604017dba05864ac7ae84930b84e08b5487c0896d533ebb8d6260",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000180.jpg": "a185ca27490cb73cf62143d903ade09efc17a6b42ddcc79029d2af4e818f6300",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000180.png": "6c1e87c3902173608d1b8e61cafdc2f2006ced65633e7ae6567dba57823c95be",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000190.jpg": "d1755f4483d927872e57059ecab496ce5e77c235d3f3040cc48b1f8a3a988865",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000190.png": "731347a3932da1060f865492851814a3305de2f3f1513f0c5656d7f9fee01671",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000200.jpg": "f33126682998ce094294ca72b7bbea0a38b2e23a5a15a3d4da64606a558778cc",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000200.png": "3d74698d763eb8240074f2eb02981abbec356950ac17d1cec462d9fc456dabf4",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000210.jpg": "e2138c0dc5efc734611d33097a11c624bb744353763a1bd5e5373b8ba49245ef",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000210.png": "df79daed3541a1e22e45183317e54342b3f832b1352f81d96810475a26a0b169",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000220.jpg": "4d062183cbf921088ae1696ce9e2a9104be66574058483bf9611ef855dcd86bb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000220.png": "a8d4fb9409b8e0d5d85f389524967ef0acd0b769b467d279ae20c99812796bd4",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000230.jpg": "27087883c8196b807c47b0643a40b6fdcd1619df073084b79f6786f7c17854de",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000230.png": "02aaed2c3dfa1aafaf756701b5f6048ad3c27382a278e35edc115256a5457c50",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000240.jpg": "cc8b297251bbd97f68bb6edf9beac093bcbde9faec7f3adc76a5c16bc532cb3a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000240.png": "9c483f617f80a08a8cca81f733baf919096df8499748f019864bb12b4e100ce7",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000250.jpg": "ecf13f6c18dbdb5aa43568f53b9362ced250f794cac492c4719fb1d2edc3eaad",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000250.png": "3c06ec70931d9304c436688f35750fd25c7335101ffb94383b26f38ad71002f7",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000260.jpg": "534fb7360d56c79d43446535230d280339fcd533114d9aa464feead20076d8ea",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000260.png": "3f4879c65804c6db63fa7d7a1cd08fad854006d55a735dd20ce90a19b77f02fe",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000270.jpg": "b7894faf3d67e766a4a08dbf491eef20efe3138a20d208c1cd7eff76dddf5853",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000270.png": "2a113c2d21c6e3b687a87a3203b4d1e07cb800c42274bcb7a100adcedb97af2e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000280.jpg": "e9f37f1d4b2db43b2de64bd69bf2ea5cefbbf438c1158f7c13491b1fbdd147c3",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000280.png": "4dec623c5fe18075ea6f70c68ca3529d6f31584d5993f6ea972ded42c322c298",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000290.jpg": "ec403d2bab54d1fa9289769b5a42e6235f1b88dcdb98144a3851df635bfe9e40",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000290.png": "5155f2453ba64617aae9eb7dc3e014e2403a9b78ca9f96ef620250ab89f9ef32",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000300.jpg": "a7b2db19c4869205bf95573f934b84704d6e08ec4d96ca00704faf9cebd3ab57",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000300.png": "294ee6e506d7c028410a04d91f6bee570b3a6cd91d983ea541a2e057828f2798",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000310.jpg": "3342e6376a5f2da1d6218703fd1e1ae21e63da556664192a0cfc97a4a2b57167",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000310.png": "e53a37f66f50dbe9154c2cc653d9954d52c69ccb02e2927e2317087141b65681",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000320.jpg": "0852ee2f55d9a6eaa3ceb53c2a566e0685f659964b099ac50c75d4b0043423d5",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000320.png": "403553227ddbc7884eebda8d5dbd7a736ec3fd72ab5a94fe77b2ca2c5d16577b",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000330.jpg": "70d457f0c9d2df3601e383b61906a2292a341bcd1b3e6868ca64b2f87336fd23",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000330.png": "e6b7c0a7ea4edcc3d339cc724bd54e4a6b63d0087247e510410487becc61e608",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000340.jpg": "8b5310fab113906739049091039b651e89df88bebfc15569a80df58977deeffd",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000340.png": "f2d7bd2d36bfb366a993efe621ae7698d97b8579d86f8eebbd00d59be97ad350",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000350.jpg": "20ff739b34f7633f53ada8b9f7f6183ca6618cf04e11fdcadb56c5803d1f0342",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000350.png": "4ec5769c4b651a787999aca4932c44ea93141a507eab6c39faea12a055525358",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000360.jpg": "09512c69fac48648eee1a40a454c8182996f01f46a07e9535156574ecba060b7",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000360.png": "a8a5eb564ab109eec69c2a137082f93935705a5ce653e909e83fe375489a9fff",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000370.jpg": "dac7afb929980b855a6e0736ce991cbc21fcd6c1e34642a8783ed2bce3a9ae97",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000370.png": "c4fb520aafdddb26b4b66a90663850d410efce46c07394fc1be11001c8f8f3cb",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000380.jpg": "643e463b77f28ffe0a47da267b8ac39e62a592db37d300ff8c6399eb46ebe7b6",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000380.png": "46ed94d3a76f53d8f1154edc07f429276afc8aa996f8f1fcf61e89bf08fd7a59",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000390.jpg": "e495fd4bb5acfa37552970afba997f3c9b468f47933e114adf7f7d37b161b3a7",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000390.png": "1d40aa9111dc2fd74839e73a9d546935666ffc29f8270b1a18d8dd97ad4dafef",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000400.jpg": "9ee9e82b630624a3fb4f9abb9b748ed5027569a0ad1f1c8c9957e2c32e224794",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000400.png": "52cead5b79252bf2af1d3e5cb1b308f5f20e4c4bd974d63456076b96b41a4f9d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000410.jpg": "8e39efacec77270875813948de1887acc6f35423ec6609b227efcd5396508185",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000410.png": "8122944bf1164cc2e36a6738bc299ca57e44d564666d60ded595be5cd8909abf",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000420.jpg": "0a361d7eb3e6220555e4560865b2772a44a2aa2150f2fc46f8df61592726ca22",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000420.png": "24a488cf96f21c3c75b3ee57b04fbb4c97b353870bc1ecc6d1ac133b81d78475",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000430.jpg": "1eb691091af89ff0a050b9bbe2794581a1f9905674e0b3f5f564fc91df8c46ee",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000430.png": "049bc46e53efda898bf99603330ef889bcff83c5b4a2c91462987b846643eed3",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000440.jpg": "cb43db983902329801b213465184bb74dd5a105aea0dfb2e9c15e4b864bb9f52",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000440.png": "5c6e3fe35299c8c6e5b1f96b30fbb94ed7f4732a71fee2f8b9ade0ff51cd1d1e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000450.jpg": "101db0b7e1697824887c3265112153c8eb17bdc7b340a9aef4ae4bbc3540e2a9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000450.png": "d2d7de90aba2bc34495e190f24b0f0ac8fff4d4a42eaeb0b9e5739b7f2bdeebd",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000460.jpg": "d95905a7f9c3361c6d5924c40f6f67aaadb18f21abb5959ca8a728f84098cecb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000460.png": "c11ac4e03a7c96829daea12140360c52f77e951361cb8724e2bb31f49ce27c69",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000470.jpg": "2ebf6856b4ef0d267bf80a39b7ccd6d8d8c36a57e6fad221db460b6f43dc8a12",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000470.png": "4ebfa856c9c4c9384f6f7f3d42c60cb0cb2cbbbf31b03ee42a9d8f7ebacf1053",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000480.jpg": "dbe0dc1f6aba93e638b5a6d91eea2da33266401b98e95108365833204e9349af",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000480.png": "a8bcb0cc1162cb46da526e19f97096b2770def8b8a637c7b421b796776cf5308",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000490.jpg": "f5a6ba5207239cc8c93bf4fecfef1ae8d8e42df89886e5f179f4661b391cc9ed",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000490.png": "e18c2576ac19e46b72c00626be644ebaf2618ec3198c9dcffd1f8cca12d48b37",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000500.jpg": "9b5941c3f9bc75076ca9ae6b1290fb9c9a8ffdd148c588eb0b4b6eb14ca9a9fc",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000500.png": "d5261bb155aa2addf6fd6a7e9c91e52c2c791cb0b534a52db3d5b568b36a9b3e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000510.jpg": "159d23f4c882fff8a61d8f0506defa566678ddd46cc7ec82f1229eb21e8cbb9f",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000510.png": "9455adf42cf515c109fee125de978501f92b9bb301974b82ae5c67ba650104fd",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000520.jpg": "33a720f1fb8bbef10d2fb53343c21eb10dff0c234a6ec9ea7e8060d9a8613a53",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000520.png": "a6205f1e2846054355cfa06cff003b8b5216708ff8244e2deeb14663a8e08579",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000530.jpg": "a3f276ffd04790e6182790fd4107b47ab787cc09e51a64c1c7d6ad274bdb5fcb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000530.png": "90512a853706e53a0bb372a370f144b8cff6e9632d89cb30305c103978d8fa99",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000540.jpg": "7c6b383d4d0a7df995e4f9b425286b740b05c11812603a6c0e47e7d01c0c32b0",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000540.png": "10ab13aa3a2d1968de3ba1943e7b5d3b8594058fe86b730eac815e98bd2c43ce",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000550.jpg": "1828d7ef354398ad02f52e7b115d237406397837ee8d468ca9e689df05ec731f",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000550.png": "fefe006f4013c88faa44833dd18ced2248852190297f52bfd7eb5485547b5e45",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000560.jpg": "bf72ac60ca0065957d7e9b625a5c5caa065e4c15ae5f145977e3181f5aeb5563",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000560.png": "9fbd9a3cfe33ad76a7dd7e3b0c2001b95bf0b7aeab356309ff071a0b692a7fdd",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000570.jpg": "6d70ea6b3db74d052c5b53242ff639de719a55f904a75df6f0967f7d46084d13",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000570.png": "2b5705dcafa4333d70503bd5f17cba0d71293f900dec40eb8317966574195ee3",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000580.jpg": "a1fd3df0bf4bfbf0c84bee5f4f425af16cea8f5b753772c561b48fa68a84b385",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000580.png": "6d6499b7a65c836de4099e909e5723b452b6f079ebfce55ff2d3e7f449f9f600",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000590.jpg": "c5518b7c62ec97b66c7fea66ec7acead1949cd518bbd8fa25abde558c2091735",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000590.png": "207c8ba70a6c08db045b91652a004c93f584bd00c5f5682db2c418f262b1aa11",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000600.jpg": "493a1b53e550dee36079c52ae7d2df9a7c88d6d724612798683a531a8c345a93",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000600.png": "46bd2301c36bbcac9469df4544f3bd20c26f85e36d25f144a924b631a6369ce3",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000610.jpg": "159bb339c9fc2505b2cbad944a4267297e96d8599c6713287473b716a14dbe15",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000610.png": "1f1dae1f7c1e173d07c942cc1c1190a0a971b7445e741497d09af846a7b5f01e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000620.jpg": "9b76dddd247c31ead5e51da7d0c2cad183b6c7ff92cef4a276b6751ddd918fba",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000620.png": "a64238f2aadbacb772c9689bcc75575de8579808f4a0e078d6f040a635d50e8d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000630.jpg": "94a51986e324e4d167c79d5416fe37038cb0bd720eeb03c91c21991e439f772c",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000630.png": "4d9cdfa480f2bcce31b54ed5ff07964170fbeeb2c2eccd083f1aa0767d60e696",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000640.jpg": "d9fec75fce7d0c52ecf202f480b0d61f6217261348dfdfb891fae4dbe077b81a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000640.png": "c2050feef67ce37efc8d276189499f8c09dee6edf7e11e1dd7193986a5ece519",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000650.jpg": "d23143d34a521c13cdefe22c6295e36ee068f0c29b35000acdcd03f827ac250b",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000650.png": "dcdc11152a56a99839aa70a4ddd50a352b490a07fb6b1d28ead5700a143cb10e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000660.jpg": "b7b6541e09ab20277f3b0cdff5eec082408b1c41ab0da19734696173fc8c69ea",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000660.png": "80a280eefb193f59c3ce62f323478004e0b98383a0ab0f6a2c3acb6f92fe6de0",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000670.jpg": "281398b40f90a2081e1a89b6f1273a820450598ecaa78242081406108c3237fb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000670.png": "a85e141b744a63e8ee313dc7a57e78ff960a0bd3f8146aea77db5af0f84c2315",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000680.jpg": "17b06d9538b93daf072060f15d65081fb971b095aa8ed7d1e293be8ef714ac82",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000680.png": "e41f87ccd15bae0e605393894e498f3131ec2f23158d0de7916abbad9c7bfdad",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000690.jpg": "957f73ece473931945348ce8e1f9fb182619a6e2c5e64dcf3505c4a820833a19",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000690.png": "99f9629926916deb000f399eadd5901813d7188de150bedda6b129cfd9c9c354",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000700.jpg": "93113a5fcf01f41fb3907b8d443e6e2b58132e896077450df010f94608bcc9f5",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000700.png": "f8de2948244aab3a77fcc8e1a45b013a597a426e4a36e4d4591b0359dbe5842e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000710.jpg": "9ac22a62a609f3241bbef3d92dd1630bbb19f30c5f31d012a40a24a754231498",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000710.png": "a448aa12b6dec5d531d06aef34da545c10a01f6f69ab34a8b8e2273cc4d2412e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000720.jpg": "916410f001dabc93f0f5d5b8cf7999300d6a009b4985c1939a417e14f41af05b",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000720.png": "eee5dece3df68ef29e365ddcbe4039d5e529b94a1390a137efff4d2624d2d04c",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000730.jpg": "7cf57cef4b3c0bfd1d12b874e7e7e4ccef07e57d895445a975d70940fed8c43b",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000730.png": "70bf14c85fe17f73411f22e748b865670737be82c8bacb29f1546f06ee24de3e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000740.jpg": "5ad736a059906b099f48612b4607a2d35ea11ed22b57de86b6a423e6e6db551e",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000740.png": "13844288f96c1955849075b1430a63105c524ca1804e707278ee687672c4a7e9",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000750.jpg": "0c5dfa968347da143055bec99d14776e6030797cef781d3cf18f627e951909a9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000750.png": "63ea30a5ce5a0714516504c8219ce0c35838213f4094f328954ebf254331278c",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000760.jpg": "466e6041ce1adc83c70981ecc8424dac5f6a879e3a516196bc0a2c9b7cd2b776",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000760.png": "117ee717dd0d2b751c92f03d3eeba6a49e74937f1d0577ccbeb43557221b516a",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000770.jpg": "079e783f1652b4d06dc436cb11d2f91da59cb79a5d606b393c66588e59aeeedc",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000770.png": "265435eab9d1cb7497e50cb2080f689de8404428c6414cd3faf3ddf7bd441760",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000780.jpg": "53bbf0ebf47255f2db2ec25d7fa3a0d92da397412a61e0cef029e9f2a68d7a96",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000780.png": "4e4adf08f356540724ccbe5bd37c1df813573766e34407d7f209d9d145f695f7",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000790.jpg": "422126e04ed449277dcb5728ca6a6be7e5e7882ad9db05ac3c1f39158fc07d76",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000790.png": "010aa2d509dbe068bbbf47fdbe1bd3ac86aa2d9bdf367ca4727776117faf3959",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000800.jpg": "c52208a00bc198b48285dd1d6d5d5dde2b5774a4546705637048066670dd4564",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000800.png": "faaec966f535e91801d78f6eb224c19581f011f27546776d2e56e546eea6bdfc",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000810.jpg": "2644c363f0da3f0fb789a2eed9621463f627c5c0c432cd3196d094d46ffcaf7e",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000810.png": "a49e7318750eaa2efe2a81603b9fdd497be94daa778f869b863a203ae3cf499a",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000820.jpg": "2055153c5b01a5de7e5613e57d2e63d4fa47c7a82fff9589bb83c559e99dce0c",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000820.png": "4423bb9f2d812974953501caa3a855760866d8f461b3ab3f05e962b11bf48743",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000830.jpg": "fb52fecc6ee5f89b596c104ac11950f7a5ebb4766f255238123025ae814cf007",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000830.png": "13308dffcf2ee22b5ae20dbfbcbbc0b5cf036d2ad670012084bce8c2b05a72f4",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000840.jpg": "d8664f743e4576acae891ab376759dd51ba6cd4008bc4cc821f0b01aca38f7d0",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000840.png": "8e9001d3738213124bf34fe8261b9ca247c2088b5e3e74da7dd5fe100d58749f",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000850.jpg": "cff913059556ffe57adf1fd7b2ec7aeb056de6f36270863ef0563660e488b731",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000850.png": "07d31e19d0c2ba14b707f1f5d855c676a1b41e8cc6908c0805d239f8b60bacd5",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000860.jpg": "153ab1816705e6f45d87939e3c085703d3bf92cd37ec0af534b29f96bcc974a0",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000860.png": "bbffaf6db07de12df58ad05304ed00efe610d651b4a214f5c97559dd66a0b3a8",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000870.jpg": "3591b9d37834535b4d50c35223305d19ab993ef6db95f664959d1f390f444118",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000870.png": "5477f2b6f7fe6e29a9185797619cd96527e24369309f3057914db04df62cd7e2",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000880.jpg": "fac55f112d9b612e9bd2baef3be6759d888d1e2621d24b683a067a85ab496166",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000880.png": "49b0c342f54e55731dd88425cf88f04c1e2edaa9f0867ae51bf9078d25be1709",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000890.jpg": "45bd016dd96d78d4d7d501fb12de1ee1b4fa50c94b2ed3dc5a7b8cd139d9cde1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000890.png": "0a32f9a3e7d34daac9a5c8da4b822cc58ad0a3cf71428f791514d45c65c55a60",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000900.jpg": "9bd21ba6649da01aa001a6f3a97c88aa39ada199c35734618019543c9dde53fb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000900.png": "22eef364e86dd479ab998fc8730082abf139ceb6329e8b02cd93d6309740090b",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000910.jpg": "51a4b5c854b90dda47bd81718848fca9edb5d9570f1f9f9b7002ea07eb77c5d1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000910.png": "c982639d668193defde262e71ea2c1186a173b6983db155891707c5b772a0a5c",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000920.jpg": "68d735d03e0a935ecdae4fc2173f0ad89b4d68cc95fa581fff2dff04a2e3c578",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000920.png": "5bd88c59cc42a85c07516954749c8d41d1c4078ef6751a27755d552f86911e12",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000930.jpg": "88aec65165b700e204246f2a0d8b389bdc93b34db72fead91d52bb9ea641642e",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000930.png": "1e2e1987ea461c03fa1b163dc23c7f11455cdeae150ce8b26666640dae8fd578",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000940.jpg": "2bccef80f7d20848fda3f55386be47d2fcdf9e49780e21f50da361a4fafda454",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000940.png": "424350836bd1d224a0509c85ad9f867960b7f033c11c94d91dece64391ca8c96",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000950.jpg": "bd74b2b0bd468f050934283353f6e33300d5b64c3d797805ed761ba34fe431ac",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000950.png": "908495e5c63357eae27249b85ecbb695ec46a2117041d23192b791ff51ee347d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000960.jpg": "ad7fa329255cbeebb71dca84204ff466ccff7230bd47e5258e11a8d38ff50009",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000960.png": "ab474858a2c8da76e44336cf399a5fd4463c83fb9d582aa6168e45a30eeb7452",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000970.jpg": "38039dc9fffcfc0c8d3068258d7e610e56a946c82bc93ebf396b7a328e1fc0c4",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000970.png": "f8651f507590bc7864448f42f554d7f629c9f696cdb9a77a21b203a90a7603c6",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000980.jpg": "c099314ff14fbc4938201f3b1dcd72aff5d09fe1b0bdeffe5a56c192bacf2a12",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000980.png": "2346e4dc696e248dae0fa7df0b788d0c7806c68ce6567de7170adcd1d10fbe3a",
+    "/home/ww/vv/dataset/Replica/room0/results/frame000990.jpg": "8891e6ed8600c4637b5b25068788a082e7426dc87813888b30c9dd53fdbc7073",
+    "/home/ww/vv/dataset/Replica/room0/results/depth000990.png": "7f9777d43d6e5bc0f8883e3bde133c9062a97ea715384a4a7419c108a996b730",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001000.jpg": "5f382b41cd1f5370c9c6a6df5014ebf5671031ec47dc8f1573c21415d45bc299",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001000.png": "48a8893157d296cdd51141b55da1f617ce9f3f44d46d878b3515fb8726007bf6",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001010.jpg": "88042f0f532fcac0f04a444f2666f0b987b6c9b2c346a7b7b65c1f53c851e3ca",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001010.png": "32e8163c9f298cca57b51f6edf63b06d5ee89aadfebaddcd70cf52602a3a4a5d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001020.jpg": "12c4724d0c69f884c05adddc34ffd60c007a63f4ccc20e314ddac05fff7d2b73",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001020.png": "3df618bdb9f8114c615444322286179394d59c1ade1af11419c029570a30fbd8",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001030.jpg": "5b03b48662270b1cd53ff474ff564416a42d3639064c606d4efe5c58812c2017",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001030.png": "2d2de2b8789cf351b5d7e480ef1f76cf0e98d427393846d6f1730f21d9b8ae2d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001040.jpg": "b1d7e722c8fe28e575217c227eb31d8d8c7118c12117410e8e09c6d07f06a000",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001040.png": "61a2ece525175711151d5b9411a655737e4acc383789463572fbb0a9835b3af2",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001050.jpg": "7bee8a3dcd985cc9ab94e033cf876e018c1e722acef36e7093d873e53bb5ba35",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001050.png": "f532a7caea434f667fac65aa407ec0c4dbafa384ae9e25655e825e736450a3a0",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001060.jpg": "95d17f4edef499c64013ba5c3c2f7a785e66c5894fd7ed756845270dceaf63e4",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001060.png": "302f336d291c2dd1b6cdb4b4dfa7c748a9b018c18a93f081e4083eb184f494a5",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001070.jpg": "4672bbd8ff8f94f64601a7fa6540835faa7855f3b730edebf031a5633c37b5d7",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001070.png": "7d50d8eae1d3b43fa1fdac3df2d0229b98c0e29bf1ae77334c0c97823476c2d2",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001080.jpg": "8536e93f6644a417b0d6bf7c19f469e9b6e6d50e424fb5db4649285e29e444d2",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001080.png": "b84b435bce5704a1b173fc37bb7f9294f44eed34336cdf626eca5b38a55229ad",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001090.jpg": "730642c7ca701cedcf540d18fc4cd26b27c00863edeceaf9d8b00fcdccab0a6e",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001090.png": "fb67ac570643b19f259485de44fbeab720dae6e15ec23ac2678f333e9bd5aa6e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001100.jpg": "cf22d64056a8a7f2412e7935245e58fe427447d545aa0e951ee9147d75e5901a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001100.png": "c7947abbd78dd7e0feb9a3124b8e9d3edac73c1085a6985dd772860719182961",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001110.jpg": "4cd01c34a18c95f7b41f1ed0f89c7f541abe11b2aed5c753ec0bb7b165954e3a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001110.png": "cec35cdce628bb8ad7672111e75d949838d0cd37cfbe6b020b57e6cbd1ecf9f8",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001120.jpg": "6788410d002a5978871c3b74753c5bd7ff11ff290863d9eaff4e7215c5676969",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001120.png": "b5e145d7a99a1303e446a80ca1dcd9be9dbf389905496287c71638b9c207a5f4",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001130.jpg": "be7523253882dc0c8756841852dfbe64ee5a9be896bb1242cb913c76d2e24d08",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001130.png": "a86881ff053c3355dbdcfc01600fb2ded7be4a8faf4f0ef94436733d199e41d9",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001140.jpg": "f2aedbd1c28390246a2e687e6dcf18481f773f0f7cea682c1fd68437b4d954c4",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001140.png": "04509167ed1ec6eb22155cf7cde4997e228e151c7a1b6eb3b057e241c78ce0ba",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001150.jpg": "b2b124eef30242e7eada6bc5918631fec5c50242adc2664126dd07a85ac45e35",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001150.png": "fcd923973b703983c70c9e8bc65a45665b7e703e7e26974eae98b31369b66153",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001160.jpg": "5204c0b95776c101c5e6bcf788f2b6cd4eb01b479fac70bc4dc5d69981a3cd79",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001160.png": "d1dd8de8f32ef34c4cd14cb8331552cbd4052d92ea602bceb3bad834ff837799",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001170.jpg": "25895e5e0c93116dfba304ae23fa8dbddf6c557cd0e599692db0fd29b746fac5",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001170.png": "0fe820852e7686e9001942226a649593513186c734d692919ee42c8556f439e9",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001180.jpg": "f26226484d978abd2bda96cff52df011ed2cbb30c5b436f4945190eb4a164672",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001180.png": "32a9aa6b0d402618bf52e4e5328d5706158895e9c2d7bcd93e26f7e4b5227094",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001190.jpg": "f91dba95eed87bcc9205427523db2485c66e64d54fff83b3a2baa7b1698f47d2",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001190.png": "4eb71a136b47c502270598d94494fd661b8ffe903cc81ba14d833d18de91b040",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001200.jpg": "2f13418b85f85c053ca9e0eeb7f8308d7391317118a9e4c32bfaad5126c09811",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001200.png": "585b1811618b7c38569fb7a48a169a06bea3121d711c064412d700984f0a4af3",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001210.jpg": "694f6c8ab705678f9585ea64eeb33a57ecffd74f230219472824de4c3e44ee5b",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001210.png": "0fdd52140a7959252d9fa1dc059f905e2d6bd6e2597924747de746a082e5cb46",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001220.jpg": "4590c1b3aff065751bcd4abd87d4579072caef3bec0824400b04636cc4d20bc3",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001220.png": "7ce9e236d208ca389fb6b03bc8e736a7fc1bbe5eb692ea814f57bcd03df74fab",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001230.jpg": "b69c7aa60d8bb42d6e638f24ce7ad9551b258b1e584e9479a40c5f5108aae8fb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001230.png": "b7466b561ee19c2ba0274333ccc9b8ebed0aec44895960e1e3c71b1fcc9714d3",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001240.jpg": "8b0d45709583ef1fa4e3149f62048a77776e310e9102d9d51ee169adc92ecdd0",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001240.png": "112cf2788f9818af62817749639e35ddb61fdc12e75553421f8dc26619b7fb26",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001250.jpg": "9c35851a8c3dde6e70b7e8bfa4d9478e71295ea474effda7bb59297b6fd8977d",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001250.png": "62b22a596e87775ea347f6919671e39d2b8356229873f74a9b84bf8f048a4f54",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001260.jpg": "5f80996d8a4aa06f7db3a3b5e8d32cf305c5f65daf68d5bc8ea13dc6f47ad448",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001260.png": "924380e91436429315ab9d4acab650782ec4fbab01f719dafe8ccf970c43f248",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001270.jpg": "6b47631c088e41154c3bea410c216f3ac3c4d0d1ffb96565330b60e273b418d4",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001270.png": "c66cdded7ec22a877ddceff42a8493bcc675630339612a51c408ced31a87966d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001280.jpg": "a43f3ce52820d9dae90f2ab372d07fd9c36e08e54ac5e40aec2baf8d5c944ea4",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001280.png": "3cf552ea0dd8814c9cc2f2a34288e63e4f813db9becba039b35f40789f3e7dd9",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001290.jpg": "b6b569399575136e74e366547afc82a88c4cc36b87160210955e888d528840cb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001290.png": "078b402c8f169a9c4ee444479cd00ed1a904fbc071d8b20f6c1c8aae1ba9acc9",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001300.jpg": "10a99d63d926a49ad78d587d7d1fc58e493ddbf1b7e2adf43ad12e8f50579e0a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001300.png": "93997795fce11d6844589a5c9d187654f404eecdcdf035de76d7c21cdd945180",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001310.jpg": "81b7c74c8681f0fa748fe0915d4a307e7085401c08564d2a77996f8a58a5def6",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001310.png": "d0e5e6bcc9070e60140789ef55aa786cf58ca54989f96a18fa944904fd8a0adf",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001320.jpg": "754f0e0ef0b6161174d4a3766202bb5711dd8466d44c445cc1629da2dfa18815",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001320.png": "f0f1db2406727d30b9c1e6cc66a617c99c97996533277a8d391f81b234b9ae3c",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001330.jpg": "a0d02a8c07638c96ad86f9bd05a01948e47a76d1ff98c52a3a9ee51e3121c4b9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001330.png": "fbeed52f412571018dfce95f79ebe079d23a79bcfe3387422a20b334a8f48a41",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001340.jpg": "7c205ab26cbaab253761af1c97401298321d55e7014f6c3c69c1a242b8adeabd",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001340.png": "5a1cbb0186836ef0b189776239bb5236f8c4d5164e2d8f67b35b188ebb0418d2",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001350.jpg": "f7f04c68ffd4400748fea808f1e4a94f45d0765139a528e021a125e9e4b17969",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001350.png": "aa326ade64eff745c28db7ff18af1a94b79eaf23995f79cd83bd5428b8c7aa1b",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001360.jpg": "6fcc8b0aede7e84f26bb78b1a38793ac900bf3de8f6627b7dcd401d200c18a01",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001360.png": "a38eeffd21c8ef70c598bbc0b980983da7dc327ffbb1e7177b7eeff6f02f033b",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001370.jpg": "7d0446ed5bc2d0990ccc9e6c07f9f6dd33d31adcfdb59c477b19c778fb3b5967",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001370.png": "4fd3f882736d6c17f7a7c1dabb629d3cb0465dbe506f7eb8a0c11b4dac92b1b1",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001380.jpg": "5cf74d8c4f0f239cb936fcf59b7ab2763267513e2993f0ce0bc3196736195faa",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001380.png": "091ce60d55331742f3d3ecab201f74260a193aba4092f8f0c7f5eb767b973aeb",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001390.jpg": "a00b18f2ededb1a8a56f742bd3a70106c80b1a54e14e3c9c28ee92d49f1f7640",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001390.png": "8efc06dee72d6541b53b3573a23de94dbe65f66e4cbb50f858cb3a26a00250ee",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001400.jpg": "bfd5b2881d151c7ab26d57cd899017bed271a5654c82bbf76d0b61328286f6e9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001400.png": "822a9d2dfc0478b8f2c845c4c425ac9e9227f12c90f3f43b1c1fb3f9c73e41ce",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001410.jpg": "b02a24755a2964ef08d6d3c764dc59baf39d2a46da162198a6384737b9b0ddd9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001410.png": "8f4cf9e18118db999429edafce7b645a4e8da5cc0ea8eabde2a85f5b703292c7",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001420.jpg": "a857d16e82ad9516478e8d1f0bef23814bc23b4baf5a906b2902bb3e6f2409fe",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001420.png": "9291d64f0cb34d4b065984f9b24cbe009badc5f4fca09f5cb310560e52e6ea77",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001430.jpg": "f50c35e1d9790e21beb5bc709f676deb10b68e781b3141db6e713ce9efefd543",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001430.png": "d42105b80a8689f65c70ec8f261ef91763251ae18d0a18a01057368c433316a1",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001440.jpg": "48f192dc4500be8c54f6c7da70e5b38bcee219c21c4494dcd6404d7292a1e565",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001440.png": "dc1b3565206d4d56bfcfb99179aafe10a55a57a6f84905468ad926c20f728502",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001450.jpg": "b6c98a0c9e1ed59ce61285df85b1fb145f06095735d06b9f50b03deeab0b287c",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001450.png": "67397e812101067f82566d8f97a23ac95f8f34015b25c2dcae2d6827968af63f",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001460.jpg": "cabde28426300bd80034d34ce5cca0c9eb510803ed85288399b415c8bedc33ed",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001460.png": "99ebdc6354f5c603e62374f00272bc8f584deee4f1b97aa9896490f67e158497",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001470.jpg": "38010dc44472ff93498f82fa7354a26081980f7399cbde28e86d2b8e380908f3",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001470.png": "82606b3fc2e3cb872d1291b2471440655dfa843558498c18782b0de5cbf81856",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001480.jpg": "59a4b1961314b5db3f834a4b38cf33ac0a69244cbcb4aa1992cfc63d6939b680",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001480.png": "cb0ab484d9b86d25c9177392571951bd30df888e1dc8b5b93edc0e906d0516ff",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001490.jpg": "056a4c0059a02dd4a7a75602af13650f71c3fdba1a676c5f2e632527e9a1c9aa",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001490.png": "8bec1bd521771a525265bb0d030f20c139659055720285d73758d04c14ab737e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001500.jpg": "9949db9d0b7b42848a605edd08dfec23a0e7bfe6cc2a92e817aa131d16158373",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001500.png": "2aa3fe087b2ca8d15bebcd678605f36a966529856375ca06d270d2ca437c6b25",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001510.jpg": "ac1f1b1594d4f9b741288c24cfa5a16bc12ca6f9d7051fc098a35a2cc07661a4",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001510.png": "2cb806eabdf84518203164160e622d9fe459cbdac6eca69f79dda2875f14363a",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001520.jpg": "44a6853a43aff006c0b4f3c6c6b738054bc8ba4b46983c916c1b411f1e0ea860",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001520.png": "07c299f437af03cd9c8d7036a45811fc29e7165238a0aa1c654c667ff9441b3f",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001530.jpg": "fe31a59119cb200aacf3355f9c13692ee507dfe1430501bdb9070d32bdf282b5",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001530.png": "a999a7521f50fe30a27c598673a9542effe56e6947f2e607ddad29ed5217aa07",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001540.jpg": "d1c148010fc08a8feaa4693984d5bf9fa39c320f7755c49ec13417376757eebb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001540.png": "9ff4388bd60e93f5e136141ba67b1f53827f03e318d0431ee20f3fb7ea98bc87",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001550.jpg": "9a535d0906d20178c441c20e20fe562ec4c28ce1c74fc8de10539830936a7a3f",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001550.png": "9bf1aedd150ac2d2699cd89eca5040c66a3f0f08dd7d2d6d480004a52cbaa646",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001560.jpg": "01ff1e322b087fb516cc3a2f1bae1e695d6cda1df9c4b88ae80e545cdf9f0344",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001560.png": "0d976e3a22222be139ceeb02cfde0f3e5ab43a855fb6bd57ab9dce15058f6bdf",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001570.jpg": "64c0ef55d078418318ceae5070898ed9d60c36c7d901d9ae1e06931297efee2f",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001570.png": "b3152937dc726a8eda81d1369a6298a1e56be3b3ef60714b53be618aacdceca9",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001580.jpg": "941d14217f30299ce060566fae9a1f3276e7f01ac1717a056e6006046c60f0ab",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001580.png": "0667532a0b94395b09902b65951173ac62010c80be530f73e214ae5471c5dc0d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001590.jpg": "ade7c4ac1b24a6faec0095347456bd227a9b2630186c85db465bdb939101a2b8",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001590.png": "069c915dc4dbe140dd8836d2cf1596172a20300edda4f94459887fc48bb5a3ef",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001600.jpg": "68df2d2e8ee8910d689ce627fdbbcf4fbe5ea4d21d208ddc293d9fa5599c0b1c",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001600.png": "3640db34507133e7d8023b17d9f4e87cd478fed14d7121c81b2f3baefd457a32",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001610.jpg": "df816cd6ade37f070ed2138a024127172c8b2e12e060fb126609ab10142460cb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001610.png": "7f94529af664fcf026c9dfda3519cbf17d4f53b200fee61b0996994da3774253",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001620.jpg": "d3ae195b59c89a2b126b0976003d6021b9246ad28917d58df486eb84657bfc20",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001620.png": "71ce4d7b0e270a35c16fd8d83b4f9adb6783563739f0d7ddc100b7f8030c2835",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001630.jpg": "efa59d9feff2113821dfdae0dd36a37a5b4e6ed941138bbe0d712bab45e5c9a9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001630.png": "368c6a9aadcff530cc48251f6239b6a07a062aa9c69c7067d563f3767a41feb0",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001640.jpg": "e1b9f777a78e85f22aed975252f4edd5a7133f877e32a87b05235a4774cec212",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001640.png": "f77da4b3c92a954c696906e0037b815e52cf5d917369bbbd80d01b797b6ab8ed",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001650.jpg": "481d228126ad762b7bb192a0d151e12964f64ea562917509a80307ad4add1eb1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001650.png": "6c873448befab7711df4fda86add0a510178786ff9c406d5aa83a92f67f85a74",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001660.jpg": "83b78b22ba7c4cc77c7b7530ad4af32048426a312324e2a2329a38652e53f250",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001660.png": "dbbb1c88b3dcbaace5aa73bf599135e808bf68cd5792a8e2490c59d72c136a5d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001670.jpg": "471eeec449571af8a582b06614cdf83f1ab1897c8105874c06f44c2b91610675",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001670.png": "3b3d86a060d9b4f962e7b0417c9f414d245765b121f6709d8aaeb592935b5091",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001680.jpg": "2ab97ac3619b2464875a76b92c116c5150f702b36174f2ebfb607e4dd68939b5",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001680.png": "e6f8419adf88c981e63dc5947a8011aaef597ff99a4fae62309b06f083b6e70e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001690.jpg": "74a75560869d992a24b22f040072780be5ae60605b86d0edfcd4cef91fe1affe",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001690.png": "af93710192c42ab3bdbdca3ee44efbb7e44685d2e2c6029eb59c1701e0060adc",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001700.jpg": "818ebbb1079b9dc5a0cc9ce166e6918e5d1b11395368b9823851fbe1540f1ec7",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001700.png": "69d7f24476a47884d1b232c325cc463933a4166db398d382f90015763a950f10",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001710.jpg": "ece541784e99e3cee5cfe9de281e4512271a6e456afefea074548d9a31ec1e2e",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001710.png": "62834330a5c47174991a38c3f8b14b2d1e9d511adc06de0857ffb82785b9a82d",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001720.jpg": "6b5ad2f2ec6b7bd05e3b25c1acaaee461d5dfb9f0ef75e6bc9654597f671b174",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001720.png": "621746beff7567787a7e76d6ad81cf802501ada32cc08109aa6bd239824ec42e",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001730.jpg": "c4ef363c15c6258eb18d6f2d17cb613232498612a68f3227e0a2154f3b3a9f2d",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001730.png": "aea3636060528a1ccc8a89266132397bdafb2088764b2d1dcce31bf97b7a81a5",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001740.jpg": "d2ae0d88f6976ad7f2863caf9e7b8355785d3a759f4c1c77c4d698e387d9a6ba",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001740.png": "9de5b08aeee4733ffcd0a76656158a14af29c9fc62616f8b50ad27702836e189",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001750.jpg": "51842452d81d5fdc9f51b58241bf5fab5c01c0b674f89058149503796a967ee1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001750.png": "120a87bbda8a1fb3049b7922f3800cf77a30f428adf4294acc3916bf9c7d7415",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001760.jpg": "e9002162ebf01fecb9b7e95370802599d8e315fdc51ca0ad367609fcdaae0d51",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001760.png": "ae39692f2441dbb646df6e9e09013e64196efe0bed0c5c8dca9dea1dbe524cc8",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001770.jpg": "8020e65373d54abbff8a0de4ffaa33d7a483dc9f11480e66cb22e26a8e39a54a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001770.png": "9db6d6f297482f30e6e9e8838d5c6becb595deab24fba9a47c93aaf8cdd30416",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001780.jpg": "10d073d75ba9d2a3944ebfa4f8e22a80d7c5b22a1de55ebf6a201a84cd5056e5",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001780.png": "439017ef64b4a67816d23beba2f0261f51abbcf3f804266185695f5a783ba2ef",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001790.jpg": "e20abc3697c014ac620311a8f2db3884622eeaab45a89a4cc8164b14be0df660",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001790.png": "a00262c15a61c75b75b9ad44fb466e21796d34376f24803c0d6924f21919cd70",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001800.jpg": "e97e0f1fd2cf4c087b0161412d8d541dc02bcc12f2529a840f15e3f663befd6a",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001800.png": "76c22f7438938d1a650296e7039d0bcbbe71359f02e42dedb933ba377dcb159f",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001810.jpg": "f3870f89fb1c9e9333b749033bafdfea0dd28fcd5722b223e9a638a16037080c",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001810.png": "ad074082063dc9c68186ccaaae59e7744dd532c57a21a4f9c738debba2e11e8a",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001820.jpg": "f639c4bb3e70630cfe8b49e1f564bc410d7ff6e3abe22d42292a5810cbcf25ef",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001820.png": "db7c745197f0e6ee838ab5610bde48272845cdf24347e915d0f2c60200907b2f",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001830.jpg": "08961e877ce5acb83c8f2d6161361ed875bbea511b2c55f8c738cce2cd137dcb",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001830.png": "3fb96dc5c66a4abc7f2a6cd3c43221e5d0b10ef02977aa77aebfd8ccf817ab0b",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001840.jpg": "514446893d6a3151d667fffe4c3e837ebe1951734a3096f96fb820cfd332e643",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001840.png": "b76df8c60b9b05bc636b02b8b2e4ea9637f303cfe7d71dc5790faf0fd9497b9b",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001850.jpg": "8c0128fb788cec5a049660b0a5d503e102caa56f658160ca3bf88506a29247df",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001850.png": "56a628a26b3affa6c3778c753b8a45c114b6c8256864a6cc6c614177100db937",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001860.jpg": "23e06b3df92fbca2fbda84a732ba70ff453b0143bfdb615c0b06ba807b4c2bb7",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001860.png": "8481539a27928b67b1154d569580dd337f49e689a372496cefd0899238033a82",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001870.jpg": "c832a9bed463689303f15aee10ca8b1f75d33236ce0404a3b97c5f77fea364c1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001870.png": "1363a92006ced8aa186476bc0cd85cbd963f008995f007ce10b96a69e42bd778",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001880.jpg": "c8932b87d63643597914b8413ecb46fab615d3a345e29c7773210ea648ff59c9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001880.png": "54e9f667913f1a06a55b5b6e867c3ef4e0761a3ad3b0e6234701c77e2e75c2f2",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001890.jpg": "d90ba991b37e7957a1d0da1e35b1b0acfeded13e5308405bbb54ef7a016f4f34",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001890.png": "453be8ba5f1546475621bcab033a76fb6813d3b5334778c3660f0e1dcaf953b9",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001900.jpg": "81c891addb685ffab6fcd9ebc60ccbab638244690b1d5cf24be4a36559561fb9",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001900.png": "9c9a6e27f3b5aa72a2357ee0b4283752d95f2a0d26fd4fa236bfc0526bddc768",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001910.jpg": "96b12993992d726c12b649ebd2b9246b62310850c485e915144453d22a24b3c1",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001910.png": "df1267769805517c4af02db4266335a642f729b7ed6173c8b9d2e9fa1fe51e33",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001920.jpg": "d9476a1e6d153cccb438bd4ac41d68dae735b8a7e9b186704c0b2fd75a6a3198",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001920.png": "6a480bbeb30348ba4e55cee8cef12de0c90f87734068b0064dfebfd7eac1980a",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001930.jpg": "0d8e3a0a4ab6c7f409b4ab8aedcffc5cc92c2df43d850b5feec4ff310984dfae",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001930.png": "4b33de47b2e1d0cc2e0694d1351590608b4b2ed3f405c0933b9e0f0aac922145",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001940.jpg": "576de3a72936834e1b44ca0cf1ba72c5461b6d6eb0ceeafc0030423db4cd8c52",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001940.png": "210c50bfb129ec57e8694802e0a0540925c707597b0668810493a8d8d88f46c2",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001950.jpg": "8be14937beb7297038b481985b9fd893c46f5d2f1a6b81d725aedac3845a3540",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001950.png": "d7fd4d853c3c253c49c63b3210d777dad1e82446cfc80ade6b146d4f34351d2f",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001960.jpg": "d3ad9923670e1b93d95f57ad160f0e12af5d5aa852a6a961349fd50b7727c9f0",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001960.png": "3a6a53b4dff482eeab30b639e6708c01e6104c33282e8031ea95ed7b8203f50c",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001970.jpg": "c15009b2b458f6422c42c23d5985e8de7274c4e0bf74beced28665c01caa0bfe",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001970.png": "86397abc01dee99e86f631e380494b0ae41c50a5e0cf5646ea43cfd9591d31da",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001980.jpg": "6de7d11b9a2f453dff4c8841e4e7e1ad33875671d986302ee847962699ba5046",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001980.png": "83f5a2b18709793610204bbfd3cafea72e510ee61f6aa8fcbc993c5885d908ba",
+    "/home/ww/vv/dataset/Replica/room0/results/frame001990.jpg": "0d881e8faf97de89e9b5e710c909b7f39a78c0a64e7fd12ef736dcba951c659e",
+    "/home/ww/vv/dataset/Replica/room0/results/depth001990.png": "d47909c027022b23768ac8daeafbf9ca5767940d39088eaa1331082da5987d33"
+  },
+  "command": [
+    "scripts/evaluation/build_static_rgbd_cloud.py",
+    "--scene-root",
+    "/home/ww/vv/dataset/Replica/room0",
+    "--intrinsics",
+    "/home/ww/vv/dataset/Replica/cam_params.json",
+    "--geometry-support",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/observed_rgbd_cloud"
+  ],
+  "voxel_size_m": 0.01,
+  "point_count": 1862429,
+  "valid_depth_samples": 163197676,
+  "frame_counts": [
+    {
+      "frame_id": 0,
+      "valid_depth_samples": 815998,
+      "occupied_voxels": 240881
+    },
+    {
+      "frame_id": 10,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 274320
+    },
+    {
+      "frame_id": 20,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 304690
+    },
+    {
+      "frame_id": 30,
+      "valid_depth_samples": 815993,
+      "occupied_voxels": 345997
+    },
+    {
+      "frame_id": 40,
+      "valid_depth_samples": 815983,
+      "occupied_voxels": 381124
+    },
+    {
+      "frame_id": 50,
+      "valid_depth_samples": 815965,
+      "occupied_voxels": 401025
+    },
+    {
+      "frame_id": 60,
+      "valid_depth_samples": 815962,
+      "occupied_voxels": 425916
+    },
+    {
+      "frame_id": 70,
+      "valid_depth_samples": 815964,
+      "occupied_voxels": 463924
+    },
+    {
+      "frame_id": 80,
+      "valid_depth_samples": 815958,
+      "occupied_voxels": 497894
+    },
+    {
+      "frame_id": 90,
+      "valid_depth_samples": 815962,
+      "occupied_voxels": 521794
+    },
+    {
+      "frame_id": 100,
+      "valid_depth_samples": 815960,
+      "occupied_voxels": 538431
+    },
+    {
+      "frame_id": 110,
+      "valid_depth_samples": 815961,
+      "occupied_voxels": 554635
+    },
+    {
+      "frame_id": 120,
+      "valid_depth_samples": 815975,
+      "occupied_voxels": 571690
+    },
+    {
+      "frame_id": 130,
+      "valid_depth_samples": 815982,
+      "occupied_voxels": 583127
+    },
+    {
+      "frame_id": 140,
+      "valid_depth_samples": 815991,
+      "occupied_voxels": 590053
+    },
+    {
+      "frame_id": 150,
+      "valid_depth_samples": 815994,
+      "occupied_voxels": 596747
+    },
+    {
+      "frame_id": 160,
+      "valid_depth_samples": 815990,
+      "occupied_voxels": 604655
+    },
+    {
+      "frame_id": 170,
+      "valid_depth_samples": 815986,
+      "occupied_voxels": 613415
+    },
+    {
+      "frame_id": 180,
+      "valid_depth_samples": 815970,
+      "occupied_voxels": 623427
+    },
+    {
+      "frame_id": 190,
+      "valid_depth_samples": 815968,
+      "occupied_voxels": 634679
+    },
+    {
+      "frame_id": 200,
+      "valid_depth_samples": 815964,
+      "occupied_voxels": 645488
+    },
+    {
+      "frame_id": 210,
+      "valid_depth_samples": 815966,
+      "occupied_voxels": 656227
+    },
+    {
+      "frame_id": 220,
+      "valid_depth_samples": 815959,
+      "occupied_voxels": 666719
+    },
+    {
+      "frame_id": 230,
+      "valid_depth_samples": 815956,
+      "occupied_voxels": 675587
+    },
+    {
+      "frame_id": 240,
+      "valid_depth_samples": 815960,
+      "occupied_voxels": 682703
+    },
+    {
+      "frame_id": 250,
+      "valid_depth_samples": 815959,
+      "occupied_voxels": 688135
+    },
+    {
+      "frame_id": 260,
+      "valid_depth_samples": 815965,
+      "occupied_voxels": 691863
+    },
+    {
+      "frame_id": 270,
+      "valid_depth_samples": 815955,
+      "occupied_voxels": 693081
+    },
+    {
+      "frame_id": 280,
+      "valid_depth_samples": 815958,
+      "occupied_voxels": 693822
+    },
+    {
+      "frame_id": 290,
+      "valid_depth_samples": 815964,
+      "occupied_voxels": 694539
+    },
+    {
+      "frame_id": 300,
+      "valid_depth_samples": 815976,
+      "occupied_voxels": 695709
+    },
+    {
+      "frame_id": 310,
+      "valid_depth_samples": 815972,
+      "occupied_voxels": 697451
+    },
+    {
+      "frame_id": 320,
+      "valid_depth_samples": 815969,
+      "occupied_voxels": 698833
+    },
+    {
+      "frame_id": 330,
+      "valid_depth_samples": 815970,
+      "occupied_voxels": 699711
+    },
+    {
+      "frame_id": 340,
+      "valid_depth_samples": 815969,
+      "occupied_voxels": 699985
+    },
+    {
+      "frame_id": 350,
+      "valid_depth_samples": 815965,
+      "occupied_voxels": 700224
+    },
+    {
+      "frame_id": 360,
+      "valid_depth_samples": 815962,
+      "occupied_voxels": 700613
+    },
+    {
+      "frame_id": 370,
+      "valid_depth_samples": 815963,
+      "occupied_voxels": 701055
+    },
+    {
+      "frame_id": 380,
+      "valid_depth_samples": 815954,
+      "occupied_voxels": 701561
+    },
+    {
+      "frame_id": 390,
+      "valid_depth_samples": 815947,
+      "occupied_voxels": 702302
+    },
+    {
+      "frame_id": 400,
+      "valid_depth_samples": 815946,
+      "occupied_voxels": 703352
+    },
+    {
+      "frame_id": 410,
+      "valid_depth_samples": 815934,
+      "occupied_voxels": 705169
+    },
+    {
+      "frame_id": 420,
+      "valid_depth_samples": 815954,
+      "occupied_voxels": 707826
+    },
+    {
+      "frame_id": 430,
+      "valid_depth_samples": 815955,
+      "occupied_voxels": 710407
+    },
+    {
+      "frame_id": 440,
+      "valid_depth_samples": 815910,
+      "occupied_voxels": 712489
+    },
+    {
+      "frame_id": 450,
+      "valid_depth_samples": 815905,
+      "occupied_voxels": 713881
+    },
+    {
+      "frame_id": 460,
+      "valid_depth_samples": 815923,
+      "occupied_voxels": 714749
+    },
+    {
+      "frame_id": 470,
+      "valid_depth_samples": 815976,
+      "occupied_voxels": 715811
+    },
+    {
+      "frame_id": 480,
+      "valid_depth_samples": 815988,
+      "occupied_voxels": 717099
+    },
+    {
+      "frame_id": 490,
+      "valid_depth_samples": 815984,
+      "occupied_voxels": 719028
+    },
+    {
+      "frame_id": 500,
+      "valid_depth_samples": 815985,
+      "occupied_voxels": 721945
+    },
+    {
+      "frame_id": 510,
+      "valid_depth_samples": 815980,
+      "occupied_voxels": 727141
+    },
+    {
+      "frame_id": 520,
+      "valid_depth_samples": 815973,
+      "occupied_voxels": 735594
+    },
+    {
+      "frame_id": 530,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 747358
+    },
+    {
+      "frame_id": 540,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 768100
+    },
+    {
+      "frame_id": 550,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 796637
+    },
+    {
+      "frame_id": 560,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 827583
+    },
+    {
+      "frame_id": 570,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 845802
+    },
+    {
+      "frame_id": 580,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 855414
+    },
+    {
+      "frame_id": 590,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 870381
+    },
+    {
+      "frame_id": 600,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 900158
+    },
+    {
+      "frame_id": 610,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 938097
+    },
+    {
+      "frame_id": 620,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 971334
+    },
+    {
+      "frame_id": 630,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1001808
+    },
+    {
+      "frame_id": 640,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1037900
+    },
+    {
+      "frame_id": 650,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1066493
+    },
+    {
+      "frame_id": 660,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1085131
+    },
+    {
+      "frame_id": 670,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1100197
+    },
+    {
+      "frame_id": 680,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1115398
+    },
+    {
+      "frame_id": 690,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1134185
+    },
+    {
+      "frame_id": 700,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1158912
+    },
+    {
+      "frame_id": 710,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1192460
+    },
+    {
+      "frame_id": 720,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1236660
+    },
+    {
+      "frame_id": 730,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1281326
+    },
+    {
+      "frame_id": 740,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1318792
+    },
+    {
+      "frame_id": 750,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1351888
+    },
+    {
+      "frame_id": 760,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1379455
+    },
+    {
+      "frame_id": 770,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1407139
+    },
+    {
+      "frame_id": 780,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1435042
+    },
+    {
+      "frame_id": 790,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1463082
+    },
+    {
+      "frame_id": 800,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1488520
+    },
+    {
+      "frame_id": 810,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1508149
+    },
+    {
+      "frame_id": 820,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1521565
+    },
+    {
+      "frame_id": 830,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1532147
+    },
+    {
+      "frame_id": 840,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1539873
+    },
+    {
+      "frame_id": 850,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1546615
+    },
+    {
+      "frame_id": 860,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1554064
+    },
+    {
+      "frame_id": 870,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1562587
+    },
+    {
+      "frame_id": 880,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1572576
+    },
+    {
+      "frame_id": 890,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1581839
+    },
+    {
+      "frame_id": 900,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1587916
+    },
+    {
+      "frame_id": 910,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1593212
+    },
+    {
+      "frame_id": 920,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1600459
+    },
+    {
+      "frame_id": 930,
+      "valid_depth_samples": 815961,
+      "occupied_voxels": 1609798
+    },
+    {
+      "frame_id": 940,
+      "valid_depth_samples": 815969,
+      "occupied_voxels": 1618136
+    },
+    {
+      "frame_id": 950,
+      "valid_depth_samples": 815995,
+      "occupied_voxels": 1621448
+    },
+    {
+      "frame_id": 960,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1623653
+    },
+    {
+      "frame_id": 970,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1625953
+    },
+    {
+      "frame_id": 980,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1627806
+    },
+    {
+      "frame_id": 990,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1629348
+    },
+    {
+      "frame_id": 1000,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1630872
+    },
+    {
+      "frame_id": 1010,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1632737
+    },
+    {
+      "frame_id": 1020,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1635197
+    },
+    {
+      "frame_id": 1030,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1638303
+    },
+    {
+      "frame_id": 1040,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1642194
+    },
+    {
+      "frame_id": 1050,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1646331
+    },
+    {
+      "frame_id": 1060,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1649887
+    },
+    {
+      "frame_id": 1070,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1652530
+    },
+    {
+      "frame_id": 1080,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1654711
+    },
+    {
+      "frame_id": 1090,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1656441
+    },
+    {
+      "frame_id": 1100,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1657986
+    },
+    {
+      "frame_id": 1110,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1659358
+    },
+    {
+      "frame_id": 1120,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1660395
+    },
+    {
+      "frame_id": 1130,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1661155
+    },
+    {
+      "frame_id": 1140,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1661883
+    },
+    {
+      "frame_id": 1150,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1662568
+    },
+    {
+      "frame_id": 1160,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1663351
+    },
+    {
+      "frame_id": 1170,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1664662
+    },
+    {
+      "frame_id": 1180,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1666183
+    },
+    {
+      "frame_id": 1190,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1667857
+    },
+    {
+      "frame_id": 1200,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1669693
+    },
+    {
+      "frame_id": 1210,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1672007
+    },
+    {
+      "frame_id": 1220,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1673664
+    },
+    {
+      "frame_id": 1230,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1675020
+    },
+    {
+      "frame_id": 1240,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1677236
+    },
+    {
+      "frame_id": 1250,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1679804
+    },
+    {
+      "frame_id": 1260,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1681764
+    },
+    {
+      "frame_id": 1270,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1683675
+    },
+    {
+      "frame_id": 1280,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1685756
+    },
+    {
+      "frame_id": 1290,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1687835
+    },
+    {
+      "frame_id": 1300,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1689815
+    },
+    {
+      "frame_id": 1310,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1691223
+    },
+    {
+      "frame_id": 1320,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1692597
+    },
+    {
+      "frame_id": 1330,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1693734
+    },
+    {
+      "frame_id": 1340,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1694940
+    },
+    {
+      "frame_id": 1350,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1696109
+    },
+    {
+      "frame_id": 1360,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1697138
+    },
+    {
+      "frame_id": 1370,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1698014
+    },
+    {
+      "frame_id": 1380,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1699058
+    },
+    {
+      "frame_id": 1390,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1700866
+    },
+    {
+      "frame_id": 1400,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1703060
+    },
+    {
+      "frame_id": 1410,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1704902
+    },
+    {
+      "frame_id": 1420,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1705756
+    },
+    {
+      "frame_id": 1430,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1706454
+    },
+    {
+      "frame_id": 1440,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1707262
+    },
+    {
+      "frame_id": 1450,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1708383
+    },
+    {
+      "frame_id": 1460,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1709848
+    },
+    {
+      "frame_id": 1470,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1711416
+    },
+    {
+      "frame_id": 1480,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1713111
+    },
+    {
+      "frame_id": 1490,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1714751
+    },
+    {
+      "frame_id": 1500,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1716044
+    },
+    {
+      "frame_id": 1510,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1716998
+    },
+    {
+      "frame_id": 1520,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1717816
+    },
+    {
+      "frame_id": 1530,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1718656
+    },
+    {
+      "frame_id": 1540,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1719671
+    },
+    {
+      "frame_id": 1550,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1721431
+    },
+    {
+      "frame_id": 1560,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1723755
+    },
+    {
+      "frame_id": 1570,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1726462
+    },
+    {
+      "frame_id": 1580,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1729442
+    },
+    {
+      "frame_id": 1590,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1731930
+    },
+    {
+      "frame_id": 1600,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1734237
+    },
+    {
+      "frame_id": 1610,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1736331
+    },
+    {
+      "frame_id": 1620,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1738582
+    },
+    {
+      "frame_id": 1630,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1739695
+    },
+    {
+      "frame_id": 1640,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1740384
+    },
+    {
+      "frame_id": 1650,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1740910
+    },
+    {
+      "frame_id": 1660,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1741859
+    },
+    {
+      "frame_id": 1670,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1743974
+    },
+    {
+      "frame_id": 1680,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1745734
+    },
+    {
+      "frame_id": 1690,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1746861
+    },
+    {
+      "frame_id": 1700,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1747777
+    },
+    {
+      "frame_id": 1710,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1748453
+    },
+    {
+      "frame_id": 1720,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1749271
+    },
+    {
+      "frame_id": 1730,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1750425
+    },
+    {
+      "frame_id": 1740,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1752848
+    },
+    {
+      "frame_id": 1750,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1759548
+    },
+    {
+      "frame_id": 1760,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1765032
+    },
+    {
+      "frame_id": 1770,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1773578
+    },
+    {
+      "frame_id": 1780,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1780413
+    },
+    {
+      "frame_id": 1790,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1785535
+    },
+    {
+      "frame_id": 1800,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1789257
+    },
+    {
+      "frame_id": 1810,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1791701
+    },
+    {
+      "frame_id": 1820,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1793458
+    },
+    {
+      "frame_id": 1830,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1794765
+    },
+    {
+      "frame_id": 1840,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1795831
+    },
+    {
+      "frame_id": 1850,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1797201
+    },
+    {
+      "frame_id": 1860,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1799279
+    },
+    {
+      "frame_id": 1870,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1803166
+    },
+    {
+      "frame_id": 1880,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1809121
+    },
+    {
+      "frame_id": 1890,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1815010
+    },
+    {
+      "frame_id": 1900,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1820348
+    },
+    {
+      "frame_id": 1910,
+      "valid_depth_samples": 816000,
+      "occupied_voxels": 1825269
+    },
+    {
+      "frame_id": 1920,
+      "valid_depth_samples": 815950,
+      "occupied_voxels": 1829768
+    },
+    {
+      "frame_id": 1930,
+      "valid_depth_samples": 815955,
+      "occupied_voxels": 1833421
+    },
+    {
+      "frame_id": 1940,
+      "valid_depth_samples": 815931,
+      "occupied_voxels": 1836691
+    },
+    {
+      "frame_id": 1950,
+      "valid_depth_samples": 815940,
+      "occupied_voxels": 1841173
+    },
+    {
+      "frame_id": 1960,
+      "valid_depth_samples": 815940,
+      "occupied_voxels": 1846073
+    },
+    {
+      "frame_id": 1970,
+      "valid_depth_samples": 815941,
+      "occupied_voxels": 1851500
+    },
+    {
+      "frame_id": 1980,
+      "valid_depth_samples": 815932,
+      "occupied_voxels": 1856792
+    },
+    {
+      "frame_id": 1990,
+      "valid_depth_samples": 815934,
+      "occupied_voxels": 1862429
+    }
+  ],
+  "GT_input": false,
+  "semantic_filter": false,
+  "XYZ_RGB_reduction": "sample_count_weighted_mean",
+  "pixel_convention": "native_integer_uv_depth_camera_z",
+  "elapsed_seconds": 183.9970932668075,
+  "peak_rss_bytes": 498253824,
+  "payload_sha256": "7dd7847e892ef52719b60fe476f2d11086b5fbd718263fb2c84d395c511de3f4",
+  "payload_bytes": 38254427,
+  "source_sha256": {
+    "/home/ww/crove/ovimap-static/scripts/evaluation/build_static_rgbd_cloud.py": "bce2b224849771482690fa8cc26064a7f6361161f64c9ca92df90be331e90e1e",
+    "/home/ww/crove/ovimap-static/src/static_ovmap/rgbd_cloud.py": "91e710d844812b593e2a077eb16b6efe62cb9fc4881aca276af40617a2c0a240"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "process_exit_code": 1,
+  "stage": "complete_FP32_decoder_forward",
+  "error": "CUDA OOM: requested 7.11 GiB, 4.83 GiB free, process 39.59 GiB, torch allocated 37.99 GiB",
+  "input_points": 1862429,
+  "resolution": "same full input with explicitly labelled BF16 mixed precision; no point/frame budget reduction"
+}

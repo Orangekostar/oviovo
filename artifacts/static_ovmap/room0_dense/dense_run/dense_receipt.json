@@ -1,0 +1,63 @@
+{
+  "status": "COMPLETE_DENSE_FEATURE_READOUT_PENDING_EVALUATION",
+  "command": [
+    "scripts/evaluation/run_static_ovmap_dense.py",
+    "--gla-root",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/GLA-CLIP",
+    "--dino-root",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/dino",
+    "--anyup-root",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/anyup",
+    "--weights",
+    "/home/ww/oviovo_baseline_builds/static_ovmap_r5/weights",
+    "--native-cache",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+    "--baseline-readout",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/enriched_readout/B0.json",
+    "--geometry-support",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json",
+    "--native-text-cache",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+    "--scene-root",
+    "/home/ww/vv/dataset/Replica/room0",
+    "--intrinsics",
+    "/home/ww/vv/dataset/Replica/cam_params.json",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/dense_run",
+    "--resume"
+  ],
+  "binding_sha256": "fe6ec3a9f3cd9a7ecd97a1d5ac93d49ec4f6ea7b65699fa0500437d6d63c3c38",
+  "frame_count": 172,
+  "slot_count": 497,
+  "model_load_and_text_seconds_this_invocation": 10.419369572773576,
+  "stage_total_seconds": {
+    "roi_seconds": 15.117087283171713,
+    "dense_seconds": 14.209437627345324,
+    "bilinear_upsample_seconds": 0.5689078597351909,
+    "bilinear_transfer_pool_seconds": 239.45630742702633,
+    "anyup_upsample_seconds": 270.24016067944467,
+    "anyup_transfer_pool_seconds": 233.14469531085342,
+    "sparse_neighbor_and_all_lambda_pool_seconds": 1745.3013813057914
+  },
+  "peak_gpu_allocated_bytes": 8501040640,
+  "process_peak_rss_bytes_this_invocation": 9925677056,
+  "retained_payload_array_bytes": 9628878,
+  "retained_payload_file_bytes": 7646193,
+  "frame_cache_bytes": 22909610,
+  "encoder_calls": {
+    "ROI_CLIP": 497,
+    "dense_frames": 172,
+    "dense_CLIP_windows": 1720,
+    "DINO_windows": 1720
+  },
+  "cost_scope": "new_dense_branch_only_historical_native_frontend_not_timed; D1_D2_D3_share_dense_forward",
+  "readout_conditions": [
+    "D0_ROI",
+    "D1",
+    "D2",
+    "D3_L01",
+    "D3_L02",
+    "D3_L03"
+  ],
+  "geometry_support_sha256": "34eaa7a47202e3b0b9a4496eaf87b9ce12bff00532fbbfaac3d2f9ec044db298"
+}

@@ -1,0 +1,24 @@
+{
+  "status": "ROOM0_T0_T1_COMPLETE_FULL_BENCHMARK_PENDING",
+  "primary_t0": "spaceformer_t0_fp32_chunk16",
+  "full_points": 1862429,
+  "test_results": [
+    {
+      "count": 112,
+      "status": "PASS",
+      "command": "python -m pytest -q tests/evaluation/test_static*.py tests/evaluation/test_run_ovimap_native.py tests/evaluation/test_ovimap_native.py tests/evaluation/test_ovimap_paper_audit.py tests/evaluation/test_run_ovimap_paper_protocol.py"
+    },
+    {
+      "count": 15,
+      "status": "PASS",
+      "command": "python -m pytest -q tests/evaluation/test_finalize_ovimap_native.py tests/evaluation/test_baseline_static_metrics.py"
+    }
+  ],
+  "limitations": [
+    "extra_3D_training_separate_track",
+    "fixed_seed_not_bitwise_repeatable",
+    "full_FP32_uses_query_chunk16",
+    "T1_overlap_score_sensitive",
+    "Room0_only"
+  ]
+}

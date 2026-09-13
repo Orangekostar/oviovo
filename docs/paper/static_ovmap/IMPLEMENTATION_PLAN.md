@@ -17,7 +17,7 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
 - [ ] Bind actual input assets, source changes, vocabulary IDs, model identity and protocol.
   Add protocol_manifest.json and baseline_asset_inventory.json under artifacts/static_ovmap.
   Reuse PAPER_PROTOCOL; add exact ScanNet18 with explicit unknown frame schedules until found.
-- [ ] Add contracts.py, cache_io.py, observation_bank.py and readout.py under src/static_ovmap.
+- [x] Add contracts.py, cache_io.py, observation_bank.py and readout.py under src/static_ovmap.
   Observation identity includes source index, frame and encoder/preprocess identity. Missing
   mask/quality/support stays null. Selection is separate from fusion. Fixed seed 0, K=8.
   Readout consumes one feature space and matching text bank, returns label/score/margin and
@@ -30,7 +30,8 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
   and save metrics, changed observations, semantic margins, raw outputs and measured readout costs.
 - [ ] Recover discarded query ownership/area: all 764 temp feature files exist and the 592
   retained files match exactly, but 172 have no saved owner/area. No extra encoder inference.
-- [ ] Commit and push first real stage; verify remote SHA. Do not call full task complete.
+- [x] Commit and push first real stage; verify remote SHA. R0–R4 stage commits are published;
+  the overall task remains active.
 
 ## Remaining staged deliverables (must not disappear after S1)
 
@@ -42,11 +43,14 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
   Real B0/G1/G2 evaluation and native restoration/export pass; negative/mixed results keep
   G1/G2 off. R4_RESULTS.md records canonical AP separately from released mP/mR and semantic AP.
   Full-scene validation remains part of the outstanding Replica8/ScanNet18 deliverable.
-- [ ] R5 choose one released dense checkpoint after interface/asset checks; separate ROI, pooled
-  dense, AnyUp and sparse owner/depth/visibility-gated refinement; T=1 and lambda 0.1/0.2/0.3
-  selected on Room0 only; measure K-observation/prototype storage and actual costs.
-- [ ] R6 verify complete SpaCeFormer segmentation/checkpoint/SigLIP2-1152 interface, preprocessing
-  and NMS; run T0 then T1 with native RGB-D point cloud, or record specific asset/runtime blocker.
+- [x] R5 Room0: released GLA-CLIP + original AnyUp, 172 frames/497 attempted slots,
+  ROI and matched-support ROI controls, sparse refinement at T=1/lambda .1/.2/.3,
+  exact native B0 parity, full semantic AP, retained storage and measured costs.
+  Negative result keeps D1/D2/D3 off; R5_RESULTS.md records support and adapter limits.
+- [x] R6 Room0 complete segmentation/checkpoint/SigLIP2-1152, observed RGB-D point cloud,
+  FP32 query-chunk runtime, T0/T1 and repeated T0 evaluation. R6_RESULTS.md preserves OOMs,
+  extra-3D-training boundaries, score/overlap sensitivity and fixed-seed variability.
+  Full-scene validation remains outstanding; this checkbox covers the Room0 stage only.
 - [ ] R7 is optional and NOT_RUN by default; never silently add query-conditioned masks.
 - [ ] Keep B0/B1/S1/S2/G1/G2/D1/D2/D3/C1/T0/T1/Q0/Q1 individually selectable and status-labelled.
 - [ ] Replica8 main table and 7-scene diagnostic; ScanNet18 uses physical-scene development split,
