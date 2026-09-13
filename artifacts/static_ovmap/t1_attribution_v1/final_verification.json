@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "native_same_generation_binding": {
+    "native": {
+      "projected_semantic_exact": true,
+      "vertex_count": 954492,
+      "readout_sha256": "3ead684fcb284b8575bc9179c1f49aeccd4d21979a84be5f9e9eaf40c3e51a57"
+    },
+    "S1a": {
+      "projected_semantic_exact": true,
+      "vertex_count": 954492,
+      "readout_sha256": "bdaae9055afaa5cf665da0ac0452c4666b03be72f194e8122a2027e650e7cb63"
+    }
+  },
+  "bound_native_projection_inputs": {
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/instance_map_gt_200.ply": "908d69604d50ec8c1ad79a83c15fd5bdc6dca36ed28f7ccabbef8859a7a11371",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/semantic_map_gt_200.ply": "dda31e14b27e9b0365557f4a49b19437709ea3a972b612d5e47f9cc5bab0e4ef"
+  },
+  "checks": [
+    {
+      "run": "fp32_primary",
+      "all_14_conditions_complete": true,
+      "all_overlapping_and_unique_trace_parity": true,
+      "assignment_manifests_byte_exact": true,
+      "rank_only_owner_semantic_exact": true,
+      "T0_released_metrics_full_precision_exact": true
+    },
+    {
+      "run": "fp32_repeat",
+      "all_14_conditions_complete": true,
+      "all_overlapping_and_unique_trace_parity": true,
+      "assignment_manifests_byte_exact": true,
+      "rank_only_owner_semantic_exact": true,
+      "T0_released_metrics_full_precision_exact": true
+    }
+  ],
+  "historical_T1_normalized_assignment_semantic_exact": true,
+  "fusion_profiles": [
+    {
+      "run": "fp32_primary",
+      "borrow_off_and_on_seconds": 0.0009993258863687515,
+      "nms_off_and_on_seconds": 0.017202937975525856,
+      "boundary": "one fresh CPU profile using already prepared frozen masks/IoUs; excludes cache preparation, assignment, evaluation and inference"
+    },
+    {
+      "run": "fp32_repeat",
+      "borrow_off_and_on_seconds": 0.001005285419523716,
+      "nms_off_and_on_seconds": 0.01797666121274233,
+      "boundary": "one fresh CPU profile using already prepared frozen masks/IoUs; excludes cache preparation, assignment, evaluation and inference"
+    }
+  ],
+  "environment": {
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+    "executable": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "numpy": "1.26.4"
+  },
+  "source_sha256": {
+    "src/static_ovmap/fusion_attribution.py": "359235362fa4b81fa4c71bf62077b3e3a5809b43ac334500816997a7855b9cf6",
+    "src/static_ovmap/released_trace.py": "5639bee0a26eb79b3c4e34e9c0fbbff825d38e929a58e937d888a2bc5b7a96db"
+  }
+}

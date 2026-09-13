@@ -105,3 +105,62 @@ def test_regional_confusion_keeps_unmatched_false_negatives_and_sums():
     t=region_transitions(gt,before,after,old_owner,new_owner,regions,[1,2])
     assert t['14']['correct_to_wrong']==1 and t['32']['wrong_to_correct']==1
     assert t['-1']['wrong_to_wrong']==1 and t['-1']['owner_changes']==0
+
+
+def test_native_readout_control_uses_native_query_provenance(tmp_path):
+    import json
+    from scripts.evaluation.run_static_t1_attribution import generate_conditions
+    pool=pool_fixture()
+    generate_conditions(pool,tmp_path,{'scene':'room0','prediction_conditions':['AT_NATIVE_U11']},
+        {1:9},'sha256:native',native_query_ids={1:['native-a','native-b']})
+    doc=json.loads((tmp_path/'AT_NATIVE_U11.json').read_text())
+    assert doc['ledger'][0]['source_query_ids']==['native-a','native-b']
+    assert doc['ledger'][0]['original_class_id']==9
+    assert not doc['ledger'][0]['label_actually_changed']
+    assert doc['ledger'][1]['borrowed_source_query_ids']==['native-a','native-b']
+    assert doc['ledger'][1]['original_class_id']==7
+
+
+def test_empty_source_candidate_stays_in_ledger_without_taking_owner_zero():
+    from src.static_ovmap.fusion_attribution import build_frozen_candidates,apply_fusion_nms,resolve_native_owners
+    pool=build_frozen_candidates(np.array([99,0]),{'99':None},np.array([[0,0],[1,0]],bool),
+        np.array([1,2]),np.array([.9,.8]),np.array([0,1]))
+    kept,events=apply_fusion_nms(pool,enabled=False)
+    assert len(pool.records)==2 and events[0]['source_empty'] and not events[0]['kept']
+    assert kept.tolist()==[1]
+    owners=resolve_native_owners(pool.masks,kept,pool.areas)
+    assert owners.tolist()==[2,0]
+    assert pool.native_owners.tolist()==[99,0]
+
+
+def test_best_owner_tie_uses_lower_native_owner_id():
+    from src.static_ovmap.fusion_attribution import build_frozen_candidates,apply_label_reuse
+    pool=build_frozen_candidates(np.array([5,5,2,2]),
+        {'5':{'class_id':4,'selected_query_ids':[]},'2':{'class_id':8,'selected_query_ids':[]}},
+        np.ones((1,4),bool),np.array([7]),np.array([.9]),np.array([11]))
+    labels,events=apply_label_reuse(pool)
+    assert events[2]['reused_owner']==2 and labels[2]==8
+
+
+def test_nms_first_accepted_suppressor_and_canonical_export_after_sf_visit():
+    from src.static_ovmap.fusion_attribution import build_frozen_candidates,apply_fusion_nms
+    masks=np.zeros((3,13),bool);masks[0,:10]=True;masks[1,2:]=True;masks[2,:]=True
+    pool=build_frozen_candidates(np.zeros(13,dtype=int),{},masks,np.array([1,1,1]),np.array([.9,.8,.7]),np.array([1,2,3]))
+    kept,edges=apply_fusion_nms(pool)
+    assert kept.tolist()==[0,1] and edges[2]['suppressed_by']==0
+    assert pool.ious[2,0]<pool.ious[2,1]
+    pool=build_frozen_candidates(np.array([1,1,2,2]),
+        {'1':{'class_id':4,'selected_query_ids':[]},'2':{'class_id':5,'selected_query_ids':[]}},
+        np.array([[1,1,0,0]],bool),np.array([7]),np.array([.9]),np.array([11]))
+    kept,edges=apply_fusion_nms(pool,sf_first=True)
+    assert edges[2]['nms_visit_rank']==0 and edges[1]['nms_visit_rank']==2
+    assert kept.tolist()==[1,2]  # visit accepted 2 then 1, but export canonical 1 then 2
+
+
+def test_legacy_empty_sf_arrays_preserve_ovi_only_output():
+    from src.static_ovmap.proposal_fusion import fuse_proposals
+    result = fuse_proposals(np.array([1, 1, 0]),
+        {'1': {'class_id': 4, 'selected_query_ids': []}},
+        np.empty((0, 3), dtype=bool), np.array([]), np.array([]), np.array([]))
+    assert result['masks'].tolist() == [[True, True, False]]
+    assert result['class_ids'].tolist() == [4]

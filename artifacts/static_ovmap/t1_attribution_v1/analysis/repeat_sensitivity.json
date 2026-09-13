@@ -1,0 +1,3319 @@
+[
+  {
+    "condition": "AT_ASSIGN_CLASS_NORM",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      19008,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_CLASS_NORM",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_CLASS_NORM",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_CLASS_NORM",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6001,
+      7000,
+      7001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      23000,
+      25000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5649412210845658,
+        "duplicate_events": []
+      },
+      "23001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0199.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0199.npy",
+        "tp_score": 13255.0,
+        "first_match_overlap": 0.43371059013742924,
+        "duplicate_events": []
+      },
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_CLASS_NORM",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      7002,
+      9006,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      23000,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5649412210845658,
+        "duplicate_events": []
+      },
+      "6001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0006.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0006.npy",
+        "tp_score": 47598.0,
+        "first_match_overlap": 0.5182193278981905,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0027.npy",
+        "tp_score": 5003.0,
+        "first_match_overlap": 0.6814404432132964,
+        "duplicate_events": []
+      },
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/67624fbb7f64ba2ff65e90b599085462b298c954df842576a7a5e5322a9d36c5/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_CLASS_NORM",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      19002,
+      19006,
+      21000,
+      25000,
+      48000
+    ],
+    "primary_only": {},
+    "repeat_only": {
+      "9006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/5ffff6fb51ed3f97c5aa3e65c0ccea442ddfb14b444eb19347138ba19e7c9379/candidate_0014.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/5ffff6fb51ed3f97c5aa3e65c0ccea442ddfb14b444eb19347138ba19e7c9379/candidate_0014.npy",
+        "tp_score": 14703.0,
+        "first_match_overlap": 0.8758112094395281,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_OVI_FILL",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      19008,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_OVI_FILL",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_OVI_FILL",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_OVI_FILL",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_OVI_FILL",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_OVI_FILL",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_RAW",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      19008,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_RAW",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_RAW",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_RAW",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      6000,
+      7000,
+      7002,
+      9006,
+      10000,
+      11000,
+      19002,
+      23000,
+      25000,
+      39000
+    ],
+    "primary_only": {
+      "7001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score": 3408.0,
+        "first_match_overlap": 0.2518202360030128,
+        "duplicate_events": []
+      },
+      "19005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score": 4484.0,
+        "first_match_overlap": 0.44103194103194104,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score": 13255.0,
+        "first_match_overlap": 0.43342169657422513,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "7004": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score": 3526.0,
+        "first_match_overlap": 0.3485374318294497,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_RAW",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      7002,
+      9006,
+      11000,
+      19002,
+      25000,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5707931623109658,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score": 5003.0,
+        "first_match_overlap": 0.6862660944206008,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score": 10779.0,
+        "first_match_overlap": 0.6955714285714286,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "5006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score": 164699.0,
+        "first_match_overlap": 0.5086324680163955,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_ASSIGN_RAW",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      19002,
+      25000
+    ],
+    "primary_only": {
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "9006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score": 14703.0,
+        "first_match_overlap": 0.8758112094395281,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_O_AREA",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_O_AREA",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_O_AREA",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_O_AREA",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_O_AREA",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_O_AREA",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_U11",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      19008,
+      21000,
+      21001,
+      23000,
+      23001,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_U11",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_U11",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_U11",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      6000,
+      7000,
+      7002,
+      9006,
+      10000,
+      11000,
+      19002,
+      23000,
+      39000
+    ],
+    "primary_only": {
+      "7001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score": 3408.0,
+        "first_match_overlap": 0.2518202360030128,
+        "duplicate_events": []
+      },
+      "19005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score": 4484.0,
+        "first_match_overlap": 0.44103194103194104,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score": 13255.0,
+        "first_match_overlap": 0.43342169657422513,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "7004": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score": 3526.0,
+        "first_match_overlap": 0.3485374318294497,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_U11",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      7002,
+      9006,
+      11000,
+      19002,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5707931623109658,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score": 5003.0,
+        "first_match_overlap": 0.6862660944206008,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score": 10779.0,
+        "first_match_overlap": 0.6955714285714286,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "5006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score": 164699.0,
+        "first_match_overlap": 0.5086324680163955,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NATIVE_U11",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      19002
+    ],
+    "primary_only": {
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "9006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score": 14703.0,
+        "first_match_overlap": 0.8758112094395281,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NMS_SF_FIRST",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "19008": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/overlapping_masks/candidate_0086.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/overlapping_masks/candidate_0086.npy",
+        "tp_score": 4526.0,
+        "first_match_overlap": 0.32341069626639757,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NMS_SF_FIRST",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "4001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0107.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0107.npy",
+        "tp_score": 24719.0,
+        "first_match_overlap": 0.5612244897959183,
+        "duplicate_events": []
+      },
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NMS_SF_FIRST",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19006,
+      21000,
+      25000,
+      39005,
+      48000
+    ],
+    "primary_only": {},
+    "repeat_only": {
+      "19005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/overlapping_masks/candidate_0036.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/overlapping_masks/candidate_0036.npy",
+        "tp_score": 2748.0,
+        "first_match_overlap": 0.8423864648263579,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NMS_SF_FIRST",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      6000,
+      7000,
+      7001,
+      7002,
+      9006,
+      10000,
+      11000,
+      19002,
+      23000,
+      25000,
+      39000
+    ],
+    "primary_only": {
+      "19005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0085.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0085.npy",
+        "tp_score": 4484.0,
+        "first_match_overlap": 0.3372744243932794,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5813528336380256,
+        "duplicate_events": []
+      },
+      "23001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0199.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0199.npy",
+        "tp_score": 13255.0,
+        "first_match_overlap": 0.4345074017355794,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0092.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0092.npy",
+        "tp_score": 751.0,
+        "first_match_overlap": 0.591044776119403,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7764471057884231,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NMS_SF_FIRST",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      23000,
+      25000,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0078.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0078.npy",
+        "tp_score": 49087.0,
+        "first_match_overlap": 0.5597014925373134,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0070.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0070.npy",
+        "tp_score": 4908.0,
+        "first_match_overlap": 0.6515021459227468,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5813528336380256,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0092.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0092.npy",
+        "tp_score": 751.0,
+        "first_match_overlap": 0.591044776119403,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7764471057884231,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_NMS_SF_FIRST",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      25000
+    ],
+    "primary_only": {
+      "19002": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0068.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0068.npy",
+        "tp_score": 4200.0,
+        "first_match_overlap": 0.7527173913043478,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/589f536a26ce7eee7a0ba31939d0ee453ccb39e2b46b35bc99ca7dcd452bfeeb/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7764471057884231,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_O_AREA",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_O_AREA",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_O_AREA",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_O_AREA",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_O_AREA",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5004,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_O_AREA",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_RANK_CLASS_NORM",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      19008,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_RANK_CLASS_NORM",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_RANK_CLASS_NORM",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_RANK_CLASS_NORM",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      6000,
+      7000,
+      7002,
+      9006,
+      10000,
+      11000,
+      19002,
+      23000,
+      25000,
+      39000
+    ],
+    "primary_only": {
+      "7001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score": 0.19696,
+        "first_match_overlap": 0.2518202360030128,
+        "duplicate_events": []
+      },
+      "19005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.44103194103194104,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.43342169657422513,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 0.790892,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "7004": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score": 0.20378,
+        "first_match_overlap": 0.3485374318294497,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_RANK_CLASS_NORM",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      7002,
+      9006,
+      11000,
+      19002,
+      25000,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.5707931623109658,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.6862660944206008,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score": 0.813203,
+        "first_match_overlap": 0.6955714285714286,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 0.790892,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "5006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score": 0.786543,
+        "first_match_overlap": 0.5086324680163955,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_RANK_CLASS_NORM",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      19002,
+      25000
+    ],
+    "primary_only": {
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "9006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score": 0.31519,
+        "first_match_overlap": 0.8758112094395281,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_AREA",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      21000,
+      21001,
+      23000,
+      23001,
+      33000,
+      39006
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_AREA",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      5005,
+      6001,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      21000,
+      21001,
+      23000,
+      23001,
+      33000,
+      39006
+    ],
+    "primary_only": {
+      "4001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0107.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0107.npy",
+        "tp_score": 24719.0,
+        "first_match_overlap": 0.5612244897959183,
+        "duplicate_events": []
+      },
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_AREA",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      10004,
+      11000,
+      33000
+    ],
+    "primary_only": {
+      "17000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0142.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0142.npy",
+        "tp_score": 11700.0,
+        "first_match_overlap": 0.7607573149741824,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_AREA",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      7000,
+      7001,
+      7002,
+      10000,
+      11000,
+      15000,
+      17000,
+      23000
+    ],
+    "primary_only": {
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d84bb0b4e13a12cc54cd895fe3c7a6cb6a4c38389fb6ca3d5f84c19b13ce3221/candidate_0073.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d84bb0b4e13a12cc54cd895fe3c7a6cb6a4c38389fb6ca3d5f84c19b13ce3221/candidate_0073.npy",
+        "tp_score": 1049.0,
+        "first_match_overlap": 0.5750452079566004,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_AREA",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      11000,
+      15000,
+      17000,
+      23000
+    ],
+    "primary_only": {
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d84bb0b4e13a12cc54cd895fe3c7a6cb6a4c38389fb6ca3d5f84c19b13ce3221/candidate_0070.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d84bb0b4e13a12cc54cd895fe3c7a6cb6a4c38389fb6ca3d5f84c19b13ce3221/candidate_0070.npy",
+        "tp_score": 4908.0,
+        "first_match_overlap": 0.6515021459227468,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d84bb0b4e13a12cc54cd895fe3c7a6cb6a4c38389fb6ca3d5f84c19b13ce3221/candidate_0073.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d84bb0b4e13a12cc54cd895fe3c7a6cb6a4c38389fb6ca3d5f84c19b13ce3221/candidate_0073.npy",
+        "tp_score": 1049.0,
+        "first_match_overlap": 0.5750452079566004,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_AREA",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_RELEASED",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      21000,
+      21001,
+      23000,
+      23001,
+      33000,
+      39006
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 0.001278,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_RELEASED",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      5005,
+      6001,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      21000,
+      21001,
+      23000,
+      23001,
+      33000,
+      39006
+    ],
+    "primary_only": {
+      "4001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0107.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0107.npy",
+        "tp_score": 0.04054,
+        "first_match_overlap": 0.5612244897959183,
+        "duplicate_events": []
+      },
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 0.001278,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_RELEASED",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      10004,
+      11000,
+      33000
+    ],
+    "primary_only": {
+      "17000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0142.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0142.npy",
+        "tp_score": 0.00309,
+        "first_match_overlap": 0.7607573149741824,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_RELEASED",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4001,
+      5000,
+      5002,
+      6001,
+      7000,
+      7001,
+      7002,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      21000,
+      21001,
+      23000,
+      23001,
+      33000,
+      39006
+    ],
+    "primary_only": {
+      "5005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d9fbc2b5c9f33bc74e60eb33090176f7efe1cf72dd713c298b1fb55a427e45ea/candidate_0086.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/d9fbc2b5c9f33bc74e60eb33090176f7efe1cf72dd713c298b1fb55a427e45ea/candidate_0086.npy",
+        "tp_score": 0.070906,
+        "first_match_overlap": 0.2872935535428876,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_RELEASED",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4001,
+      6001,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      21000,
+      21001,
+      23000,
+      23001,
+      33000,
+      39006
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_S_RELEASED",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      10004,
+      11000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U00",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U00",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10004,
+      10005,
+      11000,
+      15000,
+      17000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U00",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      10004,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000,
+      33000
+    ],
+    "primary_only": {
+      "17000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0142.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0142.npy",
+        "tp_score": 11700.0,
+        "first_match_overlap": 0.7607573149741824,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U00",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      7000,
+      7002,
+      10000,
+      11000,
+      17000,
+      23000,
+      39000
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5708821477543362,
+        "duplicate_events": []
+      },
+      "7001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0103.npy",
+        "tp_score": 3408.0,
+        "first_match_overlap": 0.2518202360030128,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5813528336380256,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5427807486631016,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "7004": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0103.npy",
+        "tp_score": 3526.0,
+        "first_match_overlap": 0.3485374318294497,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U00",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      11000,
+      17000,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5708821477543362,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0027.npy",
+        "tp_score": 5003.0,
+        "first_match_overlap": 0.6862660944206008,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5813528336380256,
+        "duplicate_events": []
+      },
+      "23000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0018.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0018.npy",
+        "tp_score": 10779.0,
+        "first_match_overlap": 0.6955714285714286,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5427807486631016,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "5006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0074.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0074.npy",
+        "tp_score": 164699.0,
+        "first_match_overlap": 0.5086324680163955,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U00",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U01",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      17000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U01",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      17000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U01",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U01",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      7000,
+      7002,
+      9006,
+      10000,
+      11000,
+      17000,
+      19002,
+      23000,
+      25000,
+      39000
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5707931623109658,
+        "duplicate_events": []
+      },
+      "7001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score": 3408.0,
+        "first_match_overlap": 0.2518202360030128,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "7004": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score": 3526.0,
+        "first_match_overlap": 0.3485374318294497,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U01",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      7002,
+      9006,
+      11000,
+      17000,
+      19002,
+      25000,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5707931623109658,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score": 5003.0,
+        "first_match_overlap": 0.6862660944206008,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score": 10779.0,
+        "first_match_overlap": 0.6955714285714286,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "5006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score": 164699.0,
+        "first_match_overlap": 0.5086324680163955,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U01",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      19002,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {
+      "9006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score": 14703.0,
+        "first_match_overlap": 0.8758112094395281,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U10",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      19008,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U10",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U10",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000,
+      39005,
+      48000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U10",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      6000,
+      7000,
+      7002,
+      9006,
+      10000,
+      11000,
+      19002,
+      23000,
+      25000,
+      39000
+    ],
+    "primary_only": {
+      "7001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0103.npy",
+        "tp_score": 3408.0,
+        "first_match_overlap": 0.2518202360030128,
+        "duplicate_events": []
+      },
+      "19005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0085.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0085.npy",
+        "tp_score": 4484.0,
+        "first_match_overlap": 0.3372744243932794,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5813528336380256,
+        "duplicate_events": []
+      },
+      "23001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0199.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0199.npy",
+        "tp_score": 13255.0,
+        "first_match_overlap": 0.43249591503267976,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5427807486631016,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "7004": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0103.npy",
+        "tp_score": 3526.0,
+        "first_match_overlap": 0.3485374318294497,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U10",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      25000,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5708821477543362,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0027.npy",
+        "tp_score": 5003.0,
+        "first_match_overlap": 0.6862660944206008,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5813528336380256,
+        "duplicate_events": []
+      },
+      "23000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0018.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0018.npy",
+        "tp_score": 10779.0,
+        "first_match_overlap": 0.6955714285714286,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5427807486631016,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "5006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0074.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/403dcd1e16819b6444ec7a90ffff82e9d008f45188f4a7e5593d6dfef8244588/candidate_0074.npy",
+        "tp_score": 164699.0,
+        "first_match_overlap": 0.5086324680163955,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U10",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      25000
+    ],
+    "primary_only": {
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/c88cc5695cfea5aa3c8835aeb10d6e9e9fbecea61c4335c293119ee44a4f5621/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U11",
+    "representation": "overlapping",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5003,
+      5004,
+      5005,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      19008,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      33000,
+      39000,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U11",
+    "representation": "overlapping",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      4000,
+      4001,
+      5000,
+      5004,
+      5005,
+      6000,
+      6001,
+      7002,
+      9006,
+      10000,
+      10005,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      23000,
+      23001,
+      25000,
+      39001,
+      39005,
+      39006,
+      48000,
+      51000
+    ],
+    "primary_only": {
+      "24000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/overlapping_masks/candidate_0167.npy",
+        "tp_score": 19644.0,
+        "first_match_overlap": 0.504508480988713,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U11",
+    "representation": "overlapping",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      5000,
+      9006,
+      11000,
+      19002,
+      19005,
+      19006,
+      21000,
+      21001,
+      25000
+    ],
+    "primary_only": {},
+    "repeat_only": {},
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U11",
+    "representation": "unique",
+    "threshold": 0.25,
+    "common_matched_GT_ids": [
+      5000,
+      5006,
+      6000,
+      7000,
+      7002,
+      9006,
+      10000,
+      11000,
+      19002,
+      23000,
+      25000,
+      39000
+    ],
+    "primary_only": {
+      "7001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0103.npy",
+        "tp_score": 3408.0,
+        "first_match_overlap": 0.2518202360030128,
+        "duplicate_events": []
+      },
+      "19005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0085.npy",
+        "tp_score": 4484.0,
+        "first_match_overlap": 0.44103194103194104,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23001": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0199.npy",
+        "tp_score": 13255.0,
+        "first_match_overlap": 0.43342169657422513,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "7004": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0103.npy",
+        "tp_score": 3526.0,
+        "first_match_overlap": 0.3485374318294497,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U11",
+    "representation": "unique",
+    "threshold": 0.5,
+    "common_matched_GT_ids": [
+      5000,
+      7002,
+      9006,
+      11000,
+      19002,
+      25000,
+      39001
+    ],
+    "primary_only": {
+      "6000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0005.npy",
+        "tp_score": 49184.0,
+        "first_match_overlap": 0.5707931623109658,
+        "duplicate_events": []
+      },
+      "10000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0027.npy",
+        "tp_score": 5003.0,
+        "first_match_overlap": 0.6862660944206008,
+        "duplicate_events": []
+      },
+      "21000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0044.npy",
+        "tp_score": 1415.0,
+        "first_match_overlap": 0.5850091407678245,
+        "duplicate_events": []
+      },
+      "23000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0018.npy",
+        "tp_score": 10779.0,
+        "first_match_overlap": 0.6955714285714286,
+        "duplicate_events": []
+      },
+      "39005": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0052.npy",
+        "tp_score": 851.0,
+        "first_match_overlap": 0.5190476190476191,
+        "duplicate_events": []
+      },
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "5006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0074.npy",
+        "tp_score": 164699.0,
+        "first_match_overlap": 0.5086324680163955,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  },
+  {
+    "condition": "AT_U11",
+    "representation": "unique",
+    "threshold": 0.7500000000000002,
+    "common_matched_GT_ids": [
+      11000,
+      19002,
+      25000
+    ],
+    "primary_only": {
+      "48000": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/unique_masks/caf5c3fcd4fd249b5be5b1db9668f48e069eb00d948d322f5db13d4852426a76/candidate_0180.npy",
+        "tp_score": 1915.0,
+        "first_match_overlap": 0.7504990019960079,
+        "duplicate_events": []
+      }
+    },
+    "repeat_only": {
+      "9006": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/unique_masks/d2a55765d6441b4f5bc81d2a968df0aa2e6453e1bc8b32c275e05ad8913bdb6f/candidate_0014.npy",
+        "tp_score": 14703.0,
+        "first_match_overlap": 0.8758112094395281,
+        "duplicate_events": []
+      }
+    },
+    "comparison_identity": "GT objects, never equal model query indices"
+  }
+]

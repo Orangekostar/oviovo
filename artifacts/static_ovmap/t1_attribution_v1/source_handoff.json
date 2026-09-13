@@ -1,0 +1,39 @@
+{
+  "reviewed_base": "8cefe6b4bca464e0478f82e6ef1e6d0e3783e347",
+  "first_stage_commit": "4e5411d72d5b5c2e8ee397a6aad4229d54b6b804",
+  "branch": "research/ovimap-t1-attribution-v1",
+  "environment": {
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+    "executable": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "numpy": "1.26.4"
+  },
+  "final_source_sha256": {
+    "src/static_ovmap/attribution_bridge.py": "5dda2f577677834c22f965632b44fa32a9caf8794abe806ebc897734ed889505",
+    "src/static_ovmap/attribution_objects.py": "114a4fe19a5218f90f2c615a91e7854826df0f8fc43daa1033df28f0f14dc75f",
+    "src/static_ovmap/attribution_regions.py": "320985d5d959eb93710747f496ef7cc6ca23185e631b2847beb38b23b702aef9",
+    "src/static_ovmap/fusion_attribution.py": "72911ef05e7de2eade3be19d0f6d51049879c451666a67bd542e29454a9392b7",
+    "src/static_ovmap/proposal_fusion.py": "39629326b4e21eb057a7b950b257972db58dbed48935230e8781441c042a5bf6",
+    "src/static_ovmap/released_trace.py": "5639bee0a26eb79b3c4e34e9c0fbbff825d38e929a58e937d888a2bc5b7a96db",
+    "scripts/evaluation/summarize_static_t1_attribution.py": "219c7d223043a2eecada200192db292f6175a897c87cfa5081fa37bc2aa59efb",
+    "scripts/evaluation/diagnose_static_t1_attribution.py": "99b9f335b1e4470c454746798d0e2c73fd0ec612b43d80ddc3ea8bd334698969",
+    "scripts/evaluation/evaluate_static_t1_geometry_bridge.py": "94c4c6ed9bc5f9733140e00284ccba2fca9c9238cfbf971c1f33798aaf8902c6",
+    "scripts/evaluation/run_oviv2_t1_reference.py": "70d544e197a1cddb6821bb039f62b8ccec8041cdf4a8909ca00c3a385c141547",
+    "scripts/evaluation/run_static_t1_attribution.py": "5d336a2a1bdb712d083261394a9cb5ecf36848ee3496624f85a80ed12b4ab77f",
+    "tests/evaluation/test_static_t1_geometry_bridge.py": "e228f16e0b75e898c2ce17ae3e710f2f79dbbce03ca1437c3b3451689fbb38fb",
+    "tests/evaluation/test_run_oviv2_t1_reference.py": "282bdd1a9a1e8cfaa5260ea191891e0d2c8871995056e85a4820d09bffaa2b39",
+    "tests/evaluation/test_static_t1_attribution.py": "6274a3a97bc3077464e95c9e9c2ddb3e1b96a4541df97a4e197b4fcefd18289f",
+    "tests/evaluation/test_static_t1_object_attribution.py": "0b3db8004a52d8d742f58424055aa1230e9c427c21e34f22e445a04a05b836c0",
+    "tests/evaluation/test_static_t1_evaluator_trace.py": "790fdef81534f093f87af5d057691c534ca72afe25950c69f625f6968c544bee",
+    "configs/evaluation/ovimap_t1_attribution_v1.json": "16c57d9388eaba39d9ee05901547195d76bd3a6aa361792188ae8aa750ea6b69"
+  },
+  "large_asset_root": "/mnt/shared/ww/ovimap-t1-attribution-v1",
+  "large_directories": {
+    "predictions": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions",
+    "predictions_verified": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+    "evaluation": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+    "geometry_bridge": "/mnt/shared/ww/ovimap-t1-attribution-v1/geometry_bridge",
+    "analysis_final": "/mnt/shared/ww/ovimap-t1-attribution-v1/analysis_final"
+  },
+  "metadata_correction": "Native controls initially carried S1a query metadata. Regenerated predictions_verified and compared every condition numeric input/owner array exactly; refreshed only five provenance fields in evaluator ledgers, preserving originals under evaluation/provenance_before_refresh. Metrics were not rerun because evaluator inputs were byte/array identical. This is two postprocessing passes on the same two model runs, not four independent runs.",
+  "post_evaluation_source_change": "Final empty-SF compatibility guard only affects arrays of length zero; both real banks contain 141/143 SF proposals. Archived original execution source hashes retained."
+}

@@ -1,0 +1,252 @@
+{
+  "new_model_inferences": 0,
+  "prediction_generation_verified_elapsed_seconds": 69.96397300995886,
+  "prediction_runs": [
+    {
+      "id": "fp32_primary",
+      "status": "COMPLETE_PREDICTION",
+      "t0": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16/T0.npz",
+      "coordinate_order_exact_equal_to_historical_primary": true,
+      "native_projection_reused": true,
+      "point_count": 1862429,
+      "ovi_count": 64,
+      "sf_count": 141,
+      "pool_preparation_seconds": 8.982163903303444,
+      "projection_seconds": 1.689419150352478e-06,
+      "total_seconds": 31.80408609751612,
+      "historical_parity": {
+        "coordinates": true,
+        "masks": true,
+        "class_ids": true,
+        "scores": true,
+        "candidate_ids": true,
+        "ledger_count": true,
+        "ledger_decisions": true
+      }
+    },
+    {
+      "id": "fp32_repeat",
+      "status": "COMPLETE_PREDICTION",
+      "t0": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t0_fp32_chunk16_repeat/T0.npz",
+      "coordinate_order_exact_equal_to_historical_primary": true,
+      "native_projection_reused": true,
+      "point_count": 1862429,
+      "ovi_count": 64,
+      "sf_count": 143,
+      "pool_preparation_seconds": 11.767496249638498,
+      "projection_seconds": 3.5157427191734314e-06,
+      "total_seconds": 33.85255314875394,
+      "historical_parity": null
+    }
+  ],
+  "assignment_costs": {
+    "fp32_primary": [
+      {
+        "condition": "AT_O_AREA",
+        "assignment_seconds_including_first_write": 0.7128596184775233,
+        "condition_seconds": 0.7151647349819541
+      },
+      {
+        "condition": "AT_S_RELEASED",
+        "assignment_seconds_including_first_write": 0.7651804685592651,
+        "condition_seconds": 0.7676200494170189
+      },
+      {
+        "condition": "AT_S_AREA",
+        "assignment_seconds_including_first_write": 0.775513312779367,
+        "condition_seconds": 0.7780720377340913
+      },
+      {
+        "condition": "AT_U00",
+        "assignment_seconds_including_first_write": 0.8578153401613235,
+        "condition_seconds": 0.859936723485589
+      },
+      {
+        "condition": "AT_U10",
+        "assignment_seconds_including_first_write": 2.987682819366455e-06,
+        "condition_seconds": 0.0034963982179760933
+      },
+      {
+        "condition": "AT_U01",
+        "assignment_seconds_including_first_write": 0.7758699795231223,
+        "condition_seconds": 0.7781269084662199
+      },
+      {
+        "condition": "AT_U11",
+        "assignment_seconds_including_first_write": 3.955326974391937e-06,
+        "condition_seconds": 0.0037770625203847885
+      },
+      {
+        "condition": "AT_ASSIGN_RAW",
+        "assignment_seconds_including_first_write": 3.0240043997764587e-06,
+        "condition_seconds": 0.0036895666271448135
+      },
+      {
+        "condition": "AT_ASSIGN_CLASS_NORM",
+        "assignment_seconds_including_first_write": 0.7821240685880184,
+        "condition_seconds": 0.7855555210262537
+      },
+      {
+        "condition": "AT_ASSIGN_OVI_FILL",
+        "assignment_seconds_including_first_write": 0.8010261571034789,
+        "condition_seconds": 0.8035157984122634
+      },
+      {
+        "condition": "AT_RANK_CLASS_NORM",
+        "assignment_seconds_including_first_write": 3.4729018807411194e-06,
+        "condition_seconds": 0.004204805940389633
+      },
+      {
+        "condition": "AT_NMS_SF_FIRST",
+        "assignment_seconds_including_first_write": 0.7944510178640485,
+        "condition_seconds": 0.8041119379922748
+      },
+      {
+        "condition": "AT_NATIVE_O_AREA",
+        "assignment_seconds_including_first_write": 2.911314368247986e-06,
+        "condition_seconds": 0.0037770820781588554
+      },
+      {
+        "condition": "AT_NATIVE_U11",
+        "assignment_seconds_including_first_write": 2.6924535632133484e-06,
+        "condition_seconds": 0.0038235029205679893
+      }
+    ],
+    "fp32_repeat": [
+      {
+        "condition": "AT_O_AREA",
+        "assignment_seconds_including_first_write": 0.7678544446825981,
+        "condition_seconds": 0.7703484836965799
+      },
+      {
+        "condition": "AT_S_RELEASED",
+        "assignment_seconds_including_first_write": 0.8219822943210602,
+        "condition_seconds": 0.8244789838790894
+      },
+      {
+        "condition": "AT_S_AREA",
+        "assignment_seconds_including_first_write": 0.847113061696291,
+        "condition_seconds": 0.8498908495530486
+      },
+      {
+        "condition": "AT_U00",
+        "assignment_seconds_including_first_write": 0.8821867145597935,
+        "condition_seconds": 0.8852949431166053
+      },
+      {
+        "condition": "AT_U10",
+        "assignment_seconds_including_first_write": 3.162771463394165e-06,
+        "condition_seconds": 0.003837290219962597
+      },
+      {
+        "condition": "AT_U01",
+        "assignment_seconds_including_first_write": 0.8387847878038883,
+        "condition_seconds": 0.8413640838116407
+      },
+      {
+        "condition": "AT_U11",
+        "assignment_seconds_including_first_write": 3.5511329770088196e-06,
+        "condition_seconds": 0.0038550598546862602
+      },
+      {
+        "condition": "AT_ASSIGN_RAW",
+        "assignment_seconds_including_first_write": 3.18232923746109e-06,
+        "condition_seconds": 0.0036957822740077972
+      },
+      {
+        "condition": "AT_ASSIGN_CLASS_NORM",
+        "assignment_seconds_including_first_write": 0.8360185585916042,
+        "condition_seconds": 0.839633890427649
+      },
+      {
+        "condition": "AT_ASSIGN_OVI_FILL",
+        "assignment_seconds_including_first_write": 0.8545558461919427,
+        "condition_seconds": 0.8581874156370759
+      },
+      {
+        "condition": "AT_RANK_CLASS_NORM",
+        "assignment_seconds_including_first_write": 4.922039806842804e-06,
+        "condition_seconds": 0.0054449960589408875
+      },
+      {
+        "condition": "AT_NMS_SF_FIRST",
+        "assignment_seconds_including_first_write": 1.0513934260234237,
+        "condition_seconds": 1.0645276764407754
+      },
+      {
+        "condition": "AT_NATIVE_O_AREA",
+        "assignment_seconds_including_first_write": 4.153698682785034e-06,
+        "condition_seconds": 0.004752849228680134
+      },
+      {
+        "condition": "AT_NATIVE_U11",
+        "assignment_seconds_including_first_write": 5.020759999752045e-06,
+        "condition_seconds": 0.004352874122560024
+      }
+    ]
+  },
+  "fusion_profiles": [
+    {
+      "run": "fp32_primary",
+      "borrow_off_and_on_seconds": 0.0009993258863687515,
+      "nms_off_and_on_seconds": 0.017202937975525856,
+      "boundary": "one fresh CPU profile using already prepared frozen masks/IoUs; excludes cache preparation, assignment, evaluation and inference"
+    },
+    {
+      "run": "fp32_repeat",
+      "borrow_off_and_on_seconds": 0.001005285419523716,
+      "nms_off_and_on_seconds": 0.01797666121274233,
+      "boundary": "one fresh CPU profile using already prepared frozen masks/IoUs; excludes cache preparation, assignment, evaluation and inference"
+    }
+  ],
+  "evaluation_latest_resume_seconds": 334.9325780980289,
+  "evaluation_runs_latest_resume": {
+    "fp32_primary": {
+      "status": "COMPLETE_REQUESTED_CONDITIONS",
+      "conditions": [
+        "AT_O_AREA",
+        "AT_S_RELEASED",
+        "AT_S_AREA",
+        "AT_U00",
+        "AT_U10",
+        "AT_U01",
+        "AT_U11",
+        "AT_ASSIGN_RAW",
+        "AT_ASSIGN_CLASS_NORM",
+        "AT_ASSIGN_OVI_FILL",
+        "AT_RANK_CLASS_NORM",
+        "AT_NMS_SF_FIRST",
+        "AT_NATIVE_O_AREA",
+        "AT_NATIVE_U11"
+      ],
+      "projection_reused_after_exact_coordinate_check": true,
+      "projection_seconds": 0.9117395700886846,
+      "seconds": 130.23411764297634
+    },
+    "fp32_repeat": {
+      "status": "COMPLETE_REQUESTED_CONDITIONS",
+      "conditions": [
+        "AT_O_AREA",
+        "AT_S_RELEASED",
+        "AT_S_AREA",
+        "AT_U00",
+        "AT_U10",
+        "AT_U01",
+        "AT_U11",
+        "AT_ASSIGN_RAW",
+        "AT_ASSIGN_CLASS_NORM",
+        "AT_ASSIGN_OVI_FILL",
+        "AT_RANK_CLASS_NORM",
+        "AT_NMS_SF_FIRST",
+        "AT_NATIVE_O_AREA",
+        "AT_NATIVE_U11"
+      ],
+      "projection_reused_after_exact_coordinate_check": true,
+      "projection_seconds": 0.8803920224308968,
+      "seconds": 189.390339567326
+    }
+  },
+  "geometry_bridge_seconds": 89.8671653829515,
+  "final_analysis_seconds": 19.550925808027387,
+  "boundaries": "CPU cached processing. Projection is checked cache load/write, not fresh nearest-neighbor search. Resume wall time excludes prior completed cells; per-condition measured export/evaluation costs remain in performance table. Assignment cache hits are not new independent timing trials. Do not sum nested timers or infer end-to-end FPS."
+}

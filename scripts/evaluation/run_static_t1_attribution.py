@@ -30,7 +30,7 @@ def checked_file(path, inventory, expected=None):
     return inventory[key]['sha256']
 
 
-def generate_conditions(pool, output, config, native_labels, native_readout_id):
+def generate_conditions(pool, output, config, native_labels, native_readout_id, *, native_query_ids=None):
     off, off_events = apply_label_reuse(pool, enabled=False)
     on, on_events = apply_label_reuse(pool)
     kept_nms, edges_nms = apply_fusion_nms(pool)
@@ -96,6 +96,20 @@ def generate_conditions(pool, output, config, native_labels, native_readout_id):
                 rank_score_parsed=float(parsed[i]), assignment_priority_full_precision=float(assignment[i]),
                 assignment_source_priority=int(groups[i]), assignment_rule_id=rule,
                 output_owner_id=i+1, owned_source_point_count=int(counts[i]))
+            row['frozen_pool_original_class_id'] = int(pool.original_labels[i])
+            if condition.startswith('AT_NATIVE_') and metadata['source'] == 'OVI':
+                owner = metadata['native_owner_id']
+                row['source_query_ids'] = list(native_query_ids[owner])
+                row['original_class_id'] = int(native_labels[owner])
+                row['label_actually_changed'] = bool(labels[i] != native_labels[owner])
+            borrowed_owner = events[i]['reused_owner']
+            if borrowed_owner is None:
+                row['borrowed_source_query_ids'] = []
+            elif condition.startswith('AT_NATIVE_'):
+                row['borrowed_source_query_ids'] = list(native_query_ids[borrowed_owner])
+            else:
+                row['borrowed_source_query_ids'] = next(list(r['source_query_ids']) for r in pool.records[:pool.ovi_count]
+                    if r['native_owner_id'] == borrowed_owner)
             ledger.append(row)
         record = {'status': 'COMPLETE_PREDICTION', 'condition': condition, 'scene': config['scene'],
             'prediction_run_id': pool.records[0]['prediction_run_id'] if pool.records else 'empty',
@@ -210,7 +224,8 @@ def main():
         write(dest/'region_registry.json', registry)
         if native.exists():
             native_labels = {r['native_owner_id']: native_doc['observations'][str(r['native_owner_id'])]['class_id'] for r in pool.records[:pool.ovi_count]}
-        conditions = generate_conditions(pool, dest, config, native_labels, native_readout_id)
+        conditions = generate_conditions(pool, dest, config, native_labels, native_readout_id,
+            native_query_ids=None if not native.exists() else {int(k):v['selected_query_ids'] for k,v in native_doc['observations'].items() if v is not None})
         row = {'id':run['id'], 'status':'COMPLETE_PREDICTION', 't0':run['t0'],
             'coordinate_order_exact_equal_to_historical_primary':equal, 'native_projection_reused':equal,
             'point_count':len(coord), 'ovi_count':pool.ovi_count, 'sf_count':len(labels),

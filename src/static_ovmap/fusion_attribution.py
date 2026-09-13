@@ -33,8 +33,8 @@ def build_frozen_candidates(owners, readout, masks, labels, scores, query_ids, *
     if (owners.ndim != 1 or not np.issubdtype(owners.dtype, np.integer) or np.any(owners < 0)
             or labels.ndim != 1 or masks.shape != (len(labels), len(owners)) or masks.dtype != bool
             or scores.shape != labels.shape or query_ids.shape != labels.shape
-            or not np.isfinite(scores).all() or not np.issubdtype(labels.dtype, np.integer)
-            or np.any(labels <= 0) or not np.issubdtype(query_ids.dtype, np.integer)
+            or not np.isfinite(scores).all() or (labels.size and not np.issubdtype(labels.dtype, np.integer))
+            or np.any(labels <= 0) or (query_ids.size and not np.issubdtype(query_ids.dtype, np.integer))
             or len(np.unique(query_ids)) != len(query_ids)):
         raise ValueError('aligned finite proposals and unique integer query IDs required')
     ids, counts = np.unique(owners, return_counts=True)

@@ -1,0 +1,67 @@
+{
+  "cwd": "/home/ww/crove/ovimap-t1-attribution",
+  "commands": [
+    {
+      "stage": "prediction_initial",
+      "command": "scripts/evaluation/run_static_t1_attribution.py --config configs/evaluation/ovimap_t1_attribution_v1.json --output /mnt/shared/ww/ovimap-t1-attribution-v1/predictions",
+      "exit_status": 0,
+      "receipt": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions/prediction_manifest.json",
+      "interpreter_capture": "receipt records sys.argv only; interpreter not included"
+    },
+    {
+      "stage": "prediction_metadata_corrected",
+      "command": "scripts/evaluation/run_static_t1_attribution.py --config configs/evaluation/ovimap_t1_attribution_v1.json --output /mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+      "exit_status": 0,
+      "receipt": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified/prediction_manifest.json",
+      "interpreter_capture": "receipt records sys.argv only; interpreter not included"
+    },
+    {
+      "stage": "evaluation_full_resume",
+      "command": "scripts/evaluation/diagnose_static_t1_attribution.py --config configs/evaluation/ovimap_t1_attribution_v1.json --predictions /mnt/shared/ww/ovimap-t1-attribution-v1/predictions --output /mnt/shared/ww/ovimap-t1-attribution-v1/evaluation --resume",
+      "exit_status": 0,
+      "receipt": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/evaluation_manifest.json",
+      "interpreter_capture": "receipt records sys.argv only; interpreter not included"
+    },
+    {
+      "stage": "geometry_bridge",
+      "command": "scripts/evaluation/evaluate_static_t1_geometry_bridge.py --config configs/evaluation/ovimap_t1_attribution_v1.json --predictions /mnt/shared/ww/ovimap-t1-attribution-v1/predictions --evaluation /mnt/shared/ww/ovimap-t1-attribution-v1/evaluation --output /mnt/shared/ww/ovimap-t1-attribution-v1/geometry_bridge",
+      "exit_status": 0,
+      "receipt": "/mnt/shared/ww/ovimap-t1-attribution-v1/geometry_bridge/manifest.json",
+      "interpreter_capture": "receipt records sys.argv only; interpreter not included"
+    },
+    {
+      "stage": "analysis_final",
+      "command": "scripts/evaluation/summarize_static_t1_attribution.py --config configs/evaluation/ovimap_t1_attribution_v1.json --predictions /mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified --evaluation /mnt/shared/ww/ovimap-t1-attribution-v1/evaluation --geometry-bridge /mnt/shared/ww/ovimap-t1-attribution-v1/geometry_bridge --output /mnt/shared/ww/ovimap-t1-attribution-v1/analysis_final",
+      "exit_status": 0,
+      "receipt": "/mnt/shared/ww/ovimap-t1-attribution-v1/analysis_final/analysis_manifest.json",
+      "interpreter_capture": "receipt records sys.argv only; interpreter not included"
+    },
+    {
+      "stage": "final_regression",
+      "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/evaluation/test_static_t1_attribution.py tests/evaluation/test_static_t1_evaluator_trace.py tests/evaluation/test_static_t1_object_attribution.py tests/evaluation/test_static_t1_geometry_bridge.py tests/evaluation/test_static_proposal_fusion.py tests/evaluation/test_static_projected_masks.py tests/evaluation/test_static_projected_instance_metrics.py tests/evaluation/test_static_released_loader.py",
+      "exit_status": 0,
+      "result": "26 passed in 0.95s"
+    }
+  ],
+  "other_actual_checks": [
+    {
+      "stage": "provenance_metadata_refresh",
+      "method": "executed Python heredoc, no standalone verifier script",
+      "exit_status": 0,
+      "receipt": "evaluation/provenance_refresh.json"
+    },
+    {
+      "stage": "final_real_asset_verification",
+      "method": "executed Python heredoc, no standalone verifier script",
+      "exit_status": 0,
+      "receipt": "final_verification.json"
+    },
+    {
+      "stage": "empty-SF regression red/green",
+      "red_exit": 1,
+      "cause": "new validation rejected empty default-float arrays formerly accepted",
+      "green_exit": 0,
+      "scope": "allow empty labels/query IDs regardless dtype; nonempty real-run branch unchanged"
+    }
+  ]
+}

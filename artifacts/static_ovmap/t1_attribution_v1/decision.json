@@ -1,0 +1,13 @@
+{
+  "status": "DIAGNOSIS_COMPLETE_OWNERSHIP_LIMITED",
+  "repair_decision": "NO_REPAIR_JUSTIFIED",
+  "required_conditions": 34,
+  "complete_conditions": 34,
+  "new_model_inferences": 0,
+  "optional_new_repair": "NOT_RUN: no additional justified rule beyond predeclared assignment controls",
+  "oracle_diagnostic": "NOT_RUN: optional, unnecessary",
+  "scope": "two saved independent FP32 model predictions of Room0; development diagnosis only",
+  "reason": "U11 loses overlapping AP and unique AP versus its paired common-domain O-only baseline in both runs. OVI_FILL restores semantic quality but unique AP ties O-only only in primary and is lower in repeat. No new GT-selected rule or threshold search is justified.",
+  "next_experiment": "Predeclare O_AREA, U11 and OVI_FILL with unchanged thresholds/scores on Room1 and Office1; evaluate both saved seeds per scene if available, all current metrics and GT-object outcomes; pool released evaluator across scenes and semantic confusion matrices. Do not launch mapping or inference in this task.",
+  "reporting_update": "Supersedes provisional repair fields in frozen config and intermediate analysis manifests; no prediction policy changed."
+}

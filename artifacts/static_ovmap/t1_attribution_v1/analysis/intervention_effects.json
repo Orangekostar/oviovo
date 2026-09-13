@@ -1,0 +1,646 @@
+[
+  {
+    "run": "fp32_primary",
+    "effect": "candidate_addition",
+    "status": "COMPLETE",
+    "before": "AT_O_AREA",
+    "after": "AT_U00",
+    "delta_proportions": {
+      "overlapping_AP": 0.025090532056677856,
+      "overlapping_AP50": 0.11032394255050504,
+      "overlapping_AP25": 0.1415409677128427,
+      "semantic_miou": -0.2050251349627935,
+      "semantic_macc": -0.2100581832259142,
+      "unique_AP": -0.1463956557417206,
+      "unique_AP50": -0.2285507605820106,
+      "unique_AP25": -0.22445353835978837,
+      "unique_canonical_AP75": -0.15212308651010503
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "borrow_without_nms",
+    "status": "COMPLETE",
+    "before": "AT_U00",
+    "after": "AT_U10",
+    "delta_proportions": {
+      "overlapping_AP": -0.035134051048402865,
+      "overlapping_AP50": -0.11493055555555559,
+      "overlapping_AP25": -0.07537698412698407,
+      "semantic_miou": 0.05811896719156864,
+      "semantic_macc": 0.06050521285866059,
+      "unique_AP": 0.05208333333333333,
+      "unique_AP50": 0.037037037037037035,
+      "unique_AP25": 0.08381944444444445,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "borrow_with_nms",
+    "status": "COMPLETE",
+    "before": "AT_U01",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": -0.00615140603566533,
+      "overlapping_AP50": -0.057870370370370294,
+      "overlapping_AP25": -0.019560185185185208,
+      "semantic_miou": 0.00892542148598513,
+      "semantic_macc": 0.015308609245399007,
+      "unique_AP": 0.011574074074074084,
+      "unique_AP50": -0.013888888888888923,
+      "unique_AP25": 0.035462962962962974,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "nms_without_borrow",
+    "status": "COMPLETE",
+    "before": "AT_U00",
+    "after": "AT_U01",
+    "delta_proportions": {
+      "overlapping_AP": -0.02022247942386829,
+      "overlapping_AP50": -0.03402777777777782,
+      "overlapping_AP25": -0.028687169312169192,
+      "semantic_miou": 0.049310803724452595,
+      "semantic_macc": 0.04766763781094632,
+      "unique_AP": 0.05236625514403291,
+      "unique_AP50": 0.05925925925925929,
+      "unique_AP25": 0.05314814814814817,
+      "unique_canonical_AP75": 0.009013032822556635
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "nms_with_borrow",
+    "status": "COMPLETE",
+    "before": "AT_U10",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": 0.008760165588869245,
+      "overlapping_AP50": 0.023032407407407474,
+      "overlapping_AP25": 0.02712962962962967,
+      "semantic_miou": 0.00011725801886908194,
+      "semantic_macc": 0.0024710341976847405,
+      "unique_AP": 0.011856995884773666,
+      "unique_AP50": 0.008333333333333331,
+      "unique_AP25": 0.004791666666666694,
+      "unique_canonical_AP75": 0.009013032822556635
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "fusion_increment_S1a",
+    "status": "COMPLETE",
+    "before": "AT_O_AREA",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": -0.0012833534028557636,
+      "overlapping_AP50": 0.01842579440235692,
+      "overlapping_AP25": 0.09329361321548829,
+      "semantic_miou": -0.14678890975235578,
+      "semantic_macc": -0.14708193616956888,
+      "unique_AP": -0.08245532652361358,
+      "unique_AP50": -0.18318039021164023,
+      "unique_AP25": -0.13584242724867723,
+      "unique_canonical_AP75": -0.14311005368754842
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "assignment_class_norm",
+    "status": "COMPLETE",
+    "before": "AT_ASSIGN_RAW",
+    "after": "AT_ASSIGN_CLASS_NORM",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.13237698323011318,
+      "semantic_macc": 0.13974165955765844,
+      "unique_AP": 0.06743582206545172,
+      "unique_AP50": 0.16278108465608465,
+      "unique_AP25": 0.1566757605820106,
+      "unique_canonical_AP75": 0.016142878391874376
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "assignment_ovi_fill",
+    "status": "COMPLETE",
+    "before": "AT_ASSIGN_RAW",
+    "after": "AT_ASSIGN_OVI_FILL",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.14692431522566016,
+      "semantic_macc": 0.14734264395280083,
+      "unique_AP": 0.08245532652361358,
+      "unique_AP50": 0.18318039021164023,
+      "unique_AP25": 0.13584242724867723,
+      "unique_canonical_AP75": 0.13195406817697844
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "rank_class_norm",
+    "status": "COMPLETE",
+    "before": "AT_ASSIGN_RAW",
+    "after": "AT_RANK_CLASS_NORM",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.0,
+      "semantic_macc": 0.0,
+      "unique_AP": 0.0,
+      "unique_AP50": 0.0,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.02528182228056915
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "nms_order",
+    "status": "COMPLETE",
+    "before": "AT_U11",
+    "after": "AT_NMS_SF_FIRST",
+    "delta_proportions": {
+      "overlapping_AP": -0.02258904076033702,
+      "overlapping_AP50": -0.017013888888888884,
+      "overlapping_AP25": -0.01331018518518523,
+      "semantic_miou": 0.00042671714133432626,
+      "semantic_macc": -0.004120827487062606,
+      "unique_AP": -0.005858686067019378,
+      "unique_AP50": -0.008333333333333331,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": -0.004636183802850469
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "readout_native_O",
+    "status": "COMPLETE",
+    "before": "AT_NATIVE_O_AREA",
+    "after": "AT_O_AREA",
+    "delta_proportions": {
+      "overlapping_AP": 0.03240740740740741,
+      "overlapping_AP50": 0.041666666666666685,
+      "overlapping_AP25": 0.04166666666666663,
+      "semantic_miou": 0.029249623225192367,
+      "semantic_macc": 0.0348403250188965,
+      "unique_AP": 0.03240740740740741,
+      "unique_AP50": 0.041666666666666685,
+      "unique_AP25": 0.04166666666666663,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "readout_native_U11",
+    "status": "COMPLETE",
+    "before": "AT_NATIVE_U11",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": 0.03240740740740736,
+      "overlapping_AP50": 0.041666666666666685,
+      "overlapping_AP25": 0.041666666666666685,
+      "semantic_miou": 0.029627992929455255,
+      "semantic_macc": 0.03484032501889647,
+      "unique_AP": 0.03240740740740741,
+      "unique_AP50": 0.04166666666666666,
+      "unique_AP25": 0.041666666666666685,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "fusion_increment_native",
+    "status": "COMPLETE",
+    "before": "AT_NATIVE_O_AREA",
+    "after": "AT_NATIVE_U11",
+    "delta_proportions": {
+      "overlapping_AP": -0.001283353402855708,
+      "overlapping_AP50": 0.01842579440235692,
+      "overlapping_AP25": 0.09329361321548824,
+      "semantic_miou": -0.14716727945661867,
+      "semantic_macc": -0.14708193616956886,
+      "unique_AP": -0.08245532652361358,
+      "unique_AP50": -0.1831803902116402,
+      "unique_AP25": -0.1358424272486773,
+      "unique_canonical_AP75": -0.14311005368754842
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "factorial_interaction",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "overlapping_AP": 0.028982645012737535,
+      "overlapping_AP50": 0.0570601851851853,
+      "overlapping_AP25": 0.05581679894179886,
+      "semantic_miou": -0.049193545705583513,
+      "semantic_macc": -0.04519660361326158,
+      "unique_AP": -0.040509259259259245,
+      "unique_AP50": -0.05092592592592596,
+      "unique_AP25": -0.04835648148148147,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "readout_fusion_interaction",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "overlapping_AP": -5.551115123125783e-17,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 5.551115123125783e-17,
+      "semantic_miou": 0.0003783697042628875,
+      "semantic_macc": -2.7755575615628914e-17,
+      "unique_AP": 0.0,
+      "unique_AP50": -2.7755575615628914e-17,
+      "unique_AP25": 5.551115123125783e-17,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "candidate_addition",
+    "status": "COMPLETE",
+    "before": "AT_O_AREA",
+    "after": "AT_U00",
+    "delta_proportions": {
+      "overlapping_AP": 0.014365588757949854,
+      "overlapping_AP50": 0.044315551346801374,
+      "overlapping_AP25": 0.10797615289802792,
+      "semantic_miou": -0.22617241069103133,
+      "semantic_macc": -0.23292052438108815,
+      "unique_AP": -0.16576845115618266,
+      "unique_AP50": -0.29353091931216935,
+      "unique_AP25": -0.2660309193121693,
+      "unique_canonical_AP75": -0.15490601786446498
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "borrow_without_nms",
+    "status": "COMPLETE",
+    "before": "AT_U00",
+    "after": "AT_U10",
+    "delta_proportions": {
+      "overlapping_AP": -0.0368961885165589,
+      "overlapping_AP50": -0.12476851851851856,
+      "overlapping_AP25": -0.09678902116402116,
+      "semantic_miou": 0.04124041149777358,
+      "semantic_macc": 0.03063923003550209,
+      "unique_AP": 0.034593621399176946,
+      "unique_AP50": 0.005787037037037035,
+      "unique_AP25": 0.02932870370370369,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "borrow_with_nms",
+    "status": "COMPLETE",
+    "before": "AT_U01",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": -0.009044924554183792,
+      "overlapping_AP50": -0.06597222222222221,
+      "overlapping_AP25": -0.03634259259259259,
+      "semantic_miou": -0.008267479510417702,
+      "semantic_macc": -0.0159946947157793,
+      "unique_AP": -0.01157407407407407,
+      "unique_AP50": -0.045138888888888895,
+      "unique_AP25": -0.01951388888888883,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "nms_without_borrow",
+    "status": "COMPLETE",
+    "before": "AT_U00",
+    "after": "AT_U01",
+    "delta_proportions": {
+      "overlapping_AP": -0.013663837448559674,
+      "overlapping_AP50": -0.009722222222222299,
+      "overlapping_AP25": -0.03158068783068785,
+      "semantic_miou": 0.05466994850554219,
+      "semantic_macc": 0.049286829919917396,
+      "unique_AP": 0.05442386831275721,
+      "unique_AP50": 0.059259259259259275,
+      "unique_AP25": 0.052314814814814786,
+      "unique_canonical_AP75": 0.010394693369253053
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "nms_with_borrow",
+    "status": "COMPLETE",
+    "before": "AT_U10",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": 0.014187426513815438,
+      "overlapping_AP50": 0.04907407407407405,
+      "overlapping_AP25": 0.02886574074074072,
+      "semantic_miou": 0.005162057497350908,
+      "semantic_macc": 0.002652905168636005,
+      "unique_AP": 0.008256172839506193,
+      "unique_AP50": 0.008333333333333345,
+      "unique_AP25": 0.0034722222222222654,
+      "unique_canonical_AP75": 0.010394693369253053
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "fusion_increment_S1a",
+    "status": "COMPLETE",
+    "before": "AT_O_AREA",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": -0.008343173244793611,
+      "overlapping_AP50": -0.031378893097643135,
+      "overlapping_AP25": 0.04005287247474748,
+      "semantic_miou": -0.17976994169590685,
+      "semantic_macc": -0.19962838917695006,
+      "unique_AP": -0.12291865691749952,
+      "unique_AP50": -0.27941054894179895,
+      "unique_AP25": -0.23322999338624337,
+      "unique_canonical_AP75": -0.14451132449521192
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "assignment_class_norm",
+    "status": "COMPLETE",
+    "before": "AT_ASSIGN_RAW",
+    "after": "AT_ASSIGN_CLASS_NORM",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.14950223092020012,
+      "semantic_macc": 0.1705540029767819,
+      "unique_AP": 0.09574637468155987,
+      "unique_AP50": 0.17857142857142855,
+      "unique_AP25": 0.15047536375661372,
+      "unique_canonical_AP75": 0.019642960357369933
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "assignment_ovi_fill",
+    "status": "COMPLETE",
+    "before": "AT_ASSIGN_RAW",
+    "after": "AT_ASSIGN_OVI_FILL",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.17996046412469693,
+      "semantic_macc": 0.19990972351437772,
+      "unique_AP": 0.11848192852243776,
+      "unique_AP50": 0.2551049933862434,
+      "unique_AP25": 0.2089244378306878,
+      "unique_canonical_AP75": 0.13034828696732337
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "rank_class_norm",
+    "status": "COMPLETE",
+    "before": "AT_ASSIGN_RAW",
+    "after": "AT_RANK_CLASS_NORM",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.0,
+      "semantic_macc": 0.0,
+      "unique_AP": 0.0,
+      "unique_AP50": 0.0,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.026950455216497034
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "nms_order",
+    "status": "COMPLETE",
+    "before": "AT_U11",
+    "after": "AT_NMS_SF_FIRST",
+    "delta_proportions": {
+      "overlapping_AP": -0.026747134038800746,
+      "overlapping_AP50": -0.0534722222222222,
+      "overlapping_AP25": -0.00868055555555558,
+      "semantic_miou": -0.007120530164226868,
+      "semantic_macc": -0.004870597386214481,
+      "unique_AP": -0.006520061728395074,
+      "unique_AP50": 0.007291666666666655,
+      "unique_AP25": 0.002430555555555519,
+      "unique_canonical_AP75": -0.005840637431897319
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "readout_native_O",
+    "status": "COMPLETE",
+    "before": "AT_NATIVE_O_AREA",
+    "after": "AT_O_AREA",
+    "delta_proportions": {
+      "overlapping_AP": 0.03240740740740741,
+      "overlapping_AP50": 0.041666666666666685,
+      "overlapping_AP25": 0.04166666666666663,
+      "semantic_miou": 0.029249623225192367,
+      "semantic_macc": 0.0348403250188965,
+      "unique_AP": 0.03240740740740741,
+      "unique_AP50": 0.041666666666666685,
+      "unique_AP25": 0.04166666666666663,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "readout_native_U11",
+    "status": "COMPLETE",
+    "before": "AT_NATIVE_U11",
+    "after": "AT_U11",
+    "delta_proportions": {
+      "overlapping_AP": 0.03240740740740744,
+      "overlapping_AP50": 0.041666666666666685,
+      "overlapping_AP25": 0.041666666666666685,
+      "semantic_miou": 0.03030987999342427,
+      "semantic_macc": 0.03484032501889639,
+      "unique_AP": 0.03240740740740741,
+      "unique_AP50": 0.04166666666666667,
+      "unique_AP25": 0.041666666666666685,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "fusion_increment_native",
+    "status": "COMPLETE",
+    "before": "AT_NATIVE_O_AREA",
+    "after": "AT_NATIVE_U11",
+    "delta_proportions": {
+      "overlapping_AP": -0.008343173244793639,
+      "overlapping_AP50": -0.031378893097643135,
+      "overlapping_AP25": 0.040052872474747425,
+      "semantic_miou": -0.18083019846413875,
+      "semantic_macc": -0.19962838917694994,
+      "unique_AP": -0.12291865691749952,
+      "unique_AP50": -0.27941054894179895,
+      "unique_AP25": -0.23322999338624342,
+      "unique_canonical_AP75": -0.14451132449521192
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "factorial_interaction",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "overlapping_AP": 0.02785126396237511,
+      "overlapping_AP50": 0.058796296296296346,
+      "overlapping_AP25": 0.06044642857142857,
+      "semantic_miou": -0.04950789100819128,
+      "semantic_macc": -0.04663392475128139,
+      "unique_AP": -0.046167695473251016,
+      "unique_AP50": -0.050925925925925916,
+      "unique_AP25": -0.04884259259259252,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "readout_fusion_interaction",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "overlapping_AP": 2.7755575615628914e-17,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 5.551115123125783e-17,
+      "semantic_miou": 0.0010602567682319042,
+      "semantic_macc": -1.1102230246251565e-16,
+      "unique_AP": 0.0,
+      "unique_AP50": 0.0,
+      "unique_AP25": 5.551115123125783e-17,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "geometry_transfer",
+    "status": "COMPLETE",
+    "before": "AT_GEO_NATIVE",
+    "after": "AT_GEO_TRANSFER",
+    "delta_proportions": {
+      "overlapping_AP": 0.018948412698412687,
+      "overlapping_AP50": 0.008333333333333304,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.0033871888514666604,
+      "semantic_macc": 0.003348986072804816,
+      "unique_AP": 0.018948412698412687,
+      "unique_AP50": 0.008333333333333304,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.0011567379988432769
+    },
+    "semantic_scope": "same frozen historical emitted registry; full semantic-export difference separately reported"
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "geometry_rank_area",
+    "status": "COMPLETE",
+    "before": "AT_GEO_TRANSFER",
+    "after": "AT_GEO_AREA",
+    "delta_proportions": {
+      "overlapping_AP": 0.0007716049382716361,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.0,
+      "semantic_macc": 0.0,
+      "unique_AP": 0.0007716049382716361,
+      "unique_AP50": 0.0,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.020718515725834996
+    },
+    "semantic_scope": "same frozen historical emitted registry; full semantic-export difference separately reported"
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "core_registry_eligibility",
+    "status": "COMPLETE",
+    "before": "AT_GEO_AREA",
+    "after": "AT_O_AREA",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": -5.65467867696956e-07,
+      "semantic_macc": 0.0,
+      "unique_AP": 0.0,
+      "unique_AP50": 0.0,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.0
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "geometry_transfer",
+    "status": "COMPLETE",
+    "before": "AT_GEO_NATIVE",
+    "after": "AT_GEO_TRANSFER",
+    "delta_proportions": {
+      "overlapping_AP": 0.018948412698412687,
+      "overlapping_AP50": 0.008333333333333304,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.0033871888514666604,
+      "semantic_macc": 0.003348986072804816,
+      "unique_AP": 0.018948412698412687,
+      "unique_AP50": 0.008333333333333304,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.0011567379988432769
+    },
+    "semantic_scope": "same frozen historical emitted registry; full semantic-export difference separately reported"
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "geometry_rank_area",
+    "status": "COMPLETE",
+    "before": "AT_GEO_TRANSFER",
+    "after": "AT_GEO_AREA",
+    "delta_proportions": {
+      "overlapping_AP": 0.0007716049382716361,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": 0.0,
+      "semantic_macc": 0.0,
+      "unique_AP": 0.0007716049382716361,
+      "unique_AP50": 0.0,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.020718515725834996
+    },
+    "semantic_scope": "same frozen historical emitted registry; full semantic-export difference separately reported"
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "core_registry_eligibility",
+    "status": "COMPLETE",
+    "before": "AT_GEO_AREA",
+    "after": "AT_O_AREA",
+    "delta_proportions": {
+      "overlapping_AP": 0.0,
+      "overlapping_AP50": 0.0,
+      "overlapping_AP25": 0.0,
+      "semantic_miou": -5.65467867696956e-07,
+      "semantic_macc": 0.0,
+      "unique_AP": 0.0,
+      "unique_AP50": 0.0,
+      "unique_AP25": 0.0,
+      "unique_canonical_AP75": 0.0
+    }
+  }
+]

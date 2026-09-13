@@ -1,0 +1,81 @@
+{
+  "status": "COMPLETE_REQUESTED_CONDITIONS",
+  "conditions": [
+    "AT_O_AREA",
+    "AT_S_RELEASED",
+    "AT_S_AREA",
+    "AT_U00",
+    "AT_U10",
+    "AT_U01",
+    "AT_U11",
+    "AT_ASSIGN_RAW",
+    "AT_ASSIGN_CLASS_NORM",
+    "AT_ASSIGN_OVI_FILL",
+    "AT_RANK_CLASS_NORM",
+    "AT_NMS_SF_FIRST",
+    "AT_NATIVE_O_AREA",
+    "AT_NATIVE_U11"
+  ],
+  "command": [
+    "scripts/evaluation/diagnose_static_t1_attribution.py",
+    "--config",
+    "configs/evaluation/ovimap_t1_attribution_v1.json",
+    "--predictions",
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions",
+    "--output",
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+    "--resume"
+  ],
+  "input_inventory": {
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_instance_mesh.ply": {
+      "sha256": "da094a09c9a60551b94695bf6b8ef7ea841ea96c2fe78f3997ce45bff173a2d1",
+      "bytes": 32438624
+    },
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply": {
+      "sha256": "c086272c07a9db9e14f32249cee10c61e6cc3fb5140f811eb367e7386142da88",
+      "bytes": 32438624
+    },
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/gt_sem_inst_id.npy": {
+      "sha256": "6f12f27625f8395367cf06f6a395016d97b0fd9fb6fbfcbcd04fb8845def1888",
+      "bytes": 3818096
+    },
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz": {
+      "sha256": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+      "bytes": 226998
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_utils.py": {
+      "sha256": "34c468979525eef0eb83f8dce48bb94fa6c34d677341ea4a46e4e52e82aaf88c",
+      "bytes": 18137
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_sem_seg.py": {
+      "sha256": "1e9e5286aa9b3885a3a134366ee7871b793d5b73befcc3b7e110a66153251584",
+      "bytes": 11011
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_inst_seg.py": {
+      "sha256": "18f52808023d267c888ee696f7a88679e391c22de99537f52ea57f21c4a1953b",
+      "bytes": 8182
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/utils/semantic_const.py": {
+      "sha256": "476eed29eedbfd387a7727cbfe7d85c081856aa1ec079644eca12f8ab8bc603b",
+      "bytes": 21584
+    },
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/spaceformer_t1_evaluation/projection.npz": {
+      "sha256": "7b4f310621f2f2e06f4f51f838ccbaba31c818e00188c194bee259b14d922c1d",
+      "bytes": 5894927
+    },
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions/fp32_primary/masks.npy": {
+      "sha256": "debe3e36ae22d37728df8d3b63af3b6492068058bd35733f42fdc9d9b2a160c8",
+      "bytes": 381798073
+    },
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions/fp32_repeat/masks.npy": {
+      "sha256": "85166fbff2a8c3d2500ced5911e543d8653d485623ce911e12118c9d841be0e8",
+      "bytes": 385522931
+    }
+  },
+  "source_sha256": {
+    "/home/ww/crove/ovimap-t1-attribution/scripts/evaluation/diagnose_static_t1_attribution.py": "99b9f335b1e4470c454746798d0e2c73fd0ec612b43d80ddc3ea8bd334698969",
+    "/home/ww/crove/ovimap-t1-attribution/src/static_ovmap/released_trace.py": "5639bee0a26eb79b3c4e34e9c0fbbff825d38e929a58e937d888a2bc5b7a96db",
+    "/home/ww/crove/ovimap-t1-attribution/src/static_ovmap/attribution_regions.py": "320985d5d959eb93710747f496ef7cc6ca23185e631b2847beb38b23b702aef9"
+  },
+  "seconds": 334.9325780980289
+}

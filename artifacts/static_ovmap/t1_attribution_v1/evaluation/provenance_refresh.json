@@ -1,0 +1,401 @@
+{
+  "status": "PASS",
+  "old_predictions": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions",
+  "verified_predictions": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+  "scope": "prediction-only query provenance correction; all masks, labels, IDs, rank and assignment arrays exact; no metric recomputation required",
+  "checks": [
+    {
+      "run": "fp32_primary",
+      "condition": "AT_O_AREA",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_O_AREA.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_O_AREA/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_S_RELEASED",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_S_RELEASED.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_S_RELEASED/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_S_AREA",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_S_AREA.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_S_AREA/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_U00",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_U00.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_U00/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_U10",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_U10.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_U10/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_U01",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_U01.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_U01/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_U11",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_U11.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_U11/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_ASSIGN_RAW",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_ASSIGN_RAW.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_ASSIGN_RAW/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_ASSIGN_CLASS_NORM",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_ASSIGN_CLASS_NORM.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_ASSIGN_CLASS_NORM/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_ASSIGN_OVI_FILL",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_ASSIGN_OVI_FILL.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_ASSIGN_OVI_FILL/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_RANK_CLASS_NORM",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_RANK_CLASS_NORM.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_RANK_CLASS_NORM/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_NMS_SF_FIRST",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_NMS_SF_FIRST.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_NMS_SF_FIRST/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_NATIVE_O_AREA",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_NATIVE_O_AREA.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_NATIVE_O_AREA/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "AT_NATIVE_U11",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_primary/AT_NATIVE_U11.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_primary/AT_NATIVE_U11/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_O_AREA",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_O_AREA.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_O_AREA/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_S_RELEASED",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_S_RELEASED.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_S_RELEASED/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_S_AREA",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_S_AREA.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_S_AREA/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_U00",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_U00.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_U00/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_U10",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_U10.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_U10/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_U01",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_U01.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_U01/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_U11",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_U11.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_U11/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_ASSIGN_RAW",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_ASSIGN_RAW.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_ASSIGN_RAW/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_ASSIGN_CLASS_NORM",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_ASSIGN_CLASS_NORM.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_ASSIGN_CLASS_NORM/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_ASSIGN_OVI_FILL",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_ASSIGN_OVI_FILL.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_ASSIGN_OVI_FILL/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_RANK_CLASS_NORM",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_RANK_CLASS_NORM.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_RANK_CLASS_NORM/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_NMS_SF_FIRST",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_NMS_SF_FIRST.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_NMS_SF_FIRST/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_NATIVE_O_AREA",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_NATIVE_O_AREA.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_NATIVE_O_AREA/evaluation_ledger.json.gz"
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "AT_NATIVE_U11",
+      "prediction_arrays_exact": true,
+      "only_refreshed_fields": [
+        "source_query_ids",
+        "original_class_id",
+        "label_actually_changed",
+        "frozen_pool_original_class_id",
+        "borrowed_source_query_ids"
+      ],
+      "prior_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/provenance_before_refresh/fp32_repeat/AT_NATIVE_U11.json.gz",
+      "updated_ledger": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation/fp32_repeat/AT_NATIVE_U11/evaluation_ledger.json.gz"
+    }
+  ],
+  "new_model_inferences": 0
+}

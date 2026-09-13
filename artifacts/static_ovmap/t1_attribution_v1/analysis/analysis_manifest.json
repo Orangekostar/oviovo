@@ -1,0 +1,55 @@
+{
+  "status": "COMPLETE_FOR_AVAILABLE_CONDITIONS",
+  "command": [
+    "scripts/evaluation/summarize_static_t1_attribution.py",
+    "--config",
+    "configs/evaluation/ovimap_t1_attribution_v1.json",
+    "--predictions",
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+    "--evaluation",
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+    "--geometry-bridge",
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/geometry_bridge",
+    "--output",
+    "/mnt/shared/ww/ovimap-t1-attribution-v1/analysis_final"
+  ],
+  "conditions_by_run": {
+    "fp32_primary": [
+      "AT_ASSIGN_CLASS_NORM",
+      "AT_ASSIGN_OVI_FILL",
+      "AT_ASSIGN_RAW",
+      "AT_NATIVE_O_AREA",
+      "AT_NATIVE_U11",
+      "AT_NMS_SF_FIRST",
+      "AT_O_AREA",
+      "AT_RANK_CLASS_NORM",
+      "AT_S_AREA",
+      "AT_S_RELEASED",
+      "AT_U00",
+      "AT_U01",
+      "AT_U10",
+      "AT_U11"
+    ],
+    "fp32_repeat": [
+      "AT_ASSIGN_CLASS_NORM",
+      "AT_ASSIGN_OVI_FILL",
+      "AT_ASSIGN_RAW",
+      "AT_NATIVE_O_AREA",
+      "AT_NATIVE_U11",
+      "AT_NMS_SF_FIRST",
+      "AT_O_AREA",
+      "AT_RANK_CLASS_NORM",
+      "AT_S_AREA",
+      "AT_S_RELEASED",
+      "AT_U00",
+      "AT_U01",
+      "AT_U10",
+      "AT_U11"
+    ]
+  },
+  "seconds": 19.550925808027387,
+  "repair_decision": "NO_REPAIR_JUSTIFIED",
+  "scope": "paired Room0 development predictions; no CI or independent-scene claim",
+  "final_decision_reference": "../decision.json",
+  "final_reporting_enrichment": "paired performance adds evaluator event/filter counts; metric values unchanged"
+}

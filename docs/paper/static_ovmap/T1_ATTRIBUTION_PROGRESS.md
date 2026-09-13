@@ -1,3 +1,5 @@
+Final status: all 34 required conditions COMPLETE. See T1_ATTRIBUTION_RESULTS.md and T1_ATTRIBUTION_AUDIT.md. The checkpoint below is historical; provisional pending decisions are superseded by artifacts/static_ovmap/t1_attribution_v1/decision.json.
+
 # T1 attribution execution checkpoint
 
 This is an active study, not a completion report. Full scope is preserved in
