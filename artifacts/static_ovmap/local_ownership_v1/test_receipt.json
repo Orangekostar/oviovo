@@ -1,0 +1,10 @@
+{
+  "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/evaluation/test_static_local_ownership.py tests/evaluation/test_static_t1_attribution.py tests/evaluation/test_static_proposal_fusion.py tests/evaluation/test_static_projected_masks.py tests/evaluation/test_static_projected_instance_metrics.py",
+  "cwd": "/home/ww/crove/ovimap-local-ownership",
+  "exit_status": 0,
+  "result": "29 passed in 0.42s",
+  "baseline": "19 passed in 1.23s",
+  "red_green": "new missing implementation fixtures failed first; seven core then nine focused tests passed. A normalized graph weight was 0.9999999999999999; fixture uses 1e-15 tolerance, no production parameter changed.",
+  "neighbor_cap_regression": "duplicate-centroid fixture failed with 3 edges; explicit nonself cap fixed it. Real directed edge selections unchanged on both full atom sets; neighbor_cap_verification.json",
+  "unchanged_evaluator_trace_suite": "not rerun; existing original evaluator tracing reused"
+}

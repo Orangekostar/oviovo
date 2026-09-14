@@ -1,0 +1,9 @@
+{
+  "status": "COMPLETE_NO_NET_UNIQUE_GAIN",
+  "H1": "not supported for net unique-instance quality; macro semantic mIoU improves but unique AP decreases versus protection/O-only",
+  "H2": "not supported: unique AP unchanged in primary, decreases in repeat; spatial energy decreases but benchmark quality does not follow",
+  "H3": "not supported: none of the 7/6 U00-added GT objects at strict >.5 survive the new unique maps; LOCAL/SPATIAL additionally lose GT5004",
+  "interpretation": "Evidence coverage is high, yet geometry/instance support does not reliably preserve object extent. Same-class competition is important. Spatial smoothing can move a small residual across released minimum-size eligibility and create a ranked FP.",
+  "scientific_tuning_after_evaluation": false,
+  "next_experiment": "One predeclared Room1 confirmation of the unchanged O-only/U00_FILL/LOCAL/SPATIAL package on two saved runs, after separately authorized data preparation; same parameters, all metrics and object retention, no new rule or favorable-scene selection here."
+}

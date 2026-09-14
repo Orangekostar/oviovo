@@ -1,0 +1,144 @@
+[
+  {
+    "run": "fp32_primary",
+    "candidate_id": "room0/fp32_primary/SpaCeFormer/7",
+    "class_id": 12,
+    "serialized_rank": "4484.000000",
+    "LOCAL_unique_area": 1,
+    "SPATIAL_unique_area": 0,
+    "before_outcome": "unique_too_small",
+    "after_outcome": "unique_empty",
+    "actual_released_events_at_05": []
+  },
+  {
+    "run": "fp32_primary",
+    "candidate_id": "room0/fp32_primary/SpaCeFormer/77",
+    "class_id": 2,
+    "serialized_rank": "122616.000000",
+    "LOCAL_unique_area": 99,
+    "SPATIAL_unique_area": 116,
+    "before_outcome": "unique_too_small",
+    "after_outcome": "size_eligible",
+    "actual_released_events_at_05": []
+  },
+  {
+    "run": "fp32_primary",
+    "candidate_id": "room0/fp32_primary/SpaCeFormer/66",
+    "class_id": 5,
+    "serialized_rank": "29691.000000",
+    "LOCAL_unique_area": 147,
+    "SPATIAL_unique_area": 97,
+    "before_outcome": "size_eligible",
+    "after_outcome": "unique_too_small",
+    "actual_released_events_at_05": []
+  },
+  {
+    "run": "fp32_primary",
+    "candidate_id": "room0/fp32_primary/SpaCeFormer/102",
+    "class_id": 5,
+    "serialized_rank": "36599.000000",
+    "LOCAL_unique_area": 1,
+    "SPATIAL_unique_area": 0,
+    "before_outcome": "unique_too_small",
+    "after_outcome": "unique_empty",
+    "actual_released_events_at_05": []
+  },
+  {
+    "run": "fp32_primary",
+    "candidate_id": "room0/fp32_primary/SpaCeFormer/55",
+    "class_id": 33,
+    "serialized_rank": "2188.000000",
+    "LOCAL_unique_area": 1,
+    "SPATIAL_unique_area": 0,
+    "before_outcome": "unique_too_small",
+    "after_outcome": "unique_empty",
+    "actual_released_events_at_05": []
+  },
+  {
+    "run": "fp32_repeat",
+    "candidate_id": "room0/fp32_repeat/SpaCeFormer/137",
+    "class_id": 4,
+    "serialized_rank": "25082.000000",
+    "LOCAL_unique_area": 99,
+    "SPATIAL_unique_area": 101,
+    "before_outcome": "unique_too_small",
+    "after_outcome": "size_eligible",
+    "actual_released_events_at_05": [
+      {
+        "distance_index": 0,
+        "class_index": 13,
+        "class_label": "chair",
+        "overlap_index": 0,
+        "overlap_threshold": 0.5,
+        "event": "ignore_test",
+        "scene_key": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/gt_sem_inst_id.npy",
+        "candidate_file": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_SPATIAL/unique_masks/candidate_0105.npy",
+        "confidence": 25082.0,
+        "ignore_fraction": 0.0,
+        "counted_fp": true,
+        "void_intersection": 0,
+        "ignored_vertices": 0
+      }
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "candidate_id": "room0/fp32_repeat/SpaCeFormer/79",
+    "class_id": 5,
+    "serialized_rank": "14597.000000",
+    "LOCAL_unique_area": 110,
+    "SPATIAL_unique_area": 99,
+    "before_outcome": "size_eligible",
+    "after_outcome": "unique_too_small",
+    "actual_released_events_at_05": []
+  },
+  {
+    "run": "fp32_repeat",
+    "candidate_id": "room0/fp32_repeat/SpaCeFormer/102",
+    "class_id": 5,
+    "serialized_rank": "36799.000000",
+    "LOCAL_unique_area": 1,
+    "SPATIAL_unique_area": 0,
+    "before_outcome": "unique_too_small",
+    "after_outcome": "unique_empty",
+    "actual_released_events_at_05": []
+  },
+  {
+    "run": "fp32_repeat",
+    "candidate_id": "room0/fp32_repeat/SpaCeFormer/198",
+    "class_id": 28,
+    "serialized_rank": "61254.000000",
+    "LOCAL_unique_area": 94,
+    "SPATIAL_unique_area": 110,
+    "before_outcome": "unique_too_small",
+    "after_outcome": "size_eligible",
+    "actual_released_events_at_05": [
+      {
+        "distance_index": 0,
+        "class_index": 24,
+        "class_label": "nightstand",
+        "overlap_index": 0,
+        "overlap_threshold": 0.5,
+        "event": "ignore_test",
+        "scene_key": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/gt_sem_inst_id.npy",
+        "candidate_file": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_SPATIAL/unique_masks/candidate_0167.npy",
+        "confidence": 61254.0,
+        "ignore_fraction": 0.0,
+        "counted_fp": true,
+        "void_intersection": 0,
+        "ignored_vertices": 0
+      }
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "candidate_id": "room0/fp32_repeat/SpaCeFormer/162",
+    "class_id": 1,
+    "serialized_rank": "284849.000000",
+    "LOCAL_unique_area": 100,
+    "SPATIAL_unique_area": 97,
+    "before_outcome": "size_eligible",
+    "after_outcome": "unique_too_small",
+    "actual_released_events_at_05": []
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "scene": "room0",
+  "reviewed_commit": "98cafc4a96bf906878116ae3284da28bc974ad4d",
+  "predictions": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+  "reference_evaluation": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+  "reference_config": "configs/evaluation/ovimap_t1_attribution_v1.json",
+  "graph_receipt": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/instance_graph/graph.json",
+  "geometry_support": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/geometry_support_nativepixels_v2/geometry_support.json",
+  "scene_root": "/home/ww/vv/dataset/Replica/room0",
+  "intrinsics": "/home/ww/vv/dataset/Replica/cam_params.json",
+  "mask_dir": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/sem_seg_temp/room0/cropformer",
+  "methods": [
+    "LO_U00_OVI_FILL",
+    "LO_U00_LOCAL",
+    "LO_U00_SPATIAL"
+  ],
+  "runs": [
+    "fp32_primary",
+    "fp32_repeat"
+  ],
+  "parameters": {
+    "max_frames": 32,
+    "translation_m": 0.05,
+    "rotation_degrees": 5.0,
+    "depth_tolerance": 0.05,
+    "cell_m": 0.02,
+    "connectivity_m": 0.015,
+    "min_intersection": 16,
+    "min_iou": 0.2,
+    "min_gap": 0.05,
+    "min_views": 2,
+    "beta": 0.05,
+    "neighbors": 6,
+    "graph_radius": 0.03,
+    "graph_sigma": 0.02,
+    "epsilon": 1e-12,
+    "spatial_lambda": 0.1,
+    "max_sweeps": 5,
+    "chunk": 65536,
+    "threads": 8
+  },
+  "GT_in_prediction": false,
+  "new_model_inferences": 0,
+  "parameter_status": "frozen_spec_choices_before_new_GT_evaluation"
+}

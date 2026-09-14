@@ -1,0 +1,85 @@
+{
+  "prediction_preparation_seconds": 20.09554344508797,
+  "shared_projection_seconds": 21.888649984262884,
+  "runs": {
+    "fp32_primary": {
+      "atom_seconds": 24.492990487255156,
+      "evidence_seconds": 96.12698497902602,
+      "graph_seconds": 9.639864029362798,
+      "solvers": {
+        "LO_U00_OVI_FILL": {
+          "seconds": 0.3518506996333599,
+          "rule": "same U00 OVI first then SF; raw source area/canonical tie"
+        },
+        "LO_U00_LOCAL": {
+          "seconds": 0.10566551797091961,
+          "unary_key": "ff5f46bc655841efea62d3e02c0dc69fb2889e5a6e9edb4ba4a2b1f746a5865c"
+        },
+        "LO_U00_SPATIAL": {
+          "seconds": 61.34633583854884,
+          "unary_key": "ff5f46bc655841efea62d3e02c0dc69fb2889e5a6e9edb4ba4a2b1f746a5865c",
+          "energy": [
+            296472.26968730043,
+            296312.34598355787,
+            296303.46860030206,
+            296301.98801161547,
+            296301.57197575626,
+            296301.3863999132
+          ],
+          "sweep_changes": [
+            1768,
+            156,
+            33,
+            7,
+            4
+          ],
+          "optimization": "deterministic sequential coordinate descent; no global optimality claim"
+        }
+      },
+      "total_seconds": 203.31780543737113
+    },
+    "fp32_repeat": {
+      "atom_seconds": 26.404261944815516,
+      "evidence_seconds": 104.04781321715564,
+      "graph_seconds": 8.972523633390665,
+      "solvers": {
+        "LO_U00_OVI_FILL": {
+          "seconds": 0.4935442889109254,
+          "rule": "same U00 OVI first then SF; raw source area/canonical tie"
+        },
+        "LO_U00_LOCAL": {
+          "seconds": 0.12422699201852083,
+          "unary_key": "629e511b6582835528c3f7624d98dbef08d6f28b36d7b2c08cc010ebb0bf53e4"
+        },
+        "LO_U00_SPATIAL": {
+          "seconds": 59.583689369261265,
+          "unary_key": "629e511b6582835528c3f7624d98dbef08d6f28b36d7b2c08cc010ebb0bf53e4",
+          "energy": [
+            295692.6093274985,
+            295529.8922945635,
+            295521.30522773776,
+            295519.7351111201,
+            295519.03691829566,
+            295518.8535704531
+          ],
+          "sweep_changes": [
+            1768,
+            164,
+            30,
+            11,
+            4
+          ],
+          "optimization": "deterministic sequential coordinate descent; no global optimality claim"
+        }
+      },
+      "total_seconds": 210.85297132004052
+    }
+  },
+  "prediction_total_seconds": 456.53374668210745,
+  "evaluation_total_seconds": 77.29157159291208,
+  "analysis_seconds": 45.08757170662284,
+  "prediction_peak_rss_bytes": 1354502144,
+  "evaluation_peak_rss_bytes": 1002242048,
+  "cache_scope": "old overlapping AP cache hit; new atom/evidence/graph/owners computed once; projection shared across exact-equal model coordinates",
+  "timing_boundary": "CPU only, nested timers not additive, native coordinate z-buffer creation included; no end-to-end FPS or inference throughput"
+}

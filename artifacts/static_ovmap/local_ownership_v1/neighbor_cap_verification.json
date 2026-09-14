@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "reason": "New missing-self neighbor cap changes only duplicate-centroid overflow; zero such rows in either full real atom set. Graph edges/weights and source owners/evaluator inputs are unchanged, so no benchmark rerun.",
+  "runs": [
+    {
+      "run": "fp32_primary",
+      "rows_with_more_than_six_nonself_neighbors": 0,
+      "directed_edge_selection_exactly_unchanged": true,
+      "graph_sha256": "270c1837cb01c767f1cb0724880376ff7dae0013ae1c59dab2919bee802851ae"
+    },
+    {
+      "run": "fp32_repeat",
+      "rows_with_more_than_six_nonself_neighbors": 0,
+      "directed_edge_selection_exactly_unchanged": true,
+      "graph_sha256": "efc19d60eb3c79060dcd9009cab27839e429efb8f443970b1544c96012ae45a0"
+    }
+  ]
+}

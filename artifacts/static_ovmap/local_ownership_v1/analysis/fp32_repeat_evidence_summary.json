@@ -1,0 +1,90 @@
+{
+  "run": "fp32_repeat",
+  "statistics": {
+    "atom_count": 454699,
+    "incidence_count": 2443916,
+    "source_points": 1862429,
+    "observed_atoms": 441996,
+    "observed_source_point_fraction": 0.9808148391160146,
+    "challenger_qualified_atoms": 417811,
+    "challenger_qualified_point_fraction": 0.9365978515154135,
+    "no_challenger_fallback_point_fraction": 0.06340214848458653,
+    "rejection_reason_counts": {
+      "usable": 15809802,
+      "atom_unobserved": 60753487,
+      "empty_candidate_remainder": 16,
+      "insufficient_intersection": 1292,
+      "low_iou": 1036979,
+      "ambiguous_correspondence": 603736
+    },
+    "graph_candidate_edges": 1503878,
+    "graph_supported_edges": 1323903,
+    "usable_view_count_histogram": {
+      "0": 101897,
+      "1": 161050,
+      "2": 158099,
+      "3": 202794,
+      "4": 200976,
+      "5": 229473,
+      "6": 250625,
+      "7": 205907,
+      "8": 213494,
+      "9": 241101,
+      "10": 127468,
+      "11": 82698,
+      "12": 59338,
+      "13": 55006,
+      "14": 54199,
+      "15": 41882,
+      "16": 36819,
+      "17": 17289,
+      "18": 3801
+    }
+  },
+  "costs": {
+    "atom_seconds": 26.404261944815516,
+    "evidence_seconds": 104.04781321715564,
+    "graph_seconds": 8.972523633390665,
+    "solvers": {
+      "LO_U00_OVI_FILL": {
+        "seconds": 0.4935442889109254,
+        "rule": "same U00 OVI first then SF; raw source area/canonical tie"
+      },
+      "LO_U00_LOCAL": {
+        "seconds": 0.12422699201852083,
+        "unary_key": "629e511b6582835528c3f7624d98dbef08d6f28b36d7b2c08cc010ebb0bf53e4"
+      },
+      "LO_U00_SPATIAL": {
+        "seconds": 59.583689369261265,
+        "unary_key": "629e511b6582835528c3f7624d98dbef08d6f28b36d7b2c08cc010ebb0bf53e4",
+        "energy": [
+          295692.6093274985,
+          295529.8922945635,
+          295521.30522773776,
+          295519.7351111201,
+          295519.03691829566,
+          295518.8535704531
+        ],
+        "sweep_changes": [
+          1768,
+          164,
+          30,
+          11,
+          4
+        ],
+        "optimization": "deterministic sequential coordinate descent; no global optimality claim"
+      }
+    },
+    "total_seconds": 210.85297132004052
+  },
+  "keys": {
+    "atom": "44507b0e8e86f01ca59ce34614d3527d494c829cecbde9d30f13e9c87bf46c31",
+    "evidence": "a777e48a83d5ffabd0c5ad005a0874c9c6028f74caec9d8b3d804d61ebe400f8",
+    "unary": "629e511b6582835528c3f7624d98dbef08d6f28b36d7b2c08cc010ebb0bf53e4",
+    "graph": "dac33b4fb6811e884e615489f62de467220091398c8a46cd09b69422658dd64c"
+  },
+  "cache_hit": false,
+  "evidence_geometry_class_ambiguity": {
+    "limitation": "identical geometric evidence cannot identify which of conflicting fixed classes is correct; no class rescue is performed"
+  }
+}

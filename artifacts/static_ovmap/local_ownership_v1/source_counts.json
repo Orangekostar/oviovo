@@ -1,0 +1,74 @@
+[
+  {
+    "run": "fp32_primary",
+    "condition": "LO_U00_OVI_FILL",
+    "candidate_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 141
+    },
+    "nonempty_unique_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 26
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "condition": "LO_U00_LOCAL",
+    "candidate_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 141
+    },
+    "nonempty_unique_sources": {
+      "OVI": 63,
+      "SpaCeFormer": 117
+    }
+  },
+  {
+    "run": "fp32_primary",
+    "condition": "LO_U00_SPATIAL",
+    "candidate_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 141
+    },
+    "nonempty_unique_sources": {
+      "OVI": 63,
+      "SpaCeFormer": 114
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "condition": "LO_U00_OVI_FILL",
+    "candidate_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 143
+    },
+    "nonempty_unique_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 23
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "condition": "LO_U00_LOCAL",
+    "candidate_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 143
+    },
+    "nonempty_unique_sources": {
+      "OVI": 63,
+      "SpaCeFormer": 115
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "condition": "LO_U00_SPATIAL",
+    "candidate_sources": {
+      "OVI": 64,
+      "SpaCeFormer": 143
+    },
+    "nonempty_unique_sources": {
+      "OVI": 63,
+      "SpaCeFormer": 114
+    }
+  }
+]

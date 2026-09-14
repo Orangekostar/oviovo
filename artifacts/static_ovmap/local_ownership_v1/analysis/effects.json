@@ -1,0 +1,172 @@
+[
+  {
+    "run": "fp32_primary",
+    "effect": "protection",
+    "before": "AT_U00",
+    "after": "LO_U00_OVI_FILL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.0,
+      "unique_AP": 0.1463956557417206,
+      "unique_AP50": 0.2285507605820106,
+      "unique_AP25": 0.22445353835978837,
+      "canonical_AP75": 0.13506588683675347,
+      "mIoU": 0.20538628181807705,
+      "mAcc": 0.21051259916753887
+    },
+    "candidate_pool_same": true
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "local_evidence",
+    "before": "LO_U00_OVI_FILL",
+    "after": "LO_U00_LOCAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.0,
+      "unique_AP": -0.03704086444248483,
+      "unique_AP50": -0.056857638888888895,
+      "unique_AP25": -0.05581597222222223,
+      "canonical_AP75": -0.05160780140822467,
+      "mIoU": 0.007638296264786515,
+      "mAcc": 0.005733811039827008
+    },
+    "candidate_pool_same": true
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "spatial_term",
+    "before": "LO_U00_LOCAL",
+    "after": "LO_U00_SPATIAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.0,
+      "unique_AP": 0.0,
+      "unique_AP50": 0.0,
+      "unique_AP25": 0.0,
+      "canonical_AP75": 0.0,
+      "mIoU": 6.277314153063651e-05,
+      "mAcc": 1.468980071628323e-05
+    },
+    "candidate_pool_same": true
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "local_net",
+    "before": "AT_O_AREA",
+    "after": "LO_U00_LOCAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.025090532056677856,
+      "unique_AP": -0.03704086444248483,
+      "unique_AP50": -0.056857638888888895,
+      "unique_AP25": -0.05581597222222223,
+      "canonical_AP75": -0.06866500108157624,
+      "mIoU": 0.00799944312007006,
+      "mAcc": 0.006188226981451661
+    },
+    "candidate_pool_same": false
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "spatial_net",
+    "before": "AT_O_AREA",
+    "after": "LO_U00_SPATIAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.025090532056677856,
+      "unique_AP": -0.03704086444248483,
+      "unique_AP50": -0.056857638888888895,
+      "unique_AP25": -0.05581597222222223,
+      "canonical_AP75": -0.06866500108157624,
+      "mIoU": 0.008062216261600696,
+      "mAcc": 0.006202916782167944
+    },
+    "candidate_pool_same": false
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "protection",
+    "before": "AT_U00",
+    "after": "LO_U00_OVI_FILL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.0,
+      "unique_AP": 0.16576845115618266,
+      "unique_AP50": 0.29353091931216935,
+      "unique_AP25": 0.2660309193121693,
+      "canonical_AP75": 0.13506130345102776,
+      "mIoU": 0.22646624036025265,
+      "mAcc": 0.23329859404161543
+    },
+    "candidate_pool_same": true
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "local_evidence",
+    "before": "LO_U00_OVI_FILL",
+    "after": "LO_U00_LOCAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.0,
+      "unique_AP": -0.031639629874583575,
+      "unique_AP50": -0.032552083333333315,
+      "unique_AP25": -0.02907986111111116,
+      "canonical_AP75": -0.0427377443156219,
+      "mIoU": 0.006176728719312075,
+      "mAcc": 0.0042651257103114015
+    },
+    "candidate_pool_same": true
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "spatial_term",
+    "before": "LO_U00_LOCAL",
+    "after": "LO_U00_SPATIAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.0,
+      "unique_AP": -0.0054012345679012586,
+      "unique_AP50": -0.02430555555555558,
+      "unique_AP25": -0.02430555555555547,
+      "canonical_AP75": 0.0,
+      "mIoU": 3.923684761325541e-05,
+      "mAcc": -5.571200211157423e-05
+    },
+    "candidate_pool_same": true
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "local_net",
+    "before": "AT_O_AREA",
+    "after": "LO_U00_LOCAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.014365588757949854,
+      "unique_AP": -0.031639629874583575,
+      "unique_AP50": -0.032552083333333315,
+      "unique_AP25": -0.02907986111111116,
+      "canonical_AP75": -0.06258245872905911,
+      "mIoU": 0.006470558388533387,
+      "mAcc": 0.004643195370838682
+    },
+    "candidate_pool_same": false
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "spatial_net",
+    "before": "AT_O_AREA",
+    "after": "LO_U00_SPATIAL",
+    "status": "COMPLETE",
+    "delta_proportions": {
+      "candidate_AP": 0.014365588757949854,
+      "unique_AP": -0.03704086444248483,
+      "unique_AP50": -0.056857638888888895,
+      "unique_AP25": -0.05338541666666663,
+      "canonical_AP75": -0.06258245872905911,
+      "mIoU": 0.006509795236146643,
+      "mAcc": 0.004587483368727108
+    },
+    "candidate_pool_same": false
+  }
+]

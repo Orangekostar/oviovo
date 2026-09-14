@@ -1,0 +1,20 @@
+{
+  "base": "98cafc4a96bf906878116ae3284da28bc974ad4d",
+  "branch": "research/ovimap-local-ownership-v1",
+  "source_sha256": {
+    "src/static_ovmap/local_ownership.py": "8438cbe759390a27a9902bf2a3e02b90db53b4f3c8dca8c79f539adb35478f24",
+    "src/static_ovmap/ownership_evidence.py": "413d2772543b8c2298aacc333241c7860221f986e5b0fc15879b041eaed1d66e",
+    "tests/evaluation/test_static_local_ownership.py": "e52a3973641e83e244413331f457fca0c76fedbf4f2532e3e8bc9ab84b4fffb0",
+    "configs/evaluation/ovimap_local_ownership_v1.json": "a3d4423571b4d5b7f0b73002eec3a3f0a0c445d218eaa4e0d0b99491d650fc17",
+    "scripts/evaluation/evaluate_static_local_ownership.py": "5cc1e18af495529547dbb369edb243873607c9a6c1aa83545aa34b9d464bc8b4",
+    "scripts/evaluation/finalize_static_local_ownership.py": "355f83d95f0d296a8c22ad73192b2a9590cba2861b711ac08b540fbc5956bf50",
+    "scripts/evaluation/run_static_local_ownership.py": "fd8d0d268ae460259b38ec2b77420aac6a1a04e000bbe979f09dbcfd2325eee8",
+    "scripts/evaluation/summarize_static_local_ownership.py": "e3af9415e086ee4baba597dae177eac1a79b71095e3683862a4583c390d83657"
+  },
+  "execution_source_hashes_unchanged": false,
+  "post_execution_compatibility_fix": "Explicit graph neighbor cap for missing-self duplicate-centroid case; original execution hashes retained. Full real edge selection unchanged in neighbor_cap_verification.json; no metric rerun.",
+  "model_input_T0_hashes": {
+    "fp32_primary": "8a896f8ea2aeb6275210e24954c11d24fb501918ba9170c2cbb06718872f821b",
+    "fp32_repeat": "2b5fe2d072a79c44bde356f891ba0580c7c8b3be79d9183573c25aeaaa4b4c52"
+  }
+}

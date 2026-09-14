@@ -1,0 +1,131 @@
+{
+  "status": "COMPLETE",
+  "conditions": [
+    {
+      "run": "fp32_primary",
+      "condition": "LO_U00_OVI_FILL",
+      "status": "COMPLETE_PREDICTION",
+      "owner_path": "/mnt/shared/ww/ovimap-local-ownership-v1/predictions/fp32_primary/LO_U00_OVI_FILL_owners.npy",
+      "changed_from_U00_FILL_points": 0,
+      "solver": {
+        "seconds": 0.3518506996333599,
+        "rule": "same U00 OVI first then SF; raw source area/canonical tie"
+      }
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "LO_U00_LOCAL",
+      "status": "COMPLETE_PREDICTION",
+      "owner_path": "/mnt/shared/ww/ovimap-local-ownership-v1/predictions/fp32_primary/LO_U00_LOCAL_owners.npy",
+      "changed_from_U00_FILL_points": 83420,
+      "solver": {
+        "seconds": 0.10566551797091961,
+        "unary_key": "ff5f46bc655841efea62d3e02c0dc69fb2889e5a6e9edb4ba4a2b1f746a5865c"
+      }
+    },
+    {
+      "run": "fp32_primary",
+      "condition": "LO_U00_SPATIAL",
+      "status": "COMPLETE_PREDICTION",
+      "owner_path": "/mnt/shared/ww/ovimap-local-ownership-v1/predictions/fp32_primary/LO_U00_SPATIAL_owners.npy",
+      "changed_from_U00_FILL_points": 82172,
+      "solver": {
+        "seconds": 61.34633583854884,
+        "unary_key": "ff5f46bc655841efea62d3e02c0dc69fb2889e5a6e9edb4ba4a2b1f746a5865c",
+        "energy": [
+          296472.26968730043,
+          296312.34598355787,
+          296303.46860030206,
+          296301.98801161547,
+          296301.57197575626,
+          296301.3863999132
+        ],
+        "sweep_changes": [
+          1768,
+          156,
+          33,
+          7,
+          4
+        ],
+        "optimization": "deterministic sequential coordinate descent; no global optimality claim"
+      }
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "LO_U00_OVI_FILL",
+      "status": "COMPLETE_PREDICTION",
+      "owner_path": "/mnt/shared/ww/ovimap-local-ownership-v1/predictions/fp32_repeat/LO_U00_OVI_FILL_owners.npy",
+      "changed_from_U00_FILL_points": 0,
+      "solver": {
+        "seconds": 0.4935442889109254,
+        "rule": "same U00 OVI first then SF; raw source area/canonical tie"
+      }
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "LO_U00_LOCAL",
+      "status": "COMPLETE_PREDICTION",
+      "owner_path": "/mnt/shared/ww/ovimap-local-ownership-v1/predictions/fp32_repeat/LO_U00_LOCAL_owners.npy",
+      "changed_from_U00_FILL_points": 83001,
+      "solver": {
+        "seconds": 0.12422699201852083,
+        "unary_key": "629e511b6582835528c3f7624d98dbef08d6f28b36d7b2c08cc010ebb0bf53e4"
+      }
+    },
+    {
+      "run": "fp32_repeat",
+      "condition": "LO_U00_SPATIAL",
+      "status": "COMPLETE_PREDICTION",
+      "owner_path": "/mnt/shared/ww/ovimap-local-ownership-v1/predictions/fp32_repeat/LO_U00_SPATIAL_owners.npy",
+      "changed_from_U00_FILL_points": 81798,
+      "solver": {
+        "seconds": 59.583689369261265,
+        "unary_key": "629e511b6582835528c3f7624d98dbef08d6f28b36d7b2c08cc010ebb0bf53e4",
+        "energy": [
+          295692.6093274985,
+          295529.8922945635,
+          295521.30522773776,
+          295519.7351111201,
+          295519.03691829566,
+          295518.8535704531
+        ],
+        "sweep_changes": [
+          1768,
+          164,
+          30,
+          11,
+          4
+        ],
+        "optimization": "deterministic sequential coordinate descent; no global optimality claim"
+      }
+    }
+  ],
+  "source_sha256": {
+    "scripts/evaluation/run_static_local_ownership.py": "fd8d0d268ae460259b38ec2b77420aac6a1a04e000bbe979f09dbcfd2325eee8",
+    "src/static_ovmap/local_ownership.py": "82f969a0b7f95295303d569341cc065eb8801c4d31b327eccadda55f74ad7718",
+    "src/static_ovmap/ownership_evidence.py": "413d2772543b8c2298aacc333241c7860221f986e5b0fc15879b041eaed1d66e"
+  },
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "scripts/evaluation/run_static_local_ownership.py",
+    "--config",
+    "configs/evaluation/ovimap_local_ownership_v1.json",
+    "--output",
+    "/mnt/shared/ww/ovimap-local-ownership-v1/predictions"
+  ],
+  "environment": {
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+    "numpy": "1.26.4",
+    "thread_env": {
+      "OMP_NUM_THREADS": "8",
+      "OPENBLAS_NUM_THREADS": "8",
+      "MKL_NUM_THREADS": "8"
+    }
+  },
+  "seconds": 456.53374668210745,
+  "shared_projection_seconds": 21.888649984262884,
+  "preparation_seconds": 20.09554344508797,
+  "peak_rss_bytes": 1354502144,
+  "new_model_inferences": 0,
+  "training_calls": 0
+}

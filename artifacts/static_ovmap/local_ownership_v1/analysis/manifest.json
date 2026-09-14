@@ -1,0 +1,18 @@
+{
+  "status": "COMPLETE",
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "scripts/evaluation/summarize_static_local_ownership.py",
+    "--config",
+    "configs/evaluation/ovimap_local_ownership_v1.json",
+    "--predictions",
+    "/mnt/shared/ww/ovimap-local-ownership-v1/predictions",
+    "--evaluation",
+    "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation",
+    "--output",
+    "/mnt/shared/ww/ovimap-local-ownership-v1/analysis"
+  ],
+  "seconds": 45.08757170662284,
+  "region_deltas_sum_global": "EXACT",
+  "new_method_policy_changes": 0
+}

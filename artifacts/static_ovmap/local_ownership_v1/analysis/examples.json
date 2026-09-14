@@ -1,0 +1,146 @@
+[
+  {
+    "run": "fp32_primary",
+    "effect": "local_evidence",
+    "category": "gained",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": {
+      "run": "fp32_primary",
+      "effect": "local_evidence",
+      "before": "LO_U00_OVI_FILL",
+      "after": "LO_U00_LOCAL",
+      "threshold": 0.25,
+      "GT_id": 5006,
+      "transition": "gained",
+      "old_match": null,
+      "new_match": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_LOCAL/unique_masks/candidate_0004.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_LOCAL/unique_masks/candidate_0004.npy",
+        "tp_score": 57398.0,
+        "first_match_overlap": 0.46849562858004223,
+        "duplicate_events": []
+      },
+      "trace_references": [
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_OVI_FILL/unique/released_trace.json.gz",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_LOCAL/unique/released_trace.json.gz"
+      ]
+    },
+    "status": "PRESENT"
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "local_evidence",
+    "category": "lost",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": {
+      "run": "fp32_primary",
+      "effect": "local_evidence",
+      "before": "LO_U00_OVI_FILL",
+      "after": "LO_U00_LOCAL",
+      "threshold": 0.5,
+      "GT_id": 5004,
+      "transition": "lost",
+      "old_match": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_OVI_FILL/unique_masks/candidate_0004.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_OVI_FILL/unique_masks/candidate_0004.npy",
+        "tp_score": 57398.0,
+        "first_match_overlap": 0.513113740727658,
+        "duplicate_events": []
+      },
+      "new_match": null,
+      "trace_references": [
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_OVI_FILL/unique/released_trace.json.gz",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_primary/LO_U00_LOCAL/unique/released_trace.json.gz"
+      ]
+    },
+    "status": "PRESENT"
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "spatial_term",
+    "category": "gained",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": null,
+    "status": "NOT_PRESENT"
+  },
+  {
+    "run": "fp32_primary",
+    "effect": "spatial_term",
+    "category": "lost",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": null,
+    "status": "NOT_PRESENT"
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "local_evidence",
+    "category": "gained",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": {
+      "run": "fp32_repeat",
+      "effect": "local_evidence",
+      "before": "LO_U00_OVI_FILL",
+      "after": "LO_U00_LOCAL",
+      "threshold": 0.25,
+      "GT_id": 5006,
+      "transition": "gained",
+      "old_match": null,
+      "new_match": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_LOCAL/unique_masks/candidate_0004.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_LOCAL/unique_masks/candidate_0004.npy",
+        "tp_score": 57398.0,
+        "first_match_overlap": 0.4669722702337116,
+        "duplicate_events": []
+      },
+      "trace_references": [
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_OVI_FILL/unique/released_trace.json.gz",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_LOCAL/unique/released_trace.json.gz"
+      ]
+    },
+    "status": "PRESENT"
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "local_evidence",
+    "category": "lost",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": {
+      "run": "fp32_repeat",
+      "effect": "local_evidence",
+      "before": "LO_U00_OVI_FILL",
+      "after": "LO_U00_LOCAL",
+      "threshold": 0.5,
+      "GT_id": 5004,
+      "transition": "lost",
+      "old_match": {
+        "first_match_candidate": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_OVI_FILL/unique_masks/candidate_0004.npy",
+        "tp_score_owner": "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_OVI_FILL/unique_masks/candidate_0004.npy",
+        "tp_score": 57398.0,
+        "first_match_overlap": 0.513113740727658,
+        "duplicate_events": []
+      },
+      "new_match": null,
+      "trace_references": [
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_OVI_FILL/unique/released_trace.json.gz",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation/fp32_repeat/LO_U00_LOCAL/unique/released_trace.json.gz"
+      ]
+    },
+    "status": "PRESENT"
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "spatial_term",
+    "category": "gained",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": null,
+    "status": "NOT_PRESENT"
+  },
+  {
+    "run": "fp32_repeat",
+    "effect": "spatial_term",
+    "category": "lost",
+    "selection": "first nominal threshold in .25/.5/.75 then smallest GT ID",
+    "evidence": null,
+    "status": "NOT_PRESENT"
+  }
+]

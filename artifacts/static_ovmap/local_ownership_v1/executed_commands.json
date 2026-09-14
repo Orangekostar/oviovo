@@ -1,0 +1,62 @@
+{
+  "cwd": "/home/ww/crove/ovimap-local-ownership",
+  "environment_prefix": "OMP_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 MKL_NUM_THREADS=8",
+  "commands": [
+    {
+      "stage": "prediction",
+      "argv": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "scripts/evaluation/run_static_local_ownership.py",
+        "--config",
+        "configs/evaluation/ovimap_local_ownership_v1.json",
+        "--output",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/predictions"
+      ],
+      "exit_status": 0
+    },
+    {
+      "stage": "evaluation",
+      "argv": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "scripts/evaluation/evaluate_static_local_ownership.py",
+        "--config",
+        "configs/evaluation/ovimap_local_ownership_v1.json",
+        "--predictions",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/predictions",
+        "--output",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation"
+      ],
+      "exit_status": 0
+    },
+    {
+      "stage": "analysis",
+      "argv": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "scripts/evaluation/summarize_static_local_ownership.py",
+        "--config",
+        "configs/evaluation/ovimap_local_ownership_v1.json",
+        "--predictions",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/predictions",
+        "--evaluation",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/evaluation",
+        "--output",
+        "/mnt/shared/ww/ovimap-local-ownership-v1/analysis"
+      ],
+      "exit_status": 0
+    },
+    {
+      "stage": "focused_tests",
+      "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/evaluation/test_static_local_ownership.py tests/evaluation/test_static_t1_attribution.py tests/evaluation/test_static_proposal_fusion.py tests/evaluation/test_static_projected_masks.py tests/evaluation/test_static_projected_instance_metrics.py",
+      "exit_status": 0
+    }
+  ],
+  "environment": {
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+    "numpy": "1.26.4",
+    "thread_env": {
+      "OMP_NUM_THREADS": "8",
+      "OPENBLAS_NUM_THREADS": "8",
+      "MKL_NUM_THREADS": "8"
+    }
+  }
+}

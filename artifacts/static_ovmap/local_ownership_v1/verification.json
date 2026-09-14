@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "runs": [
+    {
+      "run": "fp32_primary",
+      "same_atoms_evidence_unaries": true,
+      "distinct_solver_keys": true,
+      "source_owners_constant_within_atoms": true,
+      "LOCAL_equals_saved_unary_solution": true,
+      "spatial_energy_nonincreasing": true,
+      "graph_final_changed_atoms": 1875,
+      "graph_final_changed_source_points": 5429,
+      "graph_degree_mass_bound": true,
+      "six_decimal_candidate_manifest_byte_identity": true
+    },
+    {
+      "run": "fp32_repeat",
+      "same_atoms_evidence_unaries": true,
+      "distinct_solver_keys": true,
+      "source_owners_constant_within_atoms": true,
+      "LOCAL_equals_saved_unary_solution": true,
+      "spatial_energy_nonincreasing": true,
+      "graph_final_changed_atoms": 1888,
+      "graph_final_changed_source_points": 5495,
+      "graph_degree_mass_bound": true,
+      "six_decimal_candidate_manifest_byte_identity": true
+    }
+  ],
+  "six_required_cells_complete": true,
+  "candidate_AP_exactly_reused_U00": true,
+  "frozen_config_bytes_exact": true,
+  "historical_projection_sha256_exact": true,
+  "original_projection_sha256": "7b4f310621f2f2e06f4f51f838ccbaba31c818e00188c194bee259b14d922c1d",
+  "regional_delta_scope": "all 10 pairwise comparisons; integer sums asserted in executed summarizer",
+  "new_model_inferences": 0,
+  "GT_prediction_separation": "prediction runner reads no GT arrays; evidence uses frame masks, depth, poses and candidate membership only"
+}

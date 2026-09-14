@@ -1,0 +1,18 @@
+{
+  "status": "COMPLETE",
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "scripts/evaluation/finalize_static_local_ownership.py",
+    "--root",
+    "/mnt/shared/ww/ovimap-local-ownership-v1"
+  ],
+  "seconds": 28.510556225664914,
+  "large_files": 1501,
+  "large_bytes": 1675624289,
+  "required_cells": 6,
+  "new_model_inferences": 0,
+  "reports": [
+    "docs/paper/static_ovmap/LOCAL_OWNERSHIP_RESULTS.md",
+    "docs/paper/static_ovmap/LOCAL_OWNERSHIP_HANDOFF.md"
+  ]
+}
