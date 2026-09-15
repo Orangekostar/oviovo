@@ -1,0 +1,370 @@
+{
+  "receivers": [
+    {
+      "run": "fp32_primary",
+      "receiver": 0,
+      "native_owner_id": 1,
+      "old_class": 1,
+      "source_mask_hash": "9efc422f1bc0e6dd172a39eb3c03c88d3c5b36b5d5597c3ba46383843c51d002",
+      "source_area": 531541,
+      "baseline_rank_string": "531541.000000",
+      "cached_E1_target_present": false,
+      "exact_native_mask_match": false,
+      "native": null,
+      "eligible_donors": [
+        {
+          "canonical_index": 95,
+          "query_id": 0,
+          "original_t0_row": 31,
+          "class_id": 1,
+          "intersection": 500045,
+          "area": 506746,
+          "quality": 0.05638069286942482,
+          "mask_hash": "d5eeb7ecd18491467b86f0ec33d3bcb36196b16e8966522c06d26e3dcf61dd8d",
+          "receiver_coverage": 0.9407458690862981,
+          "donor_coverage": 0.9867764126406523,
+          "iou": 0.9290337803441575,
+          "union": 538242
+        },
+        {
+          "canonical_index": 195,
+          "query_id": 162,
+          "original_t0_row": 131,
+          "class_id": 1,
+          "intersection": 364058,
+          "area": 373471,
+          "quality": 0.00024541071616113186,
+          "mask_hash": "5e91ba8097a726c753628a931a1858ab7ee4d9e4c502fa0b48f8baf26568a79a",
+          "receiver_coverage": 0.6849104772726845,
+          "donor_coverage": 0.9747959011543065,
+          "iou": 0.6729925280153211,
+          "union": 540954
+        },
+        {
+          "canonical_index": 164,
+          "query_id": 119,
+          "original_t0_row": 100,
+          "class_id": 1,
+          "intersection": 309657,
+          "area": 315583,
+          "quality": 0.001428299816325307,
+          "mask_hash": "c7f3f3226b64287f9a97e03c5471c7163862bac96d23d9ceaaaf18eeb186ddeb",
+          "receiver_coverage": 0.5825646563482403,
+          "donor_coverage": 0.9812220556874103,
+          "iou": 0.5761414189150218,
+          "union": 537467
+        },
+        {
+          "canonical_index": 204,
+          "query_id": 22,
+          "original_t0_row": 140,
+          "class_id": 1,
+          "intersection": 498915,
+          "area": 862299,
+          "quality": 5.062169657321647e-05,
+          "mask_hash": "e7dc19ae86a1a4639fcf7930a7f4ce9b9ea5eaeec64bd5401df740c92435d7bb",
+          "receiver_coverage": 0.9386199747526531,
+          "donor_coverage": 0.5785870098422937,
+          "iou": 0.5574936447188312,
+          "union": 894925
+        },
+        {
+          "canonical_index": 185,
+          "query_id": 183,
+          "original_t0_row": 121,
+          "class_id": 1,
+          "intersection": 403020,
+          "area": 598452,
+          "quality": 0.0004892992437817156,
+          "mask_hash": "9b3ddc2cc7dcc3ad99493c2f31d45c58779f100fb32265f607aa43421a489d6c",
+          "receiver_coverage": 0.7582105613677966,
+          "donor_coverage": 0.6734374686691664,
+          "iou": 0.5543809742590164,
+          "union": 726973
+        }
+      ],
+      "selected_donor": {
+        "canonical_index": 95,
+        "query_id": 0,
+        "original_t0_row": 31,
+        "class_id": 1,
+        "intersection": 500045,
+        "area": 506746,
+        "quality": 0.05638069286942482,
+        "mask_hash": "d5eeb7ecd18491467b86f0ec33d3bcb36196b16e8966522c06d26e3dcf61dd8d",
+        "receiver_coverage": 0.9407458690862981,
+        "donor_coverage": 0.9867764126406523,
+        "iou": 0.9290337803441575,
+        "union": 538242
+      },
+      "geometric_ties": [
+        95
+      ],
+      "gate": {
+        "accepted": true,
+        "reason": "same_label",
+        "support": null,
+        "groups": [
+          {
+            "members": [
+              95
+            ],
+            "class_id": 1,
+            "iou": 0.9290337803441575,
+            "quality": 0.05638069286942482
+          },
+          {
+            "members": [
+              195
+            ],
+            "class_id": 1,
+            "iou": 0.6729925280153211,
+            "quality": 0.00024541071616113186
+          },
+          {
+            "members": [
+              164
+            ],
+            "class_id": 1,
+            "iou": 0.5761414189150218,
+            "quality": 0.001428299816325307
+          },
+          {
+            "members": [
+              204
+            ],
+            "class_id": 1,
+            "iou": 0.5574936447188312,
+            "quality": 5.062169657321647e-05
+          },
+          {
+            "members": [
+              185
+            ],
+            "class_id": 1,
+            "iou": 0.5543809742590164,
+            "quality": 0.0004892992437817156
+          }
+        ]
+      },
+      "final_labels": {
+        "ST_A_NATIVE_TOP1": 1,
+        "ST_B_SF_TRANSFER": 1,
+        "ST_C_SF_SUPPORT_GATE": 1
+      },
+      "changed": {
+        "ST_A_NATIVE_TOP1": false,
+        "ST_B_SF_TRANSFER": false,
+        "ST_C_SF_SUPPORT_GATE": false
+      }
+    },
+    {
+      "run": "fp32_primary",
+      "receiver": 1,
+      "native_owner_id": 26,
+      "old_class": 2,
+      "source_mask_hash": "f54e59b507aff0682002b490fd7b7e9886ac18e5036cd16c45f5ed33d7a7c721",
+      "source_area": 326536,
+      "baseline_rank_string": "326536.000000",
+      "cached_E1_target_present": false,
+      "exact_native_mask_match": false,
+      "native": null,
+      "eligible_donors": [
+        {
+          "canonical_index": 76,
+          "query_id": 171,
+          "original_t0_row": 12,
+          "class_id": 2,
+          "intersection": 324479,
+          "area": 341874,
+          "quality": 0.09036383032798767,
+          "mask_hash": "be1a595f39cb5027221bb05e8d76c1b1ecc56697c9abad9d3472430db7e6ef5f",
+          "receiver_coverage": 0.9937005414410662,
+          "donor_coverage": 0.9491186811515354,
+          "iou": 0.9434421439184022,
+          "union": 343931
+        },
+        {
+          "canonical_index": 128,
+          "query_id": 170,
+          "original_t0_row": 64,
+          "class_id": 2,
+          "intersection": 230211,
+          "area": 249200,
+          "quality": 0.0072065857239067554,
+          "mask_hash": "d9e8d4240bfb9afa85f2fecd0335f00fc13ae1688821d1dfcf7c67044c73ed6a",
+          "receiver_coverage": 0.7050095548423451,
+          "donor_coverage": 0.9238001605136437,
+          "iou": 0.6662643802908618,
+          "union": 345525
+        }
+      ],
+      "selected_donor": {
+        "canonical_index": 76,
+        "query_id": 171,
+        "original_t0_row": 12,
+        "class_id": 2,
+        "intersection": 324479,
+        "area": 341874,
+        "quality": 0.09036383032798767,
+        "mask_hash": "be1a595f39cb5027221bb05e8d76c1b1ecc56697c9abad9d3472430db7e6ef5f",
+        "receiver_coverage": 0.9937005414410662,
+        "donor_coverage": 0.9491186811515354,
+        "iou": 0.9434421439184022,
+        "union": 343931
+      },
+      "geometric_ties": [
+        76
+      ],
+      "gate": {
+        "accepted": true,
+        "reason": "same_label",
+        "support": null,
+        "groups": [
+          {
+            "members": [
+              76
+            ],
+            "class_id": 2,
+            "iou": 0.9434421439184022,
+            "quality": 0.09036383032798767
+          },
+          {
+            "members": [
+              128
+            ],
+            "class_id": 2,
+            "iou": 0.6662643802908618,
+            "quality": 0.0072065857239067554
+          }
+        ]
+      },
+      "final_labels": {
+        "ST_A_NATIVE_TOP1": 2,
+        "ST_B_SF_TRANSFER": 2,
+        "ST_C_SF_SUPPORT_GATE": 2
+      },
+      "changed": {
+        "ST_A_NATIVE_TOP1": false,
+        "ST_B_SF_TRANSFER": false,
+        "ST_C_SF_SUPPORT_GATE": false
+      }
+    },
+    {
+      "run": "fp32_primary",
+      "receiver": 2,
+      "native_owner_id": 2,
+      "old_class": 3,
+      "source_mask_hash": "c012431da9eaa72613016b1f496b76f77020c0fb7d19ebd0628c79cde9285a19",
+      "source_area": 257628,
+      "baseline_rank_string": "257628.000000",
+      "cached_E1_target_present": false,
+      "exact_native_mask_match": false,
+      "native": null,
+      "eligible_donors": [
+        {
+          "canonical_index": 106,
+          "query_id": 78,
+          "original_t0_row": 42,
+          "class_id": 3,
+          "intersection": 253688,
+          "area": 289157,
+          "quality": 0.0419175922870636,
+          "mask_hash": "7bd29b76c64e93d5de1aae249422880c9996db1d3de82a13686981ac6f4d809d",
+          "receiver_coverage": 0.9847066312667878,
+          "donor_coverage": 0.8773365334403109,
+          "iou": 0.8655428066476286,
+          "union": 293097
+        },
+        {
+          "canonical_index": 198,
+          "query_id": 70,
+          "original_t0_row": 134,
+          "class_id": 3,
+          "intersection": 146734,
+          "area": 177915,
+          "quality": 0.00016184065316338092,
+          "mask_hash": "a84ca188d760e36d18ed775cdb62ed5767f35436eb68f9d0ecbe4d5db1304dd1",
+          "receiver_coverage": 0.5695576567764373,
+          "donor_coverage": 0.8247421521513082,
+          "iou": 0.5080658843734094,
+          "union": 288809
+        },
+        {
+          "canonical_index": 192,
+          "query_id": 21,
+          "original_t0_row": 128,
+          "class_id": 3,
+          "intersection": 156806,
+          "area": 301993,
+          "quality": 0.0003063993062824011,
+          "mask_hash": "72e039cd75f4868edab091018f33a577708d843cfffd4f5b687f1fd9f3c53243",
+          "receiver_coverage": 0.6086527861878367,
+          "donor_coverage": 0.5192372008622717,
+          "iou": 0.3892754738527612,
+          "union": 402815
+        }
+      ],
+      "selected_donor": {
+        "canonical_index": 106,
+        "query_id": 78,
+        "original_t0_row": 42,
+        "class_id": 3,
+        "intersection": 253688,
+        "area": 289157,
+        "quality": 0.0419175922870636,
+        "mask_hash": "7bd29b76c64e93d5de1aae249422880c9996db1d3de82a13686981ac6f4d809d",
+        "receiver_coverage": 0.9847066312667878,
+        "donor_coverage": 0.8773365334403109,
+        "iou": 0.8655428066476286,
+        "union": 293097
+      },
+      "geometric_ties": [
+        106
+      ],
+      "gate": {
+        "accepted": true,
+        "reason": "same_label",
+        "support": null,
+        "groups": [
+          {
+            "members": [
+              106
+            ],
+            "class_id": 3,
+            "iou": 0.8655428066476286,
+            "quality": 0.0419175922870636
+          },
+          {
+            "members": [
+              198
+            ],
+            "class_id": 3,
+            "iou": 0.5080658843734094,
+            "quality": 0.00016184065316338092
+          },
+          {
+            "members": [
+              192
+            ],
+            "class_id": 3,
+            "iou": 0.3892754738527612,
+            "quality": 0.0003063993062824011
+          }
+        ]
+      },
+      "final_labels": {
+        "ST_A_NATIVE_TOP1": 3,
+        "ST_B_SF_TRANSFER": 3,
+        "ST_C_SF_SUPPORT_GATE": 3
+      },
+      "changed": {
+        "ST_A_NATIVE_TOP1": false,
+        "ST_B_SF_TRANSFER": false,
+        "ST_C_SF_SUPPORT_GATE": false
+      }
+    }
+  ],
+  "fixed_owner_and_masks_verified": true,
+  "new_inference": 0
+}

@@ -1,0 +1,52 @@
+{
+  "status": "COMPLETE",
+  "conditions": 6,
+  "actual_new_payload_evaluations": 5,
+  "new_inference": 0,
+  "seconds": 47.3371643666178,
+  "source": {
+    "path": "/home/ww/crove/ovimap-sf-to-ovi-semantics/scripts/evaluation/evaluate_static_sf_ovi_semantics.py",
+    "bytes": 7536,
+    "sha256": "7cd1db01f3d2f06e51d47fe45ea195f8de4c8bf97db5e6ad60a26185bad56648"
+  },
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "scripts/evaluation/evaluate_static_sf_ovi_semantics.py",
+    "--config",
+    "configs/evaluation/ovimap_sf_ovi_semantics_v1.json"
+  ],
+  "inventory": {
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_instance_mesh.ply": {
+      "sha256": "da094a09c9a60551b94695bf6b8ef7ea841ea96c2fe78f3997ce45bff173a2d1",
+      "bytes": 32438624
+    },
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/gt_semantic_mesh.ply": {
+      "sha256": "c086272c07a9db9e14f32249cee10c61e6cc3fb5140f811eb367e7386142da88",
+      "bytes": 32438624
+    },
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/gt_sem_inst_id.npy": {
+      "sha256": "6f12f27625f8395367cf06f6a395016d97b0fd9fb6fbfcbcd04fb8845def1888",
+      "bytes": 3818096
+    },
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz": {
+      "sha256": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+      "bytes": 226998
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_utils.py": {
+      "sha256": "34c468979525eef0eb83f8dce48bb94fa6c34d677341ea4a46e4e52e82aaf88c",
+      "bytes": 18137
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_sem_seg.py": {
+      "sha256": "1e9e5286aa9b3885a3a134366ee7871b793d5b73befcc3b7e110a66153251584",
+      "bytes": 11011
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/eval_inst_seg.py": {
+      "sha256": "18f52808023d267c888ee696f7a88679e391c22de99537f52ea57f21c4a1953b",
+      "bytes": 8182
+    },
+    "/home/ww/vv/paper2/OVI-MAP/scripts/utils/semantic_const.py": {
+      "sha256": "476eed29eedbfd387a7727cbfe7d85c081856aa1ec079644eca12f8ab8bc603b",
+      "bytes": 21584
+    }
+  }
+}

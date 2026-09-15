@@ -1,0 +1,179 @@
+[
+  {
+    "run": "fp32_primary",
+    "method": "ST_A_NATIVE_TOP1",
+    "runtime_threshold": 0.5,
+    "gained": [],
+    "lost": [
+      19002,
+      19005,
+      25000,
+      48000
+    ],
+    "U00_added_recovered": [],
+    "U00_added_not_recovered": [
+      5000,
+      5005,
+      10004,
+      15000,
+      17000,
+      24000,
+      33000
+    ]
+  },
+  {
+    "run": "fp32_primary",
+    "method": "ST_B_SF_TRANSFER",
+    "runtime_threshold": 0.5,
+    "gained": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "lost": [
+      4000,
+      6000,
+      9006,
+      19002,
+      19005,
+      19006,
+      25000,
+      39005,
+      48000,
+      51000
+    ],
+    "U00_added_recovered": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "U00_added_not_recovered": [
+      5000,
+      5005,
+      24000
+    ]
+  },
+  {
+    "run": "fp32_primary",
+    "method": "ST_C_SF_SUPPORT_GATE",
+    "runtime_threshold": 0.5,
+    "gained": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "lost": [
+      4000,
+      6000,
+      9006,
+      19002,
+      19005,
+      19006,
+      25000,
+      39005,
+      48000,
+      51000
+    ],
+    "U00_added_recovered": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "U00_added_not_recovered": [
+      5000,
+      5005,
+      24000
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "ST_A_NATIVE_TOP1",
+    "runtime_threshold": 0.5,
+    "gained": [],
+    "lost": [
+      19002,
+      19005,
+      25000,
+      48000
+    ],
+    "U00_added_recovered": [],
+    "U00_added_not_recovered": [
+      5000,
+      5005,
+      10004,
+      15000,
+      17000,
+      33000
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "ST_B_SF_TRANSFER",
+    "runtime_threshold": 0.5,
+    "gained": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "lost": [
+      4000,
+      6000,
+      9006,
+      19002,
+      19005,
+      19006,
+      25000,
+      39005,
+      48000,
+      51000
+    ],
+    "U00_added_recovered": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "U00_added_not_recovered": [
+      5000,
+      5005
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "ST_C_SF_SUPPORT_GATE",
+    "runtime_threshold": 0.5,
+    "gained": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "lost": [
+      4000,
+      6000,
+      9006,
+      19002,
+      19005,
+      19006,
+      25000,
+      39005,
+      48000,
+      51000
+    ],
+    "U00_added_recovered": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "U00_added_not_recovered": [
+      5000,
+      5005
+    ]
+  }
+]

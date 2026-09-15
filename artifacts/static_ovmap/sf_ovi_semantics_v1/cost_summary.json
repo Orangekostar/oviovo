@@ -1,0 +1,21 @@
+{
+  "prediction_seconds": 18.87455513048917,
+  "prediction_stages": [
+    {
+      "run": "fp32_primary",
+      "binding_seconds": 9.05804817378521,
+      "correspondence_and_decisions_seconds": 1.0132051324471831
+    },
+    {
+      "run": "fp32_repeat",
+      "binding_seconds": 7.983438343741,
+      "correspondence_and_decisions_seconds": 0.7458090418949723
+    }
+  ],
+  "peak_prediction_rss_bytes": 776794112,
+  "evaluation_seconds": 47.3371643666178,
+  "summary_seconds": null,
+  "new_inference": 0,
+  "historical_inference_cost": "REUSED_NOT_CHARGED",
+  "end_to_end_claim": false
+}

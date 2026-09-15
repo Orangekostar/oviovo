@@ -1,0 +1,124 @@
+[
+  {
+    "run": "fp32_primary",
+    "method": "ST_A_NATIVE_TOP1",
+    "transitions": {
+      "unresolved_geometry": 23,
+      "right_to_right": 19,
+      "wrong_to_wrong": 18,
+      "right_to_wrong": 4
+    },
+    "changed_transitions": {
+      "wrong_to_wrong": 1,
+      "right_to_wrong": 4,
+      "unresolved_geometry": 3
+    },
+    "useful_suggestions_adopted": 0,
+    "useful_suggestions_rejected": 0,
+    "harmful_suggestions_adopted": 4,
+    "harmful_suggestions_prevented": 0
+  },
+  {
+    "run": "fp32_primary",
+    "method": "ST_B_SF_TRANSFER",
+    "transitions": {
+      "unresolved_geometry": 23,
+      "right_to_right": 13,
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "wrong_to_wrong": 14
+    },
+    "changed_transitions": {
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "unresolved_geometry": 6,
+      "wrong_to_wrong": 4
+    },
+    "useful_suggestions_adopted": 4,
+    "useful_suggestions_rejected": 0,
+    "harmful_suggestions_adopted": 10,
+    "harmful_suggestions_prevented": 0
+  },
+  {
+    "run": "fp32_primary",
+    "method": "ST_C_SF_SUPPORT_GATE",
+    "transitions": {
+      "unresolved_geometry": 23,
+      "right_to_right": 13,
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "wrong_to_wrong": 14
+    },
+    "changed_transitions": {
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "unresolved_geometry": 5,
+      "wrong_to_wrong": 4
+    },
+    "useful_suggestions_adopted": 4,
+    "useful_suggestions_rejected": 0,
+    "harmful_suggestions_adopted": 10,
+    "harmful_suggestions_prevented": 0
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "ST_A_NATIVE_TOP1",
+    "transitions": {
+      "unresolved_geometry": 23,
+      "right_to_right": 19,
+      "wrong_to_wrong": 18,
+      "right_to_wrong": 4
+    },
+    "changed_transitions": {
+      "wrong_to_wrong": 1,
+      "right_to_wrong": 4,
+      "unresolved_geometry": 3
+    },
+    "useful_suggestions_adopted": 0,
+    "useful_suggestions_rejected": 0,
+    "harmful_suggestions_adopted": 4,
+    "harmful_suggestions_prevented": 0
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "ST_B_SF_TRANSFER",
+    "transitions": {
+      "unresolved_geometry": 23,
+      "right_to_right": 13,
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "wrong_to_wrong": 14
+    },
+    "changed_transitions": {
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "unresolved_geometry": 7,
+      "wrong_to_wrong": 4
+    },
+    "useful_suggestions_adopted": 4,
+    "useful_suggestions_rejected": 0,
+    "harmful_suggestions_adopted": 10,
+    "harmful_suggestions_prevented": 0
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "ST_C_SF_SUPPORT_GATE",
+    "transitions": {
+      "unresolved_geometry": 23,
+      "right_to_right": 13,
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "wrong_to_wrong": 14
+    },
+    "changed_transitions": {
+      "right_to_wrong": 10,
+      "wrong_to_right": 4,
+      "unresolved_geometry": 5,
+      "wrong_to_wrong": 4
+    },
+    "useful_suggestions_adopted": 4,
+    "useful_suggestions_rejected": 0,
+    "harmful_suggestions_adopted": 10,
+    "harmful_suggestions_prevented": 0
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "status": "PASSED",
+  "passed": 8,
+  "failed": 0,
+  "command": "OMP_NUM_THREADS=8 OPENBLAS_NUM_THREADS=8 MKL_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/test_cached_semantic_transfer.py tests/evaluation/test_static_t1_evaluator_trace.py",
+  "observed_output": "8 passed in 0.32s"
+}

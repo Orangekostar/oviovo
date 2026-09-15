@@ -1,0 +1,24 @@
+[
+  {
+    "run": "fp32_primary",
+    "all_pairs": 9024,
+    "nonempty_eligible_pairs": 67,
+    "receiver_coverage_failures": 8886,
+    "donor_coverage_failures": 8895,
+    "both_failures": 8824,
+    "zero_area_donors": 0,
+    "nonexclusive_failure_counts": true,
+    "GT_input": false
+  },
+  {
+    "run": "fp32_repeat",
+    "all_pairs": 9152,
+    "nonempty_eligible_pairs": 72,
+    "receiver_coverage_failures": 9000,
+    "donor_coverage_failures": 9025,
+    "both_failures": 8945,
+    "zero_area_donors": 0,
+    "nonexclusive_failure_counts": true,
+    "GT_input": false
+  }
+]

@@ -1,0 +1,119 @@
+{
+  "artifact_type": "FROZEN_EXECUTABLE_CONFIG",
+  "version": "2026-09-15-v1",
+  "repository": "Orangekostar/oviovo",
+  "reviewed_commit": "dc7aa67a9175cf0fe278ec7f62f5b6fbc979ead3",
+  "source_branch": "research/ovimap-object-semantic-decoupling-v1",
+  "task_branch": "research/ovimap-sf-to-ovi-semantics-v1",
+  "scene": "room0",
+  "runs": [
+    "fp32_primary",
+    "fp32_repeat"
+  ],
+  "parent_configs": [
+    "configs/evaluation/ovimap_t1_attribution_v1.json",
+    "configs/evaluation/ovimap_object_decoupling_v1.json"
+  ],
+  "recorded_roots_to_verify": {
+    "frozen_prediction_root": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+    "reference_evaluation_root": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+    "previous_od_root": "/mnt/shared/ww/ovimap-object-semantic-decoupling-v1"
+  },
+  "new_output_root": "/mnt/shared/ww/ovimap-sf-to-ovi-semantics-v1",
+  "primary_methods": [
+    "ST_A_NATIVE_TOP1",
+    "ST_B_SF_TRANSFER",
+    "ST_C_SF_SUPPORT_GATE"
+  ],
+  "required_condition_run_records": 6,
+  "reused_controls": [
+    "AT_O_AREA",
+    "OD_E1_SEMANTIC"
+  ],
+  "prediction_scope": {
+    "fixed_geometry": "AT_O_AREA",
+    "fixed_source_rank_strings": true,
+    "fixed_active_registry": true,
+    "allow_class_changes_ovi_only": true,
+    "active_SF_instances": 0,
+    "GT_in_prediction": false
+  },
+  "native_cached_top1": {
+    "target_method": "OD_E1_SEMANTIC",
+    "exact_source_mask_digest_required": true,
+    "input_field": "aggregate_cosine",
+    "label_order": "original native text cache valid_ids",
+    "min_usable_cached_aggregate_views": 1,
+    "old_adoption_gates_removed": [
+      "min_two_views",
+      "exact_tie_abstention",
+      "view_top1_agreement",
+      "cosine_advantage"
+    ],
+    "tie": "first index in original valid_ids",
+    "no_aggregate": "keep baseline"
+  },
+  "reverse_correspondence": {
+    "direction": "SF semantic donor -> OVI class only",
+    "eligibility": "both source directional coverages >= 0.5",
+    "min_directional_coverage": 0.5,
+    "not_equivalent_to_iou_threshold": true,
+    "candidate_label_filter_before_matching": false,
+    "selected_donor_order": [
+      "pair_IoU descending",
+      "original SF query_id ascending",
+      "canonical index ascending"
+    ],
+    "same_label_selected_donor": "keep; never search a differing label",
+    "extra_assignment_constraints": false
+  },
+  "sf_support_gate": {
+    "same_donors_and_selected_suggestion_as_SB": true,
+    "weight": "pair_IoU * T0.scores",
+    "T0_scores_already_include_class_probability": true,
+    "exact_duplicate_key": [
+      "mask_digest",
+      "original_class_id"
+    ],
+    "duplicate_quality": "max",
+    "support": "fraction of weighted donor-group mass supporting SB proposed class",
+    "support_threshold": 0.6666666666666666,
+    "threshold_fraction": [
+      2,
+      3
+    ],
+    "minimum_donor_count": 1,
+    "new_OVI_approval_gate": false,
+    "zero_total_weight": "keep baseline",
+    "alternate_donor_after_rejection": false,
+    "status": "UNVALIDATED_ENGINEERING_GATE_NOT_CALIBRATED_PROBABILITY"
+  },
+  "computation": {
+    "cpu_threads": 8,
+    "point_chunk": 65536,
+    "new_image_forwards": 0,
+    "new_text_forwards": 0,
+    "new_2d_segmenter_forwards": 0,
+    "new_3d_segmenter_forwards": 0,
+    "mapping_runs": 0,
+    "training_runs": 0,
+    "raw_mask_logits_read": false,
+    "cross_scene_expansion": false,
+    "parameter_sweep": false
+  },
+  "limits": {
+    "same_development_scene_two_model_caches": true,
+    "not_blind_validation": true,
+    "extra_3d_pretraining": true,
+    "training_scene_exclusion": "UNVERIFIED",
+    "geometry_gate_and_support_not_validated_for_accuracy": true
+  },
+  "delivery": {
+    "results": "docs/paper/static_ovmap/SF_OVI_SEMANTIC_RESULTS.md",
+    "handoff": "docs/paper/static_ovmap/SF_OVI_SEMANTIC_HANDOFF.md",
+    "small_artifacts": "artifacts/static_ovmap/sf_ovi_semantics_v1/",
+    "commit_and_push": true,
+    "verify_remote_sha": true,
+    "large_assets_in_git": false
+  }
+}

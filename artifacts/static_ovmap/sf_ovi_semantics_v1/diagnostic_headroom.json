@@ -1,0 +1,3646 @@
+[
+  {
+    "run": "fp32_primary",
+    "runtime_threshold": 0.25,
+    "U00_added": [
+      5000,
+      5001,
+      5003,
+      5005,
+      7003,
+      7004,
+      10004,
+      15000,
+      17000,
+      24000,
+      33000
+    ],
+    "best_recorded_OVI_shape_sufficient_but_class_wrong": [
+      7004,
+      10004,
+      15000,
+      17000,
+      24000,
+      33000
+    ],
+    "no_sufficient_OVI_shape": [
+      5000,
+      5001,
+      5003,
+      5005
+    ],
+    "all_baseline_misses": [
+      5000,
+      5001,
+      5002,
+      5003,
+      5005,
+      5006,
+      5007,
+      7003,
+      7004,
+      8000,
+      9000,
+      9001,
+      9002,
+      9003,
+      9004,
+      9005,
+      9007,
+      9008,
+      10001,
+      10002,
+      10003,
+      10004,
+      15000,
+      16000,
+      16001,
+      17000,
+      19000,
+      19001,
+      19003,
+      19004,
+      19007,
+      19008,
+      24000,
+      30001,
+      31000,
+      32000,
+      33000,
+      33001,
+      39001,
+      39002,
+      39003,
+      39004,
+      46000
+    ],
+    "GT_aware_diagnostic_only": [
+      {
+        "gt_id": 5000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1659969278033794,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5001,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17259600614439324,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0792626728110599,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5003,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17199385560675884,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5005,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.07884485407066052,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.32326283987915405,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [
+          4
+        ],
+        "any_original_correct_OVI": true
+      },
+      {
+        "gt_id": 5007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1693394777265745,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7003,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.37321997874601487,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [
+          25
+        ],
+        "any_original_correct_OVI": true
+      },
+      {
+        "gt_id": 7004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 43,
+        "best_iou": 0.5635062611806798,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          43
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 8000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 2,
+        "best_iou": 0.41017405719021965,
+        "best_original_class": 3,
+        "all_sufficient_OVI_receivers": [
+          2
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0232837725109181,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.02092440689621298,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.019670967268098024,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.04285714285714286,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.020851508263193465,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.06028079927164694,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.04501160092807425,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.024114544084400905,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 22,
+        "best_iou": 0.9509636496706514,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          22
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 23,
+        "best_iou": 0.8918099089989889,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          23
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 20,
+        "best_iou": 0.9126746506986028,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          20
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 21,
+        "best_iou": 0.9451293207638385,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          21
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 15000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 8,
+        "best_iou": 0.7748114630467572,
+        "best_original_class": 18,
+        "all_sufficient_OVI_receivers": [
+          8
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.016429159186116097,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.030196511040891497,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 17000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 17,
+        "best_iou": 0.8321636254261079,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          17
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 35,
+        "best_iou": 0.6231050705697857,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          35
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 32,
+        "best_iou": 0.7038261691072272,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          32
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 33,
+        "best_iou": 0.7667698658410733,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          33
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 26,
+        "best_iou": 0.8557929334428923,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          26
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 30,
+        "best_iou": 0.7959629023458811,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          30
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 37,
+        "best_iou": 0.8838475499092558,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          37
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 24000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 10,
+        "best_iou": 0.9467557514809203,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [
+          10
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 30001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 38,
+        "best_iou": 0.6627906976744186,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [
+          38
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 31000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 34,
+        "best_iou": 0.15016501650165018,
+        "best_original_class": 25,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 32000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 24,
+        "best_iou": 0.8866790009250693,
+        "best_original_class": 20,
+        "all_sufficient_OVI_receivers": [
+          24
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 50,
+        "best_iou": 0.7873070325900514,
+        "best_original_class": 35,
+        "all_sufficient_OVI_receivers": [
+          50
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.015888456549935148,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.5174825174825175,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [
+          49
+        ],
+        "any_original_correct_OVI": true
+      },
+      {
+        "gt_id": 39002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.2944693572496263,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [
+          46
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.4919614147909968,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [
+          46
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.05420054200542006,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 46000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 39,
+        "best_iou": 0.9012797074954296,
+        "best_original_class": 30,
+        "all_sufficient_OVI_receivers": [
+          39
+        ],
+        "any_original_correct_OVI": false
+      }
+    ]
+  },
+  {
+    "run": "fp32_primary",
+    "runtime_threshold": 0.5,
+    "U00_added": [
+      5000,
+      5005,
+      10004,
+      15000,
+      17000,
+      24000,
+      33000
+    ],
+    "best_recorded_OVI_shape_sufficient_but_class_wrong": [
+      10004,
+      15000,
+      17000,
+      24000,
+      33000
+    ],
+    "no_sufficient_OVI_shape": [
+      5000,
+      5005
+    ],
+    "all_baseline_misses": [
+      5000,
+      5001,
+      5002,
+      5003,
+      5005,
+      5006,
+      5007,
+      7000,
+      7001,
+      7003,
+      7004,
+      8000,
+      9000,
+      9001,
+      9002,
+      9003,
+      9004,
+      9005,
+      9007,
+      9008,
+      10001,
+      10002,
+      10003,
+      10004,
+      15000,
+      16000,
+      16001,
+      17000,
+      19000,
+      19001,
+      19003,
+      19004,
+      19007,
+      19008,
+      24000,
+      30001,
+      31000,
+      32000,
+      33000,
+      33001,
+      39000,
+      39002,
+      39003,
+      39004,
+      46000
+    ],
+    "GT_aware_diagnostic_only": [
+      {
+        "gt_id": 5000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1659969278033794,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17259600614439324,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0792626728110599,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17199385560675884,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5005,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.07884485407066052,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.32326283987915405,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1693394777265745,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.46316023080337326,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 40,
+        "best_iou": 0.4055703929797787,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.37321997874601487,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 43,
+        "best_iou": 0.5635062611806798,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          43
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 8000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 2,
+        "best_iou": 0.41017405719021965,
+        "best_original_class": 3,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0232837725109181,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.02092440689621298,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.019670967268098024,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.04285714285714286,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.020851508263193465,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.06028079927164694,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.04501160092807425,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.024114544084400905,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 22,
+        "best_iou": 0.9509636496706514,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          22
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 23,
+        "best_iou": 0.8918099089989889,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          23
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 20,
+        "best_iou": 0.9126746506986028,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          20
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 21,
+        "best_iou": 0.9451293207638385,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          21
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 15000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 8,
+        "best_iou": 0.7748114630467572,
+        "best_original_class": 18,
+        "all_sufficient_OVI_receivers": [
+          8
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.016429159186116097,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.030196511040891497,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 17000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 17,
+        "best_iou": 0.8321636254261079,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          17
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 35,
+        "best_iou": 0.6231050705697857,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          35
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 32,
+        "best_iou": 0.7038261691072272,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          32
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 33,
+        "best_iou": 0.7667698658410733,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          33
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 26,
+        "best_iou": 0.8557929334428923,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          26
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 30,
+        "best_iou": 0.7959629023458811,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          30
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 37,
+        "best_iou": 0.8838475499092558,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          37
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 24000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 10,
+        "best_iou": 0.9467557514809203,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [
+          10
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 30001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 38,
+        "best_iou": 0.6627906976744186,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [
+          38
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 31000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 34,
+        "best_iou": 0.15016501650165018,
+        "best_original_class": 25,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 32000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 24,
+        "best_iou": 0.8866790009250693,
+        "best_original_class": 20,
+        "all_sufficient_OVI_receivers": [
+          24
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 50,
+        "best_iou": 0.7873070325900514,
+        "best_original_class": 35,
+        "all_sufficient_OVI_receivers": [
+          50
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.015888456549935148,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.3,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.2944693572496263,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.4919614147909968,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.05420054200542006,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 46000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 39,
+        "best_iou": 0.9012797074954296,
+        "best_original_class": 30,
+        "all_sufficient_OVI_receivers": [
+          39
+        ],
+        "any_original_correct_OVI": false
+      }
+    ]
+  },
+  {
+    "run": "fp32_primary",
+    "runtime_threshold": 0.7500000000000002,
+    "U00_added": [
+      5000,
+      10004,
+      17000,
+      33000
+    ],
+    "best_recorded_OVI_shape_sufficient_but_class_wrong": [
+      10004,
+      17000,
+      33000
+    ],
+    "no_sufficient_OVI_shape": [
+      5000
+    ],
+    "all_baseline_misses": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5002,
+      5003,
+      5004,
+      5005,
+      5006,
+      5007,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      8000,
+      9000,
+      9001,
+      9002,
+      9003,
+      9004,
+      9005,
+      9007,
+      9008,
+      10000,
+      10001,
+      10002,
+      10003,
+      10004,
+      10005,
+      15000,
+      16000,
+      16001,
+      17000,
+      19000,
+      19001,
+      19003,
+      19004,
+      19007,
+      19008,
+      23000,
+      23001,
+      24000,
+      30001,
+      31000,
+      32000,
+      33000,
+      33001,
+      39000,
+      39001,
+      39002,
+      39003,
+      39004,
+      39005,
+      39006,
+      46000,
+      48000,
+      51000
+    ],
+    "GT_aware_diagnostic_only": [
+      {
+        "gt_id": 4000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 11,
+        "best_iou": 0.5531836390470166,
+        "best_original_class": 4,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 4001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 12,
+        "best_iou": 0.5596581747823283,
+        "best_original_class": 4,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1659969278033794,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17259600614439324,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0792626728110599,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17199385560675884,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.513113740727658,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.07884485407066052,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.32326283987915405,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1693394777265745,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 6000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 5,
+        "best_iou": 0.5649412210845658,
+        "best_original_class": 6,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 6001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 6,
+        "best_iou": 0.5478066072571512,
+        "best_original_class": 6,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.46316023080337326,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 40,
+        "best_iou": 0.4055703929797787,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.5143112280866664,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.37321997874601487,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 43,
+        "best_iou": 0.5635062611806798,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 8000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 2,
+        "best_iou": 0.41017405719021965,
+        "best_original_class": 3,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0232837725109181,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.02092440689621298,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.019670967268098024,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.04285714285714286,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.020851508263193465,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.06028079927164694,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.04501160092807425,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.024114544084400905,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 27,
+        "best_iou": 0.6814404432132964,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 22,
+        "best_iou": 0.9509636496706514,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          22
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 23,
+        "best_iou": 0.8918099089989889,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          23
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 20,
+        "best_iou": 0.9126746506986028,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          20
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 21,
+        "best_iou": 0.9451293207638385,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          21
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 28,
+        "best_iou": 0.7048842008713598,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 15000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 8,
+        "best_iou": 0.7748114630467572,
+        "best_original_class": 18,
+        "all_sufficient_OVI_receivers": [
+          8
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.016429159186116097,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.030196511040891497,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 17000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 17,
+        "best_iou": 0.8321636254261079,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          17
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 35,
+        "best_iou": 0.6231050705697857,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 32,
+        "best_iou": 0.7038261691072272,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 33,
+        "best_iou": 0.7667698658410733,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          33
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 26,
+        "best_iou": 0.8557929334428923,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          26
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 30,
+        "best_iou": 0.7959629023458811,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          30
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 37,
+        "best_iou": 0.8838475499092558,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          37
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 23000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 18,
+        "best_iou": 0.6963705691286541,
+        "best_original_class": 23,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 23001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 19,
+        "best_iou": 0.6183173888576252,
+        "best_original_class": 23,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 24000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 10,
+        "best_iou": 0.9467557514809203,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [
+          10
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 30001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 38,
+        "best_iou": 0.6627906976744186,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 31000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 34,
+        "best_iou": 0.15016501650165018,
+        "best_original_class": 25,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 32000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 24,
+        "best_iou": 0.8866790009250693,
+        "best_original_class": 20,
+        "all_sufficient_OVI_receivers": [
+          24
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 50,
+        "best_iou": 0.7873070325900514,
+        "best_original_class": 35,
+        "all_sufficient_OVI_receivers": [
+          50
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.015888456549935148,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.3,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.5174825174825175,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.2944693572496263,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.4919614147909968,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.05420054200542006,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 52,
+        "best_iou": 0.6628175519630485,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 55,
+        "best_iou": 0.73125,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 46000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 39,
+        "best_iou": 0.9012797074954296,
+        "best_original_class": 30,
+        "all_sufficient_OVI_receivers": [
+          39
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 48000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 41,
+        "best_iou": 0.6050613496932515,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 51000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 57,
+        "best_iou": 0.7236842105263158,
+        "best_original_class": 51,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      }
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "runtime_threshold": 0.25,
+    "U00_added": [
+      5000,
+      5001,
+      5003,
+      5005,
+      7003,
+      7004,
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "best_recorded_OVI_shape_sufficient_but_class_wrong": [
+      7004,
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "no_sufficient_OVI_shape": [
+      5000,
+      5001,
+      5003,
+      5005
+    ],
+    "all_baseline_misses": [
+      5000,
+      5001,
+      5002,
+      5003,
+      5005,
+      5006,
+      5007,
+      7003,
+      7004,
+      8000,
+      9000,
+      9001,
+      9002,
+      9003,
+      9004,
+      9005,
+      9007,
+      9008,
+      10001,
+      10002,
+      10003,
+      10004,
+      15000,
+      16000,
+      16001,
+      17000,
+      19000,
+      19001,
+      19003,
+      19004,
+      19007,
+      19008,
+      24000,
+      30001,
+      31000,
+      32000,
+      33000,
+      33001,
+      39001,
+      39002,
+      39003,
+      39004,
+      46000
+    ],
+    "GT_aware_diagnostic_only": [
+      {
+        "gt_id": 5000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1659969278033794,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5001,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17259600614439324,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0792626728110599,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5003,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17199385560675884,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5005,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.07884485407066052,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.32326283987915405,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [
+          4
+        ],
+        "any_original_correct_OVI": true
+      },
+      {
+        "gt_id": 5007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1693394777265745,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7003,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.37321997874601487,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [
+          25
+        ],
+        "any_original_correct_OVI": true
+      },
+      {
+        "gt_id": 7004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 43,
+        "best_iou": 0.5635062611806798,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          43
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 8000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 2,
+        "best_iou": 0.41017405719021965,
+        "best_original_class": 3,
+        "all_sufficient_OVI_receivers": [
+          2
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0232837725109181,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.02092440689621298,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.019670967268098024,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.04285714285714286,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.020851508263193465,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.06028079927164694,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.04501160092807425,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.024114544084400905,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 22,
+        "best_iou": 0.9509636496706514,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          22
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 23,
+        "best_iou": 0.8918099089989889,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          23
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 20,
+        "best_iou": 0.9126746506986028,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          20
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 21,
+        "best_iou": 0.9451293207638385,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          21
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 15000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 8,
+        "best_iou": 0.7748114630467572,
+        "best_original_class": 18,
+        "all_sufficient_OVI_receivers": [
+          8
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.016429159186116097,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.030196511040891497,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 17000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 17,
+        "best_iou": 0.8321636254261079,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          17
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 35,
+        "best_iou": 0.6231050705697857,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          35
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 32,
+        "best_iou": 0.7038261691072272,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          32
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 33,
+        "best_iou": 0.7667698658410733,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          33
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 26,
+        "best_iou": 0.8557929334428923,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          26
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 30,
+        "best_iou": 0.7959629023458811,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          30
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 37,
+        "best_iou": 0.8838475499092558,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          37
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 24000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 10,
+        "best_iou": 0.9467557514809203,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [
+          10
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 30001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 38,
+        "best_iou": 0.6627906976744186,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [
+          38
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 31000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 34,
+        "best_iou": 0.15016501650165018,
+        "best_original_class": 25,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 32000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 24,
+        "best_iou": 0.8866790009250693,
+        "best_original_class": 20,
+        "all_sufficient_OVI_receivers": [
+          24
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 50,
+        "best_iou": 0.7873070325900514,
+        "best_original_class": 35,
+        "all_sufficient_OVI_receivers": [
+          50
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.015888456549935148,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.5174825174825175,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [
+          49
+        ],
+        "any_original_correct_OVI": true
+      },
+      {
+        "gt_id": 39002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.2944693572496263,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [
+          46
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.4919614147909968,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [
+          46
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.05420054200542006,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 46000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 39,
+        "best_iou": 0.9012797074954296,
+        "best_original_class": 30,
+        "all_sufficient_OVI_receivers": [
+          39
+        ],
+        "any_original_correct_OVI": false
+      }
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "runtime_threshold": 0.5,
+    "U00_added": [
+      5000,
+      5005,
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "best_recorded_OVI_shape_sufficient_but_class_wrong": [
+      10004,
+      15000,
+      17000,
+      33000
+    ],
+    "no_sufficient_OVI_shape": [
+      5000,
+      5005
+    ],
+    "all_baseline_misses": [
+      5000,
+      5001,
+      5002,
+      5003,
+      5005,
+      5006,
+      5007,
+      7000,
+      7001,
+      7003,
+      7004,
+      8000,
+      9000,
+      9001,
+      9002,
+      9003,
+      9004,
+      9005,
+      9007,
+      9008,
+      10001,
+      10002,
+      10003,
+      10004,
+      15000,
+      16000,
+      16001,
+      17000,
+      19000,
+      19001,
+      19003,
+      19004,
+      19007,
+      19008,
+      24000,
+      30001,
+      31000,
+      32000,
+      33000,
+      33001,
+      39000,
+      39002,
+      39003,
+      39004,
+      46000
+    ],
+    "GT_aware_diagnostic_only": [
+      {
+        "gt_id": 5000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1659969278033794,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17259600614439324,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0792626728110599,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17199385560675884,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5005,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.07884485407066052,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.32326283987915405,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1693394777265745,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.46316023080337326,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 40,
+        "best_iou": 0.4055703929797787,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.37321997874601487,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 43,
+        "best_iou": 0.5635062611806798,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          43
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 8000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 2,
+        "best_iou": 0.41017405719021965,
+        "best_original_class": 3,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0232837725109181,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.02092440689621298,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.019670967268098024,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.04285714285714286,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.020851508263193465,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.06028079927164694,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.04501160092807425,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.024114544084400905,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 22,
+        "best_iou": 0.9509636496706514,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          22
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 23,
+        "best_iou": 0.8918099089989889,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          23
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 20,
+        "best_iou": 0.9126746506986028,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          20
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 21,
+        "best_iou": 0.9451293207638385,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          21
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 15000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 8,
+        "best_iou": 0.7748114630467572,
+        "best_original_class": 18,
+        "all_sufficient_OVI_receivers": [
+          8
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.016429159186116097,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.030196511040891497,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 17000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 17,
+        "best_iou": 0.8321636254261079,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          17
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 35,
+        "best_iou": 0.6231050705697857,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          35
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 32,
+        "best_iou": 0.7038261691072272,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          32
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 33,
+        "best_iou": 0.7667698658410733,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          33
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 26,
+        "best_iou": 0.8557929334428923,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          26
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 30,
+        "best_iou": 0.7959629023458811,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          30
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 37,
+        "best_iou": 0.8838475499092558,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          37
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 24000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 10,
+        "best_iou": 0.9467557514809203,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [
+          10
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 30001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 38,
+        "best_iou": 0.6627906976744186,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [
+          38
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 31000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 34,
+        "best_iou": 0.15016501650165018,
+        "best_original_class": 25,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 32000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 24,
+        "best_iou": 0.8866790009250693,
+        "best_original_class": 20,
+        "all_sufficient_OVI_receivers": [
+          24
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 50,
+        "best_iou": 0.7873070325900514,
+        "best_original_class": 35,
+        "all_sufficient_OVI_receivers": [
+          50
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.015888456549935148,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.3,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.2944693572496263,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.4919614147909968,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.05420054200542006,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 46000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 39,
+        "best_iou": 0.9012797074954296,
+        "best_original_class": 30,
+        "all_sufficient_OVI_receivers": [
+          39
+        ],
+        "any_original_correct_OVI": false
+      }
+    ]
+  },
+  {
+    "run": "fp32_repeat",
+    "runtime_threshold": 0.7500000000000002,
+    "U00_added": [
+      5000,
+      10004,
+      33000
+    ],
+    "best_recorded_OVI_shape_sufficient_but_class_wrong": [
+      10004,
+      33000
+    ],
+    "no_sufficient_OVI_shape": [
+      5000
+    ],
+    "all_baseline_misses": [
+      4000,
+      4001,
+      5000,
+      5001,
+      5002,
+      5003,
+      5004,
+      5005,
+      5006,
+      5007,
+      6000,
+      6001,
+      7000,
+      7001,
+      7002,
+      7003,
+      7004,
+      8000,
+      9000,
+      9001,
+      9002,
+      9003,
+      9004,
+      9005,
+      9007,
+      9008,
+      10000,
+      10001,
+      10002,
+      10003,
+      10004,
+      10005,
+      15000,
+      16000,
+      16001,
+      17000,
+      19000,
+      19001,
+      19003,
+      19004,
+      19007,
+      19008,
+      23000,
+      23001,
+      24000,
+      30001,
+      31000,
+      32000,
+      33000,
+      33001,
+      39000,
+      39001,
+      39002,
+      39003,
+      39004,
+      39005,
+      39006,
+      46000,
+      48000,
+      51000
+    ],
+    "GT_aware_diagnostic_only": [
+      {
+        "gt_id": 4000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 11,
+        "best_iou": 0.5531836390470166,
+        "best_original_class": 4,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 4001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 12,
+        "best_iou": 0.5596581747823283,
+        "best_original_class": 4,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1659969278033794,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17259600614439324,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0792626728110599,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.17199385560675884,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.513113740727658,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.07884485407066052,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.32326283987915405,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 5007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.1693394777265745,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 6000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 5,
+        "best_iou": 0.5649412210845658,
+        "best_original_class": 6,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 6001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 6,
+        "best_iou": 0.5478066072571512,
+        "best_original_class": 6,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.46316023080337326,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 40,
+        "best_iou": 0.4055703929797787,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.5143112280866664,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 25,
+        "best_iou": 0.37321997874601487,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 7004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 43,
+        "best_iou": 0.5635062611806798,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 8000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 2,
+        "best_iou": 0.41017405719021965,
+        "best_original_class": 3,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.0232837725109181,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.02092440689621298,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.019670967268098024,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.04285714285714286,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 3,
+        "best_iou": 0.020851508263193465,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.06028079927164694,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 4,
+        "best_iou": 0.04501160092807425,
+        "best_original_class": 5,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 9008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 15,
+        "best_iou": 0.024114544084400905,
+        "best_original_class": 9,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 27,
+        "best_iou": 0.6814404432132964,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 22,
+        "best_iou": 0.9509636496706514,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          22
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 23,
+        "best_iou": 0.8918099089989889,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          23
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 20,
+        "best_iou": 0.9126746506986028,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          20
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10004,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 21,
+        "best_iou": 0.9451293207638385,
+        "best_original_class": 2,
+        "all_sufficient_OVI_receivers": [
+          21
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 10005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 28,
+        "best_iou": 0.7048842008713598,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 15000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 8,
+        "best_iou": 0.7748114630467572,
+        "best_original_class": 18,
+        "all_sufficient_OVI_receivers": [
+          8
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.016429159186116097,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 16001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 0,
+        "best_iou": 0.030196511040891497,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 17000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 17,
+        "best_iou": 0.8321636254261079,
+        "best_original_class": 50,
+        "all_sufficient_OVI_receivers": [
+          17
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 35,
+        "best_iou": 0.6231050705697857,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 32,
+        "best_iou": 0.7038261691072272,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 33,
+        "best_iou": 0.7667698658410733,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          33
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 26,
+        "best_iou": 0.8557929334428923,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          26
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19007,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 30,
+        "best_iou": 0.7959629023458811,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          30
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 19008,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 37,
+        "best_iou": 0.8838475499092558,
+        "best_original_class": 12,
+        "all_sufficient_OVI_receivers": [
+          37
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 23000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 18,
+        "best_iou": 0.6963705691286541,
+        "best_original_class": 23,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 23001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 19,
+        "best_iou": 0.6183173888576252,
+        "best_original_class": 23,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 24000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 10,
+        "best_iou": 0.9467557514809203,
+        "best_original_class": 1,
+        "all_sufficient_OVI_receivers": [
+          10
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 30001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 38,
+        "best_iou": 0.6627906976744186,
+        "best_original_class": 10,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 31000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 34,
+        "best_iou": 0.15016501650165018,
+        "best_original_class": 25,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 32000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 24,
+        "best_iou": 0.8866790009250693,
+        "best_original_class": 20,
+        "all_sufficient_OVI_receivers": [
+          24
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33000,
+        "U00_added": true,
+        "baseline_miss": true,
+        "best_OVI": 50,
+        "best_iou": 0.7873070325900514,
+        "best_original_class": 35,
+        "all_sufficient_OVI_receivers": [
+          50
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 33001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 13,
+        "best_iou": 0.015888456549935148,
+        "best_original_class": 7,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.3,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39001,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.5174825174825175,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39002,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.2944693572496263,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39003,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 46,
+        "best_iou": 0.4919614147909968,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39004,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 49,
+        "best_iou": 0.05420054200542006,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39005,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 52,
+        "best_iou": 0.6628175519630485,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 39006,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 55,
+        "best_iou": 0.73125,
+        "best_original_class": 39,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 46000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 39,
+        "best_iou": 0.9012797074954296,
+        "best_original_class": 30,
+        "all_sufficient_OVI_receivers": [
+          39
+        ],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 48000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 41,
+        "best_iou": 0.6050613496932515,
+        "best_original_class": 48,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      },
+      {
+        "gt_id": 51000,
+        "U00_added": false,
+        "baseline_miss": true,
+        "best_OVI": 57,
+        "best_iou": 0.7236842105263158,
+        "best_original_class": 51,
+        "all_sufficient_OVI_receivers": [],
+        "any_original_correct_OVI": false
+      }
+    ]
+  }
+]

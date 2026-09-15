@@ -1,0 +1,197 @@
+[
+  {
+    "run": "fp32_primary",
+    "native_old_gate": [
+      {
+        "reason": "unchanged_top1",
+        "useful": false,
+        "harmful": false,
+        "count": 15
+      },
+      {
+        "reason": "unchanged_top1",
+        "useful": null,
+        "harmful": null,
+        "count": 3
+      },
+      {
+        "reason": "view_disagreement",
+        "useful": false,
+        "harmful": false,
+        "count": 1
+      },
+      {
+        "reason": "insufficient_cosine_advantage",
+        "useful": false,
+        "harmful": true,
+        "count": 3
+      },
+      {
+        "reason": "view_disagreement",
+        "useful": false,
+        "harmful": true,
+        "count": 1
+      },
+      {
+        "reason": "view_disagreement",
+        "useful": null,
+        "harmful": null,
+        "count": 2
+      },
+      {
+        "reason": "insufficient_cosine_advantage",
+        "useful": null,
+        "harmful": null,
+        "count": 1
+      }
+    ],
+    "SC_gate": [
+      {
+        "reason": "same_label",
+        "useful": null,
+        "harmful": null,
+        "count": 5
+      },
+      {
+        "reason": "same_label",
+        "useful": false,
+        "harmful": false,
+        "count": 21
+      },
+      {
+        "reason": "support_pass",
+        "useful": false,
+        "harmful": true,
+        "count": 10
+      },
+      {
+        "reason": "support_pass",
+        "useful": true,
+        "harmful": false,
+        "count": 4
+      },
+      {
+        "reason": "support_pass",
+        "useful": null,
+        "harmful": null,
+        "count": 5
+      },
+      {
+        "reason": "support_pass",
+        "useful": false,
+        "harmful": false,
+        "count": 4
+      },
+      {
+        "reason": "support_reject",
+        "useful": null,
+        "harmful": null,
+        "count": 1
+      }
+    ],
+    "routing_flags": {
+      "receiver_geometry_unmatched": 23,
+      "no_eligible_donor": 14,
+      "no_eligible_donor_correct_class": 22,
+      "damages_previously_correct_receiver": 10,
+      "correct_donor_exists_but_not_selected": 1
+    }
+  },
+  {
+    "run": "fp32_repeat",
+    "native_old_gate": [
+      {
+        "reason": "unchanged_top1",
+        "useful": false,
+        "harmful": false,
+        "count": 14
+      },
+      {
+        "reason": "unchanged_top1",
+        "useful": null,
+        "harmful": null,
+        "count": 4
+      },
+      {
+        "reason": "view_disagreement",
+        "useful": false,
+        "harmful": false,
+        "count": 1
+      },
+      {
+        "reason": "insufficient_cosine_advantage",
+        "useful": false,
+        "harmful": true,
+        "count": 3
+      },
+      {
+        "reason": "view_disagreement",
+        "useful": false,
+        "harmful": true,
+        "count": 1
+      },
+      {
+        "reason": "view_disagreement",
+        "useful": null,
+        "harmful": null,
+        "count": 2
+      },
+      {
+        "reason": "insufficient_cosine_advantage",
+        "useful": null,
+        "harmful": null,
+        "count": 1
+      }
+    ],
+    "SC_gate": [
+      {
+        "reason": "same_label",
+        "useful": null,
+        "harmful": null,
+        "count": 5
+      },
+      {
+        "reason": "same_label",
+        "useful": false,
+        "harmful": false,
+        "count": 21
+      },
+      {
+        "reason": "support_pass",
+        "useful": false,
+        "harmful": true,
+        "count": 10
+      },
+      {
+        "reason": "support_pass",
+        "useful": true,
+        "harmful": false,
+        "count": 4
+      },
+      {
+        "reason": "support_pass",
+        "useful": null,
+        "harmful": null,
+        "count": 5
+      },
+      {
+        "reason": "support_pass",
+        "useful": false,
+        "harmful": false,
+        "count": 4
+      },
+      {
+        "reason": "support_reject",
+        "useful": null,
+        "harmful": null,
+        "count": 2
+      }
+    ],
+    "routing_flags": {
+      "receiver_geometry_unmatched": 23,
+      "no_eligible_donor": 13,
+      "no_eligible_donor_correct_class": 23,
+      "damages_previously_correct_receiver": 10
+    }
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "status": "VERIFIED",
+  "conditions": 6,
+  "actual_evaluated_payloads": 5,
+  "reused_new_conditions": 1,
+  "labels_geometry_ranks_and_semantic_arrays": "EXACT",
+  "new_inference": 0,
+  "source": {
+    "src/static_ovmap/cached_semantic_transfer.py": {
+      "path": "/home/ww/crove/ovimap-sf-to-ovi-semantics/src/static_ovmap/cached_semantic_transfer.py",
+      "bytes": 6375,
+      "sha256": "f689524ca42d124c7727e229f320ef82fb784064aebd4cebb231bcd966c90887"
+    },
+    "scripts/evaluation/evaluate_static_sf_ovi_semantics.py": {
+      "path": "/home/ww/crove/ovimap-sf-to-ovi-semantics/scripts/evaluation/evaluate_static_sf_ovi_semantics.py",
+      "bytes": 7536,
+      "sha256": "7cd1db01f3d2f06e51d47fe45ea195f8de4c8bf97db5e6ad60a26185bad56648"
+    },
+    "scripts/evaluation/run_static_sf_ovi_semantics.py": {
+      "path": "/home/ww/crove/ovimap-sf-to-ovi-semantics/scripts/evaluation/run_static_sf_ovi_semantics.py",
+      "bytes": 10930,
+      "sha256": "eac7abbaf86a4358c8ef0138c10bddc297a7dbe65a3f08b7bf2caaeba76ad3f0"
+    },
+    "scripts/evaluation/summarize_static_sf_ovi_semantics.py": {
+      "path": "/home/ww/crove/ovimap-sf-to-ovi-semantics/scripts/evaluation/summarize_static_sf_ovi_semantics.py",
+      "bytes": 19676,
+      "sha256": "9ef9748443125a208d9251ddb8a54da0a858740a455fb9ccedcf1f0da309c36a"
+    },
+    "scripts/evaluation/verify_static_sf_ovi_semantics.py": {
+      "path": "/home/ww/crove/ovimap-sf-to-ovi-semantics/scripts/evaluation/verify_static_sf_ovi_semantics.py",
+      "bytes": 3014,
+      "sha256": "760428ace6cae3041cb1cf7d2d4df889bd4d50a714c2ae9bee3925eacf3e72a2"
+    }
+  },
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "scripts/evaluation/verify_static_sf_ovi_semantics.py",
+    "--config",
+    "configs/evaluation/ovimap_sf_ovi_semantics_v1.json"
+  ]
+}
