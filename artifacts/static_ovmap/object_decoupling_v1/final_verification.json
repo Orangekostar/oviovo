@@ -1,0 +1,51 @@
+{
+  "status": "VERIFIED",
+  "cells": 8,
+  "initial_final_metrics_exact": true,
+  "semantic_targets_recomputed_without_encoder": 53,
+  "score_recompute_tolerance": {
+    "aggregate": 1e-14,
+    "float32_per_view": 1e-07
+  },
+  "view_features_checked": 159,
+  "E3_E4_projected_owners_and_semantics_exact": true,
+  "new_image_forwards": 0,
+  "final_source_identity": {
+    "src/static_ovmap/object_arbitration.py": {
+      "path": "/home/ww/crove/ovimap-object-semantic-decoupling/src/static_ovmap/object_arbitration.py",
+      "bytes": 9723,
+      "sha256": "eb57796f7562ae1091bd2cc554cf36c76eaa500c1361eccef3fece1eec29e8cf"
+    },
+    "src/static_ovmap/candidate_semantics.py": {
+      "path": "/home/ww/crove/ovimap-object-semantic-decoupling/src/static_ovmap/candidate_semantics.py",
+      "bytes": 6107,
+      "sha256": "ce9d7b99dcddd597b796454176b4bf82b4c40e8f8f720d3e16a3729c5248a5a8"
+    },
+    "src/static_ovmap/final_instance_ranking.py": {
+      "path": "/home/ww/crove/ovimap-object-semantic-decoupling/src/static_ovmap/final_instance_ranking.py",
+      "bytes": 462,
+      "sha256": "69b7866bb4add4f77b85499fd3f9c3512fb5249557d77955d480d32e381be4cc"
+    },
+    "scripts/evaluation/run_static_object_decoupling.py": {
+      "path": "/home/ww/crove/ovimap-object-semantic-decoupling/scripts/evaluation/run_static_object_decoupling.py",
+      "bytes": 13357,
+      "sha256": "2a2f327f1a171ff5125ea16c2cee544333f41e5d1264be01329f45b448dd8860"
+    },
+    "scripts/evaluation/evaluate_static_object_decoupling.py": {
+      "path": "/home/ww/crove/ovimap-object-semantic-decoupling/scripts/evaluation/evaluate_static_object_decoupling.py",
+      "bytes": 8760,
+      "sha256": "d9c8a99ecddb184969da5a7ff99da9ab4c6ed37fa58c504976eb7f8cd4290d5c"
+    },
+    "scripts/evaluation/verify_static_object_decoupling.py": {
+      "path": "/home/ww/crove/ovimap-object-semantic-decoupling/scripts/evaluation/verify_static_object_decoupling.py",
+      "bytes": 4053,
+      "sha256": "91104534c59e05941f5f802ccb8c6727efba016dc5f5414fb092645c36fba389"
+    }
+  },
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "scripts/evaluation/verify_static_object_decoupling.py",
+    "--config",
+    "configs/evaluation/ovimap_object_decoupling_v1.json"
+  ]
+}

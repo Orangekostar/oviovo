@@ -1,0 +1,25 @@
+{
+  "status": "COMPLETE",
+  "source": {
+    "scripts/evaluation/run_static_object_decoupling.py": "f8f568e0a31673f89395df806d81896fe41ad16f813ddd716bb859a904cf27f2",
+    "src/static_ovmap/candidate_semantics.py": "c9c80273bdeec132e445a10f6c15a7784618d33d9cc0d5672b6fc6bd4816a7ca",
+    "src/static_ovmap/object_arbitration.py": "db15a601dbb60709b373cd6fc1ea80a11e3a4d752a62bdf009e32661120c92f3",
+    "src/static_ovmap/final_instance_ranking.py": "69b7866bb4add4f77b85499fd3f9c3512fb5249557d77955d480d32e381be4cc"
+  },
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "scripts/evaluation/run_static_object_decoupling.py",
+    "--config",
+    "configs/evaluation/ovimap_object_decoupling_v1.json"
+  ],
+  "encoder_batches": 84,
+  "crop_inputs": 504,
+  "new_3d_segmenter_forwards": 0,
+  "new_2d_segmenter_forwards": 0,
+  "model_load_seconds": 1.6546252183616161,
+  "crop_seconds": 6.2093309089541435,
+  "encoding_seconds": 14.309782199561596,
+  "seconds": 112.8859390988946,
+  "peak_rss_bytes": 4569280512,
+  "peak_gpu_allocated_bytes": 2802071552
+}

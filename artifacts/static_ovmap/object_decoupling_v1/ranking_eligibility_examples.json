@@ -1,0 +1,25 @@
+{
+  "rank_changes": [
+    {
+      "run": "fp32_primary",
+      "canonical_index": 99,
+      "E3_rank": "91.000000",
+      "E4_rank": "78.000000"
+    }
+  ],
+  "near_100_instances": [],
+  "E3_E4_size_eligibility_changes": [],
+  "class_change_examples": [
+    {
+      "selection_rule": "all accepted class changes, sorted run/canonical ID; no favorable subset",
+      "run": "fp32_primary",
+      "candidate": 99,
+      "GT_class_histogram": {
+        "38": 33
+      },
+      "E2_correct_points": 33,
+      "E3_correct_points": 0
+    }
+  ],
+  "eligibility_statement": "E3/E4 mask bytes identical; no 99-to-101 transition possible; all near-threshold final instances enumerated"
+}

@@ -1,0 +1,171 @@
+{
+  "artifact_type": "FROZEN_EXECUTION_CONFIG",
+  "version": "2026-09-15-v1",
+  "repository": "Orangekostar/oviovo",
+  "reviewed_commit": "b8d360be5e6c6a4a5f81d370589dc997b97ebd03",
+  "task_branch": "research/ovimap-object-semantic-decoupling-v1",
+  "scene": "room0",
+  "runs": [
+    "fp32_primary",
+    "fp32_repeat"
+  ],
+  "existing_asset_configs": [
+    "configs/evaluation/ovimap_t1_attribution_v1.json",
+    "configs/evaluation/ovimap_local_ownership_v1.json"
+  ],
+  "recorded_roots_to_verify": {
+    "frozen_prediction_root": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+    "reference_evaluation_root": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+    "local_ownership_root": "/mnt/shared/ww/ovimap-local-ownership-v1"
+  },
+  "runtime_assets_to_resolve": {
+    "native_model_root": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+    "native_processor_root": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+    "native_text_cache": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+    "rgb_identity_receipt": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/observed_rgbd_cloud/receipt.json",
+    "new_output_root": "/mnt/shared/ww/ovimap-object-semantic-decoupling-v1"
+  },
+  "new_authorization": {
+    "new_3d_segmenter_forwards": 0,
+    "new_2d_segmenter_forwards": 0,
+    "new_mapping_runs": 0,
+    "new_training_runs": 0,
+    "bounded_native_image_encoding_E1_E3_allowed": true,
+    "retire_candidates_E2_allowed": true,
+    "unknown_owner_without_geometry_deletion_allowed": true,
+    "ranking_change_E4_only": true,
+    "GT_in_prediction": false
+  },
+  "primary_methods": [
+    {
+      "id": "OD_E1_SEMANTIC",
+      "geometry": "AT_O_AREA exact",
+      "labels": "same_target_mask_native_SigLIP_reassessment",
+      "ranking": "original_source_area"
+    },
+    {
+      "id": "OD_E2_OBJECT",
+      "geometry": "whole_object_arbitration_from_U00",
+      "labels": "original_chosen_source_class",
+      "ranking": "original_source_area"
+    },
+    {
+      "id": "OD_E3_OBJECT_SEMANTIC",
+      "geometry": "E2 exact bytes",
+      "labels": "actual_final_mask_native_SigLIP_reassessment",
+      "ranking": "E2 exact"
+    },
+    {
+      "id": "OD_E4_FINAL_RANK",
+      "geometry": "E3 exact bytes",
+      "labels": "E3 exact",
+      "ranking": "final_assigned_common_source_point_count"
+    }
+  ],
+  "required_new_method_run_cells": 8,
+  "reused_controls": [
+    "AT_O_AREA",
+    "AT_U00",
+    "AT_U11",
+    "LO_U00_OVI_FILL",
+    "LO_U00_LOCAL",
+    "LO_U00_SPATIAL"
+  ],
+  "parameters_are": "PROPOSED_UNVALIDATED_ENGINEERING_DEFAULTS_NOT_LITERATURE_OPTIMA",
+  "geometry_actions": {
+    "replace_bidirectional_coverage_min": 0.7,
+    "children_per_parent": [
+      2,
+      3
+    ],
+    "child_inside_parent_min": 0.9,
+    "child_union_parent_coverage_min": 0.8,
+    "child_pair_overlap_over_smaller_max": 0.1,
+    "shortlist_children_per_parent_max": 6,
+    "add_outside_qualified_ovi_fraction_min": 0.8,
+    "activation_original_support_retention_min": 0.85,
+    "mean_group_agreement_gain_min": 0.03,
+    "usable_group_views_min": 3,
+    "positive_group_view_fraction_min": 0.6666666666666666,
+    "usable_region_pixels_min": 32,
+    "shortlisted_actions_per_run_max": 128,
+    "many_ovi_to_one_merge_enabled": false,
+    "GT_or_new_semantics_in_shape_selection": false,
+    "within_sf_overlap_rule": "descending original objectness_mask_score then canonical ID; raw logits unused consistently",
+    "shortlist_order": "descending geometric coverage strength, then parent canonical ID, then child tuple, then action type"
+  },
+  "semantic_reassessment": {
+    "model_family": "native SigLIP-L/16-384, bound local checkpoint",
+    "dimension": 1024,
+    "classes": "unchanged 51-class native text cache",
+    "scope": "same_actual_target_mask; no donor-label-copy experiment",
+    "disagreement_pair_directional_coverage_min": 0.5,
+    "target_masks_per_run_max": 128,
+    "views_per_target_max": 3,
+    "usable_views_min": 2,
+    "view_top1_agreement_min": 0.6666666666666666,
+    "aggregate_cosine_advantage_over_current_min": 0.02,
+    "crop_inputs_per_view": 6,
+    "target_view_requests_per_run_max": 384,
+    "crop_inputs_per_run_max": 2304,
+    "crop_inputs_two_run_max": 4608,
+    "view_fusion": "visible-area-weighted feature fusion then final normalization",
+    "zero_or_one_usable_view": "retain current class and record abstention",
+    "mask_budget_abstention": "retain current class and record excluded target",
+    "full_score_vectors_required": true,
+    "semantics_to_E2_geometry_feedback": false,
+    "new_models_or_online_downloads": false,
+    "usable_region_pixels_min": 32
+  },
+  "computation": {
+    "max_shared_frames": 32,
+    "cpu_threads": 8,
+    "point_chunk": 65536,
+    "new_atom_graph": false,
+    "parameter_grid": false,
+    "cross_scene_expansion": false
+  },
+  "new_method_invariants": {
+    "E1_vs_O": [
+      "coordinates",
+      "owner_and_masks",
+      "original_ranks"
+    ],
+    "E3_vs_E2": [
+      "coordinates",
+      "owner_and_masks",
+      "active_registry",
+      "ranks"
+    ],
+    "E4_vs_E3": [
+      "coordinates",
+      "owner_and_masks",
+      "active_registry",
+      "labels",
+      "semantic_point_arrays"
+    ],
+    "all": [
+      "no_GT_prediction",
+      "no_source_geometry_deletion",
+      "stable_candidate_ancestry",
+      "unchanged_released_evaluator"
+    ],
+    "deliberately_not_required": [
+      "all_U00_candidates_active",
+      "U00_union_coverage_exact",
+      "new_active_candidate_AP_equals_U00"
+    ]
+  },
+  "delivery": {
+    "results": "docs/paper/static_ovmap/OBJECT_DECOUPLING_RESULTS.md",
+    "handoff": "docs/paper/static_ovmap/OBJECT_DECOUPLING_HANDOFF.md",
+    "small_artifacts": "artifacts/static_ovmap/object_decoupling_v1/",
+    "commit_and_push_task_branch": true,
+    "remote_SHA_verification_required": true,
+    "upload_large_weights_or_data_to_git": false,
+    "large_artifact_manifest_required": true
+  },
+  "device": "cuda:0",
+  "precision": "float32",
+  "development_exposure": "Room0 and both existing runs informed protocol; repeat is not blind validation"
+}

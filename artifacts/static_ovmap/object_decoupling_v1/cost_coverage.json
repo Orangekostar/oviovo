@@ -1,0 +1,166 @@
+[
+  {
+    "run": "fp32_primary",
+    "method": "OD_E1_SEMANTIC",
+    "source_unknown_fraction": 0.001472270889252691,
+    "projected_unknown_fraction": 0.11912619487643689,
+    "empty": 0,
+    "small": 3,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 0,
+    "action_reasons": {
+      "insufficient_group_gain": 45,
+      "insufficient_views": 2,
+      "committed": 1,
+      "support_retention": 4
+    },
+    "run_semantic_requests": 81,
+    "run_encoder_batches": 81,
+    "run_crop_inputs": 486,
+    "budget_excluded_targets": 0
+  },
+  {
+    "run": "fp32_primary",
+    "method": "OD_E2_OBJECT",
+    "source_unknown_fraction": 0.00143039009809233,
+    "projected_unknown_fraction": 0.11909162151175703,
+    "empty": 0,
+    "small": 4,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 1,
+    "action_reasons": {
+      "insufficient_group_gain": 45,
+      "insufficient_views": 2,
+      "committed": 1,
+      "support_retention": 4
+    },
+    "run_semantic_requests": 81,
+    "run_encoder_batches": 81,
+    "run_crop_inputs": 486,
+    "budget_excluded_targets": 0
+  },
+  {
+    "run": "fp32_primary",
+    "method": "OD_E3_OBJECT_SEMANTIC",
+    "source_unknown_fraction": 0.00143039009809233,
+    "projected_unknown_fraction": 0.11909162151175703,
+    "empty": 0,
+    "small": 4,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 1,
+    "action_reasons": {
+      "insufficient_group_gain": 45,
+      "insufficient_views": 2,
+      "committed": 1,
+      "support_retention": 4
+    },
+    "run_semantic_requests": 81,
+    "run_encoder_batches": 81,
+    "run_crop_inputs": 486,
+    "budget_excluded_targets": 0
+  },
+  {
+    "run": "fp32_primary",
+    "method": "OD_E4_FINAL_RANK",
+    "source_unknown_fraction": 0.00143039009809233,
+    "projected_unknown_fraction": 0.11909162151175703,
+    "empty": 0,
+    "small": 4,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 1,
+    "action_reasons": {
+      "insufficient_group_gain": 45,
+      "insufficient_views": 2,
+      "committed": 1,
+      "support_retention": 4
+    },
+    "run_semantic_requests": 81,
+    "run_encoder_batches": 81,
+    "run_crop_inputs": 486,
+    "budget_excluded_targets": 0
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "OD_E1_SEMANTIC",
+    "source_unknown_fraction": 0.001472270889252691,
+    "projected_unknown_fraction": 0.11912619487643689,
+    "empty": 0,
+    "small": 3,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 0,
+    "action_reasons": {
+      "insufficient_group_gain": 42,
+      "insufficient_views": 2,
+      "support_retention": 6
+    },
+    "run_semantic_requests": 78,
+    "run_encoder_batches": 3,
+    "run_crop_inputs": 18,
+    "budget_excluded_targets": 0
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "OD_E2_OBJECT",
+    "source_unknown_fraction": 0.001472270889252691,
+    "projected_unknown_fraction": 0.11912619487643689,
+    "empty": 0,
+    "small": 3,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 0,
+    "action_reasons": {
+      "insufficient_group_gain": 42,
+      "insufficient_views": 2,
+      "support_retention": 6
+    },
+    "run_semantic_requests": 78,
+    "run_encoder_batches": 3,
+    "run_crop_inputs": 18,
+    "budget_excluded_targets": 0
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "OD_E3_OBJECT_SEMANTIC",
+    "source_unknown_fraction": 0.001472270889252691,
+    "projected_unknown_fraction": 0.11912619487643689,
+    "empty": 0,
+    "small": 3,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 0,
+    "action_reasons": {
+      "insufficient_group_gain": 42,
+      "insufficient_views": 2,
+      "support_retention": 6
+    },
+    "run_semantic_requests": 78,
+    "run_encoder_batches": 3,
+    "run_crop_inputs": 18,
+    "budget_excluded_targets": 0
+  },
+  {
+    "run": "fp32_repeat",
+    "method": "OD_E4_FINAL_RANK",
+    "source_unknown_fraction": 0.001472270889252691,
+    "projected_unknown_fraction": 0.11912619487643689,
+    "empty": 0,
+    "small": 3,
+    "invalid_class": 10,
+    "ignored_events": 72,
+    "accepted_actions": 0,
+    "action_reasons": {
+      "insufficient_group_gain": 42,
+      "insufficient_views": 2,
+      "support_retention": 6
+    },
+    "run_semantic_requests": 78,
+    "run_encoder_batches": 3,
+    "run_crop_inputs": 18,
+    "budget_excluded_targets": 0
+  }
+]
