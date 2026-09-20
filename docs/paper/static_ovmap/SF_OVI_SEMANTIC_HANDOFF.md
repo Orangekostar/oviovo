@@ -12,7 +12,7 @@
 
 ## 身份与执行范围
 
-起点与审查锚点均为 `dc7aa67a9175cf0fe278ec7f62f5b6fbc979ead3`。独立工作树 `/home/ww/crove/ovimap-sf-to-ovi-semantics`，任务分支 `research/ovimap-sf-to-ovi-semantics-v1`。未修改旧OD/T1算法、评估器或旧产物。提示词目录只有三个任务文件，未提供其中引用的SOURCES/SOURCE_BINDINGS；直接按固定提交的明确源码路径、收据及真实缓存核对。
+起点与审查锚点均为 `dc7aa67a9175cf0fe278ec7f62f5b6fbc979ead3`。独立工作树 `/home/ww/crove/ovimap-sf-to-ovi-semantics`，任务分支 `research/ovimap-sf-to-ovi-semantics-v1`。未修改旧OD/T1算法、评估器或旧产物。最终验收使用用户提供的九文件压缩包，并核对其中的 `SOURCES.md`、`SOURCE_BINDINGS.json`、协议、来源审查及原因账本；执行输入仍按固定提交的源码路径、收据及真实缓存绑定。
 
 [配置](../../../configs/evaluation/ovimap_sf_ovi_semantics_v1.json)在新评估前冻结。双向源域覆盖≥0.5以整数比较实现，非IoU≥0.5；全部OVI接收者、全部非空SF供体先按几何建集合，包括同类供体。按IoU降序、原query ID升序、canonical ID升序选供体；没有GT、类别分歧筛选、反转best_owner_id或额外一对一约束。
 
@@ -20,7 +20,7 @@ S-A只用E1标签、准确baseline mask hash及原valid_ids顺序匹配的历史
 
 [输入绑定](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/input_binding.json)记录消费的O-only/U00、两份T0、receipt、源掩码、坐标、原生文本顺序和保存语义行的实际SHA。SF query/原T0行/类/掩码及两run返回坐标逐项核对；OVI canonical owners与64个输出掩码精确对应。没有读取GT/cause ledger用于预测，没有模型、图像、GPU、raw logits或新渲染访问。
 
-[预测执行身份](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/prediction_manifest.json)、[评估身份](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/evaluation_manifest.json)与[最终源码验证](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/execution_receipts.json)分开保存。最后修复了非有限缓存分数应弃权而非JSON序列化报错的边界情况；128个真实receiver记录在修复前后逐项一致，[对照证据](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/native_input_fix_parity.json)。没有修改科学阈值或重跑六条件。Markdown生成时修复了历史子集计数为int、新计数为list的兼容问题，仅重新生成报告。
+[预测执行身份](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/prediction_manifest.json)、[评估身份](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/evaluation_manifest.json)与[最终源码验证](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/execution_receipts.json)分开保存。最后修复了非有限缓存分数应弃权而非JSON序列化报错的边界情况；128个真实receiver记录在修复前后逐项一致，[对照证据](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/native_input_fix_parity.json)。最终审查又从冻结receiver账本确定性补齐六份条件清单的 `proposed/accepted/changed` receiver集合；集合计数与原漏斗逐项一致，未改变标签、身份键、科学阈值或六条件评测结果。Markdown生成时修复了历史子集计数为int、新计数为list的兼容问题，仅重新生成报告。
 
 ## 评估、成本与验证
 
@@ -30,7 +30,7 @@ S-A只用E1标签、准确baseline mask hash及原valid_ids顺序匹配的历史
 
 CPU线程8，源点chunk65536。预测总18.87s（含资产核对），两run对应与决策1.01s/0.75s；峰值预测RSS约777MB。评估与分阶段时间见[cost_summary](../../../artifacts/static_ovmap/sf_ovi_semantics_v1/cost_summary.json)，未单独测量的summary耗时为null。**新增图像/文本/2D/3D推理、映射和训练均为0**。这是缓存后处理成本，不是端到端速度或模型推理成本。
 
-8项定向测试通过，包括目标分离/顺序/门控前后标签、query对齐、双向覆盖、重复供体/单供体/零质量、几何排名不变、类别子集与真实发布版事件；真实缓存smoke完成。最终验证覆盖六份标签→语义点数组、固定owner/ranks、完整receiver账本及released trace parity。
+9项定向测试通过，包括目标分离/顺序/门控前后标签、query对齐、双向覆盖、重复供体/单供体/零质量、条件清单receiver集合、几何排名不变、类别子集与真实发布版事件；真实缓存smoke完成。最终验证覆盖六份标签→语义点数组、固定owner/ranks、完整receiver账本及released trace parity。
 
 实际命令（工作树内）：
 

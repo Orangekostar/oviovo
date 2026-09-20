@@ -7,6 +7,26 @@ import numpy as np
 METHODS=('ST_A_NATIVE_TOP1','ST_B_SF_TRANSFER','ST_C_SF_SUPPORT_GATE')
 
 
+def condition_receiver_sets(method,rows):
+    if method not in METHODS:raise ValueError('unknown semantic-transfer method')
+    result={key:[] for key in ['proposed_receivers','proposed_change_receivers','accepted_receivers','accepted_change_receivers','changed_receivers']}
+    for row in rows:
+        if method==METHODS[0]:
+            proposed=row['native']['proposed_label'] if row.get('native') else None
+        else:
+            proposed=row['selected_donor']['class_id'] if row.get('selected_donor') else None
+        accepted=proposed is not None and (method!=METHODS[2] or row['gate']['accepted'])
+        changed=row['final_labels'][method]!=row['old_class']
+        if proposed is not None:
+            result['proposed_receivers'].append(row['receiver'])
+            if proposed!=row['old_class']:result['proposed_change_receivers'].append(row['receiver'])
+        if accepted:
+            result['accepted_receivers'].append(row['receiver'])
+            if proposed!=row['old_class']:result['accepted_change_receivers'].append(row['receiver'])
+        if changed:result['changed_receivers'].append(row['receiver'])
+    return result
+
+
 def digest(value):
     value=np.ascontiguousarray(value)
     h=hashlib.sha256(str(value.dtype).encode()+repr(value.shape).encode());h.update(value.tobytes())

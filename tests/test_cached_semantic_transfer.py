@@ -1,6 +1,14 @@
 import numpy as np
 import pytest
-from src.static_ovmap.cached_semantic_transfer import digest, native_suggestions, donor_choice, support_gate, aligned_quality, pair_intersections, payload_key
+from src.static_ovmap.cached_semantic_transfer import (
+    aligned_quality,
+    digest,
+    donor_choice,
+    native_suggestions,
+    pair_intersections,
+    payload_key,
+    support_gate,
+)
 
 
 def test_cached_pre_gate_and_target_filter():
@@ -69,3 +77,70 @@ def test_nonfinite_cached_aggregate_abstains_without_json_failure():
     assert result['proposed_label'] is None and result['reason']=='invalid_aggregate'
     import json
     json.dumps(result,allow_nan=False)
+
+
+def test_condition_manifest_distinguishes_proposed_accepted_and_changed_receivers():
+    from src.static_ovmap import cached_semantic_transfer
+
+    condition_receiver_sets = getattr(cached_semantic_transfer, 'condition_receiver_sets', None)
+    assert condition_receiver_sets is not None, 'condition manifests need explicit receiver sets'
+    rows = [
+        {
+            'receiver': 0,
+            'old_class': 1,
+            'native': {'proposed_label': 2},
+            'selected_donor': {'class_id': 3},
+            'gate': {'accepted': True},
+            'final_labels': {
+                'ST_A_NATIVE_TOP1': 2,
+                'ST_B_SF_TRANSFER': 3,
+                'ST_C_SF_SUPPORT_GATE': 3,
+            },
+        },
+        {
+            'receiver': 1,
+            'old_class': 4,
+            'native': {'proposed_label': 4},
+            'selected_donor': {'class_id': 4},
+            'gate': {'accepted': True},
+            'final_labels': {
+                'ST_A_NATIVE_TOP1': 4,
+                'ST_B_SF_TRANSFER': 4,
+                'ST_C_SF_SUPPORT_GATE': 4,
+            },
+        },
+        {
+            'receiver': 2,
+            'old_class': 5,
+            'native': {'proposed_label': None},
+            'selected_donor': {'class_id': 6},
+            'gate': {'accepted': False},
+            'final_labels': {
+                'ST_A_NATIVE_TOP1': 5,
+                'ST_B_SF_TRANSFER': 6,
+                'ST_C_SF_SUPPORT_GATE': 5,
+            },
+        },
+    ]
+
+    assert condition_receiver_sets('ST_A_NATIVE_TOP1', rows) == {
+        'proposed_receivers': [0, 1],
+        'proposed_change_receivers': [0],
+        'accepted_receivers': [0, 1],
+        'accepted_change_receivers': [0],
+        'changed_receivers': [0],
+    }
+    assert condition_receiver_sets('ST_B_SF_TRANSFER', rows) == {
+        'proposed_receivers': [0, 1, 2],
+        'proposed_change_receivers': [0, 2],
+        'accepted_receivers': [0, 1, 2],
+        'accepted_change_receivers': [0, 2],
+        'changed_receivers': [0, 2],
+    }
+    assert condition_receiver_sets('ST_C_SF_SUPPORT_GATE', rows) == {
+        'proposed_receivers': [0, 1, 2],
+        'proposed_change_receivers': [0, 2],
+        'accepted_receivers': [0, 1],
+        'accepted_change_receivers': [0],
+        'changed_receivers': [0],
+    }

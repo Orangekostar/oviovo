@@ -11,7 +11,7 @@ import time
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT))
 import numpy as np
 from src.static_ovmap.cache_io import sha256_file
-from src.static_ovmap.cached_semantic_transfer import METHODS,digest,payload_key,native_suggestions,aligned_quality,pair_intersections,donor_choice,support_gate,assert_fixed
+from src.static_ovmap.cached_semantic_transfer import METHODS,condition_receiver_sets,digest,payload_key,native_suggestions,aligned_quality,pair_intersections,donor_choice,support_gate,assert_fixed
 
 
 def read(p):return json.loads(Path(p).read_text())
@@ -95,10 +95,11 @@ def main():
         key=payload_key(binding)
         for method in METHODS:
             blocked=native_blocker if method==METHODS[0] else 'missing T0 quality fields' if method==METHODS[2] and any(v is None for v in quality.values()) else None
+            receiver_sets=condition_receiver_sets(method,rows)
             doc={**{k:baseline[k] for k in ['kept','rank_scores','rank_scores_serialized','owner_path','ovi_readout_id']},
                  'labels':labels[method],'run':run,'condition':method,'status':'BLOCKED' if blocked else 'COMPLETE_PREDICTION','blocker':blocked,
                  'owner_sha256':inventory[baseline['owner_path']]['sha256'],'input_key':key,'method_key':payload_key({'binding':key,'method':method,'labels':labels[method]}),
-                 'new_inference':0,'changed_receivers':[i for i in receivers if labels[method][i]!=baseline['labels'][i]]}
+                 'new_inference':0,**receiver_sets}
             assert_fixed(baseline,doc);write(dest/(method+'.json'),doc)
             available=[r for r in rows if (r['native'] and r['native']['proposed_label'] is not None) if method==METHODS[0]] if method==METHODS[0] else [r for r in rows if r['selected_donor']]
             proposed=[r for r in available if (r['native']['proposed_label'] if method==METHODS[0] else r['selected_donor']['class_id'])!=r['old_class']]
