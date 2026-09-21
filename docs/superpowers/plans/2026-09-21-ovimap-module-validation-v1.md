@@ -188,14 +188,14 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - Consumes: committed executable code and real local assets only.
 - Produces: resolved config, locks, inventory/splits, phase receipts, actual measured rows, and explicit dependency/gate blockers.
 
-- [ ] **Step 1: Run `bind`; verify all historical inputs and record missing ScanNet/model assets without substitution**
-- [ ] **Step 2: Run `capture`; execute the permitted Room0 native smoke/replay and any preselected independent captures only**
-- [ ] **Step 3: Run `semantic`; measure direct methods whose actual adapters/inputs are available and gate learned rows by independent event support**
-- [ ] **Step 4: Run `geometry`; measure native-snapshot rows when numerical leaves exist and otherwise preserve the exact integration blocker**
-- [ ] **Step 5: Run `query`; measure causal policies only with contemporaneous state/lineage and label final-map-only diagnostics separately**
-- [ ] **Step 6: Run `select`; freeze all CAL/SELECT-derived settings and write `selection.json` before confirmation access**
-- [ ] **Step 7: Run `confirm` once only when a retained candidate and two untouched confirmation scenes exist**
-- [ ] **Step 8: Run `report`; copy only small artifacts/weights, list large paths/sizes/hashes, and reconcile five tables to machine metrics**
+- [x] **Step 1: Run `bind`; verify all historical inputs and record missing ScanNet/model assets without substitution**
+- [x] **Step 2: Run `capture`; execute the permitted Room0 native smoke/replay and any preselected independent captures only**
+- [x] **Step 3: Run `semantic`; measure direct methods whose actual adapters/inputs are available and gate learned rows by independent event support**
+- [x] **Step 4: Run `geometry`; measure native-snapshot rows when numerical leaves exist and otherwise preserve the exact integration blocker**
+- [x] **Step 5: Run `query`; measure causal policies only with contemporaneous state/lineage and label final-map-only diagnostics separately**
+- [x] **Step 6: Run `select`; freeze all CAL/SELECT-derived settings and write `selection.json` before confirmation access**
+- [x] **Step 7: Run `confirm` once only when a retained candidate and two untouched confirmation scenes exist**
+- [x] **Step 8: Run `report`; copy only small artifacts/weights, list large paths/sizes/hashes, and reconcile five tables to machine metrics**
 
 ### Task 8: Scoped Final Audit and Publication
 
@@ -208,9 +208,9 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - Consumes: all phase receipts and the original execution contract.
 - Produces: audited reports, final commit, verified remote branch, and reproducible handoff.
 
-- [ ] **Step 1: Audit every required method row against measured payload or evidenced blocker/gate status**
-- [ ] **Step 2: Verify prediction isolation, selection-stage isolation, G completeness, Q causal debit, numeric reconciliation, release-size limits, and no hidden fallbacks**
-- [ ] **Step 3: Run focused unit/integration tests, real-boundary smokes, orchestrator resume verification, `git diff --check`, and JSON/GZIP/NPZ parsing**
-- [ ] **Step 4: Inspect explicit staged paths and commit code/config/small artifacts/weights/reports**
+- [x] **Step 1: Audit every required method row against measured payload or evidenced blocker/gate status**
+- [x] **Step 2: Verify prediction isolation, selection-stage isolation, G completeness, Q causal debit, numeric reconciliation, release-size limits, and no hidden fallbacks**
+- [x] **Step 3: Run focused unit/integration tests, real-boundary smokes, orchestrator resume verification, `git diff --check`, and JSON/GZIP/NPZ parsing**
+- [x] **Step 4: Inspect explicit staged paths and commit code/config/small artifacts/weights/reports**
 - [ ] **Step 5: Push `research/ovimap-module-validation-v1` normally and compare full local SHA with `git ls-remote`**
 - [ ] **Step 6: Write the external publication receipt and report separate implementation, experiment, science, confirmation, and publication statuses**

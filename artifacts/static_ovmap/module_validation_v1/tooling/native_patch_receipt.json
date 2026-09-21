@@ -1,0 +1,55 @@
+{
+  "artifact_type": "OVIMAP_NATIVE_PATCH_RECEIPT",
+  "build": {
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "extension_path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/native_patch_build/devel/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+    "extension_sha256": "ffc733804859fbbf5d4afebcc140056e95dffa4a9c0a1f6f6fd78f61bca3b297",
+    "loaded_module_path_match": true,
+    "python": "3.11.15",
+    "strategy": "isolated ABI-compatible object/link build against the clean pinned source and the existing Ubuntu 24 native baseline dependencies"
+  },
+  "diagnostics": {
+    "fix": "export labels by generated instance-mesh block and identical voxel lookup semantics",
+    "pre_fix_global_coordinate_lookup_mismatch_count": 2,
+    "root_cause": "block-boundary float lookup differed from native mesh-color block/voxel traversal"
+  },
+  "patch": {
+    "clean_apply_check": "PASS",
+    "path": "/home/ww/crove/ovimap-module-validation/third_party_patches/ovimap/module_validation_v1/ovimap_module_validation_v1.patch",
+    "sha256": "202e0392f93bcff93f6522469405d060f5e6b352cc6817d40db463f80784700e"
+  },
+  "schema_version": 1,
+  "smoke": {
+    "capture_identity": "5ce74f181013f2401f03bf3ab279738a9110e6696adb992df610d22ea7eece9e",
+    "capture_manifest_path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/historical_two_frame_capture_v3/room0/manifest.json",
+    "capture_manifest_sha256": "d1ccc2628df9f42473d5b481880ca88ce2dae56eda2eeffc23326820061d1c40",
+    "faces": 618376,
+    "frame_arrays_present": true,
+    "frame_ids": [
+      0,
+      10
+    ],
+    "mesh_path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/historical_two_frame_mapper_v3/cropformer_inst/instance_mesh_2.ply",
+    "mesh_sha256": "1ad1c1e8b5f38a8f2d35f729f4709657c9975674b597d73a1d1ebafdb41f4d49",
+    "native_selected_request_count": 31,
+    "normal_invalid_rows": 48,
+    "normal_valid_rows": 1855080,
+    "owner_color_mismatch_count": 0,
+    "request_count": 35,
+    "scene_id": "room0",
+    "surface_keys_match_manifest": true,
+    "surface_path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/historical_two_frame_capture_v3/room0/surface.npz",
+    "surface_rows": 1855128,
+    "surface_sha256": "2c6876abdef30e053094d66a0f123e5a50f280df558af3cf15dad8d97974efc0",
+    "unknown_positive_color_rows": 0,
+    "valid_label_rows": 1855128,
+    "xyz_exact_equal": true
+  },
+  "status": "COMPLETE",
+  "upstream": {
+    "commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+    "patched_cpp_sha256": "b5b1e3efaedb5b3cfed7feec0f499bd411fbdb31e4a94bef60f040f1b8dd3e25",
+    "patched_diff_sha256": "202e0392f93bcff93f6522469405d060f5e6b352cc6817d40db463f80784700e",
+    "root": "/home/ww/crove/ovimap-module-validation-upstream"
+  }
+}

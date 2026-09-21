@@ -1,0 +1,71 @@
+{
+  "artifact_type": "OVIMAP_MODULE_EXECUTION_MANIFEST",
+  "commands": [
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --phase all --output-root /mnt/shared/ww/ovimap-module-validation-v1",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase bind",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase capture",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase semantic",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase geometry",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase query",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase select",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase confirm",
+    "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py --spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_001/resolved_config.json --output-root /mnt/shared/ww/ovimap-module-validation-v1 --phase report"
+  ],
+  "costs": {
+    "capture": {
+      "frames": 2,
+      "scenes": 1
+    },
+    "geometry_smoke": {
+      "complete_hypothesis_count": 8,
+      "leaf_count": 4262,
+      "surface_faces": 4096,
+      "surface_rows": 12288
+    },
+    "query_smoke": {
+      "Q_AREA": {
+        "attempts": 18,
+        "crop_inputs": 108,
+        "failures": 0,
+        "successes": 18
+      },
+      "Q_UNCERTAINTY": {
+        "attempts": 18,
+        "crop_inputs": 108,
+        "failures": 0,
+        "successes": 18
+      },
+      "frame_result_barrier": true,
+      "physical": {
+        "cache_hits": 36,
+        "crop_inputs": 0,
+        "inference_seconds": 0.0,
+        "model_forwards": 0,
+        "model_loads": 0,
+        "tiles": 0
+      },
+      "policy_states_isolated": true,
+      "shared_cache_did_not_admit_cross_policy_features": true
+    },
+    "scientific_evaluation_rows": 0,
+    "scientific_training_runs": 0,
+    "semantic_smoke": {
+      "native_siglip_requests": 1,
+      "siglip2_requests": 1,
+      "training_runs": 0,
+      "wow_generations": 1
+    }
+  },
+  "errors": [
+    "BLOCKED_INDEPENDENT_SCENES"
+  ],
+  "experiment_code_identity": {
+    "dirty": false,
+    "head": "b8a5917003631408cc0a11e6ed3c4e78e3f26f6f",
+    "status_digest": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+    "tracked_diff_digest": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+  },
+  "schema_version": 1,
+  "timing_status": "NOT_RECORDED_FOR_PREEXISTING_BOUNDARY_SMOKES",
+  "timings_seconds": null
+}

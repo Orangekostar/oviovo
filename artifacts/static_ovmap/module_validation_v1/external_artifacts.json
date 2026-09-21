@@ -1,0 +1,69 @@
+{
+  "artifact_type": "OVIMAP_EXTERNAL_ARTIFACT_MANIFEST",
+  "entries": [
+    {
+      "artifact_id": "native_extension",
+      "bytes": 554456,
+      "hash_scope": "file",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/native_patch_build/devel/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+      "regeneration_blocker": "The native receipt preserves the ABI build environment and output identity, but the exact isolated build command is not automated by the v1 study CLI.",
+      "regeneration_command": null,
+      "sha256": "ffc733804859fbbf5d4afebcc140056e95dffa4a9c0a1f6f6fd78f61bca3b297"
+    },
+    {
+      "artifact_id": "native_capture",
+      "bytes": 34077860,
+      "hash_scope": "native capture identity over the manifest-bound frame/surface payload",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/historical_two_frame_capture_v3/room0",
+      "regeneration_blocker": "Requires replaying the pinned native mapper with the receipt-bound historical trajectory.",
+      "regeneration_command": null,
+      "sha256": "5ce74f181013f2401f03bf3ab279738a9110e6696adb992df610d22ea7eece9e"
+    },
+    {
+      "artifact_id": "native_instance_mesh",
+      "bytes": 138791640,
+      "hash_scope": "file",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/historical_two_frame_mapper_v3/cropformer_inst/instance_mesh_2.ply",
+      "regeneration_blocker": "Requires replaying the pinned native mapper with the receipt-bound historical trajectory.",
+      "regeneration_command": null,
+      "sha256": "1ad1c1e8b5f38a8f2d35f729f4709657c9975674b597d73a1d1ebafdb41f4d49"
+    },
+    {
+      "artifact_id": "native_siglip",
+      "bytes": 2613214369,
+      "hash_scope": "canonical directory content identity from adapter receipt",
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+      "regeneration_blocker": "The bound native model receipt has no immutable download revision.",
+      "regeneration_command": null,
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2"
+    },
+    {
+      "artifact_id": "siglip2",
+      "bytes": 3566173970,
+      "hash_scope": "canonical directory content identity from adapter receipt",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384",
+      "regeneration_blocker": null,
+      "regeneration_command": "python -c \"from huggingface_hub import snapshot_download; snapshot_download(repo_id='google/siglip2-large-patch16-384', revision='1b426889ea62b5a72bf9839009a1b184bfc9c178', local_dir='/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384')\"",
+      "sha256": "11bdb3cf00c4dc4f87e437c9c75087ca16fa21aea437b3576c103670ee3c73be"
+    },
+    {
+      "artifact_id": "wow_weights",
+      "bytes": 1889241027,
+      "hash_scope": "canonical directory content identity from adapter receipt",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg",
+      "regeneration_blocker": null,
+      "regeneration_command": "python -c \"from huggingface_hub import snapshot_download; snapshot_download(repo_id='AAwcAA/WOW-Seg', revision='1896c3e37fce20ff35d129c873a41375ae6ee698', local_dir='/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg')\"",
+      "sha256": "23fc8661a88986692cad3ce15476feab7c69e4dc73691f1f8e25e4bcd74c1316"
+    },
+    {
+      "artifact_id": "name_mapping",
+      "bytes": 976952293,
+      "hash_scope": "canonical directory content identity from adapter receipt",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2",
+      "regeneration_blocker": null,
+      "regeneration_command": "python -c \"from huggingface_hub import snapshot_download; snapshot_download(repo_id='sentence-transformers/all-MiniLM-L6-v2', revision='1110a243fdf4706b3f48f1d95db1a4f5529b4d41', local_dir='/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2')\"",
+      "sha256": "53aa51172d142c89d9012cce15ae4d6cc0ca6895895114379cacb4fab128d9db"
+    }
+  ],
+  "schema_version": 1
+}

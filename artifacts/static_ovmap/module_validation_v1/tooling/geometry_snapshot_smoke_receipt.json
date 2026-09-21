@@ -1,0 +1,35 @@
+{
+  "artifact_type": "OVIMAP_GEOMETRY_SNAPSHOT_SMOKE_RECEIPT",
+  "capture_path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/historical_two_frame_capture_v3/room0",
+  "complete_hypothesis_count": 8,
+  "conflict_group_count": 4,
+  "edge_count": 12288,
+  "frame_depth_consistent_zbuffer_pixels": [
+    1958,
+    2208
+  ],
+  "graph_source": "MESH_FACES",
+  "leaf_contact_count": 167,
+  "leaf_count": 4262,
+  "learned_branch": {
+    "margin_selection_performed": false,
+    "quality_training_performed": false,
+    "reason": "No independent ScanNet FIT/CAL/SELECT scenes are bound locally, so partition-target support and CAL margins cannot be measured.",
+    "status": "BLOCKED_INDEPENDENT_SCENES"
+  },
+  "maximum_group_leaf_count": 1686,
+  "noop_owner_exact": true,
+  "owner0_exact": true,
+  "positive_owner_count": 6,
+  "scene_id": "room0",
+  "schema_version": 1,
+  "scientific_result": false,
+  "scope": "first_4096_native_faces",
+  "spectral_omission_rule_exercised": true,
+  "status": "COMPLETE",
+  "surface_faces": 4096,
+  "surface_faces_sha256": "f194e1a1a294a19b5d354f5b872645b86a54214995010c9148466295b32cb30c",
+  "surface_rows": 12288,
+  "surface_xyz_sha256": "f8fbce12c535b342c0c6dca8611789b844dfd9917ef79fefcde857db5730affc",
+  "untouched_owner_count": 0
+}

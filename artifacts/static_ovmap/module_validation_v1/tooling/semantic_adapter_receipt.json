@@ -1,0 +1,116 @@
+{
+  "artifact_type": "OVIMAP_SEMANTIC_ADAPTER_RECEIPT",
+  "learned_branch": {
+    "head_training_performed": false,
+    "reason": "The bound local assets contain Replica rooms but no independent ScanNet scenes required for FIT/CAL/SELECT.",
+    "status": "BLOCKED_INDEPENDENT_SCENES",
+    "teacher_selection_performed": false,
+    "threshold_selection_performed": false
+  },
+  "name_mapping": {
+    "embedding_smoke": {
+      "mapped_class_index": 2,
+      "mapped_class_name": "cabinet",
+      "method": "MINILM_COSINE",
+      "raw": "storage cupboard",
+      "top1_top2_gap": 0.009552960309040404
+    },
+    "embedding_width": 384,
+    "exact_smoke": {
+      "mapped_class_index": 2,
+      "mapped_class_name": "cabinet",
+      "method": "EXACT",
+      "raw": "cabinet"
+    },
+    "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+    "model_path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2",
+    "model_sha256": "53aa51172d142c89d9012cce15ae4d6cc0ca6895895114379cacb4fab128d9db",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+  },
+  "native_siglip": {
+    "area_label_id": 6,
+    "crop_vector_shape": [
+      9,
+      1024
+    ],
+    "legacy_first_six_allclose_atol_1e-6": true,
+    "legacy_first_six_max_abs_error": 8.120649263448909e-08,
+    "model_path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+    "model_sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+    "text_cache_path": "/home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/dev/room0/native_cached_batch/text_features.npz",
+    "text_cache_sha256": "db1081387d1e08d7888334a540bc527299eb3ff4095cd7623dfbb1d76d083df7",
+    "unit_norm_max_error": 1.1102230246251565e-16,
+    "vote_label_id": 6
+  },
+  "request": {
+    "bbox_xyxy": [
+      728,
+      243,
+      1091,
+      390
+    ],
+    "frame_id": 0,
+    "request_id": "064c1af343096e8aa342ee81524f18ae14b178fedc1c43a7c9eda4a503db7fae",
+    "scene_id": "room0",
+    "target_id": "owner:3",
+    "target_pixels": 33703,
+    "union_pixels": 34037
+  },
+  "schema_version": 1,
+  "scientific_result": false,
+  "scope": "one captured native request per available visual model",
+  "siglip2": {
+    "area_label_id": 3,
+    "area_label_name": "cabinet",
+    "config_sha256": "7859ae71a2316c7104f9f64f8cf500ebaa53a7eb315ff28463422e18ce954721",
+    "crop_vector_shape": [
+      6,
+      1024
+    ],
+    "image_unit_norm_max_error": 5.960464477539063e-08,
+    "model_id": "google/siglip2-large-patch16-384",
+    "model_path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384",
+    "model_sha256": "11bdb3cf00c4dc4f87e437c9c75087ca16fa21aea437b3576c103670ee3c73be",
+    "revision": "1b426889ea62b5a72bf9839009a1b184bfc9c178",
+    "text_unit_norm_max_error": 1.1920928955078125e-07,
+    "text_vector_shape": [
+      40,
+      1024
+    ],
+    "top1_cosine": 0.1317782700061798,
+    "vote_label_id": 3,
+    "vote_label_name": "cabinet"
+  },
+  "status": "DIRECT_ADAPTERS_COMPLETE",
+  "wow": {
+    "code_id": "AAwcAA/WOW-Seg-Meta",
+    "code_revision": "bfc6f2424c47097e70a641c6a8016319cac192cb",
+    "combined_patch_count": 10,
+    "config_sha256": "d81a6a93178882613f16fbaad0c209d2531b02ac95a21435637865f09c6cc43b",
+    "full_patch_count": 9,
+    "generation": {
+      "do_sample": false,
+      "force_image_size": 448,
+      "max_dynamic_patches": 12,
+      "max_new_tokens": 32,
+      "num_beams": 1,
+      "region_crop_scale": 2.5,
+      "thumbnail": true
+    },
+    "loaded_generate_source_sha256": "936e1cb91291614ebec708073a6b7af08be1685f5cea6e86c4a626660be65365",
+    "mask_16x16_support": 14,
+    "mask_consumed": true,
+    "mask_consumption_boundary": "official_generate.visual_token_mask_selection",
+    "mode": "official_combined",
+    "model_path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg",
+    "model_sha256": "23fc8661a88986692cad3ce15476feab7c69e4dc73691f1f8e25e4bcd74c1316",
+    "official_preprocess_source_sha256": "e26f045a15cd7f02dc1df83fe2a1473d3c5b8fd58035885c56393e6135732a93",
+    "original_mask_support": 33703,
+    "prompt": "This is the original image: <image>. Please classify the specified target area. Reply with only the category name of the target area, without explanation. Specified target area:<image>",
+    "raw_generation": "cabinet",
+    "region_tile_index": 9,
+    "remote_model_source_sha256": "9230f204d0d93642a1a46c8a0b8e8c1f12bf85856b7fc3e044af82bf9a8b55a7",
+    "weights_id": "AAwcAA/WOW-Seg",
+    "weights_revision": "1896c3e37fce20ff35d129c873a41375ae6ee698"
+  }
+}

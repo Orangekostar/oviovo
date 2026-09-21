@@ -1,0 +1,118 @@
+{
+  "ambiguities": {},
+  "bindings": {
+    "historical_baseline_root": {
+      "aliases": [],
+      "identity": {
+        "kind": "directory",
+        "manifest_path": null,
+        "sha256": "1be1dc694ba7dfbdf35144d9109cdcc67e02c447906f3e1138f3ab70e5059858",
+        "size_bytes": null
+      },
+      "key": "historical_baseline_root",
+      "path": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap",
+      "source": "configuration"
+    },
+    "historical_evaluation": {
+      "aliases": [],
+      "identity": {
+        "kind": "directory",
+        "manifest_path": null,
+        "sha256": "8bd5cf8bc12f81534164394b1ec1e5446509a92dcb8d3a5c8f55cb1b6cac0578",
+        "size_bytes": null
+      },
+      "key": "historical_evaluation",
+      "path": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+      "source": "configuration"
+    },
+    "historical_native_mesh": {
+      "aliases": [],
+      "identity": {
+        "kind": "file",
+        "manifest_path": null,
+        "sha256": "58617e29c0720edc0086490a6c43dd6b47bf84d493c8b6adb2c7045d42fb6382",
+        "size_bytes": 698368528
+      },
+      "key": "historical_native_mesh",
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply",
+      "source": "configuration"
+    },
+    "historical_predictions": {
+      "aliases": [],
+      "identity": {
+        "kind": "directory",
+        "manifest_path": null,
+        "sha256": "ef512b1de580233d7a79f2405d89d4769f6512be0c2b352e75106740f772b9b5",
+        "size_bytes": null
+      },
+      "key": "historical_predictions",
+      "path": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+      "source": "configuration"
+    },
+    "incumbent_model": {
+      "aliases": [],
+      "identity": {
+        "kind": "directory",
+        "manifest_path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/config.json",
+        "sha256": "ddefe38fdfe333d5dbb7d56a247bdc6fe84dbcdb4eafd2f462e05e9b13c532bc",
+        "size_bytes": null
+      },
+      "key": "incumbent_model",
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+      "source": "configuration"
+    },
+    "native_text_cache": {
+      "aliases": [],
+      "identity": {
+        "kind": "file",
+        "manifest_path": null,
+        "sha256": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+        "size_bytes": 226998
+      },
+      "key": "native_text_cache",
+      "path": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+      "source": "configuration"
+    },
+    "object_decoupling_root": {
+      "aliases": [],
+      "identity": {
+        "kind": "directory",
+        "manifest_path": null,
+        "sha256": "86118d2d1998a64f5f0184198b9a96bccddeff4888e380b4dc7b8f1bc0c2b105",
+        "size_bytes": null
+      },
+      "key": "object_decoupling_root",
+      "path": "/mnt/shared/ww/ovimap-object-semantic-decoupling-v1",
+      "source": "configuration"
+    },
+    "official_ovi_checkout": {
+      "aliases": [],
+      "identity": {
+        "kind": "directory",
+        "manifest_path": null,
+        "sha256": "4b52c10beb6ce441c28c81fb1c5c56e00cf904ae88eba9d78c11ba7cf962f0f2",
+        "size_bytes": null
+      },
+      "key": "official_ovi_checkout",
+      "path": "/home/ww/crove/ovimap-module-validation-upstream",
+      "source": "configuration"
+    },
+    "semantic_study_root": {
+      "aliases": [],
+      "identity": {
+        "kind": "directory",
+        "manifest_path": null,
+        "sha256": "a33d67e3681592645704549b9537d074178b8080198287ba0a48548f70e8bb97",
+        "size_bytes": null
+      },
+      "key": "semantic_study_root",
+      "path": "/mnt/shared/ww/ovimap-sf-to-ovi-semantics-v1",
+      "source": "configuration"
+    }
+  },
+  "missing": [
+    "scannet_root"
+  ],
+  "searched_roots": [],
+  "status": "BLOCKED_PREREQUISITE"
+}

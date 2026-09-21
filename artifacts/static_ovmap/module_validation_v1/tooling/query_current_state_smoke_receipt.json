@@ -1,0 +1,177 @@
+{
+  "artifact_type": "OVIMAP_QUERY_CURRENT_STATE_SMOKE_RECEIPT",
+  "candidate_parity": [
+    {
+      "candidate_count": 18,
+      "captured_request_count": 18,
+      "exact_target_union_overlap_bbox_request_parity": true,
+      "frame_id": 0,
+      "native_selected_count": 18
+    },
+    {
+      "candidate_count": 17,
+      "captured_request_count": 17,
+      "exact_target_union_overlap_bbox_request_parity": true,
+      "frame_id": 10,
+      "native_selected_count": 13
+    }
+  ],
+  "capture_manifest": {
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/historical_two_frame_capture_v3/room0/manifest.json",
+    "sha256": "d1ccc2628df9f42473d5b481880ca88ce2dae56eda2eeffc23326820061d1c40"
+  },
+  "causal_select_status": "BLOCKED_INDEPENDENT_SCENES",
+  "learned_query_status": "BLOCKED_INDEPENDENT_SCENES",
+  "native_combine_parity": {
+    "bbox_center": "native voxel0.01 + statistical outlier(10,2.0) + Open3D OBB/AABB fallback",
+    "frame_rows": [
+      {
+        "frame_id": 0,
+        "request_ids_exact": true,
+        "selected_count": 18
+      },
+      {
+        "frame_id": 10,
+        "request_ids_exact": true,
+        "selected_count": 13
+      }
+    ],
+    "grid_hw": [
+      85,
+      150
+    ],
+    "historical_coverage_before_visibility_side_effect_preserved": true,
+    "status": "EXACT",
+    "view_overlap_ratio_threshold": 0.9
+  },
+  "native_visible_target_pixels_interpretation": "overlap_area",
+  "policy_replay": {
+    "Q_AREA": {
+      "attempts": 18,
+      "crop_inputs": 108,
+      "failures": 0,
+      "successes": 18
+    },
+    "Q_UNCERTAINTY": {
+      "attempts": 18,
+      "crop_inputs": 108,
+      "failures": 0,
+      "successes": 18
+    },
+    "frame_result_barrier": true,
+    "physical": {
+      "cache_hits": 36,
+      "crop_inputs": 0,
+      "inference_seconds": 0.0,
+      "model_forwards": 0,
+      "model_loads": 0,
+      "tiles": 0
+    },
+    "policy_states_isolated": true,
+    "shared_cache_did_not_admit_cross_policy_features": true
+  },
+  "real_feature_source": {
+    "feature_count": 18,
+    "features": [
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_0-0-1199-679.npy",
+        "sha256": "35895d1824dec29e3e8fdde768b220ecc02d17d46b8f9ec413298b20064405f9"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_0-273-124-327.npy",
+        "sha256": "9d280b9d7de315702e1a569957b3808221108da857cd2bd12bcc6a1ee5fdb4d6"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_1003-219-55-68.npy",
+        "sha256": "e657b624f597fcf4a35618c79ed32c907de298b65af30ce5d577ac0fb63f2c48"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_231-288-178-152.npy",
+        "sha256": "8a0d4cf372db6ac2c50a6f9a600018b076a1d7b072af028516253f15b39da971"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_242-582-204-97.npy",
+        "sha256": "cfc36851b467b5b053a50876efdca429019ad6cd0a58f9181ff0277841f0cd04"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_314-462-234-163.npy",
+        "sha256": "4c8a0df9638f9d0d41ec2a0e4c51be1bd331679f58493918cd6ba9db2575b059"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_346-558-146-69.npy",
+        "sha256": "baa6a4b395b4a8a2237eddd9ab9ca3db2aace4fbcb07d0cf31945f45d731b853"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_384-436-64-63.npy",
+        "sha256": "8d46049c702b66e2ed1b2a8d7809e401188dff40ad5e249ee887c67816daae0a"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_448-300-751-379.npy",
+        "sha256": "f6e82c04824ef25db3850364cfdb41c63c453b05bfef70ac14cda93a87b36083"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_459-0-579-390.npy",
+        "sha256": "00848020feb55ea21739528e3133385f3d88fb4a01d8810c018e544cdd2e377a"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_472-0-107-394.npy",
+        "sha256": "ff6011b77cb5c90a41ab4c61851d3ad7604e65d07564550aa3039114a36ff7f3"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_499-543-477-136.npy",
+        "sha256": "0d3fab86dc2ab5e8a46cd4aa855bff0e8d49d7d5ed50e6381a8a58e1c36d82ce"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_514-3-71-357.npy",
+        "sha256": "e61eabe7f804f21e114135b3ec7c661d655c713d91a1ccd3c39b6483264c392f"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_61-514-447-165.npy",
+        "sha256": "d874278d35177186a6396de2be04c6134ce760ea2e4b61fc4452e8da5263a4fe"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_704-491-195-188.npy",
+        "sha256": "eea981a02c6b2d29139997d6ce12cce8cf8bf0d91b3ba83df8858a3f1be36e8f"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_728-243-363-147.npy",
+        "sha256": "bf1f395ccfaa7d4c993a70444994cd5d12069bf1c417d6c9fc886beb11a115e0"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_786-218-34-46.npy",
+        "sha256": "e825b51a4a864b76bfa0014719b9c049432cdccaab9091a960504e896d5d01f1"
+      },
+      {
+        "bytes": 4224,
+        "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_961-552-238-127.npy",
+        "sha256": "7a5cbd4abed79d5f03a9852211d5f16a5e1374c1e888fa64db96c3bf42413899"
+      }
+    ],
+    "kind": "historical native SigLIP six-crop aggregate cache",
+    "physical_interpretation": "authorized pre-existing historical cache; no new model forward claimed",
+    "text_cache_path": "/home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/dev/room0/native_cached_batch/text_features.npz",
+    "text_cache_sha256": "db1081387d1e08d7888334a540bc527299eb3ff4095cd7623dfbb1d76d083df7"
+  },
+  "reason": "Only one historical Replica scene is captured; required independent FIT/CAL/SELECT families are unavailable.",
+  "schema_version": 1,
+  "scientific_result": false,
+  "scope": "Room0 historical two-frame current-state candidate parity and frame-0 real-feature replay",
+  "status": "SMOKE_COMPLETE_NOT_SCIENTIFIC"
+}

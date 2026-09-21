@@ -1,0 +1,41 @@
+{
+  "artifact_type": "OVIMAP_MODULE_FINAL_VERIFICATION",
+  "schema_version": 1,
+  "created_utc": "2026-09-21T18:05:05Z",
+  "implementation_head": "a7f0548cdbde3d2d281ef19f32cb67d6f439c418",
+  "checks": [
+    {
+      "command": "conda run -n ovimap-map python -m pytest -q tests/module_validation",
+      "result": "77 passed in 2.93s"
+    },
+    {
+      "command": "ruff check src/static_ovmap/module_validation scripts/evaluation/run_ovimap_module_study.py tests/module_validation",
+      "result": "All checks passed"
+    },
+    {
+      "command": "conda run -n ovimap-map python -m compileall -q src/static_ovmap/module_validation scripts/evaluation/run_ovimap_module_study.py",
+      "result": "PASS"
+    },
+    {
+      "command": "conda run -n ovimap-map python docs/paper/static_ovmap/module_validation_v1/spec/audit_bundle.py",
+      "result": "33 checks passed"
+    },
+    {
+      "command": "scoped jq/gzip/numpy artifact parsing and invariant assertions",
+      "result": "27 JSON, all bound evaluation JSON.GZ, and 11 NPZ payloads passed"
+    },
+    {
+      "command": "native patch/source diff and external file SHA-256 reconciliation",
+      "result": "PASS"
+    },
+    {
+      "command": "report phase resume with frozen resolved_config.json",
+      "result": "COMPLETE, reused=true"
+    },
+    {
+      "command": "five-table, required-row, cost, release-size, and no-large-committed-file assertions",
+      "result": "PASS"
+    }
+  ],
+  "system_pytest_note": "The unqualified system pytest resolves a broken Python 3.12 user Torch installation; all authoritative checks use the receipt-matched ovimap-map Python 3.11.15 and Torch 2.1.1 environment."
+}
