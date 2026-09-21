@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "study": "ovimap-module-validation-v1",
+  "version": "2026-09-20-v1",
+  "specification_only": true,
+  "authoritative_instruction": "CODEX_FINAL_EXECUTION_EN.md",
+  "repository": "Orangekostar/oviovo",
+  "project_commit": "b6455520c758a3413988e0827b3e1f34667bdfd1",
+  "official_repository": "OVI-MAP/OVI-MAP",
+  "official_commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+  "task_branch": "research/ovimap-module-validation-v1",
+  "output_root": "/mnt/shared/ww/ovimap-module-validation-v1",
+  "phases": [
+    "bind",
+    "capture",
+    "semantic",
+    "geometry",
+    "query",
+    "select",
+    "confirm",
+    "report",
+    "all"
+  ],
+  "scope": {
+    "frozen_backbones": true,
+    "small_head_training": true,
+    "native_replay": true,
+    "missing_cropformer_cache_only": true,
+    "new_SF_SAM_Open3DIS_or_full_reference_pipelines": false,
+    "raw_restricted_dataset_downloads": false,
+    "prediction_GT_access": false,
+    "modify_released_evaluator": false,
+    "live_G_owner_feedback": false,
+    "historical_large_matrix_rerun": false
+  },
+  "data": {
+    "source": "authorized_local_official_ScanNet_training_captures",
+    "family_grouping": "sceneNNNN_* and known revisits",
+    "sort": "sha256(ovimap-module-v1|family_id)",
+    "development_families": 12,
+    "fit": 8,
+    "cal": 2,
+    "select": 2,
+    "confirm": 2,
+    "exclude_all_exposed_families": true,
+    "frames_per_capture": 200,
+    "max_new_independent_captures": 14,
+    "max_historical_room0_native_replays": 1,
+    "supervised_missing_data": "BLOCKED_INDEPENDENT_SCENES"
+  },
+  "models": {
+    "incumbent": {
+      "local_hint": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+      "precision": "float32",
+      "frozen": true
+    },
+    "siglip2": {
+      "hf_id": "google/siglip2-large-patch16-384",
+      "revision_resolution": "immutable_HF_SHA_before_first_inference",
+      "precision": "float32",
+      "frozen": true
+    },
+    "wow": {
+      "hf_id": "AAwcAA/WOW-Seg",
+      "code_repo": "AAwcAA/WOW-Seg-Meta",
+      "code_commit": "bfc6f2424c47097e70a641c6a8016319cac192cb",
+      "weight_availability_at_planning": "NOT_LOADED_OR_VERIFIED",
+      "revision_resolution": "immutable_HF_SHA_before_first_inference",
+      "precision": "bfloat16_cuda",
+      "attention": "eager",
+      "image_size": 448,
+      "max_dynamic_patches": 12,
+      "thumbnail": true,
+      "scale": 2.5,
+      "max_new_tokens": 32,
+      "do_sample": false,
+      "num_beams": 1,
+      "per_example_input_fallback": false,
+      "allowed_locked_modes": [
+        "official_combined",
+        "combined_with_patch_list"
+      ],
+      "prompt": "This is the original image: <image>. Please classify the specified target area. Reply with only the category name of the target area, without explanation. Specified target area:<image>"
+    },
+    "name_mapper": {
+      "hf_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision_resolution": "immutable_HF_SHA",
+      "handwritten_test_synonyms": false
+    }
+  },
+  "runtime": {
+    "cpu_threads": 8,
+    "point_chunk": 65536,
+    "concurrent_visual_models_per_gpu": 1,
+    "default_visual_gpus": 1,
+    "multi_node_training": false
+  },
+  "S": {
+    "direct_methods": [
+      "S_NATIVE_AREA",
+      "S_NATIVE_VOTE",
+      "S_SIGLIP2_AREA",
+      "S_SIGLIP2_VOTE",
+      "S_WOW_VOTE"
+    ],
+    "head_methods": [
+      "S_SIMPLE",
+      "S_NO_CONTEXT",
+      "S_PAIRED"
+    ],
+    "teacher_candidates_CAL": [
+      "S_SIGLIP2_AREA",
+      "S_SIGLIP2_VOTE",
+      "S_WOW_VOTE"
+    ],
+    "max_targets_per_scene": 128,
+    "max_views_per_target": 3,
+    "native_base_crops": 6,
+    "extra_native_background_crops": 3,
+    "feature_values": 32,
+    "feature_availability_bits": 32,
+    "head_dims": [
+      64,
+      32,
+      3
+    ],
+    "simple_feature_indices": [
+      0,
+      1,
+      2,
+      3,
+      8,
+      9,
+      12,
+      19
+    ],
+    "context_feature_indices": [
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "fit_gain_min": 5,
+    "fit_harm_min": 5,
+    "fit_families_each_event_min": 2,
+    "value": "P(GAIN)-P(HARM)",
+    "adoption_thresholds_CAL": [
+      0,
+      0.1,
+      0.2,
+      0.3,
+      0.5,
+      "KEEP_ALL"
+    ],
+    "fixed_geometry": true,
+    "fixed_registry": true,
+    "fixed_numeric_ranks": true
+  },
+  "G": {
+    "methods": [
+      "G_ORIGINAL",
+      "G_AGREEMENT",
+      "G_QUALITY"
+    ],
+    "max_groups_per_scene": 64,
+    "max_hypotheses_per_group": 8,
+    "max_parents_per_group": 2,
+    "max_spectral_leaves": 1024,
+    "fallback_mutual_knn": 8,
+    "fallback_link_m": 0.03,
+    "pca_neighbors": 16,
+    "frame_pool_max": 32,
+    "depth_tolerance_m": 0.05,
+    "leaf_known_pixels_min": 16,
+    "leaf_positive_dominance_min": 0.6,
+    "graph_split_k": [
+      2,
+      3
+    ],
+    "cluster_seed": 17,
+    "cluster_n_init": 1,
+    "same_pool_for_all_scorers": true,
+    "feature_values": 20,
+    "feature_availability_bits": 20,
+    "head_dims": [
+      40,
+      32,
+      1
+    ],
+    "fit_variable_groups_min": 20,
+    "fit_families_min": 4,
+    "pair_target_gap_min": 0.05,
+    "pair_loss_weight": 0.1,
+    "adoption_margins_CAL": [
+      0,
+      0.02,
+      0.05,
+      "KEEP_ALL"
+    ],
+    "ranking": "final_source_component_point_count",
+    "live_feedback": false,
+    "TSDF_XYZ_faces_projection_fixed": true,
+    "parent_label_inheritance_for_new_shapes": false,
+    "max_final_semantic_targets_per_scene_condition": 128,
+    "max_semantic_views": 3
+  },
+  "Q": {
+    "methods": [
+      "Q_COMBINE",
+      "Q_AREA",
+      "Q_UNCERTAINTY",
+      "Q_GAIN"
+    ],
+    "visual_model": "incumbent",
+    "main_budget_attempts": 200,
+    "training_budget_per_FIT_scene": 512,
+    "calibration_trace_budget": 256,
+    "training_random_seed": 17,
+    "calibration_random_seed": 23,
+    "allowance": "floor(B*(t+1)/F)-spent",
+    "max_retained_features_per_owner": 10,
+    "per_owner_acquisition_cap": null,
+    "learned_primary_stop_gate": false,
+    "feature_values": 20,
+    "feature_availability_bits": 20,
+    "head_dims": [
+      40,
+      32,
+      1
+    ],
+    "fit_events_min": 100,
+    "fit_families_min": 4,
+    "positive_events_min": 10,
+    "nonpositive_events_min": 10,
+    "target_annotated_pixels_min": 64,
+    "target_class_dominance_min": 0.8,
+    "score_temperature": 0.07,
+    "target_clip": [
+      -5,
+      5
+    ],
+    "future_or_unacquired_features": false,
+    "free_final_native_labels": false,
+    "frame_result_barrier_all_policies": true,
+    "curve_if_eligible": [
+      100,
+      400
+    ],
+    "curve_methods": [
+      "Q_GAIN",
+      "CAL_LOCKED_BEST_NONLEARNED"
+    ]
+  },
+  "training": {
+    "seed": 17,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.001,
+    "max_epochs": 100,
+    "cal_every_epochs": 5,
+    "early_stop_nonimproving_checks": 3,
+    "S_batch_objects": 128,
+    "G_batch_groups": 64,
+    "Q_batch_events": 128,
+    "fit_only_scaling": true,
+    "standardized_clip": [
+      -8,
+      8
+    ],
+    "feature_std_floor": 1e-06,
+    "architecture_or_seed_grid": false
+  },
+  "selection": {
+    "teacher_and_checkpoints": "CAL",
+    "module_and_final_choice": "SELECT",
+    "final_check": "CONFIRM",
+    "metric_tolerance_0to1": 1e-10,
+    "bootstrap_seed": 17,
+    "bootstrap_resamples": 2000,
+    "max_combination_variants": 2,
+    "combination_ids": [
+      "COMBO_GS",
+      "COMBO_Q_REFINEMENT"
+    ],
+    "max_rows_per_confirm_scene": 4,
+    "post_confirm_retune": false,
+    "no_winner": "N0"
+  },
+  "publication": {
+    "results_md": "docs/paper/static_ovmap/MODULE_VALIDATION_RESULTS.md",
+    "handoff_md": "docs/paper/static_ovmap/MODULE_VALIDATION_HANDOFF.md",
+    "small_artifacts": "artifacts/static_ovmap/module_validation_v1/",
+    "patches": "third_party_patches/ovimap/module_validation_v1/",
+    "max_single_head_MiB": 10,
+    "max_release_additions_MiB": 100,
+    "commit_and_push": true,
+    "verify_remote_sha": true,
+    "auto_merge_main": false,
+    "force_push": false
+  }
+}

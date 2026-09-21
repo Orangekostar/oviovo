@@ -1,0 +1,148 @@
+{
+  "audit_scope": "instruction package consistency, NOT algorithm execution",
+  "version": "2026-09-20-v1",
+  "checks_passed": 33,
+  "checks": [
+    {
+      "check": "all_required_files_nonempty",
+      "pass": true
+    },
+    {
+      "check": "single_file_exactly_matches_modular_contract",
+      "pass": true
+    },
+    {
+      "check": "json_strict_roundtrip",
+      "pass": true
+    },
+    {
+      "check": "reviewed_project_sha",
+      "pass": true
+    },
+    {
+      "check": "reviewed_upstream_sha",
+      "pass": true
+    },
+    {
+      "check": "wow_code_sha",
+      "pass": true
+    },
+    {
+      "check": "independent_split_arithmetic",
+      "pass": true
+    },
+    {
+      "check": "new_capture_cap",
+      "pass": true
+    },
+    {
+      "check": "three_head_dimensions",
+      "pass": true
+    },
+    {
+      "check": "semantic_methods_counts",
+      "pass": true
+    },
+    {
+      "check": "geometry_methods_counts",
+      "pass": true
+    },
+    {
+      "check": "query_methods_counts",
+      "pass": true
+    },
+    {
+      "check": "all_method_ids_unique",
+      "pass": true
+    },
+    {
+      "check": "all_methods_documented",
+      "pass": true
+    },
+    {
+      "check": "teachers_documented",
+      "pass": true
+    },
+    {
+      "check": "fixed_semantic_budget",
+      "pass": true
+    },
+    {
+      "check": "semantic_crop_budget_arithmetic",
+      "pass": true
+    },
+    {
+      "check": "fixed_geometry_budget",
+      "pass": true
+    },
+    {
+      "check": "query_budgets",
+      "pass": true
+    },
+    {
+      "check": "no_fake_query_label_warmstart",
+      "pass": true
+    },
+    {
+      "check": "no_query_future_access",
+      "pass": true
+    },
+    {
+      "check": "static_G_declared",
+      "pass": true
+    },
+    {
+      "check": "mask_conditioned_WOW_only",
+      "pass": true
+    },
+    {
+      "check": "missing_data_not_fabricated",
+      "pass": true
+    },
+    {
+      "check": "no_confirmation_reselection",
+      "pass": true
+    },
+    {
+      "check": "release_code_results_handoff",
+      "pass": true
+    },
+    {
+      "check": "actual_push_required",
+      "pass": true
+    },
+    {
+      "check": "no_force_or_auto_merge",
+      "pass": true
+    },
+    {
+      "check": "json_disabled_thresholds_explicit",
+      "pass": true
+    },
+    {
+      "check": "no_old24plus4_capture_contract",
+      "pass": true
+    },
+    {
+      "check": "no_unfilled_placeholder_tokens",
+      "pass": true
+    },
+    {
+      "check": "bounded_training",
+      "pass": true
+    },
+    {
+      "check": "spec_not_claimed_runtime_config",
+      "pass": true
+    }
+  ],
+  "algorithm_experiments_executed_here": false,
+  "new_model_weights_loaded_here": false,
+  "github_push_performed_here": false,
+  "authoritative_file_sha256": "7b396b45cbcd53196457ef19544318d3141582aba28dfc1cdea500fd567ee9bc",
+  "external_dependencies_still_runtime_bound": [
+    "authorized independent scenes",
+    "native loaded extension export",
+    "WOW weights and actual mask interface"
+  ]
+}
