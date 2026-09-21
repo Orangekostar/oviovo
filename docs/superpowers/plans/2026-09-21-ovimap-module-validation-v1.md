@@ -98,16 +98,16 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - Consumes: `NativeScenePack`, `FrameObservation`, native text cache, optional pinned SigLIP2/WOW/MiniLM adapters.
 - Produces: deterministic target/view manifests, nine-vector native evidence, five direct method rows, 32+32 selector features, safe head weights, CAL teacher/threshold decisions, and SELECT predictions.
 
-- [ ] **Step 1: Write failing tests for target hash capping, three-view order, request deduplication, lineage rejection, and fixed native crop bounds**
-- [ ] **Step 2: Implement target/view construction and crop identity records**
-- [ ] **Step 3: Write a real-adapter test that the six returned unit vectors average to the legacy native encoder result within tolerance**
-- [ ] **Step 4: Extend the native encoder without changing its existing `encode()` contract and add background-only crop evidence**
-- [ ] **Step 5: Add literal vote/area tie tests and implement `S_NATIVE_AREA`, `S_NATIVE_VOTE`, `S_SIGLIP2_AREA`, `S_SIGLIP2_VOTE` readouts**
-- [ ] **Step 6: Add WOW 16x16 nonempty-mask, fixed-prompt, no-fallback, raw-generation, and deterministic name-mapping contract tests**
-- [ ] **Step 7: Implement the WOW adapter boundary so a missing real mask-conditioned hook returns `BLOCKED_WOW_MASK_INTERFACE`**
-- [ ] **Step 8: Add hand-computed 32-feature fixtures covering missing KEEP text, one-view pair unavailability, background absence, scaling, clipping, and availability bits**
-- [ ] **Step 9: Implement FIT targets, event-support gate, weighted 64-32-3 heads, CAL early stopping, `v>threshold`, and `KEEP_ALL`**
-- [ ] **Step 10: Run semantic tests and one real native-request smoke per available visual model**
+- [x] **Step 1: Write failing tests for target hash capping, three-view order, request deduplication, lineage rejection, and fixed native crop bounds**
+- [x] **Step 2: Implement target/view construction and crop identity records**
+- [x] **Step 3: Write a real-adapter test that the six returned unit vectors average to the legacy native encoder result within tolerance**
+- [x] **Step 4: Extend the native encoder without changing its existing `encode()` contract and add background-only crop evidence**
+- [x] **Step 5: Add literal vote/area tie tests and implement `S_NATIVE_AREA`, `S_NATIVE_VOTE`, `S_SIGLIP2_AREA`, `S_SIGLIP2_VOTE` readouts**
+- [x] **Step 6: Add WOW 16x16 nonempty-mask, fixed-prompt, no-fallback, raw-generation, and deterministic name-mapping contract tests**
+- [x] **Step 7: Implement the WOW adapter boundary so a missing real mask-conditioned hook returns `BLOCKED_WOW_MASK_INTERFACE`**
+- [x] **Step 8: Add hand-computed 32-feature fixtures covering missing KEEP text, one-view pair unavailability, background absence, scaling, clipping, and availability bits**
+- [x] **Step 9: Implement FIT targets, event-support gate, weighted 64-32-3 heads, CAL early stopping, `v>threshold`, and `KEEP_ALL`**
+- [x] **Step 10: Run semantic tests and one real native-request smoke per available visual model**
 
 ### Task 4: Complete Geometry Partitions and Scorers
 
