@@ -121,16 +121,16 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - Consumes: numerical native leaves, source adjacency/faces, up to 32 captured frame observations.
 - Produces: disjoint conflict groups, at most eight canonical complete hypotheses per group, `G_ORIGINAL`, `G_AGREEMENT`, `G_QUALITY`, and unique final owners with ancestry.
 
-- [ ] **Step 1: Write failing leaf tests for connected `(segment, owner)` components, owner0 preservation, deterministic mutual-8NN fallback, and no source-row loss**
-- [ ] **Step 2: Implement leaf/contact graphs and normal validity/PCA fallback**
-- [ ] **Step 3: Write literal evidence tests for 16-pixel/0.6 dominance, UNKNOWN handling, and once-per-frame pair counts**
-- [ ] **Step 4: Implement frame evidence, conflict strength, deterministic disjoint pair groups, and singleton preservation**
-- [ ] **Step 5: Add completeness tests for ORIGINAL, MERGE, FRAME_ENTITY, GRAPH_SPLIT2/3, canonicalization, deduplication, and eight-hypothesis cap**
-- [ ] **Step 6: Implement complete hypotheses with fixed spectral affinity, eigenvector sign, and k-means settings**
-- [ ] **Step 7: Add hand-computed Hungarian agreement and 20+20 feature/availability fixtures**
-- [ ] **Step 8: Implement `G_AGREEMENT`, local PQ-like targets, support gating, 40-32-1 quality training, CAL margins, and `KEEP_ALL`**
-- [ ] **Step 9: Add final-map tests for unchanged XYZ/faces/TSDF/projection, complete unique ownership, stable unchanged IDs, deterministic new IDs, and point-count ranks**
-- [ ] **Step 10: Run geometry tests and a real numerical-snapshot smoke when Task 2 integration is available**
+- [x] **Step 1: Write failing leaf tests for connected `(segment, owner)` components, owner0 preservation, deterministic mutual-8NN fallback, and no source-row loss**
+- [x] **Step 2: Implement leaf/contact graphs and normal validity/PCA fallback**
+- [x] **Step 3: Write literal evidence tests for 16-pixel/0.6 dominance, UNKNOWN handling, and once-per-frame pair counts**
+- [x] **Step 4: Implement frame evidence, conflict strength, deterministic disjoint pair groups, and singleton preservation**
+- [x] **Step 5: Add completeness tests for ORIGINAL, MERGE, FRAME_ENTITY, GRAPH_SPLIT2/3, canonicalization, deduplication, and eight-hypothesis cap**
+- [x] **Step 6: Implement complete hypotheses with fixed spectral affinity, eigenvector sign, and k-means settings**
+- [x] **Step 7: Add hand-computed Hungarian agreement and 20+20 feature/availability fixtures**
+- [x] **Step 8: Implement `G_AGREEMENT`, local PQ-like targets, support gating, 40-32-1 quality training, CAL margins, and `KEEP_ALL`**
+- [x] **Step 9: Add final-map tests for unchanged XYZ/faces/TSDF/projection, complete unique ownership, stable unchanged IDs, deterministic new IDs, and point-count ranks**
+- [x] **Step 10: Run geometry tests and a real numerical-snapshot smoke when Task 2 integration is available**
 
 ### Task 5: Causal Query State, Policies, and Utility Head
 
