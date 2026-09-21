@@ -10,6 +10,7 @@ from scripts.evaluation.run_ovimap_module_study import (
     StudyRunner,
     _base_resolved_config,
     bind_phase,
+    default_phase_handlers,
 )
 from src.static_ovmap.module_validation.contracts import ReceiptStatus, StudySpec
 
@@ -118,3 +119,8 @@ def test_bind_phase_records_missing_scannet_as_specific_blocker(tmp_path: Path) 
     splits = json.loads((runner.attempt_dir / "splits.json").read_text())
     assert inventory["status"] == "MISSING_SCANNET_ROOT"
     assert splits["status"] == "BLOCKED_INDEPENDENT_SCENES"
+
+
+def test_default_handlers_cover_every_leaf_phase() -> None:
+    spec = StudySpec.load(SPEC_PATH)
+    assert tuple(default_phase_handlers()) == spec.phases[:-1]

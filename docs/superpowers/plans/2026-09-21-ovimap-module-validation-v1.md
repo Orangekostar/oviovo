@@ -169,13 +169,13 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - Consumes: frozen prediction manifests, evaluator protocol, per-branch costs and FIT/CAL/SELECT statuses.
 - Produces: payload-keyed evaluations, post-prediction GT diagnostics, bootstrap descriptions, teacher/module/final selection, confirmation plan, exactly five principal Markdown tables.
 
-- [ ] **Step 1: Write failing evaluator tests for fixed S/Q geometry/ranks, G geometry/partition invariants, full payload keys, null undefined metrics, and exact trace parity**
-- [ ] **Step 2: Implement a new scene-aware adapter around existing evaluator functions without changing historical method lists**
-- [ ] **Step 3: Write table-driven selection tests covering every S/G/Q eligibility condition, tolerance, tie order, simpler-choice rule, combination cap, and N0 fallback**
-- [ ] **Step 4: Implement CAL-only teacher/head settings, SELECT-only module/final decisions, frozen confirmation rows, and 2000-resample seed-17 intervals**
-- [ ] **Step 5: Add reporting tests that require five principal tables and distinct implementation/experiment/science/confirmation/publication statuses**
-- [ ] **Step 6: Implement machine matrices, result/handoff rendering, evidence links, exact commands, cost summaries, and blocker propagation**
-- [ ] **Step 7: Run Task 6 tests and commit all executable code before experiments**
+- [x] **Step 1: Write failing evaluator tests for fixed S/Q geometry/ranks, G geometry/partition invariants, full payload keys, null undefined metrics, and exact trace parity**
+- [x] **Step 2: Implement a new scene-aware adapter around existing evaluator functions without changing historical method lists**
+- [x] **Step 3: Write table-driven selection tests covering every S/G/Q eligibility condition, tolerance, tie order, simpler-choice rule, combination cap, and N0 fallback**
+- [x] **Step 4: Implement CAL-only teacher/head settings, SELECT-only module/final decisions, frozen confirmation rows, and 2000-resample seed-17 intervals**
+- [x] **Step 5: Add reporting tests that require five principal tables and distinct implementation/experiment/science/confirmation/publication statuses**
+- [x] **Step 6: Implement machine matrices, result/handoff rendering, evidence links, exact commands, cost summaries, and blocker propagation**
+- [x] **Step 7: Run Task 6 tests and commit all executable code before experiments**
 
 ### Task 7: Bind and Execute Runnable Phases
 

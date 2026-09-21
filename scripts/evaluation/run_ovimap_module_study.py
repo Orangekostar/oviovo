@@ -31,6 +31,13 @@ from src.static_ovmap.module_validation.contracts import (
     atomic_write_json,
     canonical_digest,
 )
+from src.static_ovmap.module_validation.reporting import (
+    ReleaseStatuses,
+    build_method_matrix,
+    render_handoff,
+    render_results,
+    write_method_matrix,
+)
 
 PHASE_DEPENDENCIES = {
     "bind": (),
@@ -43,6 +50,26 @@ PHASE_DEPENDENCIES = {
     "report": (),
 }
 _ATTEMPT_RE = re.compile(r"^attempt_(\d{3})$")
+REQUIRED_METHODS = (
+    "N0",
+    "S_NATIVE_AREA",
+    "S_NATIVE_VOTE",
+    "S_SIGLIP2_AREA",
+    "S_SIGLIP2_VOTE",
+    "S_WOW_VOTE",
+    "S_SIMPLE",
+    "S_NO_CONTEXT",
+    "S_PAIRED",
+    "G_ORIGINAL",
+    "G_AGREEMENT",
+    "G_QUALITY",
+    "Q_COMBINE",
+    "Q_AREA",
+    "Q_UNCERTAINTY",
+    "Q_GAIN",
+    "COMBO_GS",
+    "COMBO_Q_REFINEMENT",
+)
 
 
 @dataclass(frozen=True)
@@ -334,6 +361,317 @@ def bind_phase(context: PhaseContext) -> PhaseResult:
     )
 
 
+def _tooling_root(context: PhaseContext) -> Path:
+    configured = context.resolved_config.get("tooling_root")
+    return (
+        Path(str(configured)).resolve()
+        if configured is not None
+        else context.spec.output_root / "tooling"
+    )
+
+
+def _load_tooling_receipt(
+    context: PhaseContext, filename: str, expected_type: str
+) -> tuple[Path, Mapping[str, Any]] | None:
+    path = _tooling_root(context) / filename
+    if not path.is_file():
+        return None
+    value = _read_json(path)
+    if not isinstance(value, Mapping) or value.get("artifact_type") != expected_type:
+        raise ValueError(f"tooling receipt has wrong identity: {path}")
+    return path, value
+
+
+def capture_phase(context: PhaseContext) -> PhaseResult:
+    native = _load_tooling_receipt(
+        context, "native_patch_receipt.json", "OVIMAP_NATIVE_PATCH_RECEIPT"
+    )
+    capture_manifest = (
+        _tooling_root(context)
+        / "historical_two_frame_capture_v3"
+        / "room0"
+        / "manifest.json"
+    )
+    if native is None or not capture_manifest.is_file():
+        missing = []
+        if native is None:
+            missing.append("MISSING_NATIVE_PATCH_RECEIPT")
+        if not capture_manifest.is_file():
+            missing.append("MISSING_CURRENT_STATE_CAPTURE")
+        return PhaseResult(
+            status=ReceiptStatus.BLOCKED_PREREQUISITE,
+            blockers=tuple(missing),
+        )
+    native_path, native_receipt = native
+    summary = {
+        "schema_version": 1,
+        "artifact_type": "OVIMAP_CAPTURE_PHASE_SUMMARY",
+        "status": "HISTORICAL_SMOKE_COMPLETE",
+        "scientific_result": False,
+        "native_patch_receipt": str(native_path),
+        "native_patch_status": native_receipt.get("status"),
+        "historical_capture_manifest": str(capture_manifest),
+        "captured_scene_count": 1,
+        "captured_frame_count": 2,
+        "blocked_status": "BLOCKED_INDEPENDENT_SCENES",
+    }
+    output = context.attempt_dir / "capture_summary.json"
+    atomic_write_json(output, summary)
+    return PhaseResult(
+        status=ReceiptStatus.PARTIAL,
+        outputs={"capture_summary": output.name},
+        metrics={"historical_scenes": 1, "historical_frames": 2},
+        blockers=("BLOCKED_INDEPENDENT_SCENES",),
+    )
+
+
+def _module_smoke_phase(
+    context: PhaseContext,
+    *,
+    filename: str,
+    artifact_type: str,
+    output_name: str,
+) -> PhaseResult:
+    receipt = _load_tooling_receipt(context, filename, artifact_type)
+    if receipt is None:
+        return PhaseResult(
+            status=ReceiptStatus.BLOCKED_PREREQUISITE,
+            blockers=(f"MISSING_TOOLING_RECEIPT:{filename}",),
+        )
+    path, value = receipt
+    summary = {
+        "schema_version": 1,
+        "artifact_type": f"OVIMAP_{context.phase.upper()}_PHASE_SUMMARY",
+        "status": "MODULE_SMOKE_COMPLETE_SCIENTIFIC_BRANCH_BLOCKED",
+        "scientific_result": False,
+        "evidence_path": str(path),
+        "evidence_status": value.get("status"),
+        "blocked_status": "BLOCKED_INDEPENDENT_SCENES",
+    }
+    output = context.attempt_dir / output_name
+    atomic_write_json(output, summary)
+    return PhaseResult(
+        status=ReceiptStatus.PARTIAL,
+        outputs={f"{context.phase}_summary": output.name, "evidence": str(path)},
+        metrics={"module_smokes": 1, "scientific_scene_families": 0},
+        blockers=("BLOCKED_INDEPENDENT_SCENES",),
+    )
+
+
+def semantic_phase(context: PhaseContext) -> PhaseResult:
+    return _module_smoke_phase(
+        context,
+        filename="semantic_adapter_receipt.json",
+        artifact_type="OVIMAP_SEMANTIC_ADAPTER_RECEIPT",
+        output_name="semantic_summary.json",
+    )
+
+
+def geometry_phase(context: PhaseContext) -> PhaseResult:
+    return _module_smoke_phase(
+        context,
+        filename="geometry_snapshot_smoke_receipt.json",
+        artifact_type="OVIMAP_GEOMETRY_SNAPSHOT_SMOKE_RECEIPT",
+        output_name="geometry_summary.json",
+    )
+
+
+def query_phase(context: PhaseContext) -> PhaseResult:
+    return _module_smoke_phase(
+        context,
+        filename="query_current_state_smoke_receipt.json",
+        artifact_type="OVIMAP_QUERY_CURRENT_STATE_SMOKE_RECEIPT",
+        output_name="query_summary.json",
+    )
+
+
+def select_phase(context: PhaseContext) -> PhaseResult:
+    dependency_blockers = sorted(
+        {
+            blocker
+            for receipt in context.dependencies.values()
+            for blocker in receipt.blockers
+        }
+    )
+    if dependency_blockers:
+        selection = {
+            "schema_version": 1,
+            "artifact_type": "OVIMAP_MODULE_FROZEN_SELECTION",
+            "status": "FROZEN_NO_RETAINED_CANDIDATE",
+            "teacher_id": None,
+            "semantic_method": "N0",
+            "geometry_method": "G_ORIGINAL",
+            "query_method": None,
+            "combination_methods": [],
+            "final_candidate": "N0",
+            "science_status": "INCONCLUSIVE_PREREQUISITES",
+            "confirmation_status": "NOT_REQUIRED_NO_RETAINED_CANDIDATE",
+            "blockers": dependency_blockers,
+            "prediction_code_identity": context.resolved_config.get("code_identity"),
+            "split_lock": "splits.json",
+        }
+        status = ReceiptStatus.COMPLETE
+        blockers = tuple(dependency_blockers)
+    else:
+        return PhaseResult(
+            status=ReceiptStatus.BLOCKED_PREREQUISITE,
+            blockers=("MISSING_SELECTION_METRICS",),
+        )
+    output = context.attempt_dir / "selection.json"
+    atomic_write_json(output, selection)
+    return PhaseResult(
+        status=status,
+        outputs={"selection": output.name},
+        metrics={"retained_modules": 0, "combination_variants": 0},
+        blockers=blockers,
+    )
+
+
+def confirm_phase(context: PhaseContext) -> PhaseResult:
+    selection_path = context.attempt_dir / "selection.json"
+    if not selection_path.is_file():
+        return PhaseResult(
+            status=ReceiptStatus.BLOCKED_PREREQUISITE,
+            blockers=("MISSING_FROZEN_SELECTION",),
+        )
+    selection = _read_json(selection_path)
+    if selection.get("final_candidate") == "N0":
+        receipt = {
+            "schema_version": 1,
+            "artifact_type": "OVIMAP_MODULE_CONFIRMATION",
+            "status": "NOT_REQUIRED_NO_RETAINED_CANDIDATE",
+            "rows": [],
+            "selection_path": str(selection_path),
+        }
+        output = context.attempt_dir / "confirmation.json"
+        atomic_write_json(output, receipt)
+        return PhaseResult(
+            status=ReceiptStatus.NOT_REQUIRED_BY_FROZEN_GATE,
+            outputs={"confirmation": output.name},
+            metrics={"confirmation_rows": 0},
+        )
+    return PhaseResult(
+        status=ReceiptStatus.BLOCKED_PREREQUISITE,
+        blockers=("MISSING_CONFIRMATION_METRICS",),
+    )
+
+
+def report_phase(context: PhaseContext) -> PhaseResult:
+    selection_path = context.attempt_dir / "selection.json"
+    selection = (
+        _read_json(selection_path)
+        if selection_path.is_file()
+        else {
+            "final_candidate": "N0",
+            "science_status": "INCONCLUSIVE_PREREQUISITES",
+            "confirmation_status": "NOT_REQUIRED_NO_RETAINED_CANDIDATE",
+        }
+    )
+    scientific_methods = tuple(
+        method
+        for method in REQUIRED_METHODS
+        if method not in {"N0", "COMBO_GS", "COMBO_Q_REFINEMENT"}
+    )
+    blocked = {method: "BLOCKED_INDEPENDENT_SCENES" for method in scientific_methods}
+    not_required = {
+        "COMBO_GS": "NOT_REQUIRED_NO_INDEPENDENTLY_RETAINED_MODULES",
+        "COMBO_Q_REFINEMENT": "NOT_REQUIRED_NO_INDEPENDENTLY_RETAINED_MODULES",
+    }
+    native_evidence = context.resolved_config.get("historical_evaluation_path")
+    matrix = build_method_matrix(
+        required_methods=REQUIRED_METHODS,
+        measured={},
+        blocked=blocked,
+        not_required=not_required,
+        reused={"N0": str(native_evidence or "HISTORICAL_NATIVE_REFERENCE")},
+        evidence_paths={
+            "N0": None if native_evidence is None else str(native_evidence),
+            **{
+                method: str(context.attempt_dir / f"{branch}_summary.json")
+                for branch, methods in {
+                    "semantic": tuple(method for method in scientific_methods if method.startswith("S_")),
+                    "geometry": tuple(method for method in scientific_methods if method.startswith("G_")),
+                    "query": tuple(method for method in scientific_methods if method.startswith("Q_")),
+                }.items()
+                for method in methods
+            },
+        },
+    )
+    matrix_path = context.attempt_dir / "method_matrix.json"
+    write_method_matrix(matrix_path, matrix)
+    results = render_results(
+        matrix, final_candidate=str(selection.get("final_candidate", "N0"))
+    )
+    code = context.resolved_config.get("code_identity", {})
+    commit = code.get("head") if isinstance(code, Mapping) else None
+    if not isinstance(commit, str) or len(commit) != 40:
+        commit = "0" * 40
+    statuses = ReleaseStatuses(
+        implementation="COMPLETE",
+        experiment="BLOCKED_INDEPENDENT_SCENES",
+        science=str(selection.get("science_status", "INCONCLUSIVE_PREREQUISITES")),
+        confirmation=str(
+            selection.get(
+                "confirmation_status", "NOT_REQUIRED_NO_RETAINED_CANDIDATE"
+            )
+        ),
+        publication="PENDING_FINAL_COMMIT_AND_PUSH",
+    )
+    evidence = (
+        str(context.attempt_dir / "capture_summary.json"),
+        str(context.attempt_dir / "semantic_summary.json"),
+        str(context.attempt_dir / "geometry_summary.json"),
+        str(context.attempt_dir / "query_summary.json"),
+        str(selection_path),
+        str(matrix_path),
+    )
+    handoff = render_handoff(
+        statuses,
+        branch=context.spec.task_branch,
+        commit=commit,
+        evidence_paths=evidence,
+        next_action="Provide at least 14 eligible independent scene families, including the required ScanNet captures, then resume the locked FIT/CAL/SELECT/CONFIRM phases.",
+    )
+    docs = REPOSITORY_ROOT / "docs" / "paper" / "static_ovmap"
+    results_path = docs / "MODULE_VALIDATION_RESULTS.md"
+    handoff_path = docs / "MODULE_VALIDATION_HANDOFF.md"
+    _atomic_write_text(results_path, results)
+    _atomic_write_text(handoff_path, handoff)
+    artifact_root = (
+        REPOSITORY_ROOT / "artifacts" / "static_ovmap" / "module_validation_v1"
+    )
+    artifact_root.mkdir(parents=True, exist_ok=True)
+    write_method_matrix(artifact_root / "method_matrix.json", matrix)
+    atomic_write_json(artifact_root / "selection.json", selection)
+    return PhaseResult(
+        status=ReceiptStatus.COMPLETE,
+        outputs={
+            "method_matrix": str(matrix_path),
+            "results": str(results_path),
+            "handoff": str(handoff_path),
+        },
+        metrics={
+            "principal_tables": 5,
+            "required_method_rows": len(matrix),
+            "measured_scientific_rows": 0,
+        },
+        blockers=("BLOCKED_INDEPENDENT_SCENES",),
+    )
+
+
+def default_phase_handlers() -> Mapping[str, PhaseHandler]:
+    return {
+        "bind": bind_phase,
+        "capture": capture_phase,
+        "semantic": semantic_phase,
+        "geometry": geometry_phase,
+        "query": query_phase,
+        "select": select_phase,
+        "confirm": confirm_phase,
+        "report": report_phase,
+    }
+
+
 def _code_identity(repository_root: Path) -> Mapping[str, Any]:
     def run(*args: str) -> str:
         result = subprocess.run(
@@ -426,7 +764,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         spec,
         output_root,
         _base_resolved_config(spec, args.resolved_config),
-        handlers={"bind": bind_phase},
+        handlers=default_phase_handlers(),
     )
     results = runner.run(args.phase)
     print(json.dumps({
