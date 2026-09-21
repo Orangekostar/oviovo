@@ -144,16 +144,16 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - Consumes: contemporaneous frame observations and a capability-limited `FeatureStore.acquire(request_id, budget_token)`.
 - Produces: pure raw candidates, isolated policy state, four B=200 policies, logical/physical cost ledgers, 20+20 features, utility weights, and prefix-sentinel evidence.
 
-- [ ] **Step 1: Write failing pure-candidate tests for owner/area/depth/crop requirements and unchanged native combine side effects**
-- [ ] **Step 2: Implement candidate generation separately from native selection and paid-evidence state**
-- [ ] **Step 3: Add allowance tests for `floor(B*(t+1)/F)-spent`, failed-attempt debit, exact-request skip, carry-forward, and invalid-frame time advance**
-- [ ] **Step 4: Implement frame barriers, lineage-safe alias merging, ten-feature retention, and uniform unseen prior**
-- [ ] **Step 5: Add literal ranking tests for COMBINE/AREA/UNCERTAINTY/GAIN including deterministic ties and negative gain scores**
-- [ ] **Step 6: Implement four policies against the same raw universe without exposing the shared cache**
-- [ ] **Step 7: Add hand-computed 20+20 feature fixtures proving no image/current-crop/future/final-label data enters ranking**
-- [ ] **Step 8: Implement random FIT/CAL trace collection, identifiable targets, clipped NLL-gain labels, support gate, and 40-32-1 Huber head**
-- [ ] **Step 9: Add prefix-sentinel mutation test and causal cost-ledger reconciliation**
-- [ ] **Step 10: Run query tests and one real current-state capture smoke if lineage is available**
+- [x] **Step 1: Write failing pure-candidate tests for owner/area/depth/crop requirements and unchanged native combine side effects**
+- [x] **Step 2: Implement candidate generation separately from native selection and paid-evidence state**
+- [x] **Step 3: Add allowance tests for `floor(B*(t+1)/F)-spent`, failed-attempt debit, exact-request skip, carry-forward, and invalid-frame time advance**
+- [x] **Step 4: Implement frame barriers, lineage-safe alias merging, ten-feature retention, and uniform unseen prior**
+- [x] **Step 5: Add literal ranking tests for COMBINE/AREA/UNCERTAINTY/GAIN including deterministic ties and negative gain scores**
+- [x] **Step 6: Implement four policies against the same raw universe without exposing the shared cache**
+- [x] **Step 7: Add hand-computed 20+20 feature fixtures proving no image/current-crop/future/final-label data enters ranking**
+- [x] **Step 8: Implement random FIT/CAL trace collection, identifiable targets, clipped NLL-gain labels, support gate, and 40-32-1 Huber head**
+- [x] **Step 9: Add prefix-sentinel mutation test and causal cost-ledger reconciliation**
+- [x] **Step 10: Run query tests and one real current-state capture smoke if lineage is available**
 
 ### Task 6: Evaluation, Frozen Selection, and Reporting
 
