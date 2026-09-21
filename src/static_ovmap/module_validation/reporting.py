@@ -163,6 +163,9 @@ def render_results(
     matrix: Sequence[MethodMatrixRow],
     *,
     final_candidate: str,
+    science_status: str | None = None,
+    confirmation_status: str | None = None,
+    supporting_evidence: Sequence[str] = (),
 ) -> str:
     rows = tuple(matrix)
     if not final_candidate:
@@ -237,16 +240,26 @@ def render_results(
         [
             (
                 final_candidate,
-                "NO_NET_GAIN" if final_candidate == "N0" else "RETAINED",
-                "NOT_REQUIRED_NO_RETAINED_CANDIDATE" if final_candidate == "N0" else "PENDING",
+                science_status
+                or ("NO_NET_GAIN" if final_candidate == "N0" else "RETAINED"),
+                confirmation_status
+                or (
+                    "NOT_REQUIRED_NO_RETAINED_CANDIDATE"
+                    if final_candidate == "N0"
+                    else "PENDING"
+                ),
                 next((row.evidence_path for row in rows if row.method_id == final_candidate), None),
             )
         ],
     )
-    return (
+    rendered = (
         f"# OVI-MAP Module Validation Results\n\n{table_a}\n\n{table_b}\n\n"
         f"{table_c}\n\n{table_d}\n\n{table_e}\n"
     )
+    if supporting_evidence:
+        rendered += "\nSupporting execution evidence:\n\n"
+        rendered += "\n".join(f"- {line}" for line in supporting_evidence) + "\n"
+    return rendered
 
 
 @dataclass(frozen=True)
@@ -269,6 +282,8 @@ def render_handoff(
     commit: str,
     evidence_paths: Sequence[str],
     next_action: str,
+    execution_details: Sequence[str] = (),
+    reproduction_commands: Sequence[str] = (),
 ) -> str:
     if not branch or len(commit) != 40 or not next_action:
         raise ValueError("handoff branch, full commit, and next action are required")
@@ -287,6 +302,12 @@ def render_handoff(
         "",
     ]
     lines.extend(f"- `{path}`" for path in evidence_paths)
+    if execution_details:
+        lines.extend(("", "Executed scope:", ""))
+        lines.extend(f"- {detail}" for detail in execution_details)
+    if reproduction_commands:
+        lines.extend(("", "Reproduction commands:", ""))
+        lines.extend(f"- `{command}`" for command in reproduction_commands)
     lines.extend(("", f"Next evidence-based action: {next_action}", ""))
     return "\n".join(lines)
 

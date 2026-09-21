@@ -22,9 +22,17 @@ def test_results_have_exactly_five_principal_tables_and_json_safe_nulls() -> Non
             "Q_GAIN": "BLOCKED_QUERY_TARGET_SUPPORT",
         },
     )
-    text = render_results(matrix, final_candidate="N0")
+    text = render_results(
+        matrix,
+        final_candidate="N0",
+        science_status="INCONCLUSIVE_PREREQUISITES",
+        confirmation_status="NOT_REQUIRED_NO_RETAINED_CANDIDATE",
+        supporting_evidence=("Historical Room0 smoke only.",),
+    )
     assert sum(text.count(f"## Table {letter}.") for letter in "ABCDE") == 5
     assert "NaN" not in text and "Infinity" not in text
+    assert "INCONCLUSIVE_PREREQUISITES" in text
+    assert "Historical Room0 smoke only." in text
     encoded = json.dumps([row.to_dict() for row in matrix], allow_nan=False)
     assert '"uap": null' in encoded
 
@@ -43,7 +51,9 @@ def test_handoff_keeps_five_status_dimensions_distinct() -> None:
         commit="a" * 40,
         evidence_paths=("/mnt/shared/evidence.json",),
         next_action="Provide independent ScanNet scene assets.",
+        reproduction_commands=("python run.py --phase bind",),
     )
     for value in vars(statuses).values():
         assert value in text
     assert "research/ovimap-module-validation-v1" in text
+    assert "python run.py --phase bind" in text

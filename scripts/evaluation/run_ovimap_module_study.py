@@ -122,6 +122,14 @@ def _atomic_write_text(path: Path, text: str) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _path_bytes(path: Path) -> int:
+    if path.is_file():
+        return path.stat().st_size
+    if path.is_dir():
+        return sum(item.stat().st_size for item in path.rglob("*") if item.is_file())
+    raise FileNotFoundError(path)
+
+
 def _attempt_number(path: Path) -> int | None:
     match = _ATTEMPT_RE.fullmatch(path.name)
     return int(match.group(1)) if match else None
@@ -577,7 +585,10 @@ def report_phase(context: PhaseContext) -> PhaseResult:
         "COMBO_GS": "NOT_REQUIRED_NO_INDEPENDENTLY_RETAINED_MODULES",
         "COMBO_Q_REFINEMENT": "NOT_REQUIRED_NO_INDEPENDENTLY_RETAINED_MODULES",
     }
-    native_evidence = context.resolved_config.get("historical_evaluation_path")
+    resolution = context.resolved_config.get("asset_resolution", {})
+    bindings = resolution.get("bindings", {}) if isinstance(resolution, Mapping) else {}
+    historical = bindings.get("historical_evaluation", {}) if isinstance(bindings, Mapping) else {}
+    native_evidence = historical.get("path") if isinstance(historical, Mapping) else None
     matrix = build_method_matrix(
         required_methods=REQUIRED_METHODS,
         measured={},
@@ -599,8 +610,67 @@ def report_phase(context: PhaseContext) -> PhaseResult:
     )
     matrix_path = context.attempt_dir / "method_matrix.json"
     write_method_matrix(matrix_path, matrix)
+    semantic_receipt = _load_tooling_receipt(
+        context, "semantic_adapter_receipt.json", "OVIMAP_SEMANTIC_ADAPTER_RECEIPT"
+    )
+    native_receipt = _load_tooling_receipt(
+        context, "native_patch_receipt.json", "OVIMAP_NATIVE_PATCH_RECEIPT"
+    )
+    geometry_receipt = _load_tooling_receipt(
+        context,
+        "geometry_snapshot_smoke_receipt.json",
+        "OVIMAP_GEOMETRY_SNAPSHOT_SMOKE_RECEIPT",
+    )
+    query_receipt = _load_tooling_receipt(
+        context,
+        "query_current_state_smoke_receipt.json",
+        "OVIMAP_QUERY_CURRENT_STATE_SMOKE_RECEIPT",
+    )
+    supporting = [
+        "These are implementation-boundary smokes on historical Room0, not SELECT measurements.",
+    ]
+    if semantic_receipt is not None:
+        semantic_value = semantic_receipt[1]
+        native_siglip = semantic_value.get("native_siglip", {})
+        supporting.append(
+            "Semantic adapters: native SigLIP crop vectors "
+            f"{native_siglip.get('crop_vector_shape')}; legacy six-crop max error "
+            f"{native_siglip.get('legacy_first_six_max_abs_error')}."
+        )
+    if geometry_receipt is not None:
+        geometry_value = geometry_receipt[1]
+        supporting.append(
+            f"Geometry smoke: {geometry_value.get('surface_rows')} surface rows, "
+            f"{geometry_value.get('leaf_count')} native leaves, "
+            f"{geometry_value.get('complete_hypothesis_count')} complete bounded hypotheses."
+        )
+    if query_receipt is not None:
+        query_value = query_receipt[1]
+        parity = query_value.get("candidate_parity", ())
+        native_rows = query_value.get("native_combine_parity", {}).get(
+            "frame_rows", ()
+        )
+        replay = query_value.get("policy_replay", {})
+        supporting.append(
+            f"Query smoke: {sum(int(row.get('candidate_count', 0)) for row in parity)} "
+            "current-state candidates with exact request/mask/bbox parity and "
+            f"{sum(int(row.get('selected_count', 0)) for row in native_rows)} native "
+            "combine selections with exact request IDs; "
+            f"Q_AREA logical cost {replay.get('Q_AREA')}; Q_UNCERTAINTY logical cost "
+            f"{replay.get('Q_UNCERTAINTY')}; physical cost {replay.get('physical')}."
+        )
     results = render_results(
-        matrix, final_candidate=str(selection.get("final_candidate", "N0"))
+        matrix,
+        final_candidate=str(selection.get("final_candidate", "N0")),
+        science_status=str(
+            selection.get("science_status", "INCONCLUSIVE_PREREQUISITES")
+        ),
+        confirmation_status=str(
+            selection.get(
+                "confirmation_status", "NOT_REQUIRED_NO_RETAINED_CANDIDATE"
+            )
+        ),
+        supporting_evidence=supporting,
     )
     code = context.resolved_config.get("code_identity", {})
     commit = code.get("head") if isinstance(code, Mapping) else None
@@ -625,12 +695,49 @@ def report_phase(context: PhaseContext) -> PhaseResult:
         str(selection_path),
         str(matrix_path),
     )
+    resolved_path = context.attempt_dir / "resolved_config.json"
+    command_prefix = (
+        "python scripts/evaluation/run_ovimap_module_study.py "
+        "--spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json "
+        f"--resolved-config {resolved_path} --output-root {context.spec.output_root}"
+    )
+    reproduction_commands = tuple(
+        f"{command_prefix} --phase {phase}" for phase in context.spec.phases[:-1]
+    )
+    details = list(supporting)
+    details.append(f"Worktree: {REPOSITORY_ROOT}.")
+    if native_receipt is not None:
+        native_value = native_receipt[1]
+        upstream = native_value.get("upstream", {})
+        build = native_value.get("build", {})
+        details.extend(
+            (
+                f"Pinned OVI source: {upstream.get('root')} at {upstream.get('commit')}.",
+                (
+                    "Loaded native extension: "
+                    f"{build.get('extension_path')} "
+                    f"(sha256 {build.get('extension_sha256')})."
+                ),
+            )
+        )
+    if semantic_receipt is not None:
+        semantic_value = semantic_receipt[1]
+        details.append(
+            "Bound model roots: "
+            + ", ".join(
+                str(semantic_value.get(name, {}).get("model_path"))
+                for name in ("native_siglip", "siglip2", "wow", "name_mapping")
+            )
+            + "."
+        )
     handoff = render_handoff(
         statuses,
         branch=context.spec.task_branch,
         commit=commit,
         evidence_paths=evidence,
         next_action="Provide at least 14 eligible independent scene families, including the required ScanNet captures, then resume the locked FIT/CAL/SELECT/CONFIRM phases.",
+        execution_details=details,
+        reproduction_commands=reproduction_commands,
     )
     docs = REPOSITORY_ROOT / "docs" / "paper" / "static_ovmap"
     results_path = docs / "MODULE_VALIDATION_RESULTS.md"
@@ -643,6 +750,189 @@ def report_phase(context: PhaseContext) -> PhaseResult:
     artifact_root.mkdir(parents=True, exist_ok=True)
     write_method_matrix(artifact_root / "method_matrix.json", matrix)
     atomic_write_json(artifact_root / "selection.json", selection)
+    execution_manifest = {
+        "schema_version": 1,
+        "artifact_type": "OVIMAP_MODULE_EXECUTION_MANIFEST",
+        "experiment_code_identity": context.resolved_config.get("code_identity"),
+        "commands": [
+            (
+                "python scripts/evaluation/run_ovimap_module_study.py "
+                "--spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json "
+                f"--phase all --output-root {context.spec.output_root}"
+            ),
+            *reproduction_commands,
+        ],
+        "costs": {
+            "capture": {"scenes": 1, "frames": 2},
+            "semantic_smoke": {
+                "native_siglip_requests": 1,
+                "siglip2_requests": 1,
+                "wow_generations": 1,
+                "training_runs": 0,
+            },
+            "geometry_smoke": (
+                {}
+                if geometry_receipt is None
+                else {
+                    key: geometry_receipt[1].get(key)
+                    for key in (
+                        "surface_rows",
+                        "surface_faces",
+                        "leaf_count",
+                        "complete_hypothesis_count",
+                    )
+                }
+            ),
+            "query_smoke": (
+                {} if query_receipt is None else query_receipt[1].get("policy_replay", {})
+            ),
+            "scientific_training_runs": 0,
+            "scientific_evaluation_rows": 0,
+        },
+        "errors": ["BLOCKED_INDEPENDENT_SCENES"],
+        "timings_seconds": None,
+        "timing_status": "NOT_RECORDED_FOR_PREEXISTING_BOUNDARY_SMOKES",
+    }
+    atomic_write_json(artifact_root / "execution_manifest.json", execution_manifest)
+
+    external_entries: list[dict[str, Any]] = []
+
+    def add_external(
+        artifact_id: str,
+        raw_path: Any,
+        digest: Any,
+        *,
+        hash_scope: str,
+        regeneration_command: str | None,
+        regeneration_blocker: str | None = None,
+    ) -> None:
+        if not isinstance(raw_path, str) or not isinstance(digest, str):
+            return
+        path = Path(raw_path)
+        if not path.exists():
+            return
+        external_entries.append(
+            {
+                "artifact_id": artifact_id,
+                "path": str(path),
+                "bytes": _path_bytes(path),
+                "sha256": digest,
+                "hash_scope": hash_scope,
+                "regeneration_command": regeneration_command,
+                "regeneration_blocker": regeneration_blocker,
+            }
+        )
+
+    if native_receipt is not None:
+        native_value = native_receipt[1]
+        build = native_value.get("build", {})
+        smoke = native_value.get("smoke", {})
+        add_external(
+            "native_extension",
+            build.get("extension_path"),
+            build.get("extension_sha256"),
+            hash_scope="file",
+            regeneration_command=None,
+            regeneration_blocker="The isolated ABI build command is preserved by the native receipt but is not automated by the v1 study CLI.",
+        )
+        capture_manifest = smoke.get("capture_manifest_path")
+        if isinstance(capture_manifest, str):
+            add_external(
+                "native_capture",
+                str(Path(capture_manifest).parent),
+                smoke.get("capture_identity"),
+                hash_scope="native capture identity over the manifest-bound frame/surface payload",
+                regeneration_command=None,
+                regeneration_blocker="Requires replaying the pinned native mapper with the receipt-bound historical trajectory.",
+            )
+        add_external(
+            "native_instance_mesh",
+            smoke.get("mesh_path"),
+            smoke.get("mesh_sha256"),
+            hash_scope="file",
+            regeneration_command=None,
+            regeneration_blocker="Requires replaying the pinned native mapper with the receipt-bound historical trajectory.",
+        )
+    if semantic_receipt is not None:
+        semantic_value = semantic_receipt[1]
+        model_specs = (
+            ("native_siglip", "native_siglip", None, None),
+            (
+                "siglip2",
+                "siglip2",
+                "google/siglip2-large-patch16-384",
+                semantic_value.get("siglip2", {}).get("revision"),
+            ),
+            (
+                "wow_weights",
+                "wow",
+                "AAwcAA/WOW-Seg",
+                semantic_value.get("wow", {}).get("weights_revision"),
+            ),
+            (
+                "name_mapping",
+                "name_mapping",
+                "sentence-transformers/all-MiniLM-L6-v2",
+                semantic_value.get("name_mapping", {}).get("revision"),
+            ),
+        )
+        for artifact_id, key, repo_id, revision in model_specs:
+            model = semantic_value.get(key, {})
+            command = None
+            blocker = "The bound native model receipt has no immutable download revision."
+            if repo_id is not None and isinstance(revision, str):
+                command = (
+                    "python -c \"from huggingface_hub import snapshot_download; "
+                    f"snapshot_download(repo_id='{repo_id}', revision='{revision}', "
+                    f"local_dir='{model.get('model_path')}')\""
+                )
+                blocker = None
+            add_external(
+                artifact_id,
+                model.get("model_path"),
+                model.get("model_sha256"),
+                hash_scope="canonical directory content identity from adapter receipt",
+                regeneration_command=command,
+                regeneration_blocker=blocker,
+            )
+    atomic_write_json(
+        artifact_root / "external_artifacts.json",
+        {
+            "schema_version": 1,
+            "artifact_type": "OVIMAP_EXTERNAL_ARTIFACT_MANIFEST",
+            "entries": external_entries,
+        },
+    )
+    for name in (
+        "resolved_config.json",
+        "asset_resolution.json",
+        "scene_inventory.json",
+        "splits.json",
+        "capture_summary.json",
+        "semantic_summary.json",
+        "geometry_summary.json",
+        "query_summary.json",
+        "confirmation.json",
+    ):
+        source = context.attempt_dir / name
+        if source.is_file():
+            atomic_write_json(artifact_root / name, _read_json(source))
+    receipt_artifacts = artifact_root / "receipts"
+    for phase in context.spec.phases[:-1]:
+        source = context.attempt_dir / "receipts" / f"{phase}.json"
+        if source.is_file():
+            atomic_write_json(receipt_artifacts / source.name, _read_json(source))
+    tooling_artifacts = artifact_root / "tooling"
+    for receipt in (native_receipt, semantic_receipt, geometry_receipt, query_receipt):
+        if receipt is not None:
+            atomic_write_json(tooling_artifacts / receipt[0].name, receipt[1])
+    progress = context.attempt_dir / "progress.md"
+    if progress.is_file():
+        _atomic_write_text(
+            REPOSITORY_ROOT
+            / "docs/paper/static_ovmap/module_validation_v1/progress.md",
+            progress.read_text(encoding="utf-8"),
+        )
     return PhaseResult(
         status=ReceiptStatus.COMPLETE,
         outputs={
