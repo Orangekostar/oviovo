@@ -697,7 +697,7 @@ def report_phase(context: PhaseContext) -> PhaseResult:
     )
     resolved_path = context.attempt_dir / "resolved_config.json"
     command_prefix = (
-        "python scripts/evaluation/run_ovimap_module_study.py "
+        "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py "
         "--spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json "
         f"--resolved-config {resolved_path} --output-root {context.spec.output_root}"
     )
@@ -717,6 +717,11 @@ def report_phase(context: PhaseContext) -> PhaseResult:
                     "Loaded native extension: "
                     f"{build.get('extension_path')} "
                     f"(sha256 {build.get('extension_sha256')})."
+                ),
+                (
+                    "Historical capture: "
+                    f"{native_value.get('smoke', {}).get('capture_manifest_path')}; "
+                    "independent ScanNet root: unbound."
                 ),
             )
         )
@@ -756,7 +761,8 @@ def report_phase(context: PhaseContext) -> PhaseResult:
         "experiment_code_identity": context.resolved_config.get("code_identity"),
         "commands": [
             (
-                "python scripts/evaluation/run_ovimap_module_study.py "
+                "conda run -n ovimap-map python "
+                "scripts/evaluation/run_ovimap_module_study.py "
                 "--spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json "
                 f"--phase all --output-root {context.spec.output_root}"
             ),
@@ -833,7 +839,7 @@ def report_phase(context: PhaseContext) -> PhaseResult:
             build.get("extension_sha256"),
             hash_scope="file",
             regeneration_command=None,
-            regeneration_blocker="The isolated ABI build command is preserved by the native receipt but is not automated by the v1 study CLI.",
+            regeneration_blocker="The native receipt preserves the ABI build environment and output identity, but the exact isolated build command is not automated by the v1 study CLI.",
         )
         capture_manifest = smoke.get("capture_manifest_path")
         if isinstance(capture_manifest, str):

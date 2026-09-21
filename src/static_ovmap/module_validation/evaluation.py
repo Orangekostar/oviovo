@@ -116,6 +116,11 @@ class PredictionPayload:
     metadata: Mapping[str, Any] = field(default_factory=dict)
     _locked: bool = field(default=False, init=False, repr=False, compare=False)
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if getattr(self, "_locked", False):
+            raise AttributeError("prediction payload is locked")
+        object.__setattr__(self, name, value)
+
     def __post_init__(self) -> None:
         if not self.method_id or not self.scene_id or self.branch not in _BRANCHES:
             raise ValueError("prediction method, scene, and branch are invalid")
@@ -183,8 +188,9 @@ class PredictionPayload:
         )
 
     def lock(self) -> str:
-        self._locked = True
-        return self.record_key
+        record_key = self.record_key
+        object.__setattr__(self, "_locked", True)
+        return record_key
 
     def manifest(self) -> dict[str, Any]:
         if not self.locked:

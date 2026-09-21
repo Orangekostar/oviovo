@@ -104,6 +104,18 @@ def test_adapter_reuses_identical_prediction_only_after_lock_and_preserves_rows(
     assert [row.reused_evaluation for row in rows] == [False, True]
 
 
+def test_prediction_lock_is_irreversible_and_prevents_field_rebinding() -> None:
+    payload = _payload()
+    payload.lock()
+
+    with pytest.raises(AttributeError, match="locked"):
+        payload.semantic_labels = np.array([3, 3, 5, 0])
+    with pytest.raises(AttributeError, match="locked"):
+        payload._locked = False
+    with pytest.raises(ValueError, match="read-only"):
+        payload.owner_ids[0] = 2
+
+
 def test_undefined_scene_metric_makes_required_comparison_inconclusive() -> None:
     rows = (
         EvaluationMetrics(0.4, 0.5, 0.6, 0.7, 0.8, None, None, 3, 2, True),
