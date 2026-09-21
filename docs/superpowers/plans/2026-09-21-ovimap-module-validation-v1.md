@@ -76,15 +76,15 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - Consumes: active `f8f7bcd` mapper path and native scene assets.
 - Produces: `NativeScenePack`, `FrameObservation`, `RegionRequest`, `exportStudyFrameState()`, `exportStudySurfaceLabels(native_xyz)`, and immutable capture JSONL/NPZ/PNG files.
 
-- [ ] **Step 1: Write failing schema tests for aligned surface rows, immutable hashes, request lineage, and no GT fields**
-- [ ] **Step 2: Implement schema validators and loaders without importing the native extension**
-- [ ] **Step 3: Read the exact upstream active methods and write failing patch-content checks for both accessor bindings and three capture hook locations**
-- [ ] **Step 4: Implement read-only locked C++ accessors and Python capture hooks in the clean upstream checkout**
-- [ ] **Step 5: Export a deterministic patch and an apply script that verifies upstream commit `f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424` before applying**
-- [ ] **Step 6: Build the patched extension in an isolated build/devel prefix and record compiler, source, patch, `.so`, and loaded-module identities**
-- [ ] **Step 7: Run one real historical two-frame smoke proving the loaded `.so` exposes numerical frame/surface state before temporary-memory clear**
-- [ ] **Step 8: Compare no-op surface labels to the native mesh registry and record exact parity or a concrete `BLOCKED_NATIVE_LABEL_EXPORT` receipt**
-- [ ] **Step 9: Run Task 2 tests and commit the adapter and tracked patch**
+- [x] **Step 1: Write failing schema tests for aligned surface rows, immutable hashes, request lineage, and no GT fields**
+- [x] **Step 2: Implement schema validators and loaders without importing the native extension**
+- [x] **Step 3: Read the exact upstream active methods and write failing patch-content checks for both accessor bindings and three capture hook locations**
+- [x] **Step 4: Implement read-only locked C++ accessors and Python capture hooks in the clean upstream checkout**
+- [x] **Step 5: Export a deterministic patch and an apply script that verifies upstream commit `f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424` before applying**
+- [x] **Step 6: Build the patched extension in an isolated build/devel prefix and record compiler, source, patch, `.so`, and loaded-module identities**
+- [x] **Step 7: Run one real historical two-frame smoke proving the loaded `.so` exposes numerical frame/surface state before temporary-memory clear**
+- [x] **Step 8: Compare no-op surface labels to the native mesh registry and record exact parity or a concrete `BLOCKED_NATIVE_LABEL_EXPORT` receipt**
+- [x] **Step 9: Run Task 2 tests and commit the adapter and tracked patch**
 
 ### Task 3: Semantic Region Evidence and Direct Readouts
 

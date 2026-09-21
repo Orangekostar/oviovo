@@ -1,0 +1,1141 @@
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
+index 4206311..ab929d8 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
+@@ -97,100 +97,106 @@ void insertSegments(
+     pybind11::array &T_G_C,
+     bool is_thing,
+     Label desginated_label = BackgroundLabel
+ );
+ 
+ void insertSegmentsOpen(
+     pybind11::array& points,        // float
+     // pybind11::array& colors,     // rgba uint8_t
+     // pybind11::array& geometry_confidence, //float
+     pybind11::array& b_box,         // float
+     InstanceLabel instance_label,   // uint16_t
+     SemanticLabel semantic_label,   // uint8_t
+     pybind11::array_t<float>& sem_feature,   // float
+     ObjSegConfidence inst_confidence,
+     ObjSegConfidence obj_seg_confidence,
+     pybind11::array &T_G_C,
+     bool is_thing,
+     Label desginated_label = BackgroundLabel
+ );
+ 
+ void insertSegmentsPoseConfidence(
+     pybind11::array& points, // float
+     // pybind11::array& colors, // rgba uint8_t
+     // pybind11::array& geometry_confidence, //float
+     pybind11::array& b_box, //float
+     InstanceLabel instance_label, //uint16_t
+     SemanticLabel semantic_label, //uint8_t
+     ObjSegConfidence inst_confidence,
+     ObjSegConfidence obj_seg_confidence,
+     pybind11::array &T_G_C,
+     float pose_confidence,
+     bool is_thing,
+     Label desginated_label = BackgroundLabel
+ );
+ 
+ float cosineSimilarity(
+     const SemanticFeature& a, 
+     const SemanticFeature& b
+ );
+ 
+ // float searchAndInsertFeature(
+ //     const SemanticFeature& seg_feature, OpenSemanticLabel *label
+ // );
+ 
+ // void initFeatureMap(
+ //     pybind11::array& text_embedding, const int cand_num
+ // );
+ 
+ bool integrateFrame();
+ 
++pybind11::dict exportStudyFrameState();
++
++pybind11::dict exportStudySurfaceLabels(
++    pybind11::array_t<float> native_xyz
++);
++
+ void LogSegmentsLabels();
+ 
+ void clearTemporaryMemory();
+ 
+ bool generateMesh(
+     std::string mesh_file_folder, 
+     std::string frame_num="",
+     bool save_label_mesh=false, 
+     bool save_sem_mesh=true, 
+     bool save_inst_mesh=true
+ );
+ 
+ void updateVisualization();
+ void updateVisualizationPCL();
+ 
+ void LogLabelInformation();
+ void LogMeshColors(std::string log_path);
+ void LogLabelInitialGuess(std::string log_path);
+ pybind11::array_t<uint8_t> getInstanceColor(
+     int instance_label
+ );
+ 
+ void outputLog(std::string log_info);
+ 
+ void initializeCameraRayCaster(
+     pybind11::array &camera_K, 
+     int img_height, int img_width, 
+     float range_min, 
+     float range_max, 
+     int thread_num = 1
+ );
+ 
+ pybind11::array_t<uint16_t> raycastInstancePredictions(
+     pybind11::array &T_G_C,            // float
+     pybind11::array &instance_mask,    // int
+     pybind11::array &depth_img_scaled  // float
+ );
+ 
+ void raycastPanopticPredictions(
+     pybind11::array &T_G_C, 
+     pybind11::array& panoptic_mask,
+     pybind11::array& inst_sem_labels,
+     pybind11::array& depth_img_scaled,
+     const float search_length,
+     float pose_confidence
+ );
+ 
+ private:
+     std::string log_file_; // log file path
+ 
+@@ -233,51 +239,51 @@ private:
+     /* map, meshes and integrators */
+     std::shared_ptr<LabelTsdfMap> map_;
+     std::shared_ptr<LabelTsdfConfidenceIntegrator> integrator_;
+ 
+     MeshIntegratorConfig mesh_config_;
+     MeshLabelIntegrator::LabelTsdfConfig label_tsdf_mesh_config_;
+ 
+     MeshLabelIntegrator::ColorScheme mesh_color_scheme_;
+     std::string mesh_filename_;
+ 
+     std::shared_ptr<MeshLayer> mesh_label_layer_;
+     std::shared_ptr<MeshLayer> mesh_semantic_layer_;
+     std::shared_ptr<MeshLayer> mesh_instance_layer_;
+     std::shared_ptr<MeshLayer> mesh_merged_layer_;
+     std::shared_ptr<MeshLayer> mesh_confidence_layer_;
+     std::shared_ptr<MeshLabelIntegrator> mesh_label_integrator_;
+     std::shared_ptr<MeshLabelIntegrator> mesh_semantic_integrator_;
+     std::shared_ptr<MeshLabelIntegrator> mesh_instance_integrator_;
+     std::shared_ptr<MeshLabelIntegrator> mesh_merged_integrator_;
+     std::shared_ptr<MeshLabelIntegrator> mesh_confidence_integrator_;
+ 
+     /* ray caster*/
+     CameraRayGenerator* cam_ray_generator_ = nullptr;
+ 
+     /* visualiz*/
+     PCLSemVisualizerConfig visualizer_config_;
+     std::shared_ptr<PCLSemVisualizer> visualizer_pcl_;
+     std::shared_ptr<Visualizer> visualizer_mesh_;
+     std::thread viz_pcl_thread_;
+     std::thread viz_mesh_thread_;
+     bool debug_=false;
+ 
+ 
+     inline OpenSemanticLabel getFreshSemLabel() {
+         CHECK_LT(highest_sem_label_, std::numeric_limits<unsigned int>::max());
+         return ++(highest_sem_label_);
+     }
+     // a uint16_t var
+     OpenSemanticLabel highest_sem_label_;
+ 
+     /* feature vectors */
+     std::map<OpenSemanticLabel, SemanticFeature> feature_map_;
+     std::map<SemanticLabel, std::set<OpenSemanticLabel>> close_to_open_;
+     std::map<OpenSemanticLabel, int> open_set_count_;
+     float cos_sim_threshold_=0.1f;
+ 
+     int systemMem_ = 0; // in KB
+ 
+ };
+ 
+-#endif  // GLOBAL_SEGMENT_MAP_PY_H_
+\ No newline at end of file
++#endif  // GLOBAL_SEGMENT_MAP_PY_H_
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
+index 14e66ca..2102095 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
+@@ -1,63 +1,65 @@
+ #include "consistent_mapping/global_segment_map_py.h"
+ #include <global_segment_map/common.h>
+ #include "voxblox/core/color.h"
+ 
+ #include <opencv2/core/eigen.hpp>
+ #include <opencv2/opencv.hpp>
+ #include <Eigen/Core>
+ #include <Eigen/Dense>
+ 
+ #include <chrono>  // chrono::system_clock
++#include <cmath>
+ #include <ctime>   // localtime
+ #include <iomanip> // put_time
+ #include <fstream>
++#include <stdexcept>
+ 
+ using namespace voxblox;
+ using namespace voxblox::voxblox_gsm;
+ 
+ GlobalSegmentMap_py::GlobalSegmentMap_py(
+     std::string log_file, 
+     std::string task,
+     bool use_geo_confidence, 
+     bool use_label_confidence,
+     int inst_association, 
+     int data_association,
+     int num_threads, 
+     bool debug, 
+     int seg_graph_confidence, 
+     bool use_inst_label_connect,
+     float connection_ratio_th, 
+     float cos_sim_threshold
+ ) : integrated_frames_count_(0u),
+     task_(task),
+     use_geo_confidence_(use_geo_confidence),
+     use_label_confidence_(use_label_confidence),
+     inst_association_(inst_association),
+     data_association_(data_association),
+     enable_semantic_instance_segmentation_(true),
+     use_label_propagation_(true),
+     log_file_(log_file),
+     debug_(debug),
+     seg_graph_confidence_(seg_graph_confidence),
+     use_inst_label_connect_(use_inst_label_connect),
+     connection_ratio_th_(connection_ratio_th), 
+     cos_sim_threshold_(cos_sim_threshold)
+ {
+     FLAGS_alsologtostderr = true;
+     FLAGS_log_dir = log_file_;
+     google::InitGoogleLogging("gms_py");
+ 
+     systemMem_ = getValue();
+     LOG(INFO) << "  Memory used by system at the beginning: " << systemMem_ << " KB";
+ 
+     if (num_threads > 0 && num_threads <= tsdf_integrator_config_.integrator_threads) {
+         tsdf_integrator_config_.integrator_threads = num_threads;
+         mesh_config_.integrator_threads = num_threads;
+         visualizer_config_.thread_num = num_threads;
+     }
+ 
+     size_t integrator_threads = tsdf_integrator_config_.integrator_threads;
+     LOG(INFO) << "integrator_threads: " << integrator_threads;
+     map_config_.voxel_size = 0.01; // TODO yaml
+     map_config_.inst_association = inst_association_;
+     map_config_.voxels_per_side = 8u; // TODO yaml
+@@ -405,100 +407,253 @@ bool GlobalSegmentMap_py::integrateFrame()
+                 dynamic_cast<SegmentConfidence *>(segment)->seg_label_confidence_,
+                 segment->colors_, segment->label_,
+                 kIsFreespacePointcloud); // TODO for confidence
+ 
+             // LOG(INFO) << "Integrate segment " << int(segment->label_) << " with confidence "
+             //   <<  dynamic_cast<SegmentConfidence*>(segment)->seg_label_confidence_;
+ 
+             // if(segment->instance_label_!=0) {
+             //   LOG_EVERY_N(INFO, 1) << " segment segseg confidence: " <<
+             //     dynamic_cast<SegmentConfidence*>(segment)->seg_label_confidence_;
+             //   LOG_EVERY_N(INFO, 1) << " segment obj_seg_confidence confidence: " <<
+             //     dynamic_cast<SegmentConfidence*>(segment)->obj_seg_confidence_;
+             // }
+         }
+ 
+         auto time_end = std::chrono::system_clock::now();
+         auto duration = std::chrono::duration<double>(time_end - time_start).count();
+         LOG(INFO) << "  integratePointCloudConfidence cost: " << duration << " seconds";
+ 
+         // LOG_EVERY_N(INFO, 1) << "  Integrated " << segments_to_integrate_.size()
+         //     << " pointclouds in " << duration << " secs. ";
+ 
+         LOG_EVERY_N(INFO, 1) << "  The map contains "
+             << map_->getTsdfLayerPtr()->getNumberOfAllocatedBlocks() << " tsdf and "
+             << map_->getLabelLayerPtr()->getNumberOfAllocatedBlocks() << " label blocks.";
+ 
+         if (data_association_ != 0)
+             whether_merge_alias = integrator_->mergeLabelConfidence(&merges_to_publish_);
+         else
+             integrator_->mergeLabels(&merges_to_publish_);
+ 
+         integrator_->getLabelsToPublish(&segment_labels_to_publish_);
+     }
+     // LOG(INFO) << " PairWiseConfidence: ";
+ 
+     // for( LLMapIt label_it = integrator_-> pairwise_confidence_.begin();
+     //       label_it!=integrator_-> pairwise_confidence_.end(); label_it++) {
+     //   for(LMapIt pair_it=label_it->second.begin(); pair_it!=label_it->second.end(); pair_it++) {
+     //       LOG(INFO) << "    Label " <<  int(label_it->first) << "- "<< int(pair_it->first) <<
+     //           ": " << pair_it->second;
+     //   }
+     // }
+     
+     curMem = getValue()-systemMem_;
+     LOG(INFO) << "  Memory usage after integrateFrame: " << curMem << " KB | " << curMem / 1024.0 << " MB";
+     
+     return whether_merge_alias;
+ }
+ 
+ 
++pybind11::dict GlobalSegmentMap_py::exportStudyFrameState()
++{
++    pybind11::dict state;
++    pybind11::list segments;
++    pybind11::list aliases;
++    pybind11::list label_instances;
++    pybind11::dict association;
++
++    std::lock_guard<std::mutex> label_tsdf_layers_lock(
++        label_tsdf_layers_mutex_);
++
++    auto *fusion = integrator_->semantic_instance_label_fusion_ptr_;
++    std::set<Label> registered_labels;
++    for (size_t segment_index = 0;
++         segment_index < segments_to_integrate_.size(); ++segment_index) {
++        const Segment *segment = segments_to_integrate_.at(segment_index);
++        CHECK_NOTNULL(segment);
++        pybind11::dict row;
++        row["local_index"] = segment_index;
++        row["input_instance_label"] = segment->instance_label_;
++        row["semantic_label"] = segment->semantic_label_;
++        row["registered_label"] = segment->label_;
++        row["point_count"] = segment->points_C_.size();
++        segments.append(row);
++        registered_labels.emplace(segment->label_);
++    }
++
++    for (const auto &merge : merges_to_publish_) {
++        for (const Label old_label : merge.second) {
++            pybind11::dict row;
++            row["old_label"] = old_label;
++            row["resolved_label"] = merge.first;
++            aliases.append(row);
++            registered_labels.emplace(old_label);
++            registered_labels.emplace(merge.first);
++        }
++    }
++
++    for (const Label segment_label : registered_labels) {
++        pybind11::dict row;
++        row["segment_label"] = segment_label;
++        row["instance_label"] = fusion->getInstanceLabel(segment_label, 0.1f);
++        row["semantic_label"] = fusion->getSemanticLabel(segment_label);
++        label_instances.append(row);
++    }
++
++    association["instance_association"] = inst_association_;
++    association["data_association"] = data_association_;
++    association["segment_graph_confidence"] = seg_graph_confidence_;
++    association["use_instance_label_connect"] = use_inst_label_connect_;
++    association["connection_ratio_threshold"] = connection_ratio_th_;
++    association["label_mapping_count_threshold_factor"] = 0.1f;
++
++    state["integrated_frame_count"] = integrated_frames_count_;
++    state["segments"] = segments;
++    state["aliases"] = aliases;
++    state["label_instances"] = label_instances;
++    state["association"] = association;
++    return state;
++}
++
++
++pybind11::dict GlobalSegmentMap_py::exportStudySurfaceLabels(
++    pybind11::array_t<float> native_xyz)
++{
++    if (native_xyz.ndim() != 2 || native_xyz.shape(1) != 3) {
++        throw std::invalid_argument("native_xyz must have shape [N, 3]");
++    }
++
++    const pybind11::ssize_t row_count = native_xyz.shape(0);
++    auto xyz = native_xyz.unchecked<2>();
++    pybind11::array_t<uint16_t> segment_labels(row_count);
++    pybind11::array_t<uint16_t> instance_labels(row_count);
++    pybind11::array_t<uint16_t> semantic_labels(row_count);
++    pybind11::array_t<uint8_t> valid(row_count);
++    auto segments = segment_labels.mutable_unchecked<1>();
++    auto instances = instance_labels.mutable_unchecked<1>();
++    auto semantics = semantic_labels.mutable_unchecked<1>();
++    auto validity = valid.mutable_unchecked<1>();
++
++    std::lock_guard<std::mutex> mesh_layer_lock(mesh_layer_mutex_);
++    std::lock_guard<std::mutex> label_tsdf_layers_lock(
++        label_tsdf_layers_mutex_);
++
++    BlockIndexList mesh_indices;
++    mesh_instance_layer_->getAllAllocatedMeshes(&mesh_indices);
++    size_t mesh_vertex_count = 0u;
++    for (const BlockIndex &block_index : mesh_indices) {
++        mesh_vertex_count +=
++            mesh_instance_layer_->getMeshPtrByIndex(block_index)->vertices.size();
++    }
++    if (mesh_vertex_count != static_cast<size_t>(row_count)) {
++        throw std::invalid_argument(
++            "native_xyz rows do not match the generated instance mesh");
++    }
++
++    auto *fusion = integrator_->semantic_instance_label_fusion_ptr_;
++    pybind11::ssize_t row = 0;
++    constexpr float kPlyCoordinateTolerance = 1e-4f;
++    for (const BlockIndex &block_index : mesh_indices) {
++        Mesh::ConstPtr mesh =
++            mesh_instance_layer_->getMeshPtrByIndex(block_index);
++        Block<LabelVoxel>::ConstPtr label_block =
++            integrator_->label_layer_->getBlockPtrByIndex(block_index);
++        if (!mesh->vertices.empty() && !label_block) {
++            throw std::runtime_error(
++                "generated instance mesh has no corresponding label block");
++        }
++        for (const Point &mesh_vertex : mesh->vertices) {
++            const Point supplied_vertex(xyz(row, 0), xyz(row, 1), xyz(row, 2));
++            if ((mesh_vertex - supplied_vertex).cwiseAbs().maxCoeff() >
++                kPlyCoordinateTolerance) {
++                throw std::invalid_argument(
++                    "native_xyz rows do not match the generated instance mesh");
++            }
++
++            const VoxelIndex voxel_index =
++                label_block->computeVoxelIndexFromCoordinates(mesh_vertex);
++            const LabelVoxel *voxel = nullptr;
++            if (label_block->isValidVoxelIndex(voxel_index)) {
++                voxel = &label_block->getVoxelByVoxelIndex(voxel_index);
++            } else {
++                Block<LabelVoxel>::ConstPtr neighbor_block =
++                    integrator_->label_layer_->getBlockPtrByCoordinates(mesh_vertex);
++                if (neighbor_block) {
++                    voxel = &neighbor_block->getVoxelByCoordinates(mesh_vertex);
++                }
++            }
++
++            const Label segment_label =
++                voxel == nullptr ? BackgroundLabel : voxel->label;
++            segments(row) = segment_label;
++            instances(row) = segment_label == BackgroundLabel
++                ? BackgroundLabel
++                : fusion->getInstanceLabel(segment_label, 0.1f);
++            semantics(row) = segment_label == BackgroundLabel
++                ? BackgroundSemLabel
++                : fusion->getSemanticLabel(segment_label);
++            validity(row) = voxel == nullptr ? 0u : 1u;
++            ++row;
++        }
++    }
++
++    pybind11::dict result;
++    result["segment_labels"] = segment_labels;
++    result["instance_labels"] = instance_labels;
++    result["semantic_labels"] = semantic_labels;
++    result["valid"] = valid;
++    result["label_mapping_count_threshold_factor"] = 0.1f;
++    return result;
++}
++
++
+ void GlobalSegmentMap_py::LogSegmentsLabels()
+ {
+     LOG(INFO) << " LogSegmentsInformation: ";
+     for (Segment *segment : segments_to_integrate_)
+     {
+         Label global_label = segment->label_;
+         SemanticLabel seman_label = integrator_->semantic_instance_label_fusion_ptr_->getSemanticLabel(global_label);
+         LOG(INFO) << " Label" << int(global_label) << " ; size: " << segment->points_C_.size() << " ; semantic label: " << int(seman_label);
+     }
+ }
+ 
+ void GlobalSegmentMap_py::clearTemporaryMemory()
+ {
+     segment_merge_candidates_.clear();
+     segment_label_candidates_.clear();
+     for (Segment *segment : segments_to_integrate_)
+     {
+         delete segment;
+     }
+     segments_to_integrate_.clear();
+     merges_to_publish_.clear();
+     segment_labels_to_publish_.clear();
+     // int curMem = getValue() - systemMem_;
+     // LOG(INFO) << "  Memory usage after clearTemporaryMemory: " << curMem << " kB";
+ }
+ 
+ 
+ bool GlobalSegmentMap_py::generateMesh(
+     std::string mesh_file_folder, 
+     std::string frame_num, 
+     bool save_label_mesh, 
+     bool save_sem_mesh, 
+     bool save_inst_mesh
+ )
+ {
+     bool clear_mesh = true; // default
+ 
+     std::lock_guard<std::mutex> mesh_layer_lock(mesh_layer_mutex_);
+ 
+     std::lock_guard<std::mutex> label_tsdf_layers_lock(
+         label_tsdf_layers_mutex_);
+ 
+     bool only_mesh_updated_blocks = false;
+     constexpr bool clear_updated_flag = true;
+     
+     if (save_label_mesh)
+         mesh_label_integrator_->generateMesh(only_mesh_updated_blocks, clear_updated_flag);
+     if (save_sem_mesh)
+         mesh_semantic_integrator_->generateMesh(only_mesh_updated_blocks,clear_updated_flag);
+     if (save_inst_mesh)
+@@ -786,66 +941,68 @@ void GlobalSegmentMap_py::raycastPanopticPredictions(
+     int num_inst_labels = inst_sem_labels.shape()[0];
+     for (int inst_i = 0; inst_i < num_inst_labels; inst_i++) {
+         inst_sem_map[inst_i + 1] = ((uint8_t *)inst_sem_labels.data())[inst_i];
+         LOG(INFO) << "    panoptic id " << int(inst_i+1) << " ; sem: " << int( inst_sem_map[inst_i+1]);
+     }
+ 
+ 
+     std::map<Label, std::map<InstanceLabel, int>> label_instances_cout;
+     auto time_start = std::chrono::system_clock::now();
+     assert((inst_association_ == 6) || (inst_association_ == 7));
+     if (inst_association_ == 6)
+         integrator_->raycastPanopticPredictions(
+             T_G_C_voxblox, panoptic_mask_mat, inst_sem_map, 
+             depth_img_scaled_mat, search_length, cam_ray_generator_, 
+             label_instances_cout
+         );
+     else
+         integrator_->raycastPanopticPredictions(
+             T_G_C_voxblox, panoptic_mask_mat, inst_sem_map, 
+             depth_img_scaled_mat, search_length, cam_ray_generator_, 
+             label_instances_cout, pose_confidence
+         );
+ 
+     
+     auto time_end = std::chrono::system_clock::now();
+     auto duration = std::chrono::duration<double>(time_end - time_start).count();
+     LOG(INFO) << "  ray cast cost: " << duration << " seconds";
+ }
+ 
+ 
+ 
+ void GlobalSegmentMap_py::outputLog(std::string log_info)
+ {
+     LOG(INFO) << log_info;
+ }
+ 
+ 
+ 
+ 
+ 
+ PYBIND11_MODULE(consistent_gsm, m)
+ {
+     m.doc() = "pybind11 for consistent global segmentation map"; // optional module docstring
+ 
+     pybind11::class_<GlobalSegmentMap_py>(m, "GlobalSegmentMap_py")
+         .def(pybind11::init<std::string, std::string, bool, bool, int, int, int, bool, int, bool, float, float>())
+         .def("insertSegments", &GlobalSegmentMap_py::insertSegments)
+         .def("insertSegmentsOpen", &GlobalSegmentMap_py::insertSegmentsOpen)
+         .def("insertSegmentsPoseConfidence", &GlobalSegmentMap_py::insertSegmentsPoseConfidence)
+         .def("integrateFrame", &GlobalSegmentMap_py::integrateFrame)
++        .def("exportStudyFrameState", &GlobalSegmentMap_py::exportStudyFrameState)
++        .def("exportStudySurfaceLabels", &GlobalSegmentMap_py::exportStudySurfaceLabels)
+         .def("LogSegmentsLabels", &GlobalSegmentMap_py::LogSegmentsLabels)
+         .def("clearTemporaryMemory", &GlobalSegmentMap_py::clearTemporaryMemory)
+         .def("generateMesh", &GlobalSegmentMap_py::generateMesh)
+         .def("outputLog", &GlobalSegmentMap_py::outputLog)
+         .def("updateVisualization", &GlobalSegmentMap_py::updateVisualization)
+         .def("updateVisualizationPCL", &GlobalSegmentMap_py::updateVisualizationPCL)
+         .def("LogLabelInformation", &GlobalSegmentMap_py::LogLabelInformation)
+         .def("LogMeshColors", &GlobalSegmentMap_py::LogMeshColors)
+         .def("getInstanceColor", &GlobalSegmentMap_py::getInstanceColor)
+         // .def("mapTextEmbedding", &GlobalSegmentMap_py::mapTextEmbedding)
+         // .def("initFeatureMap", &GlobalSegmentMap_py::initFeatureMap)
+         // .def("LogOpensetFeatureDistribution", &GlobalSegmentMap_py::LogOpensetFeatureDistribution)
+         .def("initializeCameraRayCaster", &GlobalSegmentMap_py::initializeCameraRayCaster)
+         .def("raycastInstancePredictions", &GlobalSegmentMap_py::raycastInstancePredictions)
+         .def("raycastPanopticPredictions", &GlobalSegmentMap_py::raycastPanopticPredictions);
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/panoptic_mapping_.py b/scripts/panoptic_mapping_.py
+index c0858b8..6bbdb15 100644
+--- a/scripts/panoptic_mapping_.py
++++ b/scripts/panoptic_mapping_.py
+@@ -1,76 +1,108 @@
+ import os, sys, time, argparse, pickle, logging, copy
+ from os.path import join as pjoin
+ from tqdm import tqdm
+ import warnings
+ warnings.filterwarnings('ignore')
+ 
+ import cv2
+ import numpy as np
+ import subprocess, json, zlib, threading, base64
+ 
+ # self packages
+ from options import parse_args
+-from view_selection import select_views_for_frame
++from view_selection import enumerate_admissible_views, select_views_for_frame
+ from utils.common_scannet_nyu import SegmentsGenerator
+ from utils.common_utils import Segment
+ from utils.data_loaders import ScannetLoader, ReplicaLoader
+ # for cross env 
+ from ipc_utils import create_shm_slots, compress_mask, cleanup_shm_slots
+ 
+ # Perception worker handles all GPU inference; reconstruction is CPU-only.
+ # Use "cuda" as default device string for the worker (set to "cpu" if no GPU).
+ DEVICE = "cuda"
+ 
+ FORMAT = '%(asctime)s.%(msecs)06d %(levelname)-8s: [%(filename)s] %(message)s'
+ logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt='%H:%M:%S')
+ 
++
++class _DisabledStudyCapture:
++    enabled = False
++
++    def before_insertion(self, **kwargs):
++        return None
++
++    def after_integration(self, **kwargs):
++        return None
++
++    def after_raycast(self, **kwargs):
++        return None
++
++    def finalize(self, **kwargs):
++        return None
++
++
++def _make_study_capture(**kwargs):
++    capture_root = os.environ.get("OVIMAP_MODULE_VALIDATION_CAPTURE_ROOT")
++    if not capture_root:
++        return _DisabledStudyCapture()
++    helper_root = os.environ.get("OVIMAP_MODULE_VALIDATION_HELPER_ROOT")
++    if not helper_root:
++        raise RuntimeError(
++            "OVIMAP_MODULE_VALIDATION_HELPER_ROOT is required when capture is enabled"
++        )
++    helper_root = os.path.realpath(helper_root)
++    if helper_root not in sys.path:
++        sys.path.insert(0, helper_root)
++    from src.static_ovmap.module_validation.native_capture import NativeCaptureSession
++    return NativeCaptureSession(capture_root=capture_root, **kwargs)
++
+ # # Suppress noisy library loggers
+ # _log_suppress = ["PIL", "matplotlib", "transformers", "urllib3", "matplotlib.font_manager"]
+ # for _mod in _log_suppress:
+ #     logging.getLogger(_mod).setLevel(logging.WARNING)
+ 
+ 
+ def make_res_dirs(args):
+     res_dirs = {}
+ 
+     result_root_dir = args.result_folder
+ 
+     res_dirs['folder'] = result_root_dir
+     res_dirs['log'] = os.path.join(result_root_dir, 'log')
+     res_dirs['temp_segs'] = args.intermediate_seg_folder
+     res_dirs['temp_panoptics'] = args.temp_panoptics_folder
+     res_dirs['temp_geometrics'] = args.temp_geometrics_folder
+ 
+     if not os.path.exists(res_dirs['folder']):
+         os.makedirs(res_dirs['folder'])
+     if not os.path.exists(res_dirs['log']):
+         os.makedirs(res_dirs['log'])
+ 
+     # Currently we can only use pre-processed panoptic segments
+     assert os.path.exists(res_dirs['temp_panoptics']), \
+         f"[Error]Temp panoptic folder: {res_dirs['temp_panoptics']} does not exist!"
+ 
+     if args.use_temp_geometrics:
+         assert os.path.exists(res_dirs['temp_geometrics']), \
+             f"[Error]Temp geometrics folder: {res_dirs['temp_geometrics']} does not exist!"
+     if args.save_temp_geometrics and not os.path.exists(res_dirs['temp_geometrics']):
+         os.makedirs(res_dirs['temp_geometrics'])
+ 
+     # if args.use_temp_results:
+     #     assert os.path.exists(res_dirs['temp_segs']), \
+     #         f"[Error]Temp fused segmentations folder: {res_dirs['temp_segs']} does not exist!"
+     # if args.save_temp_results and not os.path.exists(res_dirs['temp_segs']):
+     #     os.makedirs(res_dirs['temp_segs'])
+     
+     return res_dirs
+ 
+ 
+ def init_feature_extractor(args, H_depth, W_depth, VLM_name, DEVICE, inst_dict):
+     """Launch the perception worker and return IPC objects."""
+ 
+     # Resolve worker script path relative to this file
+     _this_dir = os.path.dirname(os.path.abspath(__file__))
+     if os.path.isabs(args.perception_worker):
+         worker_script = args.perception_worker
+     else:
+         worker_script = os.path.join(_this_dir, os.path.basename(args.perception_worker))
+@@ -274,283 +306,341 @@ def main(args):
+     if view_select_strategy == 'viewcov':
+         view_overlap_ratio_thres = 0.85
+     else:
+         view_overlap_ratio_thres = 0.9
+ 
+     # grid size for spherical view coverage map (H, W)
+     yx_grid = np.mgrid[0:H_depth, 0:W_depth] # (2, H, W)
+     sph_grid_size = (int(H_depth/8), int(W_depth/8))
+ 
+     # ==========================================================
+ 
+     if not os.path.exists(exp_results):
+         os.makedirs(exp_results)
+     # if not os.path.exists(temp_feats):
+     #     os.makedirs(temp_feats)
+ 
+     logging.info("Using pre-processed instance seg data!")
+     if not use_geos:
+         dep_segmentor = depth_segmentation_py.DepthSegmentation_py(
+             H_depth,W_depth,cv2.CV_32FC1, K_depth
+         )
+     else:
+         logging.info("Using pre-processed depth seg data!")
+         dep_segmentor = None
+             
+     # ---- Initialize instance-semantic manager ----
+     inst_dict = {}
+ 
+     # create the segment generator
+     segments_generator = SegmentsGenerator(
+         gsm_node, dep_segmentor, panoptic_node,
+         save_results_img, result_dirs['folder'], 
+         save_segments, use_temp_results, temp_segs_folder, 
+         panoptics_folder=temp_pano_folder, 
+         save_geometrics=save_geos, geometrics_folder=temp_geos_folder
+     )
+     gsm_node.initializeCameraRayCaster(
+         K_depth, H_depth, W_depth, 0.01, ray_cast_max_depth, args.num_threads
+     )
+ 
+     if not args.skip_feature_extraction:
+         feature_extractor = init_feature_extractor(args, H_depth, W_depth, VLM_name, DEVICE, inst_dict)
+     else:
+         feature_extractor = None
+         logging.info("Feature extraction skipped (--skip_feature_extraction).")
+ 
+ 
+     # ========================== start mapping ==========================
+     time_s = time.time()
+     frame_ids = range(start, end, step)
++    study_capture = _make_study_capture(
++        scene_id=scene_num,
++        dataset=dataset,
++        image_size_hw=(H_depth, W_depth),
++        intrinsics=K_depth,
++        scheduled_frame_ids=frame_ids,
++        source_config={
++            'task': task,
++            'instance_association': inst_association,
++            'data_association': data_association,
++            'segment_graph_confidence': seg_graph_confidence,
++            'use_instance_label_connect': use_inst_label_connect == 1,
++            'connection_ratio_threshold': connection_ratio_th,
++            'view_select_strategy': view_select_strategy,
++            'visibility_area_threshold': vis_area_thres,
++            'maximum_top_views': max_top_vis,
++            'view_overlap_ratio_threshold': view_overlap_ratio_thres,
++        },
++    )
+     for f_i in tqdm(frame_ids):
+         # NOTE img is in BGR, depth is in meters, pose is c2w
+         # rgb image has been wrapped to depth image
+         rgb_img, depth_scaled, pose = data_loader.getDataFromIndex(f_i)
+         # check data validity
+         if(rgb_img is None or depth_scaled is None or pose is None):
+             logging.warning(f"[Skip] frame {f_i} is lack of RGB / Depth / Pose.")
+             continue
+         rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
+         valid_d_mask = (depth_scaled > 0.0) & (depth_scaled < ray_cast_max_depth)
+         
+ 
+         # TODO use instance segs from cropformer
+         inst_seg_f = pjoin(temp_pano_folder, 
+             os.path.basename(data_loader.rgb_path_map[f_i]).split('.')[0] + '.png')
+         inst_seg = cv2.imread(inst_seg_f, cv2.IMREAD_UNCHANGED)
+         if data_loader.mapRGBtoDepth is not None:
+             inst_seg = data_loader.mapRGBtoDepth(inst_seg)
+         inst_seg = inst_seg.astype(np.int32) # pybind11 only accepts not unsigned int
+ 
+ 
+         # perform depth segmentation of not using pre-processed depth segments
+         if dep_segmentor is not None:
+             # NOTE depth segmentation is done in a separate thread to avoid blocking the main thread
+             # results must be dump locally and will be loaded in the frameToSegmentsCropFormer
+             segments_generator.SegmentDepth(depth_scaled, rgb_img, f_i)
+         
+         # fuse the depth segments and panoptic segments
+         segment_list: list[Segment] = segments_generator.frameToSegmentsCropFormer(
+             depth_scaled, K_depth, pose, f_i, inst_seg
+         )
+         if len(segment_list) == 0:
+             logging.warning(f"[Skip] No segment found in frame {f_i}")
+             continue
+ 
++        study_capture.before_insertion(
++            frame_id=f_i,
++            rgb_image=rgb_img,
++            depth_m=depth_scaled,
++            pose_c2w=pose,
++            panoptic_raster=inst_seg,
++            segments=segment_list,
++            rgb_source_path=data_loader.rgb_path_map[f_i],
++            depth_source_path=data_loader.depth_path_map[f_i],
++            panoptic_source_path=inst_seg_f,
++        )
++
+         # lift the fused segments to 3D and insert them into the global segment map
+         for segment in segment_list:
+             if(seg_graph_confidence == 3):
+                 segment.calculateBBox()
+ 
+             # all segs except bg are 'thing' and with a 1.0 inst_conf
+             gsm_node.insertSegmentsOpen(
+                 segment.points, segment.box_points, 
+                 segment.instance_label, segment.class_label, 
+                 segment.sem_feat, 
+                 segment.inst_confidence, segment.overlap_ratio, 
+                 pose, segment.is_thing, segment.segment_label
+             )
+     
+         # update the global segment map with the new segments
+         gsm_node.integrateFrame()
++        study_capture.after_integration(
++            frame_id=f_i,
++            native_state=gsm_node.exportStudyFrameState() if study_capture.enabled else None,
++        )
+ 
+         # Ray casting to get the global instance map from the super points
+         glo_inst_map = gsm_node.raycastInstancePredictions(
+             pose, inst_seg, depth_scaled
+         )
+ 
+         if view_select_strategy != 'vis':
+             depth_scaled[~valid_d_mask] = 0.0
+             points_map = cv2.rgbd.depthTo3d(depth_scaled, K_depth)
+ 
++        admissible_views = []
++        if study_capture.enabled:
++            if view_select_strategy == 'vis':
++                points_map = cv2.rgbd.depthTo3d(depth_scaled, K_depth)
++            admissible_views = enumerate_admissible_views(
++                glo_inst_map, inst_seg, depth_scaled, valid_d_mask, pose, points_map,
++                vis_area_thres,
++            )
++
+         # ################# View Selection #################
+         selected_views = select_views_for_frame(
+             glo_inst_map, inst_seg, depth_scaled, valid_d_mask, pose, points_map,
+             inst_dict,
+             vis_area_thres, max_top_vis, sph_grid_size,
+             view_select_strategy, view_overlap_ratio_thres,
+         )
++        study_capture.after_raycast(
++            frame_id=f_i,
++            global_owner_raster=glo_inst_map,
++            admissible_views=admissible_views,
++            selected_views=selected_views,
++            request_completion_boundary=(
++                0 if feature_extractor is None
++                else feature_extractor['pending_count'][0]
++            ),
++        )
+ 
+         # ################# Async Feature Extraction #################
+         for sv in selected_views:
+             glo_inst_id = sv['glo_inst_id']
+             glo_inst_mask = sv['glo_inst_mask']
+             pano_mask = sv['pano_mask']
+             overlap_area = sv['overlap_area']
+ 
+             # detrermine the cropping area by the global inst mask
+             yxs = yx_grid[:, glo_inst_mask] # (2, M)
+             y1, x1 = np.min(yxs[0]), np.min(yxs[1])
+             y2, x2 = np.max(yxs[0]), np.max(yxs[1])
+ 
+             # masked by the union of local instance mask and the global instance mask
+             # will be used to create pure color bg masking for the visual feature extractor
+             obj_mask = np.logical_or(pano_mask, glo_inst_mask)
+ 
+             # ---- Synchronous metadata (needed by future view selections) ----
+             inst_dict[glo_inst_id]['frame_id'].append(f_i)
+             inst_dict[glo_inst_id]['box_2d'].append((x1, y1, x2, y2))
+             inst_dict[glo_inst_id]['pose'].append(pose)
+             inst_dict[glo_inst_id]['vis_area'].append(overlap_area)
+             # placeholder, filled async
+             inst_dict[glo_inst_id]['feat'].append(None)  
+             request_idx = len(inst_dict[glo_inst_id]['feat']) - 1
+ 
+             if not args.skip_feature_extraction:
+                 # -------- Async: feature extraction --------
+                 # wait for a free shared memory slot to sync rgb
+                 slot_idx = f_i % feature_extractor['NUM_SHM_SLOTS']
+                 if slot_idx not in feature_extractor['slot_frame_map'] or feature_extractor['slot_frame_map'][slot_idx] != f_i:
+                     feature_extractor['wait_for_slot'](slot_idx)
+                     np.copyto(feature_extractor['shm_slots'][slot_idx][2], rgb_img)
+                     feature_extractor['slot_frame_map'][slot_idx] = f_i
+ 
+                 # send feature extraction request to perception worker
+                 mask_bytes = compress_mask(obj_mask)
+                 request = json.dumps({
+                     "f_i": int(f_i), "glo_inst_id": int(glo_inst_id),
+                     "slot_idx": int(slot_idx), "request_idx": int(request_idx),
+                     "bbox": [int(x1), int(y1), int(x2), int(y2)], "mask_len": len(mask_bytes)
+                 })
+                 feature_extractor['worker_stdin'].write((request + "\n").encode())
+                 feature_extractor['worker_stdin'].write(mask_bytes)
+                 feature_extractor['worker_stdin'].flush()
+                 feature_extractor['pending_count'][0] += 1
+                 # --------------------------------------------
+                 
+         # clean idle mem
+         gsm_node.clearTemporaryMemory()
+ 
+     if not args.skip_feature_extraction:
+         # ---- Shutdown perception worker and drain remaining results ----
+         logging.info("Sending shutdown to perception worker (pending: %d)...", feature_extractor['pending_count'][0])
+         try:
+             feature_extractor['worker_stdin'].write('{"cmd": "shutdown"}\n'.encode())
+             feature_extractor['worker_stdin'].flush()
+             feature_extractor['worker_stdin'].close()
+         except (BrokenPipeError, OSError):
+             pass
+ 
+         # Wait for collector thread to process remaining responses
+         feature_extractor['collector_thread'].join(timeout=300)
+         if feature_extractor['collector_thread'].is_alive():
+             logging.warning("Result collector did not finish within timeout; "
+                             "some features may be missing.")
+ 
+         # Terminate worker if still running
+         if feature_extractor['worker_proc'].poll() is None:
+             feature_extractor['worker_proc'].wait(timeout=10)
+             if feature_extractor['worker_proc'].poll() is None:
+                 logging.warning("Worker did not exit gracefully; killing.")
+                 feature_extractor['worker_proc'].kill()
+                 feature_extractor['worker_proc'].wait()
+ 
+         # Cleanup shared memory
+         cleanup_shm_slots(feature_extractor['shm_slots'])
+         logging.info("Perception worker shut down. Pending at exit: %d", feature_extractor['pending_count'][0])
+         # GPU memory tracking is handled by the perception worker process
+     gsm_node.outputLog(f"Time taken per frame: {(time.time() - time_s)/len(frame_ids):.2f} seconds")
+     # -------------------- Shutdown complete --------------------
+ 
+     # generate log and mesh
+     gsm_node.LogLabelInformation()
+     gsm_node.LogMeshColors(exp_results)
+ 
+     logging.info("Start mesh generation!")
+     # flags for saving: label_mesh, sem_mesh, inst_mesh
+     gsm_node.generateMesh(
+         exp_results, str(num_frames), 
+         False, False, True
+     )
++    study_capture.finalize(
++        gsm_node=gsm_node,
++        instance_mesh_path=pjoin(exp_results, f'instance_mesh_{num_frames}.ply'),
++    )
+ 
+     if not args.skip_feature_extraction:
+         np.random.seed(0)
+ 
+         # sum up the instance features and save them
+         inst_sem_dict = {}
+         total_query = 0
+         for glo_inst_id in inst_dict.keys():
+             cur_inst_info = inst_dict[glo_inst_id]
+             inst_frames = cur_inst_info['frame_id']
+             obs_num = len(inst_frames)
+             if obs_num == 0:
+                 continue
+             inst_poses = cur_inst_info['pose']
+             inst_bbox2ds = cur_inst_info['box_2d']
+             vis_scores = np.array(cur_inst_info['vis_area'])
+ 
+             # Filter out entries where async feature extraction failed (None placeholder)
+             valid_idx = [i for i, f in enumerate(cur_inst_info['feat']) if f is not None]
+             if len(valid_idx) == 0:
+                 continue
+             all_feats = np.array([cur_inst_info['feat'][i] for i in valid_idx])
+             vis_scores = vis_scores[valid_idx]
+             inst_frames = [inst_frames[i] for i in valid_idx]
+             inst_poses = [inst_poses[i] for i in valid_idx]
+             inst_bbox2ds = [inst_bbox2ds[i] for i in valid_idx]
+ 
+             total_query += all_feats.shape[0]
+ 
+             if view_select_strategy == 'viewcov':
+                 view_map = cur_inst_info['view_map']
+                 occ_cnt = np.count_nonzero(view_map > 0)
+                 occ_ratio = occ_cnt / (sph_grid_size[0] * sph_grid_size[1])
+                 gsm_node.outputLog(f"Instance {glo_inst_id} has {occ_ratio*100:.2f}% observed from {obs_num} frames")
+             else:
+                 # select the top-k with max vis area
+                 top_indices = np.argsort(vis_scores)[-max_top_vis:] # indices for values sorted in ascending order
+                 all_feats = all_feats[top_indices]
+                 inst_frames = [inst_frames[i] for i in top_indices]
+                 inst_poses = [inst_poses[i] for i in top_indices]
+                 inst_bbox2ds = [inst_bbox2ds[i] for i in top_indices]
+                 vis_scores = vis_scores[top_indices]
+ 
+             inst_color = gsm_node.getInstanceColor(glo_inst_id)
+ 
+             inst_sem_dict[glo_inst_id] = {
+                 'feat': all_feats,
+                 'vis_area': vis_scores,
+                 'frame_id': inst_frames,
+                 'pose': inst_poses,
+                 'box_2d': inst_bbox2ds,
+                 'color': inst_color,
+             }
+             # if view_select_strategy == 'viewcov':
+             #     inst_sem_dict[glo_inst_id]['bbox_c'] = cur_inst_info['bbox_c']
+             #     inst_sem_dict[glo_inst_id]['bbox_s'] = cur_inst_info['bbox_s']
+             #     inst_sem_dict[glo_inst_id]['bbox_rot'] = cur_inst_info['bbox_rot']
+ 
+         gsm_node.outputLog(f"Total {len(inst_sem_dict)} instances with {total_query} queries, avg {total_query / len(inst_sem_dict):.2f}.")
+ 
+         # dump results
+         with open(inst_sem_f, 'wb') as f:
+             pickle.dump(inst_sem_dict, f)
+         logging.info(f"Saved instance semantic features to {inst_sem_f}")
+     else:
+         logging.info("Feature extraction skipped. Mesh generation only.")
+ 
+     
+ 
+ if __name__=="__main__":
+     # set files path
+     args = parse_args()
+-    main(args)
+\ No newline at end of file
++    main(args)
+diff --git a/scripts/view_selection.py b/scripts/view_selection.py
+index cf10338..b51f73d 100644
+--- a/scripts/view_selection.py
++++ b/scripts/view_selection.py
+@@ -1,61 +1,118 @@
+ """
+ View selection strategies for OVI-MAP.
+ Decides which views (frames) to keep per instance.
+ """
+ 
+ import logging
+ import numpy as np
+ 
+ from utils.common_utils import PointCloudProcessor
+ 
+ 
++def enumerate_admissible_views(
++    glo_inst_map, inst_seg, depth_scaled, valid_d_mask, pose, points_map,
++    vis_area_thres,
++):
++    """Return all technically admissible current-frame requests without mutation."""
++    candidates = []
++    for glo_inst_id in np.unique(glo_inst_map):
++        if glo_inst_id == 0:
++            continue
++
++        glo_inst_mask = glo_inst_map == glo_inst_id
++        glo_inst_area = int(np.count_nonzero(glo_inst_mask))
++        if glo_inst_area < 0.5 * vis_area_thres:
++            continue
++
++        pano_id_map = inst_seg[glo_inst_mask]
++        if pano_id_map.size == 0:
++            continue
++        pano_ids, pano_id_count = np.unique(pano_id_map, return_counts=True)
++        pano_id = pano_ids[np.argmax(pano_id_count)]
++        pano_mask = inst_seg == pano_id
++        pano_id_area = int(np.count_nonzero(pano_mask))
++        if pano_id_area < vis_area_thres:
++            continue
++
++        inst_d_mask = np.logical_and(glo_inst_mask, valid_d_mask)
++        valid_depth_pixels = int(np.count_nonzero(inst_d_mask))
++        if valid_depth_pixels < 0.1 * vis_area_thres:
++            continue
++
++        y_coords, x_coords = np.nonzero(glo_inst_mask)
++        x1, x2 = int(x_coords.min()), int(x_coords.max())
++        y1, y2 = int(y_coords.min()), int(y_coords.max())
++        if x2 <= x1 or y2 <= y1:
++            continue
++
++        inst_points = points_map[inst_d_mask].astype(np.float32).reshape(-1, 3)
++        inst_points = inst_points @ pose[:3, :3].T + pose[:3, 3:4].T
++        union_mask = np.logical_or(pano_mask, glo_inst_mask)
++        candidates.append({
++            'glo_inst_id': int(glo_inst_id),
++            'glo_inst_mask': glo_inst_mask,
++            'glo_inst_area': glo_inst_area,
++            'pano_id': int(pano_id),
++            'pano_mask': pano_mask,
++            'pano_id_area': pano_id_area,
++            'overlap_area': int(np.max(pano_id_count)),
++            'overlap_mask': np.logical_and(glo_inst_mask, pano_mask),
++            'union_mask': union_mask,
++            'bbox_xyxy_native': (x1, y1, x2, y2),
++            'valid_depth_pixels': valid_depth_pixels,
++            'depth_valid_fraction': valid_depth_pixels / float(glo_inst_area),
++            'world_centroid': np.mean(inst_points, axis=0).astype(np.float32),
++        })
++    return candidates
++
++
+ def init_view_cov(
+     depth_scaled, inst_d_mask, inst_points,
+     glo_inst_id, cur_inst_info,
+     vis_area_thres, sph_grid_size
+ ):
+     """Initialize the per-instance 3D bounding box and spherical view-coverage map.
+ 
+     Returns:
+         (success: bool, cur_inst_info: dict or None)
+     """
+     depth_arr = depth_scaled[inst_d_mask]
+     if len(depth_arr) < 0.5 * vis_area_thres:
+         logging.warning(f"[Skip] Not enough depth pts to init inst {glo_inst_id}")
+         return False, None
+ 
+     PCLprocessor = PointCloudProcessor(inst_points)
+     bbox_res = PCLprocessor.process(voxel_size=0.01)
+     bbox_pos, bbox_extent, bbox_rot_matrix = bbox_res
+ 
+     view_map = np.zeros(sph_grid_size, dtype=np.uint8)
+     cur_inst_info['view_map'] = view_map
+     cur_inst_info['bbox_c'] = bbox_pos
+     cur_inst_info['bbox_s'] = bbox_extent
+     cur_inst_info['bbox_rot'] = np.array(bbox_rot_matrix)
+ 
+     return True, cur_inst_info
+ 
+ 
+ def update_view_cov_map(
+     inst_points, bbox_c, view_map, sph_grid_size,
+     view_overlap_ratio_thres
+ ):
+     """Map object surface rays to a spherical grid and check view overlap.
+ 
+     Returns:
+         (novel_view: bool, view_map: np.ndarray or None)
+     """
+     obj_rays = inst_points - bbox_c.T
+     obj_rays = obj_rays / np.linalg.norm(obj_rays, axis=-1, keepdims=True)
+     # convert them to sph coord and map to the occ grid
+     theta = np.arccos(np.clip(obj_rays[:, 2], -1.0, 1.0))  # in [0, pi]
+     theta = theta / np.pi * sph_grid_size[0]  # map to [0, grid_H]
+     theta = np.floor(theta).astype(np.int32)
+     phi = np.arctan2(obj_rays[:, 1], obj_rays[:, 0])  # in [-pi, pi]
+     phi = (phi + np.pi) / (2 * np.pi) * sph_grid_size[1]  # map to [0, grid_W]
+     phi = np.floor(phi).astype(np.int32)
+ 
+     # 4.3. check the overlapping with the existing views
+     sph_coords = np.unique(np.stack((theta, phi), axis=1), axis=0)  # (M, 2) removed duplicates
+     view_overlap_area = np.count_nonzero(
