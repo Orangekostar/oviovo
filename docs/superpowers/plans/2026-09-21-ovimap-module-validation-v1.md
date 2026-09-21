@@ -38,7 +38,7 @@
 - Consumes: `PROTOCOL_SPEC.json`, three historical evaluation configs, environment overrides.
 - Produces: `StudySpec.load(path)`, `resolve_assets(spec, env)`, `build_scene_splits(inventory, exclusions, spec)`, `PhaseReceipt`, and CLI phases `bind|capture|semantic|geometry|query|select|confirm|report|all`.
 
-- [ ] **Step 1: Write failing tests for strict spec loading and JSON-safe status records**
+- [x] **Step 1: Write failing tests for strict spec loading and JSON-safe status records**
 
 ```python
 def test_study_spec_rejects_unresolved_runtime_metadata(spec_path):
@@ -52,15 +52,15 @@ def test_phase_receipt_rejects_nonfinite_metrics():
         PhaseReceipt(phase="bind", status="COMPLETE", metrics={"x": float("nan")})
 ```
 
-- [ ] **Step 2: Run `pytest -q tests/module_validation/test_assets_and_contracts.py` and confirm missing imports fail**
-- [ ] **Step 3: Implement frozen dataclasses, canonical hashing, atomic JSON writes, explicit status enums, and attempt selection**
-- [ ] **Step 4: Add asset-resolution tests using temporary explicit/config/receipt roots and an ambiguous two-candidate fixture**
-- [ ] **Step 5: Implement precedence, depth-4 bounded discovery, file identities, environment/source locks, and `BLOCKED_ASSET_IDENTITY`**
-- [ ] **Step 6: Add deterministic family grouping/hash-order/split isolation tests with literal expected family orders**
-- [ ] **Step 7: Implement inventory completeness, exposed-family exclusion, 8/2/2+2 split locking, and `BLOCKED_INDEPENDENT_SCENES`**
-- [ ] **Step 8: Add CLI resume tests proving a compatible complete phase is reused and a changed full cache key invalidates it**
-- [ ] **Step 9: Implement phase dispatch, dependency statuses, atomic receipts, progress updates, and continued reporting after blocked branches**
-- [ ] **Step 10: Run both Task 1 test modules and commit contracts/orchestrator**
+- [x] **Step 2: Run `pytest -q tests/module_validation/test_assets_and_contracts.py` and confirm missing imports fail**
+- [x] **Step 3: Implement frozen dataclasses, canonical hashing, atomic JSON writes, explicit status enums, and attempt selection**
+- [x] **Step 4: Add asset-resolution tests using temporary explicit/config/receipt roots and an ambiguous two-candidate fixture**
+- [x] **Step 5: Implement precedence, depth-4 bounded discovery, file identities, environment/source locks, and `BLOCKED_ASSET_IDENTITY`**
+- [x] **Step 6: Add deterministic family grouping/hash-order/split isolation tests with literal expected family orders**
+- [x] **Step 7: Implement inventory completeness, exposed-family exclusion, 8/2/2+2 split locking, and `BLOCKED_INDEPENDENT_SCENES`**
+- [x] **Step 8: Add CLI resume tests proving a compatible complete phase is reused and a changed full cache key invalidates it**
+- [x] **Step 9: Implement phase dispatch, dependency statuses, atomic receipts, progress updates, and continued reporting after blocked branches**
+- [x] **Step 10: Run both Task 1 test modules and commit contracts/orchestrator**
 
 ### Task 2: Native Capture Contracts and Official OVI Patch
 
