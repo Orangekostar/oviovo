@@ -212,5 +212,5 @@ def test_phase_receipt_rejects_nonfinite_metrics():
 - [x] **Step 2: Verify prediction isolation, selection-stage isolation, G completeness, Q causal debit, numeric reconciliation, release-size limits, and no hidden fallbacks**
 - [x] **Step 3: Run focused unit/integration tests, real-boundary smokes, orchestrator resume verification, `git diff --check`, and JSON/GZIP/NPZ parsing**
 - [x] **Step 4: Inspect explicit staged paths and commit code/config/small artifacts/weights/reports**
-- [ ] **Step 5: Push `research/ovimap-module-validation-v1` normally and compare full local SHA with `git ls-remote`**
-- [ ] **Step 6: Write the external publication receipt and report separate implementation, experiment, science, confirmation, and publication statuses**
+- [x] **Step 5: Push `research/ovimap-module-validation-v1` normally and compare full local SHA with `git ls-remote`**
+- [x] **Step 6: Write the external publication receipt and report separate implementation, experiment, science, confirmation, and publication statuses**
