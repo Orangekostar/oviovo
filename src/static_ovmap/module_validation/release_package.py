@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 from collections import Counter
@@ -100,7 +101,23 @@ def export_release(attempt, destination, cache_key, resolved_config):
             payloads[key] = blob
             sources[key] = {"source": identity, "transformation": transformation}
 
+    # Large repeated dependency/diagnostic ledgers compress well. Principal
+    # report and selection documents remain directly readable as JSON.
+    plain_names = {"external_artifacts.json", "scientific_evidence.json", "method_matrix.json",
+                   "selection.json", "frozen_config.json", "resolved_config.json"}
+    for key, blob in list(payloads.items()):
+        if not key.endswith(".json") or len(blob) <= 256 * 1024 or Path(key).name in plain_names:
+            continue
+        compressed_key = key + ".gz"
+        payloads[compressed_key] = gzip.compress(blob, mtime=0)
+        del payloads[key]
+        source = sources.pop(key, {"source": {"path": str(attempt / key),
+            "sha256": hashlib.sha256(blob).hexdigest(), "bytes": len(blob)}, "transformation": "exact_copy"})
+        sources[compressed_key] = {**source, "encoding": "gzip", "decoded_bytes": len(blob),
+                                  "decoded_sha256": hashlib.sha256(blob).hexdigest()}
+
     manifest = {"schema_version": 2, "source_attempt": str(attempt), "cache_key": cache_key,
+        "exporter_source": {"path": str(Path(__file__).resolve()), "sha256": sha256_file(__file__)},
         "files": {key: hashlib.sha256(blob).hexdigest() for key, blob in sorted(payloads.items())},
         "source_files": sources, "total_bytes": 0, "maximum_bytes": MAX_RELEASE_BYTES,
         "large_arrays_and_backbone_weights": "external_artifacts.json; not included"}

@@ -1,5 +1,6 @@
 """Publication includes evidence and small heads without copying raw tensors."""
 
+import gzip
 import json
 from types import SimpleNamespace
 
@@ -83,3 +84,18 @@ def test_total_limit_includes_ledgers_and_manifest_before_writing(tmp_path, monk
     with pytest.raises(ValueError, match="release exceeds"):
         export_attempt(runner, tmp_path / "export")
     assert not (tmp_path / "export").exists()
+
+
+def test_large_diagnostic_json_is_losslessly_compressed_with_stable_hash(tmp_path):
+    content = {"frame_barrier": True, "frames": [{"paid": True, "request": "r" * 100}] * 3000}
+    runner = setup_release(tmp_path, {"scenes/s1/query/trace/decisions.json": content})
+    export_attempt(runner, tmp_path / "export-one")
+    export_attempt(runner, tmp_path / "export-two")
+    relative = "study/scenes/s1/query/trace/decisions.json.gz"
+    one, two = (tmp_path / name / relative for name in ("export-one", "export-two"))
+    assert json.loads(gzip.decompress(one.read_bytes())) == content
+    assert one.read_bytes() == two.read_bytes()
+    assert one.stat().st_size < 5000
+    manifest = json.loads((tmp_path / "export-one/export_manifest.json").read_text())
+    assert manifest["source_files"][relative]["encoding"] == "gzip"
+    assert manifest["source_files"][relative]["source"]["path"].endswith("decisions.json")
