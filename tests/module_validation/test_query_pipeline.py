@@ -39,6 +39,17 @@ def test_comparator_respects_metric_tolerance_and_protocol_id_order():
     assert choose_comparator(rows, ("c1", "c2")) == "Q_COMBINE"
 
 
+def test_confirmation_queries_require_frozen_access_and_b200_before_opening_data(tmp_path, monkeypatch):
+    from src.static_ovmap.module_validation import query_pipeline as pipeline
+
+    monkeypatch.setattr(pipeline, "roles", lambda _: ({"confirm": ("held-out",)}, tmp_path / "split.json"))
+    with pytest.raises(ValueError, match="confirmation.*lock"):
+        pipeline.run_query_scene("held-out", "confirm", "Q_AREA", {}, {}, tmp_path / "config.json")
+    with pytest.raises(ValueError, match="B200"):
+        pipeline.run_query_scene("held-out", "confirm", "Q_AREA", {}, {}, tmp_path / "config.json",
+                                 budget=100, confirmation_lock=tmp_path / "selection.json")
+
+
 def test_final_registry_reconciliation_occurs_after_all_acquisition():
     from dataclasses import replace
 

@@ -42,7 +42,7 @@ from .study_scene import bind_scene, evaluate_predictions
 CONTROLS = ("Q_COMBINE", "Q_AREA", "Q_UNCERTAINTY")
 SOURCE_NAMES = ("query_pipeline.py", "query_models.py", "query_study.py", "query_lineage.py", "query_state.py",
                 "query_gain_policy.py", "query_targets.py", "static_regions.py", "study_execution.py", "study_scene.py", "evaluation.py",
-                "metric_order.py", "region_evidence.py", "scannet_ground_truth.py", "scannet_study.py")
+                "metric_order.py", "region_evidence.py", "scannet_ground_truth.py", "scannet_study.py", "confirmation_access.py")
 
 
 def _sources():
@@ -73,12 +73,25 @@ def reconcile_export(result, surface, text):
     result["lineage"].advance(snapshot, result["state"], result["combine"], text)
 
 
-def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget=200, checkpoint_path=None):
+def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget=200, checkpoint_path=None,
+                    confirmation_lock=None):
     import torch
 
     split, lock_path = roles(runtime)
-    if role not in split or scene not in split[role] or role == "confirm":
+    if role not in split or scene not in split[role]:
         raise ValueError("query execution requires an authorized development role")
+    if role == "confirm":
+        if budget != 200:
+            raise ValueError("confirmation queries are restricted to B200")
+        if confirmation_lock is None:
+            raise ValueError("confirmation query requires a frozen selection lock")
+        from .confirmation_access import require_confirmation_method
+
+        contract = require_confirmation_method(scene, policy, runtime, config, confirmation_lock)
+        if policy == "Q_GAIN":
+            calibration = read_json(contract["frozen"]["calibration"]["query"]["path"])
+            if checkpoint_path is None or file_identity(checkpoint_path) != calibration["checkpoint"]:
+                raise ValueError("confirmation query checkpoint differs from the frozen CAL head")
     random = policy == "Q_RANDOM_TRACE"
     if random and role not in {"fit", "cal"}:
         raise ValueError("query exploration is restricted to FIT/CAL")
@@ -94,6 +107,8 @@ def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget
     capture_path = Path(mapping["capture_manifest"])
     inputs = config_inputs(config, config_path) + [file_identity(path) for path in (
         lock_path, mapping_path, capture_path, config["native_text_cache"])]
+    if role == "confirm":
+        inputs.append(file_identity(confirmation_lock))
     seed = (17 if role == "fit" else 23) if random else None
     if checkpoint_path is not None:
         inputs.append(file_identity(checkpoint_path))
@@ -140,6 +155,8 @@ def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget
              "causal_capture": file_identity(capture_path), "final_registry_read_after_last_barrier": True})
         prediction_path = store_prediction(payload, output / "prediction")
         row = evaluate_predictions([payload], {scene: evaluation_targets}, Path(runtime["upstream"]), output / "evaluation")[0]
+        row.update(logical_cost=logical, added_seconds=result["elapsed_seconds"],
+                   unobserved_owners=sum(value == 0 for value in labels.values()))
         outputs += [prediction_path, prediction_path.parent / "prediction.npz", *evaluation_outputs(output / "evaluation")]
     decision_path, events_path, arrays_path = output / "decisions.json", output / "events.json", output / "prefix.npz"
     events = result["events"]
