@@ -108,6 +108,10 @@ def _confirmation(candidate, decision):
     plan = asdict(plan_confirmation(candidate, nearest_comparison=comparison))
     if candidate == "COMBO_Q_REFINEMENT":
         plan["rows"] = tuple(dict.fromkeys((*plan["rows"], decision["query"]["locked_comparator"])))
+    if candidate == "G_QUALITY":
+        plan["rows"] = (*plan["rows"], "G_ORIGINAL")
+    if candidate == "COMBO_GS":
+        plan["rows"] = tuple(dict.fromkeys((*plan["rows"], decision["geometry"]["selected_method"])))
     return plan
 
 
@@ -141,6 +145,12 @@ def finalize_decision(decision, candidate_rows, matched_rows, *, combinations, c
             if (sum(row.uap for row in g) >= sum(row.uap for row in b) - 2e-10
                     and sum(row.miou for row in g) >= sum(row.miou for row in b) - 2e-10):
                 raise ValueError("GS passes noninferiority; required hybrid cannot be skipped")
+        elif status == "INCONCLUSIVE_UNDEFINED_STATIC_COMPARISON" and method == "COMBO_Q_REFINEMENT":
+            gs = next((row for row in combinations if row["method_id"] == "COMBO_GS"), None)
+            if (gs is None or gs["status"] != "MEASURED"
+                    or not any(row["metrics"].get(metric) is None for row in (*gs["rows"], *gs["matched_rows"])
+                               for metric in ("uap", "miou"))):
+                raise ValueError("undefined hybrid gate requires actual undefined GS measurements")
         else:
             raise ValueError(f"unsupported combination disposition: {status}")
     c = {method: _group(rows, decision["SELECT_scenes"], role="SELECT")[method]

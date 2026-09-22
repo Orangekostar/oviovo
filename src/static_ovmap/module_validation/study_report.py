@@ -109,6 +109,7 @@ def collect_study_evidence(runtime, config):
                     costs[f"{scene}/S/{model}"] = {key: result[key] for key in (
                         "request_count", "successful_requests", "crop_inputs", "background_crop_inputs", "generations",
                         "model_load_seconds", "request_seconds", "elapsed_seconds_this_invocation")}
+                    costs[f"{scene}/S/{model}"].update({key: value for key, value in result.items() if key.startswith("physical_")})
             for path in sorted((base / "query").glob("**/receipt.json")):
                 result = load(path)
                 if result.get("method_id") is None:
@@ -162,7 +163,7 @@ def collect_study_evidence(runtime, config):
                 for method, events in methods.items():
                     semantic_events.append(_semantic_summary(scene, "select", method, events, event_path))
     # Geometry diagnostic counts refer to whole partitions, never overlapping masks.
-    for value in rows.values():
+    for value in list(rows.values()):
         if not value["method_id"].startswith("G_"):
             continue
         base = root / "scenes" / value["scene_id"] / "geometry"
@@ -171,6 +172,10 @@ def collect_study_evidence(runtime, config):
         details = load(destination / "receipt.json")
         decisions = read_json(destination / "prediction/decisions.json")
         pool = load(base / "pool/receipt.json")
+        inference = load(destination / "inference/receipt.json")
+        costs[f"{value['scene_id']}/G/{method}"] = {"logical": details["logical_cost"],
+            "physical_attempts_this_invocation": inference["physical_attempts_this_invocation"],
+            "model_load_seconds_this_invocation": inference["model_load_seconds_this_invocation"]}
         hypotheses = read_json(base / "pool/hypotheses.json")["hypotheses"]
         changed = sum(selected != hypotheses[group][0]["hypothesis_id"]
                       for group, selected in decisions["selected_hypotheses"].items())
@@ -178,6 +183,45 @@ def collect_study_evidence(runtime, config):
             "groups": pool["group_count"], "hypotheses": pool["hypothesis_count"], "changed_partitions": changed,
             "changed_points": details["changed_points"], "unknown_components": details["unknown_components"],
             "preserved_objects": None, "evidence_path": str(destination / "receipt.json")})
+    for path in sorted((root / "selection/combinations").glob("*/receipt.json")):
+        result = load(path)
+        if result["disposition"] == "MEASURED":
+            for row in [*result["rows"], *result["matched_rows"]]:
+                add(row, path, role="select")
+        else:
+            method_status[result["method_id"]] = result["disposition"]
+    confirm_path = root / "confirmation/receipt.json"
+    if confirm_path.is_file():
+        confirmation = load(confirm_path)
+        for row in confirmation["rows"]:
+            add(row, confirm_path, role="confirm", budget=200 if row["method_id"].startswith("Q_") else None)
+        if confirmation["rows"]:
+            for scene in split["confirm"]:
+                mapping = load(Path(runtime["output_root"]) / scene / "mapping_job/receipt.json")
+                frontend = load(Path(runtime["output_root"]) / scene / "frontend_job/receipt.json")
+                costs[f"{scene}/native_capture"] = {key: mapping[key] for key in (
+                    "elapsed_seconds", "scheduled_count", "completed_count", "invalid_pose_frame_ids")}
+                costs[f"{scene}/CropFormer"] = {"elapsed_seconds": frontend["elapsed_seconds"]}
+    for branch in ("semantic", "geometry", "query"):
+        calibration_path = root / branch / "calibration_receipt.json"
+        if calibration_path.is_file():
+            calibration = load(calibration_path)
+            costs[f"{branch}/calibration"] = {"learned_status": calibration["learned_status"], "evidence_path": str(calibration_path)}
+            for path in sorted((root / branch).glob("**/training*.json")):
+                values = read_json(path)
+                costs[str(path.relative_to(root))] = {key: value for key, value in values.items()
+                    if key not in {"inputs", "outputs", "sources", "state_dict", "optimizer_state_dict", "scaler_state_dict"}}
+    unique_query = {}
+    for scene in (*split["fit"], *split["cal"], *split["select"]):
+        for path in sorted((root / "scenes" / scene / "query").glob("**/receipt.json")):
+            for item in read_json(path).get("outputs", []):
+                source = Path(item["path"])
+                if "native_request_cache" in source.parts and source.suffix == ".json":
+                    unique_query[str(source)] = read_json(source)
+    costs["Q_unique_referenced_acquisitions"] = {"request_count": len(unique_query),
+        "crop_inputs": sum(row["crop_inputs"] for row in unique_query.values()),
+        "inference_seconds": sum(row["elapsed_seconds"] for row in unique_query.values()),
+        "definition": "unique actual request-cache acquisitions used by active traces/policies, including cache origins"}
     values = sorted(rows.values(), key=lambda row: (row["role"], row["scene_id"], row["method_id"], row["budget"] or 0))
     return {"rows": values, "summaries": summarize_rows(values), "semantic_events": semantic_events,
         "geometry_events": geometry_events, "query_events": query_events, "costs": costs,
@@ -189,12 +233,16 @@ def released_comparisons(evidence, config, comparator=None):
     """Read the unchanged evaluator's actual match/FN trace after predictions lock."""
     from src.static_ovmap.attribution_objects import released_object_outcomes
 
-    root = Path(config["study_root"]) / "scenes"
+    study = Path(config["study_root"])
+    root = study / "scenes"
     available = {(row["scene_id"], row["method_id"], row.get("budget")): row for row in evidence["rows"]}
     trace_index, traces, result = {}, {}, []
     for scene in {row["scene_id"] for row in evidence["rows"]}:
-        for path in sorted((root / scene).rglob("released_trace.json.gz")):
-            trace_index.setdefault((scene, path.parents[2].name), path)
+        scopes = [root / scene, study / "confirmation/scenes" / scene,
+                  *(study / "selection/combinations").glob(f"*/scenes/{scene}")]
+        for scope in scopes:
+            for path in sorted(scope.rglob("released_trace.json.gz")):
+                trace_index.setdefault((scene, path.parents[2].name), path)
 
     def load(row):
         key = row["scene_id"], row["prediction_key"]
@@ -218,6 +266,10 @@ def released_comparisons(evidence, config, comparator=None):
         reference = comparator if method.startswith("Q_") and comparator is not None else "N0"
         if method.startswith("G_") and method != "G_ORIGINAL":
             reference = "G_ORIGINAL"
+        if method == "COMBO_GS":
+            reference = "G_ORIGINAL"
+        elif method == "COMBO_Q_REFINEMENT":
+            reference = "COMBO_Q_REFINEMENT_CONTROL"
         if method == reference:
             continue
         baseline = available.get((row["scene_id"], reference, budget if reference.startswith("Q_") else None))
@@ -240,7 +292,7 @@ def released_comparisons(evidence, config, comparator=None):
             "eligibility_exits": sorted(set(base_eligible) - set(cand_eligible)),
             "eligible_label_changes": {owner: [base_eligible[owner], cand_eligible[owner]]
                 for owner in sorted(set(base_eligible) & set(cand_eligible)) if base_eligible[owner] != cand_eligible[owner]},
-            "owner_comparability": "fixed native masks" if not method.startswith("G_") else "geometry-specific component IDs",
+            "owner_comparability": "geometry-specific component IDs" if method.startswith(("G_", "COMBO_")) else "fixed native masks",
             "candidate_trace": cand_path, "baseline_trace": base_path})
     return result
 

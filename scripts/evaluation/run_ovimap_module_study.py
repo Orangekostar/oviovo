@@ -714,10 +714,50 @@ def confirm_phase(context: PhaseContext) -> PhaseResult:
             outputs={"confirmation": output.name},
             metrics={"confirmation_rows": 0},
         )
+    if "scannet_runtime" in context.resolved_config:
+        return _execute_scannet_confirmation(context)
     return PhaseResult(
         status=ReceiptStatus.BLOCKED_PREREQUISITE,
         blockers=("MISSING_CONFIRMATION_METRICS",),
     )
+
+
+def _execute_scannet_confirmation(context: PhaseContext) -> PhaseResult:
+    from src.static_ovmap.module_validation.study_execution import verify_receipt
+
+    config_path = Path(context.resolved_config.get("scannet_study_config",
+        REPOSITORY_ROOT / "configs/evaluation/ovimap_module_scannet_study.json"))
+    if not config_path.is_absolute():
+        config_path = REPOSITORY_ROOT / config_path
+    config = _read_json(config_path)
+    runtime_path = Path(config["runtime_config"])
+    runtime = _read_json(runtime_path if runtime_path.is_absolute() else REPOSITORY_ROOT / runtime_path)
+    if runtime != context.resolved_config["scannet_runtime"]:
+        raise ValueError("confirmation runtime differs from the bound capture configuration")
+    command = [runtime["mapping_python"], str(REPOSITORY_ROOT / "scripts/evaluation/run_ovimap_scannet_confirmation.py"),
+               "--config", str(config_path)]
+    log_path = context.attempt_dir / "confirmation_scientific.log"
+    with log_path.open("a") as log:
+        offset = log.tell()
+        completed = subprocess.run(command, cwd=REPOSITORY_ROOT, stdout=log, stderr=subprocess.STDOUT, check=False)
+    if completed.returncode:
+        with log_path.open(errors="replace") as log:
+            log.seek(offset)
+            message = log.read()
+        if "GPU_BUSY" in message:
+            return PhaseResult(ReceiptStatus.BLOCKED_PREREQUISITE, outputs={"log": str(log_path)}, blockers=("BLOCKED_GPU_BUSY",))
+        raise RuntimeError(f"scientific confirmation failed ({completed.returncode}); see {log_path}")
+    source = Path(config["study_root"]) / "confirmation/receipt.json"
+    value = verify_receipt(source)
+    confirmation = _read_json(Path(value["confirmation_path"]))
+    output = context.attempt_dir / "confirmation.json"
+    atomic_write_json(output, confirmation)
+    manifest = context.attempt_dir / "confirmation_runtime.json"
+    atomic_write_json(manifest, {"status": "COMPLETE", "study_receipt": str(source), "command": command,
+                                "input_identities": _scientific_identities(source)})
+    return PhaseResult(ReceiptStatus.COMPLETE,
+        outputs={"confirmation": str(output), "runtime": str(manifest), "log": str(log_path)},
+        metrics={"confirmation_rows": len(confirmation["rows"]), "confirmation_status": confirmation["status"]})
 
 
 def report_phase(context: PhaseContext) -> PhaseResult:
@@ -852,8 +892,10 @@ def _report_scannet(context: PhaseContext) -> PhaseResult:
     blocked.update(plan.get("blocked", {}))
     for method in REQUIRED_METHODS:
         if method not in measured and method not in not_required and method not in blocked:
-            blocked[method] = evidence["method_status"].get(method, "MISSING_COMPLETE_LOCKED_SELECT_ROWS")
-    matrix = build_method_matrix(required_methods=REQUIRED_METHODS, measured=measured, blocked=blocked,
+            reason = evidence["method_status"].get(method, "MISSING_COMPLETE_LOCKED_SELECT_ROWS")
+            (not_required if reason.startswith("NOT_REQUIRED") else blocked)[method] = reason
+    methods = (*REQUIRED_METHODS, *sorted(set(measured) - set(REQUIRED_METHODS)))
+    matrix = build_method_matrix(required_methods=methods, measured=measured, blocked=blocked,
                                  not_required=not_required, evidence_paths=paths)
     evidence["method_status"].update({**blocked, **not_required})
     matrix_path = context.attempt_dir / "method_matrix.json"

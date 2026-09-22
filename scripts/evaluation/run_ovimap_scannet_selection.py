@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT))
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
-    parser.add_argument("--phase", choices=("modules", "curves", "freeze", "all"), required=True)
+    parser.add_argument("--phase", choices=("modules", "combinations", "curves", "freeze", "all"), required=True)
     args = parser.parse_args()
     config_path = args.config.resolve()
     config = json.loads(config_path.read_text())
@@ -38,6 +38,14 @@ def main():
     if args.phase in {"modules", "all"}:
         result = prepare_selection(runtime, config, config_path)
         print(json.dumps(result["decision"]), flush=True)
+    if args.phase in {"combinations", "all"}:
+        from src.static_ovmap.module_validation.combination_pipeline import (
+            run_combinations,
+        )
+
+        results = run_combinations(runtime, config, config_path)
+        print(json.dumps({"combinations": [{"method_id": row["method_id"], "status": row["disposition"]}
+                                           for row in results]}), flush=True)
     if args.phase in {"curves", "all"}:
         decision = verify_receipt(output / "module_receipt.json")["decision"]
         if decision["budget_curves"]["status"] == "REQUIRED":
