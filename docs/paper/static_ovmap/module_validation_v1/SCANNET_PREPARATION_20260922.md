@@ -1,5 +1,7 @@
 # ScanNet data preparation — 2026-09-22
 
+Historical pre-authorization record. Superseded by [authorized execution](SCANNET_EXECUTION_20260922.md): downloads/export are complete and data authorization is already confirmed.
+
 Status: preparation code implemented and tested; public split metadata downloaded; restricted raw downloads **not started**, pending confirmation of the user's existing ScanNet authorization and terms agreement. The independent-scene S/G/Q experiment driver remains incomplete. This change does not supply new scientific measurements.
 
 Data root: `/mnt/shared/ww/ovimap-module-validation-v1/data/scannet`.

@@ -39,8 +39,8 @@ Files: `src/static_ovmap/module_validation/scannet_frames.py`, the preparation C
 
 ## Task 3 — Authorized execution and handoff
 
-- [ ] With explicit data authorization, perform availability checks, lock 14 captures, download missing assets and export only development input frames.
+- [x] With explicit data authorization, perform availability checks, lock 14 captures, download missing assets and export only development input frames.
 - [x] Without that authorization, finish and test the preparation code and public plan; report the precise authorization blocker without accepting terms.
 - [x] Record actual data status and remaining experiment integration in the project progress document. Never label provisional candidates as complete or measured scenes.
 
-Validation: 108 scoped module tests pass; Ruff passes. The remaining unchecked action is blocked by the original experiment contract's prohibition on accepting restricted-data terms on the user's behalf, not by a skill approval gate. No raw data or new scientific measurement has been produced.
+Authorized execution completed: 14 raw captures downloaded, 12 development scenes exported (2,400 slots), public bind passes. Real-input faults fixed: curl retry offsets and v1/v2 frame-count differences that leave scheduled IDs unchanged. Validation: 116 scoped tests, Ruff, annotation alignment and native-loader checks pass. Capture is wired into the public entry point but execution is blocked by the occupied GPU. Independent-scene S/G/Q scientific drivers remain pending; no new scientific measurement has been produced.

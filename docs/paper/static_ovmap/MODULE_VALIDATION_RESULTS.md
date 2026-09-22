@@ -1,5 +1,7 @@
 # OVI-MAP Module Validation Results
 
+2026-09-22: ScanNet downloads/export and native input checks are complete; `attempt_005/bind` passes. Capture is blocked by the occupied GPU and independent-scene S/G/Q scientific drivers remain incomplete. The unmeasured metric rows below are unchanged. See [current evidence](module_validation_v1/SCANNET_EXECUTION_20260922.md).
+
 ## Table A. Branch metrics and cost
 
 | Method | Branch | Status | uAP | mIoU | Cost | Evidence |
