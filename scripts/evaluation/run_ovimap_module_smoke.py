@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import importlib.metadata
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -37,6 +38,7 @@ def main():
     config = json.loads(args.resolved_config.read_text())
     resolved = config.get("resolved_config", config)
     config = resolved["historical_smoke"]
+    os.environ["HF_MODULES_CACHE"] = str(config.get("hf_modules_cache", args.output.parent / "hf_modules"))
     manifest_path = config["capture_manifest"]
     started = time.monotonic()
     manifest = verify_capture(manifest_path)
