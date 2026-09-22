@@ -95,17 +95,33 @@ Files: new `geometry_study.py`, reuse `entity_hypotheses.py` / `partition_qualit
 - [ ] Score every same-pool candidate with agreement; build separate whole-GT local-PQ targets and40-feature head data. Enforce >=20 differing FIT groups / >=4 scenes.
 - [ ] Fit fixed head, evaluate all4 CAL margins with canonical AP50/AP75, freeze before SELECT.
 - [ ] Export ORIGINAL/AGREEMENT/QUALITY with unique whole-scene ownership; point-count ranks and actual final-mask fresh native semantic rereads, no inherited child labels.
-- [ ] Test no-op/native equality, invariant TSDF/projection and whole-GT denominator; expose oracle only as a diagnostic.
+- [x] Test no-op/native equality, invariant TSDF/projection and whole-GT denominator; expose oracle only as a diagnostic.
+
+G implementation now contains the common-pool serializer, strict whole-GT
+targets, frozen head/margins, fresh static-mask native six-crop reread and all
+three SELECT rows. The v8 first-two-scene pools were generated, then archived
+with v8 after the Q membership correction; actual v9 execution remains pending.
 
 ## Task 5 — Q driver
 
 Files: new `query_study.py`, reuse `query_state.py` / `query_gain_policy.py`.
 
-- [ ] Build candidates from contemporaneous captured rasters/states only; reconcile aliases at their original frame and explicitly block unresolved causal lineage.
-- [ ] FeatureStore forwards only after budget debit; per-frame barriers; pad missing planned frames with empty candidate lists so quotas retain F=200.
+- [x] Build candidates from contemporaneous captured rasters/states only; reconcile aliases at their original frame and explicitly block unresolved causal lineage.
+- [x] FeatureStore forwards only after budget debit; per-frame barriers; pad missing planned frames with empty candidate lists so quotas retain F=200.
 - [ ] FIT seed17/B512 and CAL seed23/B256 exploration; separate visible-GT target raster builder (>=64 valid pixels, >=0.8 allowed class); retain negative NLL gains and enforce support gate.
 - [ ] Fit fixed40->32->1 head. CAL freezes strongest B200 nonlearned comparator. SELECT runs four B200 policies; B100/400 curve only if Q_GAIN eligible.
-- [ ] Test sentinel future/unacquired features and aliases cannot affect prefix decisions; retain physical and logical cost ledgers separately.
+- [x] Test sentinel future/unacquired features and aliases cannot affect prefix decisions; retain physical and logical cost ledgers separately.
+
+Q execution now includes lazy paid FP32 native inference, current-frame GT
+target projection outside ranking, FIT/CAL exploration, one frozen utility
+head, exact CAL comparator ordering and SELECT inference. Current membership
+routes every known paid request by its original complete segment ancestry;
+ambiguous split features are discarded without refunds or resurrection.
+Missing ancestry-history features receive availability=0. Final registry
+reconciliation occurs only after the final barrier. The released-evaluator
+integration preserves N0 masks/ranks and exports class0 for unobserved owners.
+Eight real v9 frame prefixes reconstruct the exact native candidate universe.
+Actual full-scene Q trace/training/SELECT receipts remain pending v9 capture.
 
 ## Task 6 — Selection, conditional combination and publication
 

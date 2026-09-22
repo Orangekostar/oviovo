@@ -410,6 +410,7 @@ def train_query_gain_head(
         if not cal
         else torch.from_numpy(np.asarray([row.target for row in cal], dtype=np.float32))
     )
+    cal_weights = None if not cal else torch.from_numpy(_scene_weights(cal))
 
     torch.manual_seed(17)
     model = _gain_head(torch)
@@ -438,7 +439,7 @@ def train_query_gain_head(
             model.eval()
             with torch.no_grad():
                 predictions = model(cal_x).squeeze(1)
-                mse = float(torch.mean((predictions - cal_y) ** 2).item())
+                mse = float((torch.sum((predictions - cal_y) ** 2 * cal_weights) / cal_weights.sum()).item())
             if mse < best_mse:
                 best_mse = mse
                 best_epoch = epoch

@@ -212,3 +212,14 @@ def test_replay_advances_empty_frames_and_reconciles_logical_costs() -> None:
         ("first",),
         ("second",),
     ]
+
+
+def test_query_checkpoint_assessment_weights_cal_scenes_equally() -> None:
+    rng = np.random.default_rng(17)
+    fit = [QueryTrainingExample(f"f{i % 4}", rng.normal(size=40).astype(np.float32), float(i % 3 - 1)) for i in range(16)]
+    cal = [QueryTrainingExample("many", np.zeros(40, np.float32), 0.) for _ in range(5)]
+    cal.append(QueryTrainingExample("one", np.zeros(40, np.float32), 5.))
+    result = train_query_gain_head(fit, cal_examples=cal, max_epochs=5)
+    predictions = predict_query_gain(result.state_dict, np.stack([row.features for row in cal]))
+    expected = .5 * (np.mean(predictions[:5] ** 2) + (predictions[5] - 5.) ** 2)
+    assert result.calibration_mse == pytest.approx(expected)

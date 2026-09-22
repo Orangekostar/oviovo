@@ -140,5 +140,5 @@ def replay_captured(frames, policy_id, store, text, *, budget, seed=None, predic
             "ranked_request_ids": [row.request_id for row in ranked], "results": [asdict(row) for row in results]})
     if state.logical_ledger.attempts != sum(len(row["results"]) for row in decisions) or state.logical_ledger.attempts > budget:
         raise AssertionError("causal query budget and frame ledger disagree")
-    return {"state": state, "lineage": lineage, "decisions": decisions, "events": events,
+    return {"state": state, "combine": combine, "lineage": lineage, "decisions": decisions, "events": events,
             "elapsed_seconds": time.monotonic() - started}

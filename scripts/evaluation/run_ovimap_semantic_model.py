@@ -39,7 +39,9 @@ def main():
         fcntl.flock(handle, fcntl.LOCK_EX)
         require_idle_gpu(str(runtime["cuda_device"]), args.output)
         result = encode_semantic_requests(args.request_manifest, args.model, config, args.output)
-    print(json.dumps(result))
+    print(json.dumps({key: result[key] for key in (
+        "status", "model_id", "request_count", "successful_requests",
+        "crop_inputs", "background_crop_inputs", "generations", "elapsed_seconds_this_invocation")}))
 
 
 if __name__ == "__main__":
