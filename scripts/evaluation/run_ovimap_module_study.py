@@ -430,8 +430,7 @@ def _development_blockers(context: PhaseContext) -> tuple[str, ...]:
     splits = _read_json(split_path)
     if splits.get("status") != "COMPLETE":
         return (str(splits.get("status", "BLOCKED_INDEPENDENT_SCENES")),)
-    # Never claim data are missing when the missing boundary is executable code.
-    return ("UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE",)
+    return ("MISSING_SCANNET_SCIENTIFIC_CONFIGURATION",)
 
 
 def _execute_boundary(context: PhaseContext) -> PhaseResult:
@@ -515,16 +514,86 @@ def capture_phase(context: PhaseContext) -> PhaseResult:
     return _execute_boundary(context)
 
 
+def _scientific_identities(receipt_path: Path) -> list[dict]:
+    """Bind every transitive leaf input/output, including disk acquisition caches."""
+    from src.static_ovmap.module_validation.boundary_jobs import file_identity
+
+    found = {}
+    pending = [file_identity(receipt_path)]
+    while pending:
+        row = pending.pop()
+        path = Path(row["path"])
+        previous = found.get(str(path))
+        if previous is not None:
+            if previous["sha256"] != row["sha256"]:
+                raise ValueError(f"inconsistent transitive scientific input: {path}")
+            continue
+        if not path.is_file() or sha256_file(path) != row["sha256"]:
+            raise ValueError(f"scientific input/output changed: {path}")
+        found[str(path)] = row
+        if path.suffix == ".json":
+            value = _read_json(path)
+            if isinstance(value, dict) and "input_identity" in value:
+                for key in ("inputs", "sources", "outputs", "input_identities"):
+                    pending.extend(item for item in value.get(key, ())
+                                   if isinstance(item, dict) and {"path", "sha256", "bytes"} <= set(item))
+    return [found[key] for key in sorted(found)]
+
+
+def _execute_scannet_branch(context: PhaseContext) -> PhaseResult:
+    if "scannet_runtime" not in context.resolved_config:
+        return _execute_boundary(context)
+    capture = context.dependencies.get("capture")
+    if capture is None or capture.status != ReceiptStatus.COMPLETE:
+        return PhaseResult(ReceiptStatus.BLOCKED_PREREQUISITE,
+                           blockers=("SCANNET_CAPTURE_NOT_COMPLETE",))
+    from src.static_ovmap.module_validation.study_execution import verify_receipt
+
+    config_path = Path(context.resolved_config.get("scannet_study_config",
+        REPOSITORY_ROOT / "configs/evaluation/ovimap_module_scannet_study.json"))
+    if not config_path.is_absolute():
+        config_path = REPOSITORY_ROOT / config_path
+    config = _read_json(config_path)
+    runtime_path = Path(config["runtime_config"])
+    runtime = _read_json(runtime_path if runtime_path.is_absolute() else REPOSITORY_ROOT / runtime_path)
+    if runtime != context.resolved_config["scannet_runtime"]:
+        raise ValueError("scientific driver runtime differs from the bound capture configuration")
+    command = [runtime["mapping_python"], str(REPOSITORY_ROOT / f"scripts/evaluation/run_ovimap_scannet_{context.phase}.py"),
+               "--config", str(config_path), "--phase", "all"]
+    log_path = context.attempt_dir / f"{context.phase}_scientific.log"
+    with log_path.open("a") as log:
+        log_offset = log.tell()
+        completed = subprocess.run(command, cwd=REPOSITORY_ROOT, stdout=log, stderr=subprocess.STDOUT, check=False)
+    if completed.returncode:
+        with log_path.open(errors="replace") as handle:
+            handle.seek(log_offset)
+            log = handle.read()
+        for marker, blocker in (("GPU_BUSY:", "BLOCKED_GPU_BUSY"), ("BLOCKED_CAUSAL_LINEAGE", "BLOCKED_CAUSAL_LINEAGE")):
+            if marker in log:
+                return PhaseResult(ReceiptStatus.BLOCKED_PREREQUISITE, outputs={"log": str(log_path)}, blockers=(blocker,))
+        raise RuntimeError(f"scientific {context.phase} driver failed ({completed.returncode}); see {log_path}")
+    source = Path(config["study_root"]) / context.phase / "select_receipt.json"
+    value = verify_receipt(source)
+    rows = value["rows"] if context.phase != "query" else [result["row"] for result in value["results"]]
+    output = context.attempt_dir / f"{context.phase}_runtime.json"
+    atomic_write_json(output, {"status": "COMPLETE", "phase": context.phase, "scope": "LOCKED_SCANNET_DEVELOPMENT",
+        "study_receipt": str(source), "command": command, "rows": rows, "learned_status": value["learned_status"],
+        "input_identities": _scientific_identities(source)})
+    return PhaseResult(ReceiptStatus.COMPLETE, outputs={"runtime": str(output), "log": str(log_path)},
+        metrics={"scientific_evaluation_rows": len(rows), "scene_count": len({row["scene_id"] for row in rows}),
+                 "learned_status": value["learned_status"]})
+
+
 def semantic_phase(context: PhaseContext) -> PhaseResult:
-    return _execute_boundary(context)
+    return _execute_scannet_branch(context)
 
 
 def geometry_phase(context: PhaseContext) -> PhaseResult:
-    return _execute_boundary(context)
+    return _execute_scannet_branch(context)
 
 
 def query_phase(context: PhaseContext) -> PhaseResult:
-    return _execute_boundary(context)
+    return _execute_scannet_branch(context)
 
 
 def select_phase(context: PhaseContext) -> PhaseResult:
@@ -790,6 +859,7 @@ def _base_resolved_config(spec: StudySpec, path: Path | None) -> Mapping[str, An
         "environment_overrides": overrides,
         "asset_resolution": resolution.to_dict(),
         "scannet_runtime": runtime,
+        "scannet_study_config": str(REPOSITORY_ROOT / "configs/evaluation/ovimap_module_scannet_study.json"),
         **_read_json(REPOSITORY_ROOT / "configs/evaluation/ovimap_module_historical_smoke.json"),
     }
 
