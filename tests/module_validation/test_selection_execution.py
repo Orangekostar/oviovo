@@ -1,5 +1,6 @@
 """Selection finalization cannot skip its conditional evidence obligations."""
 
+import json
 from copy import deepcopy
 
 import pytest
@@ -60,3 +61,25 @@ def test_negative_combination_preserved_and_simpler_supported_candidate_kept():
     wrong["status"] = "NOT_IMPLEMENTED"
     with pytest.raises(ValueError, match="disposition"):
         finalize_decision(decision, candidates, baselines, combinations=[wrong], curves=None)
+
+
+def test_not_required_budget_curve_still_has_a_verifiable_gate_receipt(tmp_path, monkeypatch):
+    from src.static_ovmap.module_validation import selection_execution as execution
+    from src.static_ovmap.module_validation.boundary_jobs import file_identity
+    from src.static_ovmap.module_validation.study_execution import verify_receipt
+
+    for name, extra in (("selection/module_receipt.json", {"decision": _decision()}),
+                        ("query/calibration_receipt.json", {})):
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        data = path.with_suffix(".txt")
+        data.write_text("recorded evidence")
+        path.write_text(json.dumps({"status": "COMPLETE", "input_identity": name,
+                                   "outputs": [file_identity(data)], **extra}))
+    config_path = tmp_path / "config.json"
+    config_path.write_text("{}")
+    config = {"study_root": str(tmp_path), "runtime_config": str(config_path)}
+    monkeypatch.setattr(execution, "roles", lambda runtime: ({"select": ("s1", "s2")}, config_path))
+    result = execution.run_budget_curves({}, config, config_path)
+    assert result["rows"] == []
+    assert verify_receipt(tmp_path / "selection/budget_curve_receipt.json") == result

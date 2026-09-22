@@ -95,6 +95,39 @@ def test_empty_manifest_does_not_load_visual_model_and_is_resumable(tmp_path, mo
     assert models.encode_semantic_requests(manifest, "native", config, tmp_path / "output", device="cpu") == result
 
 
+def test_static_semantic_request_reads_its_fresh_mask_not_the_captured_parent(tmp_path, monkeypatch):
+    from dataclasses import replace
+
+    manifest_path, config = make_inputs(tmp_path)
+    old = json.loads(manifest_path.read_text())
+    request = RegionRequest.from_dict(next(iter(old["requests"].values())))
+    parent = np.zeros((6, 6), bool)
+    parent[1:4, 1:4] = True
+    target = np.zeros((6, 6), bool)
+    target[1:4, 2:5] = True
+    union = parent | target
+    request = replace(request, target_mask_sha256=_array_digest(target), native_union_mask_sha256=_array_digest(union),
+                      bbox_xyxy=(2, 1, 4, 3), visible_target_pixels=6, source_map_version="new_final_mask")
+    mask_path = tmp_path / "fresh.npz"
+    _write_npz(mask_path, {"target": target, "union": union})
+    manifest = {"artifact_type": "OVIMAP_STATIC_FINAL_MASK_REQUESTS", "capture": old["capture"],
+                "requests": {request.request_id: {"request": request.to_dict(), "masks": file_identity(mask_path)}}}
+    manifest["identity"] = canonical_digest(manifest)
+    atomic_write_json(manifest_path, manifest)
+
+    class Encoder:
+        def encode_images(self, images):
+            return np.tile([1., 0.], (len(images), 1))
+
+    monkeypatch.setattr(models.FrozenSiglipBackend, "from_local", lambda *args, **kwargs: Encoder())
+    monkeypatch.setattr(models, "_mask_support", lambda *args: [4, 4, 4])
+    result = models.encode_semantic_requests(manifest_path, "native", config, tmp_path / "output", device="cpu")
+    row = next(iter(models.load_semantic_records(tmp_path / "output").values()))
+    assert row["stats"]["local_global_iou"] == 6 / 12
+    assert result["physical_attempts_this_invocation"] == 1
+    assert result["physical_crop_inputs_this_invocation"] == 9
+
+
 def test_context_encoder_failure_preserves_original_six_crop_control(tmp_path, monkeypatch):
     manifest, config = make_inputs(tmp_path)
 

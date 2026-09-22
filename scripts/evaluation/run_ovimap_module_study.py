@@ -722,6 +722,8 @@ def confirm_phase(context: PhaseContext) -> PhaseResult:
 
 def report_phase(context: PhaseContext) -> PhaseResult:
     """Render only receipt-backed evidence, inside the selected attempt."""
+    if "scannet_runtime" in context.resolved_config:
+        return _report_scannet(context)
     selection_path = context.attempt_dir / "selection.json"
     selection = _read_json(selection_path) if selection_path.is_file() and "select" in context.dependencies else {}
     blockers = sorted({
@@ -808,6 +810,91 @@ def report_phase(context: PhaseContext) -> PhaseResult:
         metrics={"required_method_rows": len(matrix), "measured_scientific_rows": 0},
         blockers=tuple(blockers),
     )
+
+
+def _report_scannet(context: PhaseContext) -> PhaseResult:
+    from src.static_ovmap.module_validation.study_report import (
+        collect_study_evidence,
+        released_comparisons,
+        render_scientific_results,
+    )
+
+    config_path = Path(context.resolved_config.get("scannet_study_config",
+        REPOSITORY_ROOT / "configs/evaluation/ovimap_module_scannet_study.json"))
+    if not config_path.is_absolute():
+        config_path = REPOSITORY_ROOT / config_path
+    config = _read_json(config_path)
+    runtime = context.resolved_config["scannet_runtime"]
+    evidence = collect_study_evidence(runtime, config)
+    selection_path, confirmation_path = (context.attempt_dir / name for name in ("selection.json", "confirmation.json"))
+    selection = _read_json(selection_path) if selection_path.is_file() else {}
+    confirmation = _read_json(confirmation_path) if confirmation_path.is_file() else {"status": "NOT_RUN_PREREQUISITES", "rows": []}
+    comparator = selection.get("module_selection", {}).get("query", {}).get("locked_comparator")
+    evidence["released_object_comparisons"] = released_comparisons(evidence, config, comparator)
+    preserved = {(row["scene_id"], row["method_id"]): next((len(value["preserved_gt_ids"]) for value in row["thresholds"]
+        if abs(value["threshold"] - .5) < 1e-10), None) for row in evidence["released_object_comparisons"]}
+    for row in evidence["geometry_events"]:
+        row["preserved_objects"] = preserved.get((row["scene_id"], row["method_id"]))
+        row["preservation_definition"] = "released semantic-instance GT matches retained at strict IoU > 0.5 against named baseline"
+    blockers = sorted({blocker for value in context.dependencies.values() for blocker in value.blockers} | {
+        f"MISSING_PHASE_RECEIPT:{phase}" for phase in PHASE_DEPENDENCIES["report"] if phase not in context.dependencies} | {
+        f"PHASE_NOT_COMPLETE:{phase}" for phase, value in context.dependencies.items()
+        if value.status not in {ReceiptStatus.COMPLETE, ReceiptStatus.NOT_REQUIRED_BY_FROZEN_GATE}})
+    measured, paths, blocked, not_required = {}, {}, {}, {}
+    for row in evidence["summaries"]:
+        method = row["method_id"]
+        if row["role"] == "select" and row["budget"] in {None, 200} and row["scene_count"] == 2:
+            measured[method] = {**row["metrics"], "defined_scene_counts": row["defined_scene_counts"],
+                "scene_count": row["scene_count"], "logical_cost_sum": row["logical_cost_sum"]}
+            paths[method] = str(context.attempt_dir / "scientific_evidence.json")
+    plan = selection.get("module_selection", {}).get("combination_plan", {})
+    not_required.update(plan.get("not_required", {}))
+    blocked.update(plan.get("blocked", {}))
+    for method in REQUIRED_METHODS:
+        if method not in measured and method not in not_required and method not in blocked:
+            blocked[method] = evidence["method_status"].get(method, "MISSING_COMPLETE_LOCKED_SELECT_ROWS")
+    matrix = build_method_matrix(required_methods=REQUIRED_METHODS, measured=measured, blocked=blocked,
+                                 not_required=not_required, evidence_paths=paths)
+    evidence["method_status"].update({**blocked, **not_required})
+    matrix_path = context.attempt_dir / "method_matrix.json"
+    write_method_matrix(matrix_path, matrix)
+    evidence_path = context.attempt_dir / "scientific_evidence.json"
+    atomic_write_json(evidence_path, evidence)
+    statuses = ReleaseStatuses(implementation="COMPLETE" if selection.get("status") == "FROZEN" else "PARTIAL",
+        experiment="MEASURED_APPLICABLE_ROWS" if not blockers else "IN_PROGRESS_OR_BLOCKED",
+        science=selection.get("science_status", "INCONCLUSIVE_PREREQUISITES"),
+        confirmation=confirmation["status"], publication="NOT_CHECKED_BY_REPORT")
+    results_path, handoff_path = (context.attempt_dir / name for name in ("MODULE_VALIDATION_RESULTS.md", "MODULE_VALIDATION_HANDOFF.md"))
+    _atomic_write_text(results_path, render_scientific_results(evidence, selection, confirmation))
+    code = context.resolved_config.get("code_identity", {})
+    commit = code.get("head", "0" * 40)
+    commands = [shlex.join([runtime["mapping_python"], str(REPOSITORY_ROOT / f"scripts/evaluation/run_ovimap_scannet_{branch}.py"),
+        "--config", str(config_path), "--phase", "all"]) for branch in ("semantic", "geometry", "query", "selection")]
+    _atomic_write_text(handoff_path, render_handoff(statuses, branch="research/ovimap-module-validation-v1", commit=commit,
+        evidence_paths=(str(evidence_path), str(matrix_path), str(selection_path), str(confirmation_path)),
+        next_action="Complete the specifically pending phase receipts." if blockers else
+                    "Interpret retained or negative mechanisms within the frozen two-scene SELECT/CONFIRM scope.",
+        execution_details=(f"Runtime and model paths: {config_path}.", f"Native extension: {runtime['native_extension']}.",
+                           f"Study root: {config['study_root']}.", f"Actual phase blockers: {blockers}."),
+        reproduction_commands=commands))
+    external = {}
+    for row in evidence["inputs"]:
+        path = Path(row["path"])
+        value = _read_json(path)
+        identities = _scientific_identities(path) if "input_identity" in value else [row]
+        external.update({entry["path"]: entry for entry in identities})
+    external_path = context.attempt_dir / "external_artifacts.json"
+    atomic_write_json(external_path, {"schema_version": 2, "artifact_type": "OVIMAP_EXTERNAL_ARTIFACT_MANIFEST",
+        "entries": [{**row, "hash_scope": "file"} for row in external.values()]})
+    manifest_path = context.attempt_dir / "execution_manifest.json"
+    atomic_write_json(manifest_path, {"schema_version": 2, "artifact_type": "OVIMAP_MODULE_EXECUTION_MANIFEST",
+        "statuses": asdict(statuses), "attempt": str(context.attempt_dir), "code_identity": code,
+        "cost": evidence["costs"], "errors": blockers, "reproduction_commands": commands,
+        "timings_seconds": {phase: value.metrics.get("elapsed_seconds") for phase, value in context.dependencies.items()}})
+    return PhaseResult(ReceiptStatus.COMPLETE,
+        outputs={"method_matrix": str(matrix_path), "results": str(results_path), "handoff": str(handoff_path),
+                 "scientific_evidence": str(evidence_path), "execution_manifest": str(manifest_path), "external_artifacts": str(external_path)},
+        metrics={"required_method_rows": len(matrix), "measured_scientific_rows": len(evidence["rows"])}, blockers=tuple(blockers))
 
 
 def default_phase_handlers() -> Mapping[str, PhaseHandler]:

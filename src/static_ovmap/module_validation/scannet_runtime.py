@@ -101,7 +101,7 @@ def preserve_interrupted_replay(base: Path, identity: str) -> Path | None:
     return archive
 
 
-def capture_development(config: dict, *, scenes: list[str] | None = None) -> dict:
+def capture_development(config: dict, *, scenes: list[str] | None = None, confirmation_lock=None) -> dict:
     """Run CropFormer then the pinned native CPU mapper/FP32 visual worker."""
     data = Path(config["data_root"])
     output = Path(config["output_root"])
@@ -109,16 +109,22 @@ def capture_development(config: dict, *, scenes: list[str] | None = None) -> dic
     # This lock also serializes visual jobs sharing the designated study GPU.
     with (output.parent / f".visual-gpu-{config['cuda_device']}.lock").open("a") as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)
-        return _capture_development(config, data, output, scenes)
+        return _capture_development(config, data, output, scenes, confirmation_lock=confirmation_lock)
 
 
-def _capture_development(config: dict, data: Path, output: Path, scenes) -> dict:
+def _capture_development(config: dict, data: Path, output: Path, scenes, *, confirmation_lock=None) -> dict:
     lock_path = data / "acquisition_lock.json"
     locked = json.loads(lock_path.read_text())
+    if confirmation_lock is not None:
+        from .confirmation_access import confirmation_contract, confirmation_rows
+
+        contract = confirmation_contract(confirmation_lock, config)
+        rows = confirmation_rows(locked, contract, scenes)
+    else:
+        rows = development_rows(locked, scenes)
     downloads = json.loads((data / "download_receipt.json").read_text())
     if downloads["status"] != "RAW_DOWNLOADS_COMPLETE" or downloads["lock_sha256"] != sha256_file(lock_path):
         raise ValueError("raw data receipt does not match the frozen acquisition lock")
-    rows = development_rows(locked, scenes)
     if not rows:
         raise ValueError("no locked development captures selected")
     upstream = Path(config["upstream"])
@@ -240,10 +246,13 @@ def _capture_development(config: dict, data: Path, output: Path, scenes) -> dict
                 "missing_frame_ids": sorted(set(schedule["frame_ids"]) - set(manifest["completed_frame_ids"])),
                 "invalid_pose_frame_ids": sorted(invalid), "precision": "float32"})
         completed[scene] = file_identity(receipt_path)
-        atomic_write_json(output / "capture_progress.json", {"status": "IN_PROGRESS", "scenes": completed,
+        progress_name = "confirmation_capture_progress.json" if confirmation_lock is not None else "capture_progress.json"
+        atomic_write_json(output / progress_name, {"status": "IN_PROGRESS", "scenes": completed,
             "requested": [r["scene_id"] for r in rows], "acquisition_lock": file_identity(lock_path)})
         print(f"{scene}: native capture verified", flush=True)
     result = {"status": "COMPLETE", "scenes": completed, "acquisition_lock": file_identity(lock_path),
-        "confirmation_processing": "DEFERRED_UNTIL_FROZEN_SELECTION"}
-    atomic_write_json(output / "capture_receipt.json", result)
+        "confirmation_processing": "AUTHORIZED_FROZEN_SELECTION" if confirmation_lock is not None
+        else "DEFERRED_UNTIL_FROZEN_SELECTION"}
+    receipt_name = "confirmation_capture_receipt.json" if confirmation_lock is not None else "capture_receipt.json"
+    atomic_write_json(output / receipt_name, result)
     return result

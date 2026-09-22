@@ -25,11 +25,17 @@ from .region_evidence import (
 from .scannet_runtime import _tree_inputs, reusable_job
 
 
-def _load_request(root: Path, frame: dict, request: dict) -> dict:
+def _load_request(root: Path, frame: dict, request: dict, *, fresh_masks=None) -> dict:
     rgb = np.array(Image.open(root / frame["rgb_path"]).convert("RGB"))
     request_id = request["request_id"]
-    with np.load(root / frame["request_arrays"]["path"], allow_pickle=False) as arrays:
-        target, union = arrays[f"{request_id}_target"], arrays[f"{request_id}_union"]
+    if fresh_masks is None:
+        with np.load(root / frame["request_arrays"]["path"], allow_pickle=False) as arrays:
+            target, union = arrays[f"{request_id}_target"], arrays[f"{request_id}_union"]
+    else:
+        if file_identity(fresh_masks["path"]) != fresh_masks:
+            raise ValueError("fresh final-mask request payload changed")
+        with np.load(fresh_masks["path"], allow_pickle=False) as arrays:
+            target, union = arrays["target"], arrays["union"]
     if (_array_digest(target) != request["target_mask_sha256"]
             or _array_digest(union) != request["native_union_mask_sha256"]):
         raise ValueError("captured request mask hash changed")
@@ -120,6 +126,8 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
     capture = verify_capture(capture_path, allow_skipped=True)
     root = capture_path.parent
     frames = {frame["frame_id"]: frame for frame in capture["frames"]}
+    static = manifest.get("artifact_type") == "OVIMAP_STATIC_FINAL_MASK_REQUESTS"
+    requests = {key: value["request"] if static else value for key, value in manifest["requests"].items()}
     model_path = Path(config[model_id + "_model"])
     inputs = _tree_inputs(model_path)
     inputs += [file_identity(path) for path in (manifest_path, Path(__file__), Path(__file__).with_name("region_evidence.py"))]
@@ -149,7 +157,8 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
     index_path = output / "request_index.json"
     atomic_write_json(index_path, {"input_identity": identity, "request_ids": sorted(manifest["requests"])})
     outputs, ledger = [file_identity(index_path)], []
-    for request_id, request in sorted(manifest["requests"].items(), key=lambda item: (item[1]["frame_id"], item[0])):
+    physical_attempts, physical_crops, physical_generations = 0, 0, 0
+    for request_id, request in sorted(requests.items(), key=lambda item: (item[1]["frame_id"], item[0])):
         path = output / "requests" / f"{request_id}.json"
         request_identity = canonical_digest({"model_identity": identity, "request": request})
         if reusable_job(path, request_identity):
@@ -159,7 +168,9 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
             continue
         if path.exists():
             raise ValueError("partial semantic request changed; choose a new output root")
-        value = _load_request(root, frames[request["frame_id"]], request)
+        value = _load_request(root, frames[request["frame_id"]], request,
+            fresh_masks=manifest["requests"][request_id]["masks"] if static else None)
+        physical_attempts += 1
         row = {"status": "COMPLETE", "input_identity": request_identity, "request_id": request_id,
                "stats": value["stats"], "crop_inputs": 0, "background_crop_inputs": 0, "generations": 0}
         arrays = {}
@@ -230,6 +241,8 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
         row["elapsed_seconds"] = time.monotonic() - attempt_started
+        physical_crops += row["crop_inputs"] + row["background_crop_inputs"]
+        physical_generations += row["generations"]
         array_path = path.with_suffix(".npz")
         _write_npz(array_path, arrays)
         row["outputs"] = [file_identity(array_path)]
@@ -248,6 +261,9 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
         "background_crop_inputs": sum(row["background_crop_inputs"] for row in ledger),
         "generations": sum(row["generations"] for row in ledger),
         "request_seconds": sum(row["elapsed_seconds"] for row in ledger),
+        "physical_attempts_this_invocation": physical_attempts,
+        "physical_crop_inputs_this_invocation": physical_crops,
+        "physical_generations_this_invocation": physical_generations,
         "elapsed_seconds_this_invocation": time.monotonic() - started, "GT_input": False}
     atomic_write_json(receipt_path, result)
     return result

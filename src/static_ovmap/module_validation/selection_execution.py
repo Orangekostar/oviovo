@@ -24,7 +24,8 @@ from .study_execution import (
 
 def _sources():
     return [file_identity(Path(__file__).with_name(name)) for name in
-        ("selection_execution.py", "selection_pipeline.py", "selection.py", "metric_order.py")]
+        ("selection_execution.py", "selection_pipeline.py", "selection.py", "metric_order.py")] + [
+            file_identity(ROOT / "scripts/evaluation/run_ovimap_scannet_selection.py")]
 
 
 def _identity(inputs, phase):
@@ -77,8 +78,10 @@ def run_budget_curves(runtime, config, config_path):
                         checkpoint_path=calibration["checkpoint"]["path"] if method == "Q_GAIN" else None)
                     rows.append(result)
                     outputs.append(root / "scenes" / scene / f"query/B{budget}/{method}/receipt.json")
-    return receipt(path, identity, inputs, outputs, _sources(), rows=rows,
-        gate_status="MEASURED" if required else decision["budget_curves"]["status"])
+    gate = "MEASURED" if required else decision["budget_curves"]["status"]
+    gate_path = path.with_name("budget_curve_gate.json")
+    atomic_write_json(gate_path, {"status": gate, "rows": rows, "SELECT_scenes": split["select"]})
+    return receipt(path, identity, inputs, [gate_path, *outputs], _sources(), rows=rows, gate_status=gate)
 
 
 def _validate_curves(decision, curves):
@@ -192,7 +195,8 @@ def freeze_selection(runtime, config, config_path):
     combinations = []
     for method in decision["combination_plan"]["required"]:
         path = root / "selection/combinations" / method / "receipt.json"
-        combinations.append(verify_receipt(path))
+        value = verify_receipt(path)
+        combinations.append({**value, "status": value["disposition"], "evidence_path": str(path)})
         paths.append(path)
     candidates, matched = _independent_rows(decision, semantic, geometry, query)
     selection = finalize_decision(decision, candidates, matched, combinations=combinations, curves=curves)
