@@ -1,0 +1,18 @@
+{
+  "data_root": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet",
+  "output_root": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1",
+  "cuda_device": "2",
+  "upstream": "/home/ww/crove/ovimap-module-validation-upstream",
+  "baseline_build": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP",
+  "native_extension": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+  "native_build_receipt": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/receipt.json",
+  "mapping_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "frontend_python": "/home/ww/miniconda3/envs/ovimap-cropformer/bin/python",
+  "semantic_python": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/semantic-env/bin/python",
+  "native_perception_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "cropformer_root": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/Entityv2/CropFormer",
+  "cropformer_config": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/Entityv2/CropFormer/configs/entityv2/entity_segmentation/cropformer_hornet_3x.yaml",
+  "cropformer_weights": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+  "native_model": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+  "hf_modules_cache": "/mnt/shared/ww/ovimap-module-validation-v1/models/hf_modules"
+}

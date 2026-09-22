@@ -243,7 +243,7 @@ class StudyRunner:
                 identities[str(path.resolve())] = {
                     "sha256": self._hash(path), "bytes": path.stat().st_size,
                 }
-                if path.name.endswith("_smoke.json"):
+                if path.name.endswith(("_smoke.json", "_runtime.json")):
                     for row in _read_json(path).get("input_identities", ()):
                         identities[row["path"]] = {"sha256": row["sha256"], "bytes": row["bytes"]}
         return identities
@@ -480,6 +480,38 @@ def _execute_boundary(context: PhaseContext) -> PhaseResult:
 
 
 def capture_phase(context: PhaseContext) -> PhaseResult:
+    runtime = context.resolved_config.get("scannet_runtime")
+    split_path = context.attempt_dir / "splits.json"
+    if isinstance(runtime, Mapping) and split_path.is_file() and _read_json(split_path).get("status") == "COMPLETE":
+        from src.static_ovmap.module_validation.boundary_jobs import file_identity
+        from src.static_ovmap.module_validation.scannet_runtime import (
+            capture_development,
+        )
+
+        locked = _read_json(Path(runtime["data_root"]) / "acquisition_lock.json")
+        splits = _read_json(split_path)
+        for role in ("fit", "cal", "select", "confirm"):
+            if splits[role] != [row["scene_id"] for row in locked["selected"] if row["role"] == role]:
+                raise ValueError("bound study splits differ from pre-inference acquisition lock")
+        try:
+            result = capture_development(dict(runtime))
+        except RuntimeError as error:
+            if not str(error).startswith("GPU_BUSY:"):
+                raise
+            return PhaseResult(ReceiptStatus.BLOCKED_PREREQUISITE,
+                outputs={"resource_status": str(Path(runtime["output_root"]) / "resource_status.json")},
+                blockers=("BLOCKED_GPU_BUSY",))
+        identities = [result["acquisition_lock"]]
+        for scene_receipt in result["scenes"].values():
+            identities.append(scene_receipt)
+            record = _read_json(Path(scene_receipt["path"]))
+            identities.extend(record["outputs"])
+            identities.extend(record["input_identities"])
+        output = context.attempt_dir / "capture_runtime.json"
+        atomic_write_json(output, {**result, "input_identities": identities,
+            "runtime_config_identity": canonical_digest(runtime), "splits": file_identity(split_path)})
+        return PhaseResult(ReceiptStatus.COMPLETE, outputs={"runtime": str(output)},
+            metrics={"scene_count": len(result["scenes"]), "scheduled_frame_count": 2400})
     return _execute_boundary(context)
 
 
@@ -747,12 +779,17 @@ def _base_resolved_config(spec: StudySpec, path: Path | None) -> Mapping[str, An
         overrides,
         repository_root=REPOSITORY_ROOT,
     )
+    runtime = _read_json(REPOSITORY_ROOT / "configs/evaluation/ovimap_module_scannet_runtime.json")
+    scannet_binding = resolution.to_dict().get("bindings", {}).get("scannet_root")
+    if scannet_binding:
+        runtime["data_root"] = scannet_binding["path"]
     return {
         "spec_path": str(spec.source_path),
         "repository_root": str(REPOSITORY_ROOT),
         "code_identity": _code_identity(REPOSITORY_ROOT),
         "environment_overrides": overrides,
         "asset_resolution": resolution.to_dict(),
+        "scannet_runtime": runtime,
         **_read_json(REPOSITORY_ROOT / "configs/evaluation/ovimap_module_historical_smoke.json"),
     }
 

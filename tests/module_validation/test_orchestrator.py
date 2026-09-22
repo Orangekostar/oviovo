@@ -247,3 +247,22 @@ def test_changed_smoke_input_invalidates_phase_receipt(tmp_path):
     assert runner.run("bind")["bind"].reused
     external.write_bytes(b"modified")
     assert not runner.run("bind")["bind"].reused
+
+
+def test_capture_runtime_receipt_binds_transitive_scene_payloads(tmp_path):
+    from src.static_ovmap.module_validation.assets import sha256_file
+
+    external = tmp_path / "native_surface.npz"
+    external.write_bytes(b"surface")
+
+    def handler(context):
+        output = context.attempt_dir / "capture_runtime.json"
+        output.write_text(json.dumps({"input_identities": [{"path": str(external),
+            "sha256": sha256_file(external), "bytes": external.stat().st_size}]}))
+        return PhaseResult(ReceiptStatus.COMPLETE, outputs={"runtime": str(output)})
+
+    runner = StudyRunner(StudySpec.load(SPEC_PATH), tmp_path / "run", {}, handlers={"bind": handler})
+    runner.run("bind")
+    assert runner.run("bind")["bind"].reused
+    external.write_bytes(b"changed native surface")
+    assert not runner.run("bind")["bind"].reused

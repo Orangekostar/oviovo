@@ -178,12 +178,23 @@ def transfer(url: str, path: Path, remote: dict | None = None) -> dict:
             raise OSError("insufficient free space for this download plus 2 GiB reserve")
         if remaining:
             print(f"Downloading {path.name}: {remaining / 1024**2:.1f} MiB remaining", flush=True)
-            subprocess.run([
+            command = [
                 "curl", "--fail", "--location", "--proto", "=https", "--proto-redir", "=https",
                 "--silent", "--show-error", "--connect-timeout", "15", "--max-time", "14400",
-                "--speed-limit", "1024", "--speed-time", "90", "--retry", "3", "--retry-delay", "2",
-                "--retry-all-errors", "--continue-at", "-", "--output", str(partial), url,
-            ], check=True)
+                "--speed-limit", "1024", "--speed-time", "90",
+                "--continue-at", "-", "--output", str(partial), url,
+            ]
+            # curl's internal retries truncate back to the invocation's initial
+            # offset. Restart curl so each retry preserves newly received bytes.
+            for attempt in range(4):
+                result = subprocess.run(command, check=False)
+                if result.returncode == 0:
+                    break
+                if result.returncode not in {5, 6, 7, 18, 22, 28, 35, 52, 55, 56} or attempt == 3:
+                    raise subprocess.CalledProcessError(result.returncode, command)
+                if remote_identity(url) != remote:
+                    raise ValueError(f"remote content changed during retry: {url}")
+                time.sleep(2)
         if partial.stat().st_size != remote["size_bytes"]:
             raise ValueError(f"incomplete transfer: {partial}")
         # Check validators again before publishing a resumed stream.

@@ -154,6 +154,21 @@ def test_truncated_sensor_cannot_publish_completed_export(tmp_path):
     assert not (output / "export_receipt.json").exists()
 
 
+def test_v1_sensor_v2_metadata_count_difference_requires_same_native_slots(tmp_path):
+    api = importlib.import_module("src.static_ovmap.module_validation.scannet_frames")
+    sensor = tmp_path / "scene0000_00.sens"
+    sensor_fixture(sensor, 400)
+    output = tmp_path / "same_schedule"
+    receipt = api.export_sensor(sensor, output, module().native_schedule(401))
+    assert receipt["sensor_source_frame_count"] == 400
+    assert receipt["schedule"]["source_end"] == 401
+    assert receipt["frame_count"] == 200
+    assert (output / "color/398.jpg").exists()
+    assert not (output / "color/399.jpg").exists()
+    with pytest.raises(ValueError, match="schedule"):
+        api.export_sensor(sensor, tmp_path / "different_schedule", module().native_schedule(399))
+
+
 def test_explicit_scannet_root_does_not_depend_on_basename(tmp_path):
     from src.static_ovmap.module_validation.assets import (
         AssetRequirement,
@@ -192,7 +207,8 @@ def test_inventory_reuses_exported_rgbd_instead_of_requiring_sensor_again(tmp_pa
     assert inventory["scenes"][0]["missing_scheduled_frame_ids"] == list(range(11, 2190, 11))
 
 
-def test_https_transfer_resumes_verified_partial_and_rejects_changed_binding(tmp_path, monkeypatch):
+@pytest.mark.parametrize("disconnect_once", [False, True])
+def test_https_transfer_resumes_verified_partial_and_rejects_changed_binding(tmp_path, monkeypatch, disconnect_once):
     """Exercise real curl Range transfer over a trusted local HTTPS endpoint."""
     api = module()
     cert, key = tmp_path / "cert.pem", tmp_path / "key.pem"
@@ -217,7 +233,12 @@ def test_https_transfer_resumes_verified_partial_and_rejects_changed_binding(tmp
             self.send_header("Content-Length", str(len(payload) - start))
             self.send_header("Content-Range", f"bytes {start}-{len(payload)-1}/{len(payload)}")
             self.end_headers()
-            self.wfile.write(payload[start:])
+            if disconnect_once and len(ranges) == 1:
+                self.wfile.write(payload[start:start + 17])
+                self.wfile.flush()
+                self.close_connection = True
+            else:
+                self.wfile.write(payload[start:])
 
         def log_message(self, *_args):
             pass
@@ -238,9 +259,9 @@ def test_https_transfer_resumes_verified_partial_and_rejects_changed_binding(tmp
         Path(str(path) + ".part.json").write_text(json.dumps(remote))
         result = api.transfer(url, path, remote)
         assert path.read_bytes() == payload
-        assert ranges == [13]
+        assert ranges == ([13, 30] if disconnect_once else [13])
         assert api.transfer(url, path, remote) == result
-        assert ranges == [13]
+        assert ranges == ([13, 30] if disconnect_once else [13])
         other = tmp_path / "other"
         Path(str(other) + ".part").write_bytes(payload[:10])
         Path(str(other) + ".part.json").write_text(json.dumps({**remote, "etag": '"old"'}))

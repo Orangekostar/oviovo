@@ -97,7 +97,13 @@ def _export(sensor: Path, output: Path, schedule: dict, identity: dict) -> dict:
         (output / folder).mkdir(exist_ok=True)
     with sensor.open("rb") as handle:
         header = sensor_header(handle)
-        if schedule != native_schedule(header["source_frame_count"]):
+        actual_schedule = native_schedule(header["source_frame_count"])
+        # Official v2 metadata can count one frame absent from the reused v1
+        # sensor. Permit only provenance differences that leave every consumed
+        # native frame slot unchanged; never silently resample an experiment.
+        if {k: v for k, v in schedule.items() if k != "source_end"} != {
+            k: v for k, v in actual_schedule.items() if k != "source_end"
+        }:
             raise ValueError("sensor frame count disagrees with the locked native schedule")
         for key, matrix in header["matrices"].items():
             path = output / "intrinsic" / f"{key}.txt"
@@ -136,6 +142,7 @@ def _export(sensor: Path, output: Path, schedule: dict, identity: dict) -> dict:
         raise ValueError("sensor input changed during export")
     receipt = {"schema_version": 1, "status": "EXPORTED_NATIVE_INPUTS", "input_identity": identity,
                "frame_count": len(selected), "schedule": schedule,
+               "sensor_source_frame_count": header["source_frame_count"],
                "depth_scale": header["depth_shift"], "invalid_pose_frame_ids": invalid_poses,
                "file_hashes": file_hashes,
                "color_convention": "original JPEG payload; native ScannetLoader decodes BGR and warps to depth intrinsics",

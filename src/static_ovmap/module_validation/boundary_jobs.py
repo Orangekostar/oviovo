@@ -55,7 +55,7 @@ def capture_inputs(manifest_path: Path | str, manifest: dict) -> tuple[dict, ...
     return tuple(rows)
 
 
-def verify_capture(path: Path | str) -> dict:
+def verify_capture(path: Path | str, *, allow_skipped: bool = False) -> dict:
     path = Path(path).resolve()
     manifest = json.loads(path.read_text())
     if manifest.get("artifact_type") != "OVIMAP_NATIVE_CAPTURE":
@@ -65,9 +65,12 @@ def verify_capture(path: Path | str) -> dict:
     ):
         raise ValueError("native capture manifest identity mismatch")
     frame_ids = [frame["frame_id"] for frame in manifest["frames"]]
+    scheduled = manifest["scheduled_frame_ids"]
+    expected = [value for value in scheduled if value in set(frame_ids)] if allow_skipped else scheduled
     if (
         not frame_ids
-        or frame_ids != manifest["scheduled_frame_ids"]
+        or frame_ids != expected
+        or len(frame_ids) != len(set(frame_ids))
         or frame_ids != manifest["completed_frame_ids"]
     ):
         raise ValueError("native capture has an incomplete frame schedule")
