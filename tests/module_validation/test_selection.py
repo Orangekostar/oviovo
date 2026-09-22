@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.static_ovmap.module_validation.selection import (
     SceneMethodMetrics,
     bootstrap_mean_delta,
@@ -184,3 +186,24 @@ def test_cal_teacher_and_margins_use_metric_tolerance() -> None:
         {"margin": 0, "mean_ap50": .5 + 5e-11, "mean_ap75": .6, "changed_points": 20},
         {"margin": "KEEP_ALL", "mean_ap50": .5, "mean_ap75": .6, "changed_points": 0},
     ]) == "KEEP_ALL"
+
+
+def test_explicit_unsupported_heads_do_not_become_fake_measured_baselines():
+    semantic = {"N0": _rows("N0", (.4, .4), (.5, .5), cost=0),
+                "S_SIGLIP2_AREA": _rows("S_SIGLIP2_AREA", (.5, .5), (.6, .6))}
+    unavailable = {head: "BLOCKED_EVENT_SUPPORT" for head in ("S_SIMPLE", "S_NO_CONTEXT", "S_PAIRED")}
+    selected = select_semantic_module(semantic, frozen_teacher_id="S_SIGLIP2_AREA", unavailable_methods=unavailable)
+    assert selected.selected_method == "S_SIGLIP2_AREA"
+    assert not selected.paired_eligible and selected.mechanism_status == "BLOCKED_EVENT_SUPPORT"
+    with pytest.raises(ValueError, match="missing"):
+        select_semantic_module(semantic, frozen_teacher_id="S_SIGLIP2_AREA")
+    geometry = {"G_ORIGINAL": _rows("G_ORIGINAL", (.4, .4), (.5, .5), ap50=(.4, .4), ap75=(.3, .3), changes=0),
+                "G_AGREEMENT": _rows("G_AGREEMENT", (.4, .4), (.5, .5), ap50=(.5, .5), ap75=(.3, .3))}
+    selected_g = select_geometry_module(geometry, unavailable_methods={"G_QUALITY": "BLOCKED_GEOMETRY_TARGET_SUPPORT"})
+    assert selected_g.selected_method == "G_AGREEMENT" and not selected_g.quality_eligible
+    query = {method: _rows(method, (.4, .4), (.5, .5)) for method in ("Q_COMBINE", "Q_AREA", "Q_UNCERTAINTY")}
+    selected_q = select_query_module(query, query, unavailable_methods={"Q_GAIN": "BLOCKED_QUERY_TARGET_SUPPORT"})
+    assert selected_q.selected_method == selected_q.locked_comparator == "Q_COMBINE"
+    assert selected_q.gain_status == "BLOCKED_QUERY_TARGET_SUPPORT"
+    with pytest.raises(ValueError, match="measured"):
+        select_geometry_module(geometry, unavailable_methods={"G_AGREEMENT": "BLOCKED_EXAMPLE"})

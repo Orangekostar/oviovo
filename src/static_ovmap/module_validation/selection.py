@@ -62,9 +62,22 @@ def _aligned(
 
 def _mean(rows: Sequence[SceneMethodMetrics], name: str) -> float | None:
     values = [getattr(row, name) for row in rows]
-    if any(value is None for value in values):
+    if not values or any(value is None for value in values):
         return None
     return float(np.mean(values))
+
+
+def _available_methods(rows, methods, unavailable, optional):
+    """Absent prerequisite-gated heads are not evaluated N0 copies."""
+    unavailable = {} if unavailable is None else dict(unavailable)
+    if set(unavailable) & set(rows):
+        raise ValueError("an unavailable method cannot also have measured rows")
+    if not set(unavailable) <= set(optional):
+        raise ValueError("mandatory measured controls cannot be excluded from selection")
+    if any(not isinstance(reason, str) or not reason.startswith(("BLOCKED", "UNAVAILABLE", "UNCALIBRATED", "INCONCLUSIVE"))
+           for reason in unavailable.values()):
+        raise ValueError("unavailable method requires an explicit prerequisite status")
+    return tuple(method for method in methods if method not in unavailable)
 
 
 def _all_delta(
@@ -106,6 +119,7 @@ def select_semantic_module(
     rows: Mapping[str, Sequence[SceneMethodMetrics]],
     *,
     frozen_teacher_id: str,
+    unavailable_methods: Mapping[str, str] | None = None,
 ) -> SemanticSelection:
     methods = (
         "N0",
@@ -114,13 +128,14 @@ def select_semantic_module(
         "S_NO_CONTEXT",
         "S_PAIRED",
     )
+    methods = _available_methods(rows, methods, unavailable_methods, ("S_SIMPLE", "S_NO_CONTEXT", "S_PAIRED"))
     aligned = _aligned(rows, methods)
     n0 = aligned["N0"]
-    simple = aligned["S_SIMPLE"]
-    no_context = aligned["S_NO_CONTEXT"]
-    paired = aligned["S_PAIRED"]
+    simple = aligned.get("S_SIMPLE", ())
+    no_context = aligned.get("S_NO_CONTEXT", ())
+    paired = aligned.get("S_PAIRED", ())
     paired_eligible = (
-        sum(row.effective_changes for row in paired) >= 1
+        bool(simple) and sum(row.effective_changes for row in paired) >= 1
         and _strictly_above(_mean(paired, "uap"), _mean(n0, "uap"))
         and _strictly_above(_mean(paired, "uap"), _mean(simple, "uap"))
         and _not_below(_mean(paired, "miou"), _mean(n0, "miou"))
@@ -138,7 +153,7 @@ def select_semantic_module(
     elif paired_eligible:
         mechanism = "SUPPORTED_PAIRED_MECHANISM"
     else:
-        mechanism = "NOT_ELIGIBLE"
+        mechanism = (unavailable_methods or {}).get("S_PAIRED", "NOT_ELIGIBLE")
 
     complexity = {
         "N0": 0,
@@ -210,13 +225,16 @@ def _geometry_retention_gate(
 
 def select_geometry_module(
     rows: Mapping[str, Sequence[SceneMethodMetrics]],
+    *,
+    unavailable_methods: Mapping[str, str] | None = None,
 ) -> GeometrySelection:
     methods = ("G_ORIGINAL", "G_AGREEMENT", "G_QUALITY")
+    methods = _available_methods(rows, methods, unavailable_methods, ("G_QUALITY",))
     aligned = _aligned(rows, methods)
     original = aligned["G_ORIGINAL"]
-    quality = aligned["G_QUALITY"]
+    quality = aligned.get("G_QUALITY", ())
     quality_eligible = (
-        _geometry_retention_gate(quality, original)
+        bool(quality) and _geometry_retention_gate(quality, original)
         and _strictly_above(
             _mean(quality, "canonical_ap50"),
             _mean(aligned["G_AGREEMENT"], "canonical_ap50"),
@@ -264,8 +282,11 @@ class QuerySelection:
 def select_query_module(
     cal_rows: Mapping[str, Sequence[SceneMethodMetrics]],
     select_rows: Mapping[str, Sequence[SceneMethodMetrics]],
+    *,
+    unavailable_methods: Mapping[str, str] | None = None,
 ) -> QuerySelection:
     comparator_order = ("Q_COMBINE", "Q_AREA", "Q_UNCERTAINTY")
+    _available_methods(select_rows, (*comparator_order, "Q_GAIN"), unavailable_methods, ("Q_GAIN",))
     cal = _aligned(cal_rows, comparator_order)
     if any(
         _mean(cal[method], metric) is None
@@ -287,6 +308,9 @@ def select_query_module(
             -comparator_order.index(method),
         ),
     )
+    if unavailable_methods and "Q_GAIN" in unavailable_methods:
+        _aligned(select_rows, comparator_order)
+        return QuerySelection(locked, locked, unavailable_methods["Q_GAIN"], "COMPARATOR_RETAINED")
     select = _aligned(select_rows, (locked, "Q_GAIN"))
     baseline = select[locked]
     gain = select["Q_GAIN"]
