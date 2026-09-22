@@ -129,6 +129,24 @@ def test_zero_quota_never_debits_or_retrieves_a_candidate() -> None:
     assert state.logical_ledger.attempts == 0
 
 
+def test_native_combine_admission_does_not_fabricate_paid_history() -> None:
+    state = NativeCombineState()
+    candidate = _candidate(1, "eligible_but_unpaid", 20)
+    assert native_combine_candidates((candidate,), state, visibility_area_threshold=10) == (candidate,)
+    assert state.successful_overlaps_by_owner[1] == []
+    assert state.coverage_by_owner[1]
+
+
+def test_paid_disk_cache_hit_costs_logical_crops_but_no_physical_forward() -> None:
+    state = QueryPolicyState("Q_AREA", 2)
+    store = FeatureStore(lambda candidate: AcquisitionPayload(np.array([1., 0.]), 6, 0., physical_cache_hit=True))
+    results = dispatch_frame_batch(state, store, [_candidate(1, "disk_hit", 20)], quota=1)
+    assert results[0].physical_cache_hit
+    assert state.logical_ledger.crop_inputs == 6
+    assert store.physical_ledger.cache_hits == 1
+    assert store.physical_ledger.model_forwards == store.physical_ledger.crop_inputs == 0
+
+
 def test_common_query_fusion_preserves_raw_six_crop_mean_magnitudes() -> None:
     state = QueryPolicyState("Q_AREA", class_count=2)
     features = {"weak": np.array([.1, 0.]), "strong": np.array([0., 1.])}

@@ -85,7 +85,7 @@ def test_hand_computed_twenty_features_and_missing_history_bits() -> None:
     assert row.available.shape == (20,)
     assert row.values[0] == pytest.approx(math.log1p(16))
     assert row.values[1] == pytest.approx(math.log1p(16))
-    assert row.values[2:6].tolist() == pytest.approx([0.5, 0.5, 16 / 9, 0.75])
+    assert row.values[2:6].tolist() == pytest.approx([0.5, 0.5, 1.0, 0.75])
     assert row.values[8:12].tolist() == pytest.approx([1.0, 1.0, 0.0, 0.0])
     assert not row.available[12:16].any()
     assert row.values[16] == pytest.approx(8.0)

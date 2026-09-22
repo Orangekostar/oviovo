@@ -124,7 +124,7 @@ def build_query_features(
             available[index] = True
 
     bbox_x1, bbox_y1, bbox_x2, bbox_y2 = candidate.bbox_xyxy
-    bbox_pixels = (bbox_x2 - bbox_x1) * (bbox_y2 - bbox_y1)
+    bbox_pixels = (bbox_x2 - bbox_x1 + 1) * (bbox_y2 - bbox_y1 + 1)
     candidate_cells = set(candidate.spherical_cells)
     cell_count = len(candidate_cells)
     new_geometry = candidate_cells - object_state.geometric_cells
@@ -138,11 +138,11 @@ def build_query_features(
     put(5, candidate.valid_depth_fraction)
     put(6, candidate.median_depth)
     put(7, candidate.depth_iqr)
-    put(8, len(new_geometry) / cell_count if cell_count else 0.0, bool(cell_count))
+    put(8, len(new_geometry) / cell_count if cell_count else 0.0, bool(cell_count) and object_state.lineage_available)
     put(9, len(new_evidence) / cell_count if cell_count else 0.0, bool(cell_count))
-    put(10, math.log1p(object_state.successes))
-    put(11, math.log1p(object_state.attempts))
-    if object_state.last_success_frame is not None:
+    put(10, math.log1p(object_state.successes), object_state.lineage_available)
+    put(11, math.log1p(object_state.attempts), object_state.lineage_available)
+    if object_state.last_success_frame is not None and object_state.lineage_available:
         elapsed = max(0, candidate.frame_index - object_state.last_success_frame)
         put(12, elapsed / frame_count)
     if object_state.cached_scores is not None:
@@ -153,8 +153,8 @@ def build_query_features(
         put(14, _top_gap(scores), len(scores) >= 2)
     if len(object_state.features) >= 2:
         put(15, _mean_pairwise_disagreement([row.feature for row in object_state.features]))
-    put(16, candidate.overlap_pixels / max(1, object_state.best_paid_overlap))
-    if object_state.last_paid_pose is not None:
+    put(16, candidate.overlap_pixels / max(1, object_state.best_paid_overlap), object_state.lineage_available)
+    if object_state.last_paid_pose is not None and object_state.lineage_available:
         translation, rotation = _pose_distance(
             np.asarray(object_state.last_paid_pose), candidate.camera_pose
         )
@@ -585,6 +585,12 @@ def run_query_policy(
             spent=state.logical_ledger.attempts,
         )
         results = dispatch_frame_batch(state, feature_store, ranked, quota=quota)
+        if policy_id == "Q_COMBINE":
+            by_request = {row.request_id: row for row in ranked}
+            for result in results:
+                if result.success:
+                    candidate = by_request[result.request_id]
+                    combine_state.successful_overlaps_by_owner.setdefault(candidate.owner_id, []).append(candidate.overlap_pixels)
         for owner_id in {row.owner_id for row in results if row.success}:
             update_cached_class_scores(state, owner_id, text)
         observe_geometric_candidates(state, candidates)
@@ -593,7 +599,7 @@ def run_query_policy(
                 frame_index=frame_index,
                 quota=quota,
                 ranked_request_ids=tuple(row.request_id for row in ranked),
-                attempted_request_ids=tuple(row.request_id for row in ranked[:quota]),
+                attempted_request_ids=tuple(row.request_id for row in results),
                 results=results,
             )
         )

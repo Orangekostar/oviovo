@@ -328,7 +328,6 @@ def native_combine_candidates(
             threshold = sorted(history)[-maximum_retained]
             if candidate.overlap_pixels <= threshold:
                 continue
-        history.append(candidate.overlap_pixels)
         selected.append(candidate)
     return tuple(selected)
 
@@ -442,6 +441,7 @@ class AcquisitionPayload:
     inference_seconds: float
     failure_reason: str | None = None
     physical_tiles: int = 0
+    physical_cache_hit: bool = False
 
     def __post_init__(self) -> None:
         if self.attempted_crop_inputs < 0 or self.attempted_crop_inputs > 6:
@@ -493,10 +493,13 @@ class FeatureStore:
         payload = self._loader(candidate)
         if not isinstance(payload, AcquisitionPayload):
             raise TypeError("feature loader must return AcquisitionPayload")
-        self.physical_ledger.model_forwards += 1
-        self.physical_ledger.crop_inputs += payload.attempted_crop_inputs
-        self.physical_ledger.tiles += payload.physical_tiles
-        self.physical_ledger.inference_seconds += payload.inference_seconds
+        if payload.physical_cache_hit:
+            self.physical_ledger.cache_hits += 1
+        else:
+            self.physical_ledger.model_forwards += 1
+            self.physical_ledger.crop_inputs += payload.attempted_crop_inputs
+            self.physical_ledger.tiles += payload.physical_tiles
+            self.physical_ledger.inference_seconds += payload.inference_seconds
         if payload.feature is not None:
             self._cache[candidate.request_id] = payload
         return payload
