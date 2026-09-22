@@ -8,7 +8,6 @@ import json
 import os
 import re
 import shlex
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -1075,23 +1074,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def export_attempt(runner: StudyRunner, destination: Path) -> None:
     """Export after report receipt and progress are finalized; no implicit repo writes."""
-    destination = destination.resolve()
-    if destination.is_relative_to(runner.attempt_dir) or runner.attempt_dir.is_relative_to(destination):
-        raise ValueError("export directory must be separate from the attempt")
-    destination.mkdir(parents=True, exist_ok=False)
-    inventory = {}
-    for path in sorted(runner.attempt_dir.rglob("*")):
-        if not path.is_file() or path.suffix not in {".json", ".md"}:
-            continue
-        relative = path.relative_to(runner.attempt_dir)
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(path, target)
-        inventory[str(relative)] = sha256_file(target)
-    atomic_write_json(destination / "export_manifest.json", {
-        "schema_version": 1, "source_attempt": str(runner.attempt_dir),
-        "cache_key": runner.cache_key, "files": inventory,
-    })
+    from src.static_ovmap.module_validation.release_package import export_release
+
+    export_release(runner.attempt_dir, destination, runner.cache_key, runner.resolved_config)
 
 
 if __name__ == "__main__":
