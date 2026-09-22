@@ -338,4 +338,8 @@ def render_scientific_results(evidence, selection, confirmation):
         "Active ScanNet captures only. Means are unweighted within each role and budget. Cells show the raw metric, "
         "percentage and defined/total scene count. Missing values remain null; required nulls make selection inconclusive. "
         "Class-agnostic canonical AP is separate from released semantic-instance AP. Logical costs are charged per method; "
-        "physical reuse and training costs are recorded in scientific_evidence.json.\n\n" + "\n\n".join(tables) + "\n")
+        "physical reuse and training costs are recorded in scientific_evidence.json. "
+        "G is compared with G_ORIGINAL's fresh semantic reread and component-point-count ranks; the N0 bridge is shown separately. "
+        "S/Q preserve native masks and ranks. Hybrid rows include additional paid static refinement beyond B200. "
+        "Table C preservation counts are actual released GT matches retained at strict IoU > 0.5, not a substitute for canonical geometry AP.\n\n"
+        + "\n\n".join(tables) + "\n")

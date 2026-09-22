@@ -63,10 +63,11 @@ Files: new `src/static_ovmap/module_validation/scannet_study.py`, `scannet_groun
 - [x] Construct/lock PredictionPayload before evaluation; freeze N0 serialized ranks, bind true TSDF and source hashes; attach canonical geometry diagnostics separately.
 - [x] Test hand-calculated readout/rank fixtures and released trace parity on a real completed capture. Validate changed labels do not change S/Q masks or ranks.
 
-Real scene0547_00 baseline completed: 4,204,503 source rows; exact original
-mask/serialized-rank export and released evaluator trace parity. uAP
-0.034722222222222224, mIoU 0.13914137886170933. This is one FIT scene,
-not SELECT evidence or a module improvement claim.
+The historical v8 scene0547_00 baseline had 4,204,503 source rows, uAP
+0.034722222222222224 and mIoU 0.13914137886170933. Its active v9 replacement
+passes original mask/serialized-rank export and released trace parity, with
+uAP 0.033134920634920635 and mIoU 0.14000315707538732. Both are one FIT scene,
+not SELECT evidence or a module improvement claim; only v9 enters this study.
 
 ## Task 3 — S driver
 
@@ -120,18 +121,47 @@ ambiguous split features are discarded without refunds or resurrection.
 Missing ancestry-history features receive availability=0. Final registry
 reconciliation occurs only after the final barrier. The released-evaluator
 integration preserves N0 masks/ranks and exports class0 for unobserved owners.
-Eight real v9 frame prefixes reconstruct the exact native candidate universe.
-Actual full-scene Q trace/training/SELECT receipts remain pending v9 capture.
+All 200 real v9 frame slots reconstruct the exact native candidate universe:
+3,201 technical requests. The first real FIT exploration paid 512 attempts /
+3,072 crop inputs, all successful; 232 targets were identifiable (156 positive,
+76 nonpositive). The original acquisition used one model load and 106.313248
+seconds of visual inference, 220.854736 seconds for the full replay.
+Later confirmation-access plumbing changed the full driver source identity;
+earlier trace receipts are preserved in `query_history/native_v9_prefix_v1`
+and `native_v9_prefix_v2`. A cache-only replay reproduced all 512 successes
+and 232 targets with zero additional visual forwards. The shared, hash-bound
+request cache is retained; the final driver will regenerate only its trace
+receipt, never treat archived traces as extra scientific runs. Full FIT/CAL
+training and SELECT results remain pending.
 
 ## Task 6 — Selection, conditional combination and publication
 
 Files: public study CLI, branch leaf CLI, `selection.py`, `reporting.py`, existing result/handoff documents and scoped artifacts.
 
-- [ ] Replace development smoke placeholders with branch drivers and precise support/resource statuses; hash full transitive artifact inputs for resume.
-- [ ] Apply existing frozen selection hierarchy to per-scene rows; support absent learned candidates without treating absence as measured N0 copies.
+- [x] Replace development smoke placeholders with branch drivers and precise support/resource statuses; hash full transitive artifact inputs for resume.
+- [x] Apply existing frozen selection hierarchy to per-scene rows; support absent learned candidates without treating absence as measured N0 copies.
 - [ ] Run only eligible combinations (at most2), requiring actual fresh-mask evidence and the paid hybrid control; block only genuinely unsupported combination prerequisites.
 - [ ] Freeze selection/config/code/weights before conditional CONFIRM; at most4 rows per scene, no redesign after outcomes.
 - [ ] Generate exactly5 principal result tables, measured costs, bootstrap intervals for positive claims, ledgers/checkpoints and command/source manifests.
 - [ ] One final scoped requirement audit; ordinary push and HEAD/remote equality; publication receipt outside the self-referential commit. Complete the goal only when all applicable requirements are evidenced.
 
 Validation commands: `/home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest tests/module_validation -q`; scoped `ruff check`; `git diff --check`; leaf real-input receipts followed by public phase receipts. Tests precede implementation for each new meaningful contract; no test-count target.
+
+Conditional drivers now execute at most GS and Q-plus-static refinement with
+the paid matched control. Each actual final component gets fresh native and
+selected-teacher evidence; frozen S heads never read free N0 aggregates in a
+query hybrid. Added costs accumulate across G and S. Missing paid incumbent
+aggregates remain explicit technical inabilities of the frozen head.
+Confirmation checks the immutable code/configuration/split lock before RGB-D
+export or annotation conversion, runs only the selected rows, and reports
+NOT_CONFIRMED without choosing a new winner. Internal hybrid Q readouts do not
+add an extra held-out evaluation row. N0 selection leaves confirmation unopened.
+
+The five-table renderer separates physical scenes, roles and query allowances,
+keeps nulls and defined-scene denominators, and links actual released match/FN
+and prediction-eligibility transitions. The result-presentation instructions
+of `ccf-experiment-designer` are applied without changing the frozen protocol.
+Execution remains on one A40 (CUDA device 2); four development captures are
+complete and the remaining eight are running. S/G/Q visual work is queued on
+the same device lock. These are implementation and progress records, not a
+completed experiment, final scientific claim or confirmation result.
