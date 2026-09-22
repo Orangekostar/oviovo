@@ -1,8 +1,8 @@
 # OVI-MAP module validation progress
 
-Latest: `attempt_005`, executed code `e1b4efc06d234c574ddc45ba8f5a50a61e311a58`. ScanNet data is now READY: 14 raw captures, 12 development scenes / 2,400 exported slots, 95 invalid poses logged without backfill. `bind=COMPLETE` (10 assets, zero missing), `capture=BLOCKED_GPU_BUSY` (CUDA 2 occupied). The real capture driver is connected; independent-scene S/G/Q scientific drivers remain incomplete. No new scientific metrics exist. Data authorization is already confirmed; do not request it again. See [current evidence and commands](SCANNET_EXECUTION_20260922.md).
+Latest (2026-09-22 21:38 UTC): `attempt_006` bind is COMPLETE and exactly matches the original 8/2/2/2 acquisition lock. All 14 raw captures and 2,400 development slots are present, including 95 invalid poses without backfill. Native-v9 capture has completed 5/12 development scenes on GPU 2. S/G/Q, gated combinations/confirmation and reporting/release drivers are implemented; their full real execution is in progress. Four FIT baselines have verified native export/evaluator parity; no SELECT gain or final candidate is claimed. Data authorization is already confirmed; do not request it again.
 
-Next work: run native capture when a GPU is available, bind ScanNet200 native readout/evaluation, then connect and execute the existing S/G/Q cores. The driver has unit/CLI/resource-gate coverage but has not completed a real scene's CropFormer/native replay.
+Next work: finish the running native capture and S/G/Q jobs, execute the frozen conditional gates, publish actual results and verify the remote branch SHA. CONFIRM remains unopened. Current implementation details and evidence: [scientific execution plan](../../../superpowers/plans/2026-09-22-scannet-scientific-drivers.md).
 
 The following historical attempt is retained for provenance:
 

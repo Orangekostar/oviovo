@@ -1,5 +1,28 @@
 # OVI-MAP Module Validation Handoff
 
+- Current execution (2026-09-22 21:38 UTC): all 14 locked raw captures and all
+  12 development exports are ready. Native-v9 capture has completed 5/12
+  development scenes; `scene0538_00` is next. GPU 2 is assigned to this study.
+- S/G/Q, conditional combinations, frozen confirmation, reporting and bounded
+  release export are implemented. Full empirical execution remains **IN_PROGRESS**;
+  no retained candidate or positive module claim exists yet.
+- Four completed FIT baselines pass unchanged native mask/rank export and released
+  evaluator parity. They are baseline measurements, not SELECT gains. The fifth
+  baseline is being evaluated. CONFIRM image export and annotation conversion have
+  not run.
+- Source branch: `research/ovimap-module-validation-v1`; latest implementation
+  includes `f006e25`. These new implementation commits are not yet pushed.
+- Public bind: `/mnt/shared/ww/ovimap-module-validation-v1/attempt_006`, COMPLETE;
+  all four roles exactly match the pre-inference acquisition lock.
+- Runtime: `configs/evaluation/ovimap_module_scannet_runtime.json`; study:
+  `configs/evaluation/ovimap_module_scannet_study.json`. Actual outputs remain under
+  `/mnt/shared/ww/ovimap-module-validation-v1/{scannet_runtime_v1,scannet_study_v1}`.
+- Continue the already running capture and S/G/Q jobs, then execute selection,
+  conditional confirmation, the five-table report and the final verified push.
+  See [execution plan and live evidence](../../../docs/superpowers/plans/2026-09-22-scannet-scientific-drivers.md).
+
+The following is historical delivery evidence, superseded by the execution above:
+
 - Branch: `research/ovimap-module-validation-v1`
 - Latest executed data/capture code: `e1b4efc06d234c574ddc45ba8f5a50a61e311a58`
 - Implementation: `PARTIAL`

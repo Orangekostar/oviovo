@@ -1,6 +1,17 @@
 # Authorized ScanNet execution — 2026-09-22
 
-Data preparation is COMPLETE. All 14 locked captures are downloaded; the 12 development scenes have 2,400 exported RGB/depth/pose slots and calibration matrices. The public study bind phase passes. Native capture is `BLOCKED_GPU_BUSY`; independent-scene S/G/Q scientific drivers remain incomplete. No new accuracy measurement is claimed.
+Current update (21:38 UTC): data preparation is COMPLETE, native-v9 capture is
+running on GPU 2 with 5/12 development scenes complete, and all independent
+S/G/Q/selection/confirmation/report/release drivers are implemented. Four FIT
+baselines pass native export and evaluator parity; these are not module-gain
+measurements. The full scientific study is still IN_PROGRESS. `attempt_006`
+bind matches the frozen 8/2/2/2 acquisition split. CONFIRM remains unopened.
+See the [execution plan](../../../superpowers/plans/2026-09-22-scannet-scientific-drivers.md).
+
+The data preparation and earlier resource-blocked execution below are retained
+as historical evidence; their former GPU/implementation blockers are superseded.
+
+Data preparation is COMPLETE. All 14 locked captures are downloaded; the 12 development scenes have 2,400 exported RGB/depth/pose slots and calibration matrices.
 
 Data root: `/mnt/shared/ww/ovimap-module-validation-v1/data/scannet`.
 
