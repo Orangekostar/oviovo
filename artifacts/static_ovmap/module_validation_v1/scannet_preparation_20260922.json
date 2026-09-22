@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "PUBLIC_METADATA_READY_RAW_DOWNLOAD_AUTHORIZATION_PENDING",
+  "data_root": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet",
+  "script": {
+    "path": "/home/ww/getscannet.py",
+    "sha256": "2d6a1524aaee010f842647c28fef380d35aa3449f108d85ff11c7c7c1b37f590",
+    "modified": false,
+    "executed": false,
+    "reuse": "literal release URL constants; v1 sens and v2 annotations"
+  },
+  "public_metadata": {
+    "official_revision": "3830fce7f8b2e48ef047ef7fd76ea5f62903f51c",
+    "train_sha256": "96acca299b7855f02824c496b19077904d80996e7ced1bb9f0dac98f7dd4d0c8",
+    "validation_sha256": "d75d4971c3fa7128c643695840e279042c212ef904fe933bd00cf9918c61b083",
+    "plan_path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_plan.json",
+    "plan_sha256": "02b99e6bf491ead3871b4033709c00ec235009ae52f1a1852f99aebae69e0848"
+  },
+  "sens_head_probes": [
+    {"scene_id": "scene0547_00", "http_status": 200, "size_bytes": 663555431},
+    {"scene_id": "scene0434_00", "http_status": 200, "size_bytes": 543029584},
+    {"scene_id": "scene0639_00", "http_status": 200, "size_bytes": 269419640},
+    {"scene_id": "scene0027_00", "http_status": 200, "size_bytes": 699584467},
+    {"scene_id": "scene0107_00", "http_status": 200, "size_bytes": 726354229},
+    {"scene_id": "scene0538_00", "http_status": 200, "size_bytes": 1608797459},
+    {"scene_id": "scene0571_00", "http_status": 200, "size_bytes": 739939504},
+    {"scene_id": "scene0106_00", "http_status": 200, "size_bytes": 1256394949},
+    {"scene_id": "scene0056_00", "http_status": 200, "size_bytes": 1140811711},
+    {"scene_id": "scene0534_00", "http_status": 200, "size_bytes": 599369916},
+    {"scene_id": "scene0445_00", "http_status": 200, "size_bytes": 412922770},
+    {"scene_id": "scene0626_00", "http_status": 200, "size_bytes": 361671761},
+    {"scene_id": "scene0553_00", "http_status": 200, "size_bytes": 449111723},
+    {"scene_id": "scene0064_00", "http_status": 200, "size_bytes": 400585943}
+  ],
+  "sens_total_bytes": 9871549087,
+  "restricted_files_downloaded": 0,
+  "native_loader_check": {
+    "status": "PASS",
+    "input": "synthetic binary format fixture, not scientific evidence",
+    "scheduled_frames": 200,
+    "loaded_frames": 200,
+    "depth_metres": 1.2339999675750732,
+    "pose_translation_x": 2.0
+  },
+  "scientific_evaluation_rows_added": 0,
+  "remaining_blockers": [
+    "USER_SCANNET_AUTHORIZATION_AND_PRIOR_TERMS_AGREEMENT_NOT_CONFIRMED",
+    "RAW_FILES_AND_REAL_DATA_NATIVE_LOADER_CHECK_PENDING",
+    "UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE"
+  ]
+}

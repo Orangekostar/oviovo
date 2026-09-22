@@ -270,6 +270,11 @@ def resolve_assets(
                 environment_candidates.append(root)
             elif root.is_dir():
                 resolved_root = root.resolve()
+                if requirement.key == "scannet_root" and all(
+                    (root / name).is_file()
+                    for name in ("scannetv2_train.txt", "scannetv2_val.txt")
+                ):
+                    environment_candidates.append(resolved_root)
                 environment_candidates.extend(
                     candidate
                     for relative in requirement.relative_paths
@@ -405,8 +410,9 @@ def default_asset_requirements(
         AssetRequirement(
             "scannet_root",
             "directory",
-            ("scannet200_release", "scannet200"),
+            ("scannet200_release", "scannet200", "scannet", "ScanNet"),
             known_scannet_roots,
+            manifest_names=("acquisition_lock.json", "acquisition_plan.json", "manifest.json", "receipt.json"),
         ),
         AssetRequirement(
             "siglip2_model",
@@ -490,6 +496,16 @@ def _metadata_frame_count(path: Path) -> int | None:
     return None
 
 
+def native_schedule(frame_count: int) -> dict[str, Any]:
+    """First 200 original native slots; never renumber or backfill frames."""
+    if frame_count < 200:
+        raise ValueError("native schedule requires at least 200 frames")
+    step = frame_count // 200
+    frames = list(range(0, frame_count, step))[:200]
+    return {"start": 0, "source_end": frame_count, "source_step": -1,
+            "step": step, "end": frames[-1] + 1, "frame_ids": frames}
+
+
 def build_scannet_inventory(
     dataset_root: Path | str,
     *,
@@ -533,10 +549,33 @@ def build_scannet_inventory(
         for scene_id in scene_ids:
             scene_root = scans_root / scene_id
             paths = {suffix: scene_root / f"{scene_id}{suffix}" for suffix in suffixes}
-            missing = [str(path) for path in paths.values() if not path.is_file() or path.stat().st_size <= 0]
+            export_roots = sorted({
+                candidate.resolve()
+                for candidate in (root / "exported" / scene_id, scene_root)
+                if all((candidate / name).is_dir() for name in ("color", "depth", "pose", "intrinsic"))
+                and all((candidate / "intrinsic" / name).is_file()
+                        for name in ("intrinsic_color.txt", "intrinsic_depth.txt"))
+                and all(any((candidate / folder).glob(pattern)) for folder, pattern in
+                        (("color", "[0-9]*.jpg"), ("depth", "[0-9]*.png"), ("pose", "[0-9]*.txt")))
+            }, key=str)
+            if len(export_roots) > 1:
+                raise ValueError(f"ambiguous native ScanNet input roots: {export_roots}")
+            native_input = export_roots[0] if export_roots else None
+            missing = [str(path) for suffix, path in paths.items()
+                       if not (suffix == ".sens" and native_input is not None)
+                       and (not path.is_file() or path.stat().st_size <= 0)]
             frame_count = _metadata_frame_count(paths[".txt"])
+            schedule = None
             if frame_count is None or frame_count < 200:
                 missing.append("metadata:numDepthFrames>=200")
+            else:
+                schedule = native_schedule(frame_count)
+            missing_frames = []
+            if native_input is not None and schedule is not None:
+                missing_frames = [index for index in schedule["frame_ids"] if not all(
+                    (native_input / folder / f"{index}{suffix}").is_file()
+                    for folder, suffix in (("color", ".jpg"), ("depth", ".png"), ("pose", ".txt"))
+                )]
             scenes.append(
                 {
                     "scene_id": scene_id,
@@ -545,6 +584,10 @@ def build_scannet_inventory(
                     "complete": not missing,
                     "frame_count": frame_count,
                     "scene_root": str(scene_root.resolve()),
+                    "native_input_root": str(native_input) if native_input else None,
+                    "input_state": "EXPORTED_NATIVE_INPUTS" if native_input else "RAW_REQUIRES_EXPORT",
+                    "schedule": schedule,
+                    "missing_scheduled_frame_ids": missing_frames,
                     "missing": missing,
                 }
             )
