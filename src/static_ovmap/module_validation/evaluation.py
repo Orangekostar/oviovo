@@ -401,6 +401,12 @@ def _optional_metric(value: Any) -> float | None:
 
 def _parity_passed(value: Any) -> bool:
     if isinstance(value, Mapping):
+        if {"ap_exact", "pr_and_fn_exact"} <= set(value):
+            # The unchanged trace helper includes a descriptive source reference
+            # alongside its two boolean checks; that text is not another check.
+            return (value["ap_exact"] is True and value["pr_and_fn_exact"] is True
+                    and set(value) <= {"ap_exact", "pr_and_fn_exact", "reference"}
+                    and ("reference" not in value or isinstance(value["reference"], str)))
         return bool(value) and all(_parity_passed(item) for item in value.values())
     if isinstance(value, (list, tuple)):
         return bool(value) and all(_parity_passed(item) for item in value)
