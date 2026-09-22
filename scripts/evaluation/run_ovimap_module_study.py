@@ -3,14 +3,19 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import os
 import re
+import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
+import time
+import traceback
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +28,7 @@ from src.static_ovmap.module_validation.assets import (
     build_scene_splits,
     exposed_scannet_families,
     resolve_assets,
+    sha256_file,
 )
 from src.static_ovmap.module_validation.contracts import (
     PhaseReceipt,
@@ -47,8 +53,9 @@ PHASE_DEPENDENCIES = {
     "query": ("capture",),
     "select": ("semantic", "geometry", "query"),
     "confirm": ("select",),
-    "report": (),
+    "report": ("bind", "capture", "semantic", "geometry", "query", "select", "confirm"),
 }
+ORCHESTRATOR_SCHEMA = 2
 _ATTEMPT_RE = re.compile(r"^attempt_(\d{3})$")
 REQUIRED_METHODS = (
     "N0",
@@ -122,14 +129,6 @@ def _atomic_write_text(path: Path, text: str) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def _path_bytes(path: Path) -> int:
-    if path.is_file():
-        return path.stat().st_size
-    if path.is_dir():
-        return sum(item.stat().st_size for item in path.rglob("*") if item.is_file())
-    raise FileNotFoundError(path)
-
-
 def _attempt_number(path: Path) -> int | None:
     match = _ATTEMPT_RE.fullmatch(path.name)
     return int(match.group(1)) if match else None
@@ -177,28 +176,33 @@ class StudyRunner:
         self.resolved_config = dict(resolved_config)
         self.cache_key = canonical_digest(
             {
-                "orchestrator_schema": 1,
+                "orchestrator_schema": ORCHESTRATOR_SCHEMA,
                 "spec_digest": spec.digest,
                 "resolved_config": self.resolved_config,
             }
         )
-        self.attempt_dir, resumed = _select_attempt(self.output_root, self.cache_key)
-        self.resumed = resumed
-        self.receipt_dir = self.attempt_dir / "receipts"
-        self.receipt_dir.mkdir(exist_ok=True)
         self.handlers = dict(handlers or {})
-        resolved_path = self.attempt_dir / "resolved_config.json"
-        if not resumed:
-            atomic_write_json(
-                resolved_path,
-                {
-                    "schema_version": 1,
-                    "study": spec.study,
-                    "spec_digest": spec.digest,
-                    "cache_key": self.cache_key,
-                    "resolved_config": self.resolved_config,
-                },
-            )
+        self.output_root.mkdir(parents=True, exist_ok=True)
+        with (self.output_root / ".attempt.lock").open("a") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            self.attempt_dir, resumed = _select_attempt(self.output_root, self.cache_key)
+            self.resumed = resumed
+            self.receipt_dir = self.attempt_dir / "receipts"
+            self.receipt_dir.mkdir(exist_ok=True)
+            if not resumed:
+                atomic_write_json(self.attempt_dir / "resolved_config.json", {
+                    "schema_version": ORCHESTRATOR_SCHEMA,
+                    "study": spec.study, "spec_digest": spec.digest,
+                    "cache_key": self.cache_key, "resolved_config": self.resolved_config,
+                })
+        self._hashes: dict[tuple, str] = {}
+
+    def _hash(self, path: Path) -> str:
+        stat = path.stat()
+        key = (str(path), stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+        if key not in self._hashes:
+            self._hashes[key] = sha256_file(path)
+        return self._hashes[key]
 
     def _receipt_path(self, phase: str) -> Path:
         return self.receipt_dir / f"{phase}.json"
@@ -211,9 +215,38 @@ class StudyRunner:
             receipt = PhaseReceipt.load(path)
         except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
             return None
-        if receipt.cache_key != self.cache_key:
+        if receipt.cache_key != self.cache_key or receipt.schema_version != 2:
+            return None
+        for raw_path, identity in receipt.output_identities.items():
+            output = Path(raw_path)
+            if not output.is_file() or not isinstance(identity, Mapping) or self._hash(output) != identity.get("sha256"):
+                return None
+        dependencies = {name: self._load_receipt(name) for name in PHASE_DEPENDENCIES[phase]}
+        if receipt.dependency_identity != self._dependency_identity(dependencies):
             return None
         return receipt
+
+    @staticmethod
+    def _dependency_identity(dependencies: Mapping[str, PhaseReceipt | None]) -> str:
+        return canonical_digest({name: receipt.to_dict() if receipt else None
+                                 for name, receipt in dependencies.items()})
+
+    def _output_identities(self, outputs: Mapping[str, Any]) -> dict[str, Any]:
+        identities = {}
+        for value in outputs.values():
+            if not isinstance(value, str):
+                continue
+            path = Path(value)
+            if not path.is_absolute():
+                path = self.attempt_dir / path
+            if path.is_file():
+                identities[str(path.resolve())] = {
+                    "sha256": self._hash(path), "bytes": path.stat().st_size,
+                }
+                if path.name.endswith("_smoke.json"):
+                    for row in _read_json(path).get("input_identities", ()):
+                        identities[row["path"]] = {"sha256": row["sha256"], "bytes": row["bytes"]}
+        return identities
 
     def _missing_dependency(self, phase: str) -> tuple[str, ...]:
         return tuple(
@@ -223,6 +256,7 @@ class StudyRunner:
         )
 
     def _execute_phase(self, phase: str) -> PhaseRun:
+        started = time.monotonic()
         existing = self._load_receipt(phase)
         if existing is not None and existing.status in {
             ReceiptStatus.COMPLETE,
@@ -235,7 +269,7 @@ class StudyRunner:
             if (receipt := self._load_receipt(name)) is not None
         }
         missing = self._missing_dependency(phase)
-        if missing:
+        if missing and phase != "report":
             result = PhaseResult(
                 status=ReceiptStatus.BLOCKED_PREREQUISITE,
                 blockers=tuple(f"MISSING_PHASE_RECEIPT:{name}" for name in missing),
@@ -248,23 +282,37 @@ class StudyRunner:
                     blockers=(f"UNIMPLEMENTED_PHASE:{phase}",),
                 )
             else:
-                result = handler(
-                    PhaseContext(
+                try:
+                    result = handler(PhaseContext(
                         phase=phase,
                         attempt_dir=self.attempt_dir,
                         cache_key=self.cache_key,
                         spec=self.spec,
                         resolved_config=self.resolved_config,
                         dependencies=dependencies,
+                    ))
+                except Exception as error:  # noqa: BLE001 - persist failure and finish independent phases
+                    error_path = self.attempt_dir / "errors" / f"{phase}.json"
+                    atomic_write_json(error_path, {
+                        "error_type": type(error).__name__, "message": str(error),
+                        "traceback": traceback.format_exc(),
+                    })
+                    result = PhaseResult(
+                        ReceiptStatus.FAILED, outputs={"error": str(error_path)},
+                        blockers=(f"PHASE_EXECUTION_FAILED:{phase}:{type(error).__name__}",),
                     )
-                )
         receipt = PhaseReceipt(
             phase=phase,
             status=result.status,
             cache_key=self.cache_key,
             outputs=result.outputs,
-            metrics=result.metrics,
+            metrics={**result.metrics, "elapsed_seconds": time.monotonic() - started},
             blockers=result.blockers,
+            schema_version=2,
+            output_identities=self._output_identities(result.outputs),
+            dependency_identity=self._dependency_identity({
+                name: self._load_receipt(name) for name in PHASE_DEPENDENCIES[phase]
+            }),
         )
         receipt.write(self._receipt_path(phase))
         return PhaseRun(receipt, reused=False)
@@ -291,9 +339,15 @@ class StudyRunner:
             raise ValueError(f"unsupported phase: {phase}")
         selected = self.spec.phases[:-1] if phase == "all" else (phase,)
         results: dict[str, PhaseRun] = {}
-        for current in selected:
-            results[current] = self._execute_phase(current)
-            self._write_progress()
+        self._hashes.clear()
+        with (self.attempt_dir / ".run.lock").open("a") as handle:
+            try:
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as error:
+                raise RuntimeError(f"attempt is already running: {self.attempt_dir}") from error
+            for current in selected:
+                results[current] = self._execute_phase(current)
+                self._write_progress()
         return results
 
 
@@ -369,128 +423,76 @@ def bind_phase(context: PhaseContext) -> PhaseResult:
     )
 
 
-def _tooling_root(context: PhaseContext) -> Path:
-    configured = context.resolved_config.get("tooling_root")
-    return (
-        Path(str(configured)).resolve()
-        if configured is not None
-        else context.spec.output_root / "tooling"
+def _development_blockers(context: PhaseContext) -> tuple[str, ...]:
+    split_path = context.attempt_dir / "splits.json"
+    if not split_path.is_file():
+        return ("MISSING_SCENE_SPLIT_LOCK",)
+    splits = _read_json(split_path)
+    if splits.get("status") != "COMPLETE":
+        return (str(splits.get("status", "BLOCKED_INDEPENDENT_SCENES")),)
+    # Never claim data are missing when the missing boundary is executable code.
+    return ("UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE",)
+
+
+def _execute_boundary(context: PhaseContext) -> PhaseResult:
+    configuration = context.resolved_config.get("historical_smoke")
+    if not isinstance(configuration, Mapping):
+        return PhaseResult(
+            ReceiptStatus.BLOCKED_PREREQUISITE,
+            blockers=("MISSING_EXECUTABLE_SMOKE_CONFIGURATION", *_development_blockers(context)),
+        )
+    output = context.attempt_dir / f"{context.phase}_smoke.json"
+    log_path = context.attempt_dir / f"{context.phase}_smoke.log"
+    python = configuration.get("semantic_python", sys.executable) if context.phase == "semantic" else sys.executable
+    command = [
+        str(python), str(REPOSITORY_ROOT / "scripts/evaluation/run_ovimap_module_smoke.py"),
+        "--phase", context.phase, "--resolved-config", str(context.attempt_dir / "resolved_config.json"),
+        "--output", str(output),
+    ]
+    environment = dict(os.environ)
+    environment.update({"HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"})
+    reused = False
+    if output.is_file():
+        previous = _read_json(output)
+        reused = (
+            previous.get("status") == "COMPLETE"
+            and previous.get("phase") == context.phase
+            and previous.get("config_identity") == canonical_digest(context.resolved_config)
+            and bool(previous.get("input_identities"))
+            and all(Path(row["path"]).is_file() and sha256_file(row["path"]) == row["sha256"]
+                    for row in previous.get("input_identities", ()))
+        )
+    if not reused:
+        with log_path.open("w") as log:
+            subprocess.run(command, env=environment, stdout=log, stderr=subprocess.STDOUT, check=True)
+    value = _read_json(output)
+    if value.get("status") != "COMPLETE" or value.get("phase") != context.phase:
+        raise ValueError("boundary execution did not produce a successful matching receipt")
+    blockers = _development_blockers(context)
+    return PhaseResult(
+        ReceiptStatus.PARTIAL,
+        outputs={"smoke": str(output), "log": str(log_path)},
+        metrics={"executed_boundary_smokes": int(not reused), "reused_boundary_smokes": int(reused), "scientific_evaluation_rows": 0,
+                 "physical": value.get("physical", {}),
+                 "scene_count": value.get("scene_count"), "frame_count": value.get("frame_count")},
+        blockers=blockers,
     )
-
-
-def _load_tooling_receipt(
-    context: PhaseContext, filename: str, expected_type: str
-) -> tuple[Path, Mapping[str, Any]] | None:
-    path = _tooling_root(context) / filename
-    if not path.is_file():
-        return None
-    value = _read_json(path)
-    if not isinstance(value, Mapping) or value.get("artifact_type") != expected_type:
-        raise ValueError(f"tooling receipt has wrong identity: {path}")
-    return path, value
 
 
 def capture_phase(context: PhaseContext) -> PhaseResult:
-    native = _load_tooling_receipt(
-        context, "native_patch_receipt.json", "OVIMAP_NATIVE_PATCH_RECEIPT"
-    )
-    capture_manifest = (
-        _tooling_root(context)
-        / "historical_two_frame_capture_v3"
-        / "room0"
-        / "manifest.json"
-    )
-    if native is None or not capture_manifest.is_file():
-        missing = []
-        if native is None:
-            missing.append("MISSING_NATIVE_PATCH_RECEIPT")
-        if not capture_manifest.is_file():
-            missing.append("MISSING_CURRENT_STATE_CAPTURE")
-        return PhaseResult(
-            status=ReceiptStatus.BLOCKED_PREREQUISITE,
-            blockers=tuple(missing),
-        )
-    native_path, native_receipt = native
-    summary = {
-        "schema_version": 1,
-        "artifact_type": "OVIMAP_CAPTURE_PHASE_SUMMARY",
-        "status": "HISTORICAL_SMOKE_COMPLETE",
-        "scientific_result": False,
-        "native_patch_receipt": str(native_path),
-        "native_patch_status": native_receipt.get("status"),
-        "historical_capture_manifest": str(capture_manifest),
-        "captured_scene_count": 1,
-        "captured_frame_count": 2,
-        "blocked_status": "BLOCKED_INDEPENDENT_SCENES",
-    }
-    output = context.attempt_dir / "capture_summary.json"
-    atomic_write_json(output, summary)
-    return PhaseResult(
-        status=ReceiptStatus.PARTIAL,
-        outputs={"capture_summary": output.name},
-        metrics={"historical_scenes": 1, "historical_frames": 2},
-        blockers=("BLOCKED_INDEPENDENT_SCENES",),
-    )
-
-
-def _module_smoke_phase(
-    context: PhaseContext,
-    *,
-    filename: str,
-    artifact_type: str,
-    output_name: str,
-) -> PhaseResult:
-    receipt = _load_tooling_receipt(context, filename, artifact_type)
-    if receipt is None:
-        return PhaseResult(
-            status=ReceiptStatus.BLOCKED_PREREQUISITE,
-            blockers=(f"MISSING_TOOLING_RECEIPT:{filename}",),
-        )
-    path, value = receipt
-    summary = {
-        "schema_version": 1,
-        "artifact_type": f"OVIMAP_{context.phase.upper()}_PHASE_SUMMARY",
-        "status": "MODULE_SMOKE_COMPLETE_SCIENTIFIC_BRANCH_BLOCKED",
-        "scientific_result": False,
-        "evidence_path": str(path),
-        "evidence_status": value.get("status"),
-        "blocked_status": "BLOCKED_INDEPENDENT_SCENES",
-    }
-    output = context.attempt_dir / output_name
-    atomic_write_json(output, summary)
-    return PhaseResult(
-        status=ReceiptStatus.PARTIAL,
-        outputs={f"{context.phase}_summary": output.name, "evidence": str(path)},
-        metrics={"module_smokes": 1, "scientific_scene_families": 0},
-        blockers=("BLOCKED_INDEPENDENT_SCENES",),
-    )
+    return _execute_boundary(context)
 
 
 def semantic_phase(context: PhaseContext) -> PhaseResult:
-    return _module_smoke_phase(
-        context,
-        filename="semantic_adapter_receipt.json",
-        artifact_type="OVIMAP_SEMANTIC_ADAPTER_RECEIPT",
-        output_name="semantic_summary.json",
-    )
+    return _execute_boundary(context)
 
 
 def geometry_phase(context: PhaseContext) -> PhaseResult:
-    return _module_smoke_phase(
-        context,
-        filename="geometry_snapshot_smoke_receipt.json",
-        artifact_type="OVIMAP_GEOMETRY_SNAPSHOT_SMOKE_RECEIPT",
-        output_name="geometry_summary.json",
-    )
+    return _execute_boundary(context)
 
 
 def query_phase(context: PhaseContext) -> PhaseResult:
-    return _module_smoke_phase(
-        context,
-        filename="query_current_state_smoke_receipt.json",
-        artifact_type="OVIMAP_QUERY_CURRENT_STATE_SMOKE_RECEIPT",
-        output_name="query_summary.json",
-    )
+    return _execute_boundary(context)
 
 
 def select_phase(context: PhaseContext) -> PhaseResult:
@@ -505,7 +507,7 @@ def select_phase(context: PhaseContext) -> PhaseResult:
         selection = {
             "schema_version": 1,
             "artifact_type": "OVIMAP_MODULE_FROZEN_SELECTION",
-            "status": "FROZEN_NO_RETAINED_CANDIDATE",
+            "status": "NOT_FROZEN_PREREQUISITES",
             "teacher_id": None,
             "semantic_method": "N0",
             "geometry_method": "G_ORIGINAL",
@@ -513,12 +515,12 @@ def select_phase(context: PhaseContext) -> PhaseResult:
             "combination_methods": [],
             "final_candidate": "N0",
             "science_status": "INCONCLUSIVE_PREREQUISITES",
-            "confirmation_status": "NOT_REQUIRED_NO_RETAINED_CANDIDATE",
+            "confirmation_status": "NOT_RUN_PREREQUISITES",
             "blockers": dependency_blockers,
             "prediction_code_identity": context.resolved_config.get("code_identity"),
             "split_lock": "splits.json",
         }
-        status = ReceiptStatus.COMPLETE
+        status = ReceiptStatus.BLOCKED_PREREQUISITE
         blockers = tuple(dependency_blockers)
     else:
         return PhaseResult(
@@ -536,6 +538,8 @@ def select_phase(context: PhaseContext) -> PhaseResult:
 
 
 def confirm_phase(context: PhaseContext) -> PhaseResult:
+    if context.dependencies["select"].status != ReceiptStatus.COMPLETE:
+        return PhaseResult(ReceiptStatus.BLOCKED_PREREQUISITE, blockers=("SELECTION_NOT_FROZEN",))
     selection_path = context.attempt_dir / "selection.json"
     if not selection_path.is_file():
         return PhaseResult(
@@ -543,6 +547,11 @@ def confirm_phase(context: PhaseContext) -> PhaseResult:
             blockers=("MISSING_FROZEN_SELECTION",),
         )
     selection = _read_json(selection_path)
+    if selection.get("status") == "NOT_FROZEN_PREREQUISITES":
+        return PhaseResult(
+            ReceiptStatus.BLOCKED_PREREQUISITE,
+            blockers=("SELECTION_NOT_FROZEN",),
+        )
     if selection.get("final_candidate") == "N0":
         receipt = {
             "schema_version": 1,
@@ -565,393 +574,92 @@ def confirm_phase(context: PhaseContext) -> PhaseResult:
 
 
 def report_phase(context: PhaseContext) -> PhaseResult:
+    """Render only receipt-backed evidence, inside the selected attempt."""
     selection_path = context.attempt_dir / "selection.json"
-    selection = (
-        _read_json(selection_path)
-        if selection_path.is_file()
-        else {
-            "final_candidate": "N0",
-            "science_status": "INCONCLUSIVE_PREREQUISITES",
-            "confirmation_status": "NOT_REQUIRED_NO_RETAINED_CANDIDATE",
-        }
-    )
-    scientific_methods = tuple(
-        method
-        for method in REQUIRED_METHODS
-        if method not in {"N0", "COMBO_GS", "COMBO_Q_REFINEMENT"}
-    )
-    blocked = {method: "BLOCKED_INDEPENDENT_SCENES" for method in scientific_methods}
-    not_required = {
-        "COMBO_GS": "NOT_REQUIRED_NO_INDEPENDENTLY_RETAINED_MODULES",
-        "COMBO_Q_REFINEMENT": "NOT_REQUIRED_NO_INDEPENDENTLY_RETAINED_MODULES",
-    }
-    resolution = context.resolved_config.get("asset_resolution", {})
-    bindings = resolution.get("bindings", {}) if isinstance(resolution, Mapping) else {}
-    historical = bindings.get("historical_evaluation", {}) if isinstance(bindings, Mapping) else {}
-    native_evidence = historical.get("path") if isinstance(historical, Mapping) else None
-    matrix = build_method_matrix(
-        required_methods=REQUIRED_METHODS,
-        measured={},
-        blocked=blocked,
-        not_required=not_required,
-        reused={"N0": str(native_evidence or "HISTORICAL_NATIVE_REFERENCE")},
-        evidence_paths={
-            "N0": None if native_evidence is None else str(native_evidence),
-            **{
-                method: str(context.attempt_dir / f"{branch}_summary.json")
-                for branch, methods in {
-                    "semantic": tuple(method for method in scientific_methods if method.startswith("S_")),
-                    "geometry": tuple(method for method in scientific_methods if method.startswith("G_")),
-                    "query": tuple(method for method in scientific_methods if method.startswith("Q_")),
-                }.items()
-                for method in methods
-            },
-        },
-    )
+    selection = _read_json(selection_path) if selection_path.is_file() and "select" in context.dependencies else {}
+    blockers = sorted({
+        blocker for receipt in context.dependencies.values() for blocker in receipt.blockers
+    } | {
+        f"MISSING_PHASE_RECEIPT:{phase}" for phase in PHASE_DEPENDENCIES["report"]
+        if phase not in context.dependencies
+    } | {
+        f"PHASE_NOT_COMPLETE:{phase}" for phase, receipt in context.dependencies.items()
+        if receipt.status not in {ReceiptStatus.COMPLETE, ReceiptStatus.NOT_REQUIRED_BY_FROZEN_GATE}
+    })
+    # The current release executes historical boundaries. The development driver
+    # is still unimplemented, independently of local dataset availability.
+    blockers = sorted(set(blockers) | {"UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE"})
+    blocked = {}
+    for method in REQUIRED_METHODS:
+        phase = ("semantic" if method.startswith("S_") else
+                 "geometry" if method.startswith("G_") else
+                 "query" if method.startswith("Q_") else
+                 "select" if method.startswith("COMBO_") else "capture")
+        receipt = context.dependencies.get(phase)
+        reasons = receipt.blockers if receipt else (f"MISSING_PHASE_RECEIPT:{phase}",)
+        blocked[method] = ", ".join(reasons) or "NO_MEASURED_SCIENTIFIC_ROW"
+    matrix = build_method_matrix(required_methods=REQUIRED_METHODS, measured={}, blocked=blocked)
     matrix_path = context.attempt_dir / "method_matrix.json"
     write_method_matrix(matrix_path, matrix)
-    semantic_receipt = _load_tooling_receipt(
-        context, "semantic_adapter_receipt.json", "OVIMAP_SEMANTIC_ADAPTER_RECEIPT"
-    )
-    native_receipt = _load_tooling_receipt(
-        context, "native_patch_receipt.json", "OVIMAP_NATIVE_PATCH_RECEIPT"
-    )
-    geometry_receipt = _load_tooling_receipt(
-        context,
-        "geometry_snapshot_smoke_receipt.json",
-        "OVIMAP_GEOMETRY_SNAPSHOT_SMOKE_RECEIPT",
-    )
-    query_receipt = _load_tooling_receipt(
-        context,
-        "query_current_state_smoke_receipt.json",
-        "OVIMAP_QUERY_CURRENT_STATE_SMOKE_RECEIPT",
-    )
-    supporting = [
-        "These are implementation-boundary smokes on historical Room0, not SELECT measurements.",
-    ]
-    if semantic_receipt is not None:
-        semantic_value = semantic_receipt[1]
-        native_siglip = semantic_value.get("native_siglip", {})
-        supporting.append(
-            "Semantic adapters: native SigLIP crop vectors "
-            f"{native_siglip.get('crop_vector_shape')}; legacy six-crop max error "
-            f"{native_siglip.get('legacy_first_six_max_abs_error')}."
-        )
-    if geometry_receipt is not None:
-        geometry_value = geometry_receipt[1]
-        supporting.append(
-            f"Geometry smoke: {geometry_value.get('surface_rows')} surface rows, "
-            f"{geometry_value.get('leaf_count')} native leaves, "
-            f"{geometry_value.get('complete_hypothesis_count')} complete bounded hypotheses."
-        )
-    if query_receipt is not None:
-        query_value = query_receipt[1]
-        parity = query_value.get("candidate_parity", ())
-        native_rows = query_value.get("native_combine_parity", {}).get(
-            "frame_rows", ()
-        )
-        replay = query_value.get("policy_replay", {})
-        supporting.append(
-            f"Query smoke: {sum(int(row.get('candidate_count', 0)) for row in parity)} "
-            "current-state candidates with exact request/mask/bbox parity and "
-            f"{sum(int(row.get('selected_count', 0)) for row in native_rows)} native "
-            "combine selections with exact request IDs; "
-            f"Q_AREA logical cost {replay.get('Q_AREA')}; Q_UNCERTAINTY logical cost "
-            f"{replay.get('Q_UNCERTAINTY')}; physical cost {replay.get('physical')}."
-        )
-    results = render_results(
-        matrix,
-        final_candidate=str(selection.get("final_candidate", "N0")),
-        science_status=str(
-            selection.get("science_status", "INCONCLUSIVE_PREREQUISITES")
-        ),
-        confirmation_status=str(
-            selection.get(
-                "confirmation_status", "NOT_REQUIRED_NO_RETAINED_CANDIDATE"
-            )
-        ),
-        supporting_evidence=supporting,
+    supporting, costs, external = [], {}, []
+    for phase, receipt in context.dependencies.items():
+        smoke_path = receipt.outputs.get("smoke")
+        if not isinstance(smoke_path, str):
+            continue
+        value = _read_json(Path(smoke_path))
+        supporting.append(f"{phase}: {value['scope']}; status {value['status']}; evidence {smoke_path}.")
+        costs[phase] = {key: value[key] for key in ("physical", "scene_count", "frame_count", "policy_replay") if key in value}
+        external.extend(value.get("input_identities", []))
+    statuses = ReleaseStatuses(
+        implementation="PARTIAL",
+        experiment="BLOCKED_PREREQUISITES" if blockers else "MEASURED",
+        science=str(selection.get("science_status", "INCONCLUSIVE_PREREQUISITES")),
+        confirmation=str(selection.get("confirmation_status", "NOT_RUN_PREREQUISITES")),
+        publication="NOT_CHECKED_BY_REPORT",
     )
     code = context.resolved_config.get("code_identity", {})
     commit = code.get("head") if isinstance(code, Mapping) else None
-    if not isinstance(commit, str) or len(commit) != 40:
-        commit = "0" * 40
-    statuses = ReleaseStatuses(
-        implementation="COMPLETE",
-        experiment="BLOCKED_INDEPENDENT_SCENES",
-        science=str(selection.get("science_status", "INCONCLUSIVE_PREREQUISITES")),
-        confirmation=str(
-            selection.get(
-                "confirmation_status", "NOT_REQUIRED_NO_RETAINED_CANDIDATE"
-            )
-        ),
-        publication="PENDING_FINAL_COMMIT_AND_PUSH",
-    )
-    evidence = (
-        str(context.attempt_dir / "capture_summary.json"),
-        str(context.attempt_dir / "semantic_summary.json"),
-        str(context.attempt_dir / "geometry_summary.json"),
-        str(context.attempt_dir / "query_summary.json"),
-        str(selection_path),
-        str(matrix_path),
-    )
-    resolved_path = context.attempt_dir / "resolved_config.json"
-    command_prefix = (
-        "conda run -n ovimap-map python scripts/evaluation/run_ovimap_module_study.py "
-        "--spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json "
-        f"--resolved-config {resolved_path} --output-root {context.spec.output_root}"
-    )
-    reproduction_commands = tuple(
-        f"{command_prefix} --phase {phase}" for phase in context.spec.phases[:-1]
-    )
-    details = list(supporting)
-    details.append(f"Worktree: {REPOSITORY_ROOT}.")
-    if native_receipt is not None:
-        native_value = native_receipt[1]
-        upstream = native_value.get("upstream", {})
-        build = native_value.get("build", {})
-        details.extend(
-            (
-                f"Pinned OVI source: {upstream.get('root')} at {upstream.get('commit')}.",
-                (
-                    "Loaded native extension: "
-                    f"{build.get('extension_path')} "
-                    f"(sha256 {build.get('extension_sha256')})."
-                ),
-                (
-                    "Historical capture: "
-                    f"{native_value.get('smoke', {}).get('capture_manifest_path')}; "
-                    "independent ScanNet root: unbound."
-                ),
-            )
-        )
-    if semantic_receipt is not None:
-        semantic_value = semantic_receipt[1]
-        details.append(
-            "Bound model roots: "
-            + ", ".join(
-                str(semantic_value.get(name, {}).get("model_path"))
-                for name in ("native_siglip", "siglip2", "wow", "name_mapping")
-            )
-            + "."
-        )
-    handoff = render_handoff(
-        statuses,
-        branch=context.spec.task_branch,
-        commit=commit,
-        evidence_paths=evidence,
-        next_action="Provide at least 14 eligible independent scene families, including the required ScanNet captures, then resume the locked FIT/CAL/SELECT/CONFIRM phases.",
-        execution_details=details,
-        reproduction_commands=reproduction_commands,
-    )
-    docs = REPOSITORY_ROOT / "docs" / "paper" / "static_ovmap"
-    results_path = docs / "MODULE_VALIDATION_RESULTS.md"
-    handoff_path = docs / "MODULE_VALIDATION_HANDOFF.md"
-    _atomic_write_text(results_path, results)
-    _atomic_write_text(handoff_path, handoff)
-    artifact_root = (
-        REPOSITORY_ROOT / "artifacts" / "static_ovmap" / "module_validation_v1"
-    )
-    artifact_root.mkdir(parents=True, exist_ok=True)
-    write_method_matrix(artifact_root / "method_matrix.json", matrix)
-    atomic_write_json(artifact_root / "selection.json", selection)
-    execution_manifest = {
-        "schema_version": 1,
-        "artifact_type": "OVIMAP_MODULE_EXECUTION_MANIFEST",
-        "experiment_code_identity": context.resolved_config.get("code_identity"),
-        "commands": [
-            (
-                "conda run -n ovimap-map python "
-                "scripts/evaluation/run_ovimap_module_study.py "
-                "--spec docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json "
-                f"--phase all --output-root {context.spec.output_root}"
-            ),
-            *reproduction_commands,
-        ],
-        "costs": {
-            "capture": {"scenes": 1, "frames": 2},
-            "semantic_smoke": {
-                "native_siglip_requests": 1,
-                "siglip2_requests": 1,
-                "wow_generations": 1,
-                "training_runs": 0,
-            },
-            "geometry_smoke": (
-                {}
-                if geometry_receipt is None
-                else {
-                    key: geometry_receipt[1].get(key)
-                    for key in (
-                        "surface_rows",
-                        "surface_faces",
-                        "leaf_count",
-                        "complete_hypothesis_count",
-                    )
-                }
-            ),
-            "query_smoke": (
-                {} if query_receipt is None else query_receipt[1].get("policy_replay", {})
-            ),
-            "scientific_training_runs": 0,
-            "scientific_evaluation_rows": 0,
-        },
-        "errors": ["BLOCKED_INDEPENDENT_SCENES"],
-        "timings_seconds": None,
-        "timing_status": "NOT_RECORDED_FOR_PREEXISTING_BOUNDARY_SMOKES",
-    }
-    atomic_write_json(artifact_root / "execution_manifest.json", execution_manifest)
-
-    external_entries: list[dict[str, Any]] = []
-
-    def add_external(
-        artifact_id: str,
-        raw_path: Any,
-        digest: Any,
-        *,
-        hash_scope: str,
-        regeneration_command: str | None,
-        regeneration_blocker: str | None = None,
-    ) -> None:
-        if not isinstance(raw_path, str) or not isinstance(digest, str):
-            return
-        path = Path(raw_path)
-        if not path.exists():
-            return
-        external_entries.append(
-            {
-                "artifact_id": artifact_id,
-                "path": str(path),
-                "bytes": _path_bytes(path),
-                "sha256": digest,
-                "hash_scope": hash_scope,
-                "regeneration_command": regeneration_command,
-                "regeneration_blocker": regeneration_blocker,
-            }
-        )
-
-    if native_receipt is not None:
-        native_value = native_receipt[1]
-        build = native_value.get("build", {})
-        smoke = native_value.get("smoke", {})
-        add_external(
-            "native_extension",
-            build.get("extension_path"),
-            build.get("extension_sha256"),
-            hash_scope="file",
-            regeneration_command=None,
-            regeneration_blocker="The native receipt preserves the ABI build environment and output identity, but the exact isolated build command is not automated by the v1 study CLI.",
-        )
-        capture_manifest = smoke.get("capture_manifest_path")
-        if isinstance(capture_manifest, str):
-            add_external(
-                "native_capture",
-                str(Path(capture_manifest).parent),
-                smoke.get("capture_identity"),
-                hash_scope="native capture identity over the manifest-bound frame/surface payload",
-                regeneration_command=None,
-                regeneration_blocker="Requires replaying the pinned native mapper with the receipt-bound historical trajectory.",
-            )
-        add_external(
-            "native_instance_mesh",
-            smoke.get("mesh_path"),
-            smoke.get("mesh_sha256"),
-            hash_scope="file",
-            regeneration_command=None,
-            regeneration_blocker="Requires replaying the pinned native mapper with the receipt-bound historical trajectory.",
-        )
-    if semantic_receipt is not None:
-        semantic_value = semantic_receipt[1]
-        model_specs = (
-            ("native_siglip", "native_siglip", None, None),
-            (
-                "siglip2",
-                "siglip2",
-                "google/siglip2-large-patch16-384",
-                semantic_value.get("siglip2", {}).get("revision"),
-            ),
-            (
-                "wow_weights",
-                "wow",
-                "AAwcAA/WOW-Seg",
-                semantic_value.get("wow", {}).get("weights_revision"),
-            ),
-            (
-                "name_mapping",
-                "name_mapping",
-                "sentence-transformers/all-MiniLM-L6-v2",
-                semantic_value.get("name_mapping", {}).get("revision"),
-            ),
-        )
-        for artifact_id, key, repo_id, revision in model_specs:
-            model = semantic_value.get(key, {})
-            command = None
-            blocker = "The bound native model receipt has no immutable download revision."
-            if repo_id is not None and isinstance(revision, str):
-                command = (
-                    "python -c \"from huggingface_hub import snapshot_download; "
-                    f"snapshot_download(repo_id='{repo_id}', revision='{revision}', "
-                    f"local_dir='{model.get('model_path')}')\""
-                )
-                blocker = None
-            add_external(
-                artifact_id,
-                model.get("model_path"),
-                model.get("model_sha256"),
-                hash_scope="canonical directory content identity from adapter receipt",
-                regeneration_command=command,
-                regeneration_blocker=blocker,
-            )
-    atomic_write_json(
-        artifact_root / "external_artifacts.json",
-        {
-            "schema_version": 1,
-            "artifact_type": "OVIMAP_EXTERNAL_ARTIFACT_MANIFEST",
-            "entries": external_entries,
-        },
-    )
-    for name in (
-        "resolved_config.json",
-        "asset_resolution.json",
-        "scene_inventory.json",
-        "splits.json",
-        "capture_summary.json",
-        "semantic_summary.json",
-        "geometry_summary.json",
-        "query_summary.json",
-        "confirmation.json",
-    ):
-        source = context.attempt_dir / name
-        if source.is_file():
-            atomic_write_json(artifact_root / name, _read_json(source))
-    receipt_artifacts = artifact_root / "receipts"
-    for phase in context.spec.phases[:-1]:
-        source = context.attempt_dir / "receipts" / f"{phase}.json"
-        if source.is_file():
-            atomic_write_json(receipt_artifacts / source.name, _read_json(source))
-    tooling_artifacts = artifact_root / "tooling"
-    for receipt in (native_receipt, semantic_receipt, geometry_receipt, query_receipt):
-        if receipt is not None:
-            atomic_write_json(tooling_artifacts / receipt[0].name, receipt[1])
-    progress = context.attempt_dir / "progress.md"
-    if progress.is_file():
-        _atomic_write_text(
-            REPOSITORY_ROOT
-            / "docs/paper/static_ovmap/module_validation_v1/progress.md",
-            progress.read_text(encoding="utf-8"),
-        )
+    command = shlex.join([
+        sys.executable, str(REPOSITORY_ROOT / "scripts/evaluation/run_ovimap_module_study.py"),
+        "--spec", str(context.spec.source_path), "--phase", "all",
+        "--output-root", str(context.attempt_dir.parent),
+        "--resolved-config", str(context.attempt_dir / "resolved_config.json"),
+    ])
+    results_path = context.attempt_dir / "MODULE_VALIDATION_RESULTS.md"
+    handoff_path = context.attempt_dir / "MODULE_VALIDATION_HANDOFF.md"
+    _atomic_write_text(results_path, render_results(
+        matrix, final_candidate=str(selection.get("final_candidate", "UNSELECTED")),
+        science_status=statuses.science, confirmation_status=statuses.confirmation,
+        supporting_evidence=supporting,
+    ))
+    _atomic_write_text(handoff_path, render_handoff(
+        statuses, branch="research/ovimap-module-validation-v1",
+        commit=commit if isinstance(commit, str) and len(commit) == 40 else "0" * 40,
+        evidence_paths=(str(matrix_path), str(context.attempt_dir / "receipts")),
+        next_action="Connect the independent-scene development driver and provide authorized FIT/CAL/SELECT scenes before scientific selection.",
+        execution_details=supporting, reproduction_commands=(command,),
+    ))
+    manifest_path = context.attempt_dir / "execution_manifest.json"
+    atomic_write_json(manifest_path, {
+        "schema_version": 2, "artifact_type": "OVIMAP_MODULE_EXECUTION_MANIFEST",
+        "statuses": asdict(statuses), "attempt": str(context.attempt_dir),
+        "code_identity": code, "cost": costs, "errors": blockers,
+        "timings_seconds": {phase: receipt.metrics.get("elapsed_seconds") for phase, receipt in context.dependencies.items()},
+        "phase_receipts": {phase: str(context.attempt_dir / "receipts" / f"{phase}.json") for phase in PHASE_DEPENDENCIES},
+        "reproduction_command": command,
+    })
+    external_path = context.attempt_dir / "external_artifacts.json"
+    atomic_write_json(external_path, {
+        "schema_version": 2, "artifact_type": "OVIMAP_EXTERNAL_ARTIFACT_MANIFEST",
+        "entries": list({row["path"]: {**row, "hash_scope": "file"} for row in external}.values()),
+    })
     return PhaseResult(
-        status=ReceiptStatus.COMPLETE,
-        outputs={
-            "method_matrix": str(matrix_path),
-            "results": str(results_path),
-            "handoff": str(handoff_path),
-        },
-        metrics={
-            "principal_tables": 5,
-            "required_method_rows": len(matrix),
-            "measured_scientific_rows": 0,
-        },
-        blockers=("BLOCKED_INDEPENDENT_SCENES",),
+        ReceiptStatus.COMPLETE,
+        outputs={"method_matrix": str(matrix_path), "results": str(results_path),
+                 "handoff": str(handoff_path), "execution_manifest": str(manifest_path),
+                 "external_artifacts": str(external_path)},
+        metrics={"required_method_rows": len(matrix), "measured_scientific_rows": 0},
+        blockers=tuple(blockers),
     )
 
 
@@ -983,6 +691,7 @@ def _code_identity(repository_root: Path) -> Mapping[str, Any]:
         head = run("rev-parse", "HEAD").strip()
         status = run("status", "--porcelain=v1", "--untracked-files=all")
         diff = run("diff", "--binary", "HEAD", "--")
+        untracked = run("ls-files", "--others", "--exclude-standard", "-z").split("\0")
     except (OSError, subprocess.SubprocessError):
         return {
             "head": None,
@@ -995,6 +704,7 @@ def _code_identity(repository_root: Path) -> Mapping[str, Any]:
         "dirty": bool(status),
         "status_digest": canonical_digest(status),
         "tracked_diff_digest": canonical_digest(diff),
+        "untracked_content_digest": canonical_digest({name: sha256_file(repository_root / name) for name in untracked if name and (repository_root / name).is_file()}),
     }
 
 
@@ -1015,14 +725,17 @@ def _base_resolved_config(spec: StudySpec, path: Path | None) -> Mapping[str, An
                 raise ValueError("resolved_config field must be a JSON object")
             expected_cache_key = canonical_digest(
                 {
-                    "orchestrator_schema": 1,
+                    "orchestrator_schema": raw.get("schema_version", 1),
                     "spec_digest": spec.digest,
                     "resolved_config": nested,
                 }
             )
             if raw["cache_key"] != expected_cache_key:
                 raise ValueError("resolved config cache key mismatch")
+            if "code_identity" in nested:
+                nested["code_identity"] = _code_identity(REPOSITORY_ROOT)
             return nested
+        raw["code_identity"] = _code_identity(REPOSITORY_ROOT)
         return raw
     overrides = {
         name: os.environ[name]
@@ -1040,6 +753,7 @@ def _base_resolved_config(spec: StudySpec, path: Path | None) -> Mapping[str, An
         "code_identity": _code_identity(REPOSITORY_ROOT),
         "environment_overrides": overrides,
         "asset_resolution": resolution.to_dict(),
+        **_read_json(REPOSITORY_ROOT / "configs/evaluation/ovimap_module_historical_smoke.json"),
     }
 
 
@@ -1049,6 +763,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--phase", required=True, choices=tuple(PHASE_DEPENDENCIES) + ("all",))
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--resolved-config", type=Path)
+    parser.add_argument("--export-root", type=Path, help="Export finalized small receipts/reports into a new directory after execution")
     return parser
 
 
@@ -1063,6 +778,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         handlers=default_phase_handlers(),
     )
     results = runner.run(args.phase)
+    if args.export_root is not None:
+        export_attempt(runner, args.export_root)
     print(json.dumps({
         "attempt": str(runner.attempt_dir),
         "cache_key": runner.cache_key,
@@ -1071,7 +788,28 @@ def main(argv: Sequence[str] | None = None) -> int:
             for phase, run in results.items()
         },
     }, sort_keys=True))
-    return 0
+    return int(any(run.receipt.status == ReceiptStatus.FAILED for run in results.values()))
+
+
+def export_attempt(runner: StudyRunner, destination: Path) -> None:
+    """Export after report receipt and progress are finalized; no implicit repo writes."""
+    destination = destination.resolve()
+    if destination.is_relative_to(runner.attempt_dir) or runner.attempt_dir.is_relative_to(destination):
+        raise ValueError("export directory must be separate from the attempt")
+    destination.mkdir(parents=True, exist_ok=False)
+    inventory = {}
+    for path in sorted(runner.attempt_dir.rglob("*")):
+        if not path.is_file() or path.suffix not in {".json", ".md"}:
+            continue
+        relative = path.relative_to(runner.attempt_dir)
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, target)
+        inventory[str(relative)] = sha256_file(target)
+    atomic_write_json(destination / "export_manifest.json", {
+        "schema_version": 1, "source_attempt": str(runner.attempt_dir),
+        "cache_key": runner.cache_key, "files": inventory,
+    })
 
 
 if __name__ == "__main__":

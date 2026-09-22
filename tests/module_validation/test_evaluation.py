@@ -18,6 +18,18 @@ from src.static_ovmap.module_validation.evaluation import (
 )
 
 
+def test_evaluator_identity_accepts_module_loader_metadata_and_tracks_source(tmp_path):
+    from src.static_ovmap.module_validation.evaluation import _context_value
+
+    source = tmp_path / "evaluator.py"
+    source.write_text("threshold = 0.5\n")
+    namespace = {"__loader__": object(), "__spec__": object(), "__file__": str(source),
+                 "distance": float("inf")}
+    first = _context_value(namespace)
+    source.write_text("threshold = 0.75\n")
+    assert _context_value(namespace) != first
+
+
 def _payload(method: str = "N0", branch: str = "N0") -> PredictionPayload:
     return PredictionPayload(
         method_id=method,
@@ -114,6 +126,79 @@ def test_prediction_lock_is_irreversible_and_prevents_field_rebinding() -> None:
         payload._locked = False
     with pytest.raises(ValueError, match="read-only"):
         payload.owner_ids[0] = 2
+
+
+def test_prediction_arrays_cannot_be_made_writeable_after_lock() -> None:
+    payload = _payload()
+    payload.lock()
+    with pytest.raises(ValueError):
+        payload.semantic_labels.setflags(write=True)
+    with pytest.raises(AttributeError):
+        del payload._locked
+
+
+def test_lock_revalidates_changes_made_before_locking() -> None:
+    payload = _payload()
+    payload.semantic_labels = np.array([3, 4, 4, 0])
+    with pytest.raises(ValueError, match="one semantic label"):
+        payload.lock()
+
+
+def test_geometry_cannot_drop_owned_rows_or_claim_background() -> None:
+    native = _payload()
+    for owners, labels, ranks in (
+        ([1, 0, 2, 0], [3, 0, 4, 0], ((1, .9), (2, .8))),
+        ([1, 1, 2, 3], [3, 3, 4, 0], ((1, .9), (2, .8), (3, .1))),
+    ):
+        candidate = replace(native, branch="G", owner_ids=owners,
+                            semantic_labels=labels, instance_ranks=ranks)
+        with pytest.raises(ValueError, match="support"):
+            validate_prediction_invariants(candidate, native)
+
+
+def test_evaluation_cache_invalidates_changed_ground_truth_and_file(tmp_path) -> None:
+    def evaluator(payload, ground_truth):
+        score = float(np.mean(ground_truth["labels"]))
+        if ground_truth["gt_instance_path"].read_text() == "changed":
+            score = .8
+        return EvaluationMetrics(score, None, None, None, None, None, None, 1, 1, True)
+
+    path = tmp_path / "labels.txt"
+    path.write_text("original")
+    payload = _payload()
+    payload.lock()
+    adapter = ReleasedEvaluationAdapter(evaluator)
+    context = {"scene-a": {"labels": np.array([.2]), "gt_instance_path": path}}
+    assert adapter.evaluate_many((payload,), context)[0].metrics.uap == .2
+    context["scene-a"]["labels"][0] = .6
+    second = adapter.evaluate_many((payload,), context)[0]
+    assert not second.reused_evaluation
+    assert second.metrics.uap == .6
+    path.write_text("changed")
+    third = adapter.evaluate_many((payload,), context)[0]
+    assert not third.reused_evaluation
+    assert third.metrics.uap == .8
+
+
+def test_unmatched_projection_sentinel_does_not_index_source(tmp_path) -> None:
+    payload = _payload()
+    payload.lock()
+
+    def semantic(gt, predicted, valid_ids):
+        np.testing.assert_array_equal(predicted, [3, 0])
+        return {"semantic_miou": 1.0}
+
+    adapter = PinnedReleasedEvaluator(
+        {}, tmp_path,
+        evaluate_set_fn=lambda *args: {"released": {}, "trace_parity": True},
+        semantic_metrics_fn=semantic,
+    )
+    result = adapter(payload, {
+        "nearest": np.array([0, 999]), "matched": np.array([True, False]),
+        "gt_semantic": np.array([3, 0]), "gt_instance_path": tmp_path / "gt.npy",
+        "valid_ids": (3, 4),
+    })
+    assert result.miou == 1.0
 
 
 def test_undefined_scene_metric_makes_required_comparison_inconclusive() -> None:

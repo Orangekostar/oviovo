@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-TOLERANCE = 1e-10
+from .metric_order import TOLERANCE, metric_max
 
 
 @dataclass(frozen=True)
@@ -159,7 +159,7 @@ def select_semantic_module(
             mechanism,
             "INCONCLUSIVE_UNDEFINED_METRIC",
         )
-    best = max(
+    best = metric_max(
         methods,
         key=lambda method: (
             _mean(aligned[method], "uap"),
@@ -232,8 +232,9 @@ def select_geometry_module(
             "G_ORIGINAL", quality_eligible, "INCONCLUSIVE_UNDEFINED_METRIC"
         )
     originality = {"G_ORIGINAL": 2, "G_AGREEMENT": 1, "G_QUALITY": 0}
-    best = max(
+    best = metric_max(
         methods,
+        metrics=3,
         key=lambda method: (
             _mean(aligned[method], "canonical_ap50"),
             _mean(aligned[method], "canonical_ap75"),
@@ -277,7 +278,7 @@ def select_query_module(
             "INCONCLUSIVE_UNDEFINED_METRIC",
             "INCONCLUSIVE_UNDEFINED_METRIC",
         )
-    locked = max(
+    locked = metric_max(
         comparator_order,
         key=lambda method: (
             _mean(cal[method], "uap"),
@@ -439,6 +440,7 @@ def select_final_candidate(
     if set(methods) != set(candidates) or set(methods) != set(matched_baselines):
         raise ValueError("final candidates, matched baselines, and simplicity order must align")
     eligible: list[str] = []
+    undefined = False
     normalized: dict[str, tuple[SceneMethodMetrics, ...]] = {}
     for method in methods:
         candidate = tuple(sorted(_method_rows(candidates, method), key=lambda row: row.scene_id))
@@ -448,6 +450,9 @@ def select_final_candidate(
         if {row.scene_id for row in candidate} != {row.scene_id for row in baseline}:
             raise ValueError(f"matched baseline scenes differ for {method}")
         normalized[method] = candidate
+        if any(_mean(values, metric) is None for values in (candidate, baseline)
+               for metric in ("uap", "miou")):
+            undefined = True
         if (
             _strictly_above(_mean(candidate, "uap"), _mean(baseline, "uap"))
             and _not_below(_mean(candidate, "miou"), _mean(baseline, "miou"))
@@ -455,8 +460,10 @@ def select_final_candidate(
         ):
             eligible.append(method)
     if not eligible:
-        return FinalSelection("N0", "NO_NET_GAIN", ())
-    selected = max(
+        return FinalSelection(
+            "N0", "INCONCLUSIVE_UNDEFINED_METRIC" if undefined else "NO_NET_GAIN", ()
+        )
+    selected = metric_max(
         eligible,
         key=lambda method: (
             _mean(normalized[method], "uap"),

@@ -467,6 +467,7 @@ def inverse_scene_weights(scene_ids: Sequence[str]) -> np.ndarray:
 
 
 def select_teacher(rows: Sequence[Mapping[str, Any]]) -> str:
+    from .metric_order import metric_max
     order = {method: index for index, method in enumerate(TEACHER_IDS)}
     normalized = []
     for row in rows:
@@ -479,9 +480,9 @@ def select_teacher(rows: Sequence[Mapping[str, Any]]) -> str:
         normalized.append((method, *values))
     if not normalized:
         raise ValueError("no alternative teacher is available")
-    return min(
+    return metric_max(
         normalized,
-        key=lambda row: (-row[1], -row[2], row[3], order[row[0]]),
+        key=lambda row: (row[1], row[2], -row[3], -order[row[0]]),
     )[0]
 
 
@@ -495,6 +496,7 @@ def _threshold_rank(value: float | str) -> float:
 
 
 def select_adoption_threshold(rows: Sequence[Mapping[str, Any]]) -> float | str:
+    from .metric_order import metric_max
     normalized: list[tuple[float | str, float, float, int, int]] = []
     for row in rows:
         threshold = row.get("threshold")
@@ -508,7 +510,7 @@ def select_adoption_threshold(rows: Sequence[Mapping[str, Any]]) -> float | str:
         normalized.append((threshold, uap, miou, harmful, replacements))
     if not normalized:
         raise ValueError("CAL threshold rows must not be empty")
-    return max(
+    return metric_max(
         normalized,
         key=lambda row: (
             row[1],

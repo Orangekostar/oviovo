@@ -460,6 +460,7 @@ def _margin_rank(value: float | str) -> float:
 
 
 def select_geometry_margin(rows: Sequence[Mapping[str, Any]]) -> float | str:
+    from .metric_order import metric_max
     normalized = []
     for row in rows:
         margin = row.get("margin")
@@ -472,7 +473,7 @@ def select_geometry_margin(rows: Sequence[Mapping[str, Any]]) -> float | str:
         normalized.append((margin, ap50, ap75, changed))
     if not normalized:
         raise ValueError("geometry CAL rows must not be empty")
-    return max(
+    return metric_max(
         normalized,
         key=lambda row: (row[1], row[2], -row[3], _margin_rank(row[0])),
     )[0]

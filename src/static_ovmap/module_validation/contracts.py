@@ -207,6 +207,8 @@ class PhaseReceipt:
         default_factory=lambda: datetime.now(timezone.utc).isoformat(timespec="seconds")
     )
     schema_version: int = 1
+    output_identities: Mapping[str, Any] = field(default_factory=dict)
+    dependency_identity: str | None = None
 
     def __post_init__(self) -> None:
         if self.phase not in EXPECTED_PHASES[:-1]:
@@ -226,6 +228,7 @@ class PhaseReceipt:
         object.__setattr__(self, "outputs", outputs)
         object.__setattr__(self, "metrics", metrics)
         object.__setattr__(self, "blockers", blockers)
+        object.__setattr__(self, "output_identities", _freeze_json(_json_value(self.output_identities)))
         _json_value(self.to_dict())
 
     def to_dict(self) -> dict[str, Any]:
@@ -239,6 +242,8 @@ class PhaseReceipt:
             "blockers": list(self.blockers),
             "reused_from": self.reused_from,
             "created_utc": self.created_utc,
+            "output_identities": dict(self.output_identities),
+            "dependency_identity": self.dependency_identity,
         }
 
     def write(self, path: Path | str) -> None:
@@ -257,4 +262,6 @@ class PhaseReceipt:
             reused_from=raw.get("reused_from"),
             created_utc=raw["created_utc"],
             schema_version=raw.get("schema_version", 1),
+            output_identities=raw.get("output_identities", {}),
+            dependency_identity=raw.get("dependency_identity"),
         )

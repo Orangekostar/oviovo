@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 
+from .assets import sha256_file
 from .contracts import atomic_write_json, canonical_digest
 
 _FORBIDDEN_METADATA_PARTS = (
@@ -36,8 +37,7 @@ _METRIC_NAMES = (
 
 def _readonly(value: Any, dtype: np.dtype | str | None = None) -> np.ndarray:
     array = np.array(value, dtype=dtype, copy=True)
-    array.flags.writeable = False
-    return array
+    return np.frombuffer(array.tobytes(), dtype=array.dtype).reshape(array.shape)
 
 
 def _array_identity(value: np.ndarray) -> Mapping[str, Any]:
@@ -121,6 +121,11 @@ class PredictionPayload:
             raise AttributeError("prediction payload is locked")
         object.__setattr__(self, name, value)
 
+    def __delattr__(self, name: str) -> None:
+        if self.locked:
+            raise AttributeError("prediction payload is locked")
+        object.__delattr__(self, name)
+
     def __post_init__(self) -> None:
         if not self.method_id or not self.scene_id or self.branch not in _BRANCHES:
             raise ValueError("prediction method, scene, and branch are invalid")
@@ -188,6 +193,8 @@ class PredictionPayload:
         )
 
     def lock(self) -> str:
+        if not self.locked:
+            self.__post_init__()
         record_key = self.record_key
         object.__setattr__(self, "_locked", True)
         return record_key
@@ -228,6 +235,8 @@ def validate_prediction_invariants(
         if payload.instance_ranks != native.instance_ranks:
             raise ValueError("S/Q instance ranks must remain fixed")
     if payload.branch == "G":
+        if not np.array_equal(payload.owner_ids > 0, native.owner_ids > 0):
+            raise ValueError("G partition must preserve native owned support")
         if len(payload.owner_ids) != native.geometry.source_row_count:
             raise ValueError("G partition is incomplete")
         active = {int(value) for value in np.unique(payload.owner_ids)} - {0}
@@ -303,7 +312,7 @@ class ReleasedEvaluationAdapter:
         evaluator: Callable[[PredictionPayload, Mapping[str, Any]], EvaluationMetrics],
     ) -> None:
         self._evaluator = evaluator
-        self._cache: dict[tuple[str, str], EvaluationMetrics] = {}
+        self._cache: dict[tuple[str, str, str], EvaluationMetrics] = {}
 
     def evaluate_many(
         self,
@@ -316,7 +325,16 @@ class ReleasedEvaluationAdapter:
                 raise ValueError("prediction payload must be locked before GT evaluation")
             if payload.scene_id not in ground_truth_by_scene:
                 raise ValueError(f"ground truth is unavailable for scene {payload.scene_id}")
-            key = (payload.scene_id, payload.prediction_key)
+            context = ground_truth_by_scene[payload.scene_id]
+            evaluator_context = getattr(self._evaluator, "context_identity", None)
+            context_key = canonical_digest({
+                "ground_truth": _context_value(context),
+                "evaluator": (
+                    evaluator_context() if evaluator_context is not None
+                    else _context_value(self._evaluator)
+                ),
+            })
+            key = (payload.scene_id, payload.prediction_key, context_key)
             reused = key in self._cache
             if not reused:
                 metrics = self._evaluator(
@@ -338,6 +356,40 @@ class ReleasedEvaluationAdapter:
                 )
             )
         return tuple(rows)
+
+
+def _context_value(value: Any) -> Any:
+    """Content identity for evaluator inputs, including in-place array/file edits."""
+    if isinstance(value, np.ndarray):
+        return _array_identity(value)
+    if isinstance(value, Mapping):
+        return {str(key): _context_value(item) for key, item in value.items()
+                if key not in {"__builtins__", "__loader__", "__spec__", "__cached__"}}
+    if isinstance(value, (list, tuple)):
+        return [_context_value(item) for item in value]
+    if isinstance(value, (Path, str)):
+        path = Path(value)
+        try:
+            if path.is_file():
+                return {"path": str(path.resolve()), "sha256": sha256_file(path)}
+        except OSError:
+            pass
+        return str(value)
+    if isinstance(value, np.generic):
+        return _context_value(value.item())
+    if callable(value):
+        source = inspect.getsourcefile(value) if inspect.isfunction(value) else None
+        return {"callable": getattr(value, "__qualname__", type(value).__qualname__),
+                "source": _context_value(Path(source)) if source else None,
+                "instance": id(value)}
+    if inspect.ismodule(value):
+        return {"module": value.__name__, "source": _context_value(
+            getattr(value, "__file__", None))}
+    if isinstance(value, float) and not np.isfinite(value):
+        return {"nonfinite_float": value.hex()}
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    raise ValueError(f"unsupported evaluator identity input: {type(value).__name__}")
 
 
 def _optional_metric(value: Any) -> float | None:
@@ -382,6 +434,13 @@ class PinnedReleasedEvaluator:
         self.semantic_metrics_fn = semantic_metrics_fn
         self._released_cache: dict[Any, Any] = {}
 
+    def context_identity(self) -> Any:
+        return _context_value({
+            "namespace": self.evaluator_namespace,
+            "evaluate_set": self.evaluate_set_fn,
+            "semantic_metrics": self.semantic_metrics_fn,
+        })
+
     def __call__(
         self, payload: PredictionPayload, ground_truth: Mapping[str, Any]
     ) -> EvaluationMetrics:
@@ -392,13 +451,19 @@ class PinnedReleasedEvaluator:
         gt_semantic = np.asarray(ground_truth["gt_semantic"], dtype=np.int64)
         if nearest.shape != matched.shape or nearest.shape != gt_semantic.shape:
             raise ValueError("scene projection and GT semantic rows must align")
-        if np.any(nearest < 0) or np.any(nearest >= len(payload.owner_ids)):
+        if np.any(nearest[matched] < 0) or np.any(nearest[matched] >= len(payload.owner_ids)):
             raise ValueError("scene projection leaves prediction source rows")
-        destination = self.output_root / payload.scene_id / payload.prediction_key
+        context_key = canonical_digest({
+            "ground_truth": _context_value(ground_truth),
+            "evaluator": self.context_identity(),
+        })
+        destination = self.output_root / payload.scene_id / payload.prediction_key / context_key
         mask_root = destination / "prediction"
         mask_root.mkdir(parents=True, exist_ok=True)
-        projected_owners = np.where(matched, payload.owner_ids[nearest], 0)
-        projected_semantic = np.where(matched, payload.semantic_labels[nearest], 0)
+        projected_owners = np.zeros(nearest.shape, dtype=np.int64)
+        projected_semantic = np.zeros(nearest.shape, dtype=np.int64)
+        projected_owners[matched] = payload.owner_ids[nearest[matched]]
+        projected_semantic[matched] = payload.semantic_labels[nearest[matched]]
         owner_labels = {
             int(owner): int(np.unique(payload.semantic_labels[payload.owner_ids == owner])[0])
             for owner in np.unique(payload.owner_ids)
@@ -420,16 +485,7 @@ class PinnedReleasedEvaluator:
         serialized = [f"{rank_by_owner[owner]:.6f}" for owner in owners]
         kept = np.arange(len(owners), dtype=np.int64)
         gt_path = Path(ground_truth["gt_instance_path"])
-        cache_key = (
-            payload.prediction_key,
-            canonical_digest(
-                {
-                    "nearest": _array_identity(nearest),
-                    "matched": _array_identity(matched),
-                    "gt_instance_path": str(gt_path.resolve()),
-                }
-            ),
-        )
+        cache_key = (payload.prediction_key, context_key)
         released = self.evaluate_set_fn(
             self.evaluator_namespace,
             destination / "released",

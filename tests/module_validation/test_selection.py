@@ -139,3 +139,48 @@ def test_combination_cap_and_final_matched_baseline_gate() -> None:
     )
     assert no_gain.selected_method == "N0"
     assert no_gain.science_status == "NO_NET_GAIN"
+
+
+def test_final_tie_within_tolerance_prefers_lower_cost() -> None:
+    baseline = _rows("N0", (.4, .4), (.5, .5))
+    candidates = {
+        "simple": _rows("simple", (.5, .5), (.6, .6), cost=1),
+        "complex": _rows("complex", (.5 + 5e-11, .5 + 5e-11), (.6, .6), cost=10),
+    }
+    decision = select_final_candidate(
+        candidates, matched_baselines={key: baseline for key in candidates},
+        simplicity_order=("simple", "complex"),
+    )
+    assert decision.selected_method == "simple"
+
+
+def test_final_missing_metric_is_inconclusive_not_negative() -> None:
+    decision = select_final_candidate(
+        {"S_SIMPLE": _rows("S_SIMPLE", (None, .5), (.6, .6))},
+        matched_baselines={"S_SIMPLE": _rows("N0", (.4, .4), (.5, .5))},
+        simplicity_order=("S_SIMPLE",),
+    )
+    assert decision.science_status == "INCONCLUSIVE_UNDEFINED_METRIC"
+
+
+def test_cal_teacher_and_margins_use_metric_tolerance() -> None:
+    from src.static_ovmap.module_validation.partition_quality import (
+        select_geometry_margin,
+    )
+    from src.static_ovmap.module_validation.semantic_selector import (
+        select_adoption_threshold,
+        select_teacher,
+    )
+
+    assert select_teacher([
+        {"method": "S_SIGLIP2_AREA", "mean_uap": .5, "mean_miou": .6, "median_cost": 1},
+        {"method": "S_WOW_VOTE", "mean_uap": .5 + 5e-11, "mean_miou": .6, "median_cost": 10},
+    ]) == "S_SIGLIP2_AREA"
+    assert select_adoption_threshold([
+        {"threshold": 0, "mean_uap": .5 + 5e-11, "mean_miou": .6, "harmful": 1, "replacements": 2},
+        {"threshold": "KEEP_ALL", "mean_uap": .5, "mean_miou": .6, "harmful": 0, "replacements": 0},
+    ]) == "KEEP_ALL"
+    assert select_geometry_margin([
+        {"margin": 0, "mean_ap50": .5 + 5e-11, "mean_ap75": .6, "changed_points": 20},
+        {"margin": "KEEP_ALL", "mean_ap50": .5, "mean_ap75": .6, "changed_points": 0},
+    ]) == "KEEP_ALL"
