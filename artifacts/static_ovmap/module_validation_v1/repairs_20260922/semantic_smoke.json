@@ -1,0 +1,1302 @@
+{
+  "artifact_type": "OVIMAP_EXECUTED_BOUNDARY_SMOKE",
+  "capture_manifest": {
+    "bytes": 70686,
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/manifest.json",
+    "sha256": "2c339b639297b01c82e4537a82d79915b94495115f00fca83f1c3716d77811ed"
+  },
+  "command": [
+    "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/semantic-env/bin/python",
+    "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_module_smoke.py",
+    "--phase",
+    "semantic",
+    "--resolved-config",
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/resolved_config.json",
+    "--output",
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/semantic_smoke.json"
+  ],
+  "config_identity": "7c3f50246da30b9346754571f015c5490fce90cca47fb62d9227beebed461ed0",
+  "elapsed_seconds": 31.768393115955405,
+  "environment": {
+    "executable": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/semantic-env/bin/python",
+    "packages": {
+      "Pillow": "12.3.0",
+      "numpy": "1.26.4",
+      "torch": "2.1.1",
+      "transformers": "4.51.0"
+    },
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]"
+  },
+  "input_identities": [
+    {
+      "bytes": 70686,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/manifest.json",
+      "sha256": "2c339b639297b01c82e4537a82d79915b94495115f00fca83f1c3716d77811ed"
+    },
+    {
+      "bytes": 14566515,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/surface.npz",
+      "sha256": "dacc06b9a459a55d20a987c83e0915cbee68c17c5b100491e56d2c1eab31a4d2"
+    },
+    {
+      "bytes": 138791600,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/mapper/cropformer_inst/instance_mesh_2.ply",
+      "sha256": "f406ddfffc20fe001a2afcbf03f4d6bba532025284651309d3db52881654d50a"
+    },
+    {
+      "bytes": 569136,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+      "sha256": "7f49c52516b4a3031f48776a48076cda8226757f6e0d03cc7c72e1fd3fe684e1"
+    },
+    {
+      "bytes": 1456011,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/depth.npz",
+      "sha256": "2abe2b828ab0fe2ff477288a832c7b4cacc353d2669465b7272d5fc312adedd1"
+    },
+    {
+      "bytes": 924816,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/rgb.png",
+      "sha256": "b26384023e986d4757a256785fd610f3d85f4dfd5a54ee011c92a085e585d7ad"
+    },
+    {
+      "bytes": 13659,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/panoptic.png",
+      "sha256": "287aedb798658629c7ee71c5a6811c94c157bdb2b78b44aa4db03d24b7994148"
+    },
+    {
+      "bytes": 16497,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/global_owner.png",
+      "sha256": "7372cd124ddcfbdfa17e21f5a38ea8d4f6cccd50d4fa1f08c4d2427812673b07"
+    },
+    {
+      "bytes": 7097000,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/preinsert.npz",
+      "sha256": "d5d9a8c83716f72d1b85ce409cceee865373da4ff6fe007790c5f71b8d1c3e4a"
+    },
+    {
+      "bytes": 9205,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/native_state.json",
+      "sha256": "c91ad685974a0c29e753711c29aa0170f1dff24e4edd633493c864b6c4ca8112"
+    },
+    {
+      "bytes": 92883,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/requests.npz",
+      "sha256": "e8aaceeb0008f1b94502c247f54e76b82a1a4a8c54a0844e85ebbfeba5749a8c"
+    },
+    {
+      "bytes": 1645566,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/depth.npz",
+      "sha256": "845742db770bb6f8e0d4269ec4b34bdd94b144a1fc3c8fbb8b9b1fbfa410394a"
+    },
+    {
+      "bytes": 918127,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/rgb.png",
+      "sha256": "ab5bd11bbd9be3d909759096710366eb497957ea42fb6a3193ac99c87345418e"
+    },
+    {
+      "bytes": 13635,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/panoptic.png",
+      "sha256": "dc024c66eef505b664ee8ec60ceea21828c4406335a9c73fc2cc43366d460424"
+    },
+    {
+      "bytes": 17204,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/global_owner.png",
+      "sha256": "b000951887db4b875c62fba06b96a97cf5357e0c6a461dfaf1eab497f2806ab9"
+    },
+    {
+      "bytes": 7079393,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/preinsert.npz",
+      "sha256": "7affa45380db811bcb165e6cce477d77718b23bb4f4155919ab5e66748ac503c"
+    },
+    {
+      "bytes": 8924,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/native_state.json",
+      "sha256": "605cfcf4d7504ba46b9d7efa37621678726dfa41efcf4f6a354fc164d1719c47"
+    },
+    {
+      "bytes": 88855,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/requests.npz",
+      "sha256": "91d7fe462a9131f8f3b31b9bb5699dfc7c671ff7d2568cae451641b34c6f7373"
+    },
+    {
+      "bytes": 4224,
+      "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats/siglip-l-16-384_F_0_728-243-363-147.npy",
+      "sha256": "bf1f395ccfaa7d4c993a70444994cd5d12069bf1c417d6c9fc886beb11a115e0"
+    },
+    {
+      "bytes": 50497,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/receipt.json",
+      "sha256": "0fda5836a031fa5a4858d6a5a56719ae716bf3b14c8840b0bcc795867dcc04fb"
+    },
+    {
+      "bytes": 4120,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/README.md",
+      "sha256": "771d019af5fc01f21ec91ad7fbc3e2d24d750bb1df3a1e1dd04f060cbd90cd9c"
+    },
+    {
+      "bytes": 554,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/config.json",
+      "sha256": "ddefe38fdfe333d5dbb7d56a247bdc6fe84dbcdb4eafd2f462e05e9b13c532bc"
+    },
+    {
+      "bytes": 2610010520,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/model.safetensors",
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2"
+    },
+    {
+      "bytes": 368,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/preprocessor_config.json",
+      "sha256": "f59da2f87c3cd079bd4f8f3037e81b277c60c498e279a8020331f67a5a3157e8"
+    },
+    {
+      "bytes": 409,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/special_tokens_map.json",
+      "sha256": "2b6a1ff67a27e0df9ac0c7d93250fc0d87431c7b366b3d5669217104f9088a26"
+    },
+    {
+      "bytes": 798330,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/spiece.model",
+      "sha256": "1e5036bed065526c3c212dfbe288752391797c4bb1a284aa18c9a0b23fcaf8ec"
+    },
+    {
+      "bytes": 2399357,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/tokenizer.json",
+      "sha256": "c6e405cb7c670d56636a9402c81023a55bc6c3c53d89cf02b92f5c5005bfe920"
+    },
+    {
+      "bytes": 711,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/tokenizer_config.json",
+      "sha256": "d6423dae508cc3a129d22ea443841c111832a1a73125b8f25ea8736951698bcb"
+    },
+    {
+      "bytes": 1570,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/.gitattributes",
+      "sha256": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930"
+    },
+    {
+      "bytes": 3378,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/README.md",
+      "sha256": "c3ec8e8a7a4790063972e10721306e0b00523aa739fd55c5b0aa35fa487df03a"
+    },
+    {
+      "bytes": 537,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/config.json",
+      "sha256": "7859ae71a2316c7104f9f64f8cf500ebaa53a7eb315ff28463422e18ce954721"
+    },
+    {
+      "bytes": 3527515080,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/model.safetensors",
+      "sha256": "11bdb3cf00c4dc4f87e437c9c75087ca16fa21aea437b3576c103670ee3c73be"
+    },
+    {
+      "bytes": 394,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/preprocessor_config.json",
+      "sha256": "fb2817d3523ca3b666c859f15320c7138416bc38ffc515e2963f78c868c51c90"
+    },
+    {
+      "bytes": 636,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/special_tokens_map.json",
+      "sha256": "baec30ea10906f16adb8c18af7a34023002c1746542612b8b41c9f09e1351351"
+    },
+    {
+      "bytes": 34363039,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/tokenizer.json",
+      "sha256": "cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322"
+    },
+    {
+      "bytes": 4241003,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/tokenizer.model",
+      "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2"
+    },
+    {
+      "bytes": 47164,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/tokenizer_config.json",
+      "sha256": "14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8"
+    },
+    {
+      "bytes": 1519,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/.gitattributes",
+      "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361"
+    },
+    {
+      "bytes": 31,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/README.md",
+      "sha256": "4bcf87ecfbbb8e07a01b21415a970c8b53a5283bf6872b657040d3f45c9241f7"
+    },
+    {
+      "bytes": 823,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/added_tokens.json",
+      "sha256": "b3c66f26b8c519bede6975b7b995b250cd94ff7595360bfc565811ab571ba382"
+    },
+    {
+      "bytes": 6550,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/config.json",
+      "sha256": "d81a6a93178882613f16fbaad0c209d2531b02ac95a21435637865f09c6cc43b"
+    },
+    {
+      "bytes": 5668,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/configuration_intern_vit.py",
+      "sha256": "9ad5ad411a949e299018ad92b4d6de09acde7bce1b58cbc40a2053585150cca1"
+    },
+    {
+      "bytes": 4133,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/configuration_internvl_chat.py",
+      "sha256": "2c59f5d33640e2f6b2d43cffb18096e558715e69e0530eadb132ff49fbd8bcd4"
+    },
+    {
+      "bytes": 15700,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/conversation.py",
+      "sha256": "c73185a9c820e9c4d6c48a7cec9b68837518305afb511e03104b3b40fcf6e748"
+    },
+    {
+      "bytes": 73,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/generation_config.json",
+      "sha256": "4b8973d4e16bd1c9e42437780f97a7e31136a88229b8d0981f867c1a6b61e1c4"
+    },
+    {
+      "bytes": 1823241,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/merges.txt",
+      "sha256": "b8e04af9c950e393054010dcef499c3f005e803e9b2da1a09b96a26c33266eb1"
+    },
+    {
+      "bytes": 1876463472,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/model.safetensors",
+      "sha256": "23fc8661a88986692cad3ce15476feab7c69e4dc73691f1f8e25e4bcd74c1316"
+    },
+    {
+      "bytes": 18537,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/modeling_intern_vit.py",
+      "sha256": "460b1d775db7b590594a3e28e1de6641ff72b47e775dd9b00929c412bbc06466"
+    },
+    {
+      "bytes": 17484,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/modeling_internvl_chat.py",
+      "sha256": "9230f204d0d93642a1a46c8a0b8e8c1f12bf85856b7fc3e044af82bf9a8b55a7"
+    },
+    {
+      "bytes": 306,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/preprocessor_config.json",
+      "sha256": "a008cf9e4990ede6947ef5b58bae1942b329111fecf7075efd031a7f7451505f"
+    },
+    {
+      "bytes": 644,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/special_tokens_map.json",
+      "sha256": "57255613bbe23c9497211ca68561ff429a51e871dbaf5a59998fa4c8f7fe168a"
+    },
+    {
+      "bytes": 7336659,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/tokenizer.json",
+      "sha256": "bb800c8f6e118731ab099a7d34873b7b29ae5005ffcb9da6939857c209b5b726"
+    },
+    {
+      "bytes": 9204,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/tokenizer_config.json",
+      "sha256": "cf7776f2e7fe9bef72bd9e72dfddad4bee6f7e8bd3322a006a4e64433a0c62ab"
+    },
+    {
+      "bytes": 3535052,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg/vocab.json",
+      "sha256": "c0592c64c8ca6276a97c9c7d8c62c3336ba87131e31bd702e68ea149af42b3ed"
+    },
+    {
+      "bytes": 1229,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/.gitattributes",
+      "sha256": "98ccb431c012ebfe976280fbd45aea4cec7409935868ccecf3954370f96732a1"
+    },
+    {
+      "bytes": 190,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/1_Pooling/config.json",
+      "sha256": "4be450dde3b0273bb9787637cfbd28fe04a7ba6ab9d36ac48e92b11e350ffc23"
+    },
+    {
+      "bytes": 10502,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/README.md",
+      "sha256": "dcd602d2fd35c203a247304a06fec6654a12f7941b739f9221a064fe8dc3b7f0"
+    },
+    {
+      "bytes": 612,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/config.json",
+      "sha256": "953f9c0d463486b10a6871cc2fd59f223b2c70184f49815e7efbcab5d8908b41"
+    },
+    {
+      "bytes": 116,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/config_sentence_transformers.json",
+      "sha256": "061ca9d39661d6c6d6de5ba27f79a1cd5770ea247f8d46412a68a498dc5ac9f3"
+    },
+    {
+      "bytes": 39265,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/data_config.json",
+      "sha256": "32edcb108fc2516b920734a862ae0692bcae1c5d45d5f8d972cb0d53434a4c54"
+    },
+    {
+      "bytes": 90868376,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/model.safetensors",
+      "sha256": "53aa51172d142c89d9012cce15ae4d6cc0ca6895895114379cacb4fab128d9db"
+    },
+    {
+      "bytes": 349,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/modules.json",
+      "sha256": "84e40c8e006c9b1d6c122e02cba9b02458120b5fb0c87b746c41e0207cf642cf"
+    },
+    {
+      "bytes": 90405214,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model.onnx",
+      "sha256": "6fd5d72fe4589f189f8ebc006442dbb529bb7ce38f8082112682524616046452"
+    },
+    {
+      "bytes": 90360328,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_O1.onnx",
+      "sha256": "1391c6fc20b5530250bc15cbe1f47578ffeca55ab0551d335cc668b6299a88ec"
+    },
+    {
+      "bytes": 90326566,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_O2.onnx",
+      "sha256": "1de3905029190b398c7d300b530e320cf4b5e7d3dfb9af1429ebd73fd9a16faf"
+    },
+    {
+      "bytes": 90326497,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_O3.onnx",
+      "sha256": "a44f671e364dddbac31f203f07b91be6b0a35e51936e5ebfab65b6d9538b83ff"
+    },
+    {
+      "bytes": 45212349,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_O4.onnx",
+      "sha256": "1667d7f3ba669048b13a96ee3a44456d5e42c8f44588ae8b603430e16160c485"
+    },
+    {
+      "bytes": 23026053,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_qint8_arm64.onnx",
+      "sha256": "4278337fd0ff3c68bfb6291042cad8ab363e1d9fbc43dcb499fe91c871902474"
+    },
+    {
+      "bytes": 23026053,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_qint8_avx512.onnx",
+      "sha256": "4278337fd0ff3c68bfb6291042cad8ab363e1d9fbc43dcb499fe91c871902474"
+    },
+    {
+      "bytes": 23026053,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_qint8_avx512_vnni.onnx",
+      "sha256": "4278337fd0ff3c68bfb6291042cad8ab363e1d9fbc43dcb499fe91c871902474"
+    },
+    {
+      "bytes": 23046789,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/onnx/model_quint8_avx2.onnx",
+      "sha256": "b941bf19f1f1283680f449fa6a7336bb5600bdcd5f84d10ddc5cd72218a0fd21"
+    },
+    {
+      "bytes": 90265744,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/openvino/openvino_model.bin",
+      "sha256": "8b86cab4722e2aefab310cf96d4d5a9eb3b187f7d9670a082afc55c7fa0d392a"
+    },
+    {
+      "bytes": 211315,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/openvino/openvino_model.xml",
+      "sha256": "f87dd1482b2a745f8c699b81ddd9cbcad666a193be4693abcea44b7ac8c67c1e"
+    },
+    {
+      "bytes": 22933664,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/openvino/openvino_model_qint8_quantized.bin",
+      "sha256": "c92ea4af3c6bc7b4a0f3b3d61b147c850f4dbdd7c9e7beee0c0c70dc12da289b"
+    },
+    {
+      "bytes": 368006,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/openvino/openvino_model_qint8_quantized.xml",
+      "sha256": "a19425e3f56f7736f752923f0a0b5a8d61c7878017f02e1fc9086615391105dd"
+    },
+    {
+      "bytes": 90888945,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/pytorch_model.bin",
+      "sha256": "c3a85f238711653950f6a79ece63eb0ea93d76f6a6284be04019c53733baf256"
+    },
+    {
+      "bytes": 90887379,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/rust_model.ot",
+      "sha256": "2d98d96d278348988f2744e6445b8bc16d921c3f6e17c667362f3cb353007aea"
+    },
+    {
+      "bytes": 53,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/sentence_bert_config.json",
+      "sha256": "fc1993fde0a95c24ec6c022539d41cf6e2f7c9721e5415d6fb6897472a9cd4b7"
+    },
+    {
+      "bytes": 112,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/special_tokens_map.json",
+      "sha256": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3"
+    },
+    {
+      "bytes": 91005696,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/tf_model.h5",
+      "sha256": "24c06a7429b843d46e40c6b167122053921bf94dce2e5550ea5c07fabc597646"
+    },
+    {
+      "bytes": 466247,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/tokenizer.json",
+      "sha256": "be50c3628f2bf5bb5e3a7f17b1f74611b2561a3a27eeab05e5aa30f411572037"
+    },
+    {
+      "bytes": 350,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/tokenizer_config.json",
+      "sha256": "acb92769e8195aabd29b7b2137a9e6d6e25c476a4f15aa4355c233426c61576b"
+    },
+    {
+      "bytes": 13156,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/train_script.py",
+      "sha256": "f9b98b9d203d728cbf93ccdbae84131ab926541b56196f11d1385fed0b4d1a07"
+    },
+    {
+      "bytes": 231508,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2/vocab.txt",
+      "sha256": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+    },
+    {
+      "bytes": 333,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/.gitignore",
+      "sha256": "49e952801a7cba243720afb05ad7aa5b988f5b1d348b211c578a5175edaabb02"
+    },
+    {
+      "bytes": 5293,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/README.md",
+      "sha256": "1649a4d81dc8f69a3e6a81c94605e01d1ae9b09303366b86cb564dcbcd76f0e4"
+    },
+    {
+      "bytes": 272431,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/1.png",
+      "sha256": "cf7dc24d63331fc134e9c5b802a54948f5bed68bbfb2d04cc9f30d8c403419df"
+    },
+    {
+      "bytes": 439066,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/2.png",
+      "sha256": "88f9a007710225ad6a173bd6728093edb80ac955f2812c5a21ce55355e99e5f6"
+    },
+    {
+      "bytes": 1654057,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/demo_auto.png",
+      "sha256": "cab2e234ed23f0539158644b372dcc2884371811ecba2d404fa178bbd846fc36"
+    },
+    {
+      "bytes": 1615301,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/demo_box.png",
+      "sha256": "c945bbbd13c6e758cfec67d15721460f183fd5927fefe0b126af6e4a7a4cc311"
+    },
+    {
+      "bytes": 1582601,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/demo_point.png",
+      "sha256": "981687d8e4db76c8cef026b3cb9e0fbe23f8cbb8ab811748e01e258e36b72cbd"
+    },
+    {
+      "bytes": 1511382,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/demo_ui.png",
+      "sha256": "be0a4c69e2e2630e72788192d54c1eeb2f6870cab6519ffd7f638bec45867fc4"
+    },
+    {
+      "bytes": 384942,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/mask2token.png",
+      "sha256": "d0106beee3cad13716c047bb9b2a95e48f28b28ff9303bc7cb87796173d6bc23"
+    },
+    {
+      "bytes": 3998756,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/wow_vis1.png",
+      "sha256": "8f521c079f3a03269458590e6b8414931182db8e1c0ba5e460c834ef2658fec5"
+    },
+    {
+      "bytes": 5018762,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/assets/wow_vis2.png",
+      "sha256": "62dbff8dff2c90358edf5e3a77c868db0464440cbf7bd2e00a162cdaa05aad64"
+    },
+    {
+      "bytes": 1861,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/README.md",
+      "sha256": "b7dca2ea00051aad3a261f80ccd3dadfa42496dff611333a17c929181f51f140"
+    },
+    {
+      "bytes": 28223,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/app_web.py",
+      "sha256": "a3c265b04fe0985c761bc559bed2a66d2643744697d9251ad4beeabce695dd72"
+    },
+    {
+      "bytes": 5203,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/batch_pipeline.py",
+      "sha256": "1464959e42111a76967ce053b0955b5488da406dc53e4ba610ff3e77eb2f5e78"
+    },
+    {
+      "bytes": 4041,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/sam_helpers.py",
+      "sha256": "7a9e43b9dcbfea533bb6de72c4203a7bb6bf461a1f239b277137d9ea6c15d8c6"
+    },
+    {
+      "bytes": 11357,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "bytes": 427,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/__init__.py",
+      "sha256": "c8d8eb649610b2d51f138481a89617a3dcb61106465121dcb1c2f23affc84c30"
+    },
+    {
+      "bytes": 15148,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/automatic_mask_generator.py",
+      "sha256": "71c698d2b6cbf5a62eafa5f12106fdf3bff676102adf1aed2287df3b3990b4e0"
+    },
+    {
+      "bytes": 2941,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/build_sam.py",
+      "sha256": "77bc4faf728118625ddd184dc4e6375bd1b5c636fc66fb429f9fc5276f331cc5"
+    },
+    {
+      "bytes": 385,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/modeling/__init__.py",
+      "sha256": "47f6363b86c0bfaa7a6abf723975136d17fae4a5f002d2814a5cce8834d18980"
+    },
+    {
+      "bytes": 1479,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/modeling/common.py",
+      "sha256": "59a53bfa5d0a4d446df7f2bb57d2e95808b130601592b934600fb663d256ce17"
+    },
+    {
+      "bytes": 14420,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/modeling/image_encoder.py",
+      "sha256": "1665ada2902722c9a8cd566c840e324d623ef2b12f7d9ae9f38b24aed0e39886"
+    },
+    {
+      "bytes": 6615,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/modeling/mask_decoder.py",
+      "sha256": "6a2455e990515c67a061187c92c236b879b189f21ef6ebfce1627cae9a6b2f93"
+    },
+    {
+      "bytes": 8594,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/modeling/prompt_encoder.py",
+      "sha256": "bd8f2f5903f0647f55c21c608bcbb334eec2901ebe76aa41061b1c513df4a06f"
+    },
+    {
+      "bytes": 7226,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/modeling/sam.py",
+      "sha256": "2d501173b7345f6829f745a2ade240c98026f6b3237bf6cf8e9473405e86c54e"
+    },
+    {
+      "bytes": 8397,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/modeling/transformer.py",
+      "sha256": "566a8f6db8b608398de939548bd0f485b21752fda2bdda36900e6444ef938d11"
+    },
+    {
+      "bytes": 11649,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/predictor.py",
+      "sha256": "ab66c29ac0b5b204d23997ef49d8a2476f71b596ce97e35efbf116cfc2118fce"
+    },
+    {
+      "bytes": 197,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/utils/__init__.py",
+      "sha256": "34bd8069c54764e7b8d73a78905dbe6467140a2f73170875128f6ca4d8cdd0aa"
+    },
+    {
+      "bytes": 12957,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/utils/amg.py",
+      "sha256": "455efdc69f4f683a9e78f6b2b385ba51380fcdac0f67a200a227222c8c170af9"
+    },
+    {
+      "bytes": 3972,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/segment_anything/segment_anything/utils/transforms.py",
+      "sha256": "26a649f2bca8a4a24b4d56617487a9a54c4279e559b2b813c9de38f58a60107c"
+    },
+    {
+      "bytes": 15670,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/demo/wow_inference.py",
+      "sha256": "7edd60a9978716d41188fb77c708da968ca9f5b8af7cb0ff0eecdec9773e126c"
+    },
+    {
+      "bytes": 15487,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/conversation.py",
+      "sha256": "2d6640bfec06e7da136e2b703d8836d2e64c87a095e397c94fa3d68737f4b027"
+    },
+    {
+      "bytes": 3889,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/dist_utils.py",
+      "sha256": "58fbaede3442c7b6f71d94f7b16ac08f0769fbdfdb7b73dfbb5a069e96949184"
+    },
+    {
+      "bytes": 2170,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/__init__.py",
+      "sha256": "a91b757c6559d00213b0dbf4528c3818e68a4c73dcc26e469923e23aa3a7b99a"
+    },
+    {
+      "bytes": 7005,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internlm2/configuration_internlm2.py",
+      "sha256": "9f9e14d64be7b81068e8421fd27e1c466b3fb6aeb67725ca328e56083c3f7a60"
+    },
+    {
+      "bytes": 61686,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internlm2/modeling_internlm2.py",
+      "sha256": "a943f61b53ca1bfc006268e109cb9af0de4125bc0f5dc443d5b0f290cc72ee4c"
+    },
+    {
+      "bytes": 8791,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internlm2/tokenization_internlm2.py",
+      "sha256": "e548dc777a1def2f5339cfe12de8da2d12500d664e3dafa5c585c407e4b806fa"
+    },
+    {
+      "bytes": 7788,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internlm2/tokenization_internlm2_fast.py",
+      "sha256": "b6dc75cb1a276a897190a003b97a65b13b68b948d64646df67e7f18392dfbb34"
+    },
+    {
+      "bytes": 551,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internvl_chat/__init__.py",
+      "sha256": "0ac4c4487dfa9bba1a23b88af891ba28bd7754cdd68824d777e7deea111d6b7b"
+    },
+    {
+      "bytes": 8912,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internvl_chat/cascade_attention_mask.py",
+      "sha256": "4736dca462a979fd9efca64a907316604d778e39801312ee108550cf4f4bca3f"
+    },
+    {
+      "bytes": 14490,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internvl_chat/cascade_attention_mask_old.py",
+      "sha256": "b745ae0d266a4a48e4796fade393583c8617e6d1869e3c6b9fa9aa274923c365"
+    },
+    {
+      "bytes": 5548,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internvl_chat/configuration_intern_vit.py",
+      "sha256": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8"
+    },
+    {
+      "bytes": 4650,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internvl_chat/configuration_internvl_chat.py",
+      "sha256": "95afcbd5273c2782966500afaf61220c6fe7fbba5cca375ede48aeca34c542c5"
+    },
+    {
+      "bytes": 18106,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internvl_chat/modeling_intern_vit.py",
+      "sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b"
+    },
+    {
+      "bytes": 22489,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/internvl_chat/modeling_internvl_chat.py",
+      "sha256": "2ea75de8759ba249fb61cac16a0540cb1883ece169dc367a908f8993e4c922e7"
+    },
+    {
+      "bytes": 10396,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/phi3/configuration_phi3.py",
+      "sha256": "708af17dfd7133bad59f97d5ccc934a98583845ed38b055a055fb02513166e6a"
+    },
+    {
+      "bytes": 74421,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/model/phi3/modeling_phi3.py",
+      "sha256": "102b0184a7869cba039af52fe650319aa9521af87ea4dcc1a33568b659f9b431"
+    },
+    {
+      "bytes": 1771,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/__init__.py",
+      "sha256": "d5ff5018b8aa77b2a1db1b2b3e3557b646a40d158d56ab67515098f6eb476cdd"
+    },
+    {
+      "bytes": 3161,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/internlm2_packed_training_patch.py",
+      "sha256": "e2c817a05fbd6c3c3c002ef85e934a9059686cca6c776aba1095440048f20a29"
+    },
+    {
+      "bytes": 633,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/internvit_liger_monkey_patch.py",
+      "sha256": "fcee45b4cdbf666ed73d54f4e80744ae45db40cf69bd82abeae812632b7c36fd"
+    },
+    {
+      "bytes": 8475,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/llama2_flash_attn_monkey_patch.py",
+      "sha256": "1365d495f8242f5dd2730187f29dc682c79161921435500745e351d56ba7531b"
+    },
+    {
+      "bytes": 8235,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/llama_flash_attn_monkey_patch.py",
+      "sha256": "415945260c3c65c0b8578697312335c376252f8de8622114ec06f0d66a93ce66"
+    },
+    {
+      "bytes": 4386,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/llama_packed_training_patch.py",
+      "sha256": "f0c45d251009f255435a8d5b15e0367c27f71ef7bf1cd39a049895c25104ff44"
+    },
+    {
+      "bytes": 826,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/llama_rmsnorm_monkey_patch.py",
+      "sha256": "0d5d886df82efe0a3181e26b53bd4b86bf6359897c659da8c00f9f1a2e079277"
+    },
+    {
+      "bytes": 11782,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/pad_data_collator.py",
+      "sha256": "45cb2a68853a78837eb008e352f1a6f459064485b54f03d5b52e706eadbdb650"
+    },
+    {
+      "bytes": 4276,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/phi3_packed_training_patch.py",
+      "sha256": "62b2d454b53fdb8c40678a18253ae038a2d874b35d8aa2330c1109f1c3dc0720"
+    },
+    {
+      "bytes": 4386,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/qwen2_packed_training_patch.py",
+      "sha256": "83b479c2743a0e2733a54eeb9f0d2f212bb2bef626fed81e501720a4d6fc6fe7"
+    },
+    {
+      "bytes": 2097,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/train_dataloader_patch.py",
+      "sha256": "52acc07689f6e4cb6e7d426629abb6d897f5f88f181367d42edb2f9aee93b54f"
+    },
+    {
+      "bytes": 5127,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/patch/train_sampler_patch.py",
+      "sha256": "7e0195f8df1cbc2ea1d23677d2cf6046d4ded64192257be88781ddf88eb0d605"
+    },
+    {
+      "bytes": 219,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/__init__.py",
+      "sha256": "cbe75244b67498a277a710a6af85740de989d605ccc440e74960203982a98498"
+    },
+    {
+      "bytes": 690,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/constants.py",
+      "sha256": "ddfe444d345271d0e3e048ad8c76ed5d387019deaf993ee6031959e361aea083"
+    },
+    {
+      "bytes": 35240,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/dataset.py",
+      "sha256": "8d0db744436709a6e978b2c826fd04521d99f2a3826ab5999095f50cea1f87b8"
+    },
+    {
+      "bytes": 26749,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/dataset_packed.py",
+      "sha256": "31cd550ff0d62fc23236e8e045825227cddf7ba4b475d879f1d6511306cf4254"
+    },
+    {
+      "bytes": 52996,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/internvl_chat_finetune.py",
+      "sha256": "0e1d8d35bbb37d7df5dfd4b1510999f8cdd7565c8ca55cd227b376fe12ebf194"
+    },
+    {
+      "bytes": 44824,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/internvl_chat_mpo.py",
+      "sha256": "5c9f26f1084ded48606308cb1d774b30d05bc5bfcf18365efc5f0d4a3e7188f2"
+    },
+    {
+      "bytes": 49104,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/internvl_chat_pretrain.py",
+      "sha256": "96ac5948f3fbb9649e44c545c24deaacfd3b1bfed76c90fa79c8b9fc396ec797"
+    },
+    {
+      "bytes": 12985,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/internvl/train/trainer_dpo.py",
+      "sha256": "a3690f4f7c519560430243d59a478d176bfed02820069553461981eec043d8e3"
+    },
+    {
+      "bytes": 2233,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/README.md",
+      "sha256": "48dedc1c8bb10ed4d3d8dca2db45561642db9bd305573268139f1e18ec452bdd"
+    },
+    {
+      "bytes": 390,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/__init__.py",
+      "sha256": "01a4c0d3932583cfaec0ccebbeda2554785ed611a8a354fbc8ed8cd3ec735b9f"
+    },
+    {
+      "bytes": 2254,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/config.py",
+      "sha256": "5df129d5b940ad5ed5fa15453cad7336c1565a8d924504d0a41cb3debcf50995"
+    },
+    {
+      "bytes": 3548,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/convert_weights.py",
+      "sha256": "9ee7b351bc13cb9274b398f55f69c426408341b0c5481a97871c2aa3f1f47556"
+    },
+    {
+      "bytes": 713,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/demo/README.md",
+      "sha256": "b345f5326a47334dd9e334afa408b29c0f9396e27df4974b6bb1aa5aacb11a2a"
+    },
+    {
+      "bytes": 58,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/demo/__init__.py",
+      "sha256": "bcfc7c67f3f5762c4f099a4c14bb833d51f2526b041777477263552f3a00bdd7"
+    },
+    {
+      "bytes": 28610,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/demo/app_web.py",
+      "sha256": "2d90c5c86c0d1b500c402e47743d8a377dcf76a8428aeb71c55de98e90fc60b7"
+    },
+    {
+      "bytes": 5388,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/demo/batch_pipeline.py",
+      "sha256": "e30f3dabe8be7c37c560fd78bc5259cfe25f6e73b391b45a9ca03c01e60ae797"
+    },
+    {
+      "bytes": 4193,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/demo/sam_helpers.py",
+      "sha256": "a342b0016e23fb5ee97145185a477c2c0ab8afb23defca37108900a84be89a60"
+    },
+    {
+      "bytes": 1276,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/hf_model_card.md",
+      "sha256": "b9895578901bba325f51c0fb6ca18018056eec965d50934b9138095fc8bcd7de"
+    },
+    {
+      "bytes": 1692,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/infer.py",
+      "sha256": "7b6b82a5d183b3dce00dde4eba7e064012236f0d02a3e062d75988e4c9c84ea8"
+    },
+    {
+      "bytes": 14462,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/model.py",
+      "sha256": "9b900e0ac5d683d72f12d49be2bc72eae9e1a7e8fb699fe27e95ffc06d35f336"
+    },
+    {
+      "bytes": 3443,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/predictor.py",
+      "sha256": "6bab1040c5402e5fd8080eff7af6bbba6446aa41c5f5e76cffb0cafc04dcc7bc"
+    },
+    {
+      "bytes": 6179,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/preprocess.py",
+      "sha256": "9f21e8dbe228ba08eefca3631f30b9ef905b1475c98fd150db7a62d2b8306b7f"
+    },
+    {
+      "bytes": 855,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/tokenizer.py",
+      "sha256": "d3bd2d0dbebd4f9bbd7f7e67bde6fb27a01eb3eb5dcde198bd91635835aa2953"
+    },
+    {
+      "bytes": 6268,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/jittor_wowseg/visualize_samples.py",
+      "sha256": "8941d176385cb27f3e3f96086c3960e1ec4885e76b3a654e40396f4b2eab3c4d"
+    },
+    {
+      "bytes": 21,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/requirements/classification.txt",
+      "sha256": "7e8c0edad44f7d4ca1e9a89a5b7db281d70c4f3ddea38c6ed406f50781cef71d"
+    },
+    {
+      "bytes": 217,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/requirements/clip_benchmark.txt",
+      "sha256": "940326676328767f65a44f13b735cfce6d03df72e358c013b5e4ebecf571f4d1"
+    },
+    {
+      "bytes": 356,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/requirements/internvl_chat.txt",
+      "sha256": "fb0bea1ae241fef322b1e022c7c2c9acf7525a88473762605881da531678a517"
+    },
+    {
+      "bytes": 130,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/requirements/segmentation.txt",
+      "sha256": "7f9780062f19bc6a1a511067dc7cf74898e06d11fb3997500b4d5dd628da8195"
+    },
+    {
+      "bytes": 132,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/requirements/streamlit_demo.txt",
+      "sha256": "da9748037215f44c522c5f6f3ac518325612a1b1e87f089b03ae2713ae139053"
+    },
+    {
+      "bytes": 137,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/requirements.txt",
+      "sha256": "261bbfcf7fc51a884dc32cbf4496c27dfd77b9a9ed8a32497ff07c2509608e22"
+    },
+    {
+      "bytes": 2313,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/shell/internvl3.0/2nd_finetune/internvl3_1b_dynamic_res_2nd_finetune_full.sh",
+      "sha256": "f20bd7bf1756433408ec212b671c41ad2ef65837fef3a1fb8ab0b384b51a58d5"
+    },
+    {
+      "bytes": 2129,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/README.md",
+      "sha256": "df861356326e24ffa16bffc30b1627d873fd88ea8fe01f9404a889a75af10b8d"
+    },
+    {
+      "bytes": 8091,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/convert_osprey_to_internvl.py",
+      "sha256": "9f29cc6a82cbbe63be6726ab61bf60522b9b899ddf799757062cd76d1e019188"
+    },
+    {
+      "bytes": 15487,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/conversation.py",
+      "sha256": "2d6640bfec06e7da136e2b703d8836d2e64c87a095e397c94fa3d68737f4b027"
+    },
+    {
+      "bytes": 3889,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/dist_utils.py",
+      "sha256": "58fbaede3442c7b6f71d94f7b16ac08f0769fbdfdb7b73dfbb5a069e96949184"
+    },
+    {
+      "bytes": 2170,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/__init__.py",
+      "sha256": "a91b757c6559d00213b0dbf4528c3818e68a4c73dcc26e469923e23aa3a7b99a"
+    },
+    {
+      "bytes": 7005,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internlm2/configuration_internlm2.py",
+      "sha256": "9f9e14d64be7b81068e8421fd27e1c466b3fb6aeb67725ca328e56083c3f7a60"
+    },
+    {
+      "bytes": 61686,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internlm2/modeling_internlm2.py",
+      "sha256": "a943f61b53ca1bfc006268e109cb9af0de4125bc0f5dc443d5b0f290cc72ee4c"
+    },
+    {
+      "bytes": 8791,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internlm2/tokenization_internlm2.py",
+      "sha256": "e548dc777a1def2f5339cfe12de8da2d12500d664e3dafa5c585c407e4b806fa"
+    },
+    {
+      "bytes": 7788,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internlm2/tokenization_internlm2_fast.py",
+      "sha256": "b6dc75cb1a276a897190a003b97a65b13b68b948d64646df67e7f18392dfbb34"
+    },
+    {
+      "bytes": 551,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat/__init__.py",
+      "sha256": "0ac4c4487dfa9bba1a23b88af891ba28bd7754cdd68824d777e7deea111d6b7b"
+    },
+    {
+      "bytes": 5548,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat/configuration_intern_vit.py",
+      "sha256": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8"
+    },
+    {
+      "bytes": 5008,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat/configuration_internvl_chat.py",
+      "sha256": "63faba82d52759bc098c727afdddef13f03d558efbf8f626a655a22b5702b8e1"
+    },
+    {
+      "bytes": 18106,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat/modeling_intern_vit.py",
+      "sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b"
+    },
+    {
+      "bytes": 24157,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat/modeling_internvl_chat.py",
+      "sha256": "28ebf19eee3c58c326272a923e706bace6a8311514df076dfeafea84426d01a8"
+    },
+    {
+      "bytes": 19653,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat/prompt_encoder.py",
+      "sha256": "72341895722ce64c4f6bde03e6c27d87fbca03065c7235564804465d740b085d"
+    },
+    {
+      "bytes": 13653,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat_model(old).py",
+      "sha256": "9dee47c3001ea9cdda16f84550552d29cc7a3f08737954c3224a024a781f8c7a"
+    },
+    {
+      "bytes": 551,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat_old/__init__.py",
+      "sha256": "0ac4c4487dfa9bba1a23b88af891ba28bd7754cdd68824d777e7deea111d6b7b"
+    },
+    {
+      "bytes": 5548,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat_old/configuration_intern_vit.py",
+      "sha256": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8"
+    },
+    {
+      "bytes": 4650,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat_old/configuration_internvl_chat.py",
+      "sha256": "95afcbd5273c2782966500afaf61220c6fe7fbba5cca375ede48aeca34c542c5"
+    },
+    {
+      "bytes": 18106,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat_old/modeling_intern_vit.py",
+      "sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b"
+    },
+    {
+      "bytes": 21007,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat_old/modeling_internvl_chat.py",
+      "sha256": "27879cdc443aa50d201d41f5370d093127533eeec26df7b44cf9e51304e19446"
+    },
+    {
+      "bytes": 21007,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/internvl_chat_old/modeling_internvl_chat_new.py",
+      "sha256": "27879cdc443aa50d201d41f5370d093127533eeec26df7b44cf9e51304e19446"
+    },
+    {
+      "bytes": 10396,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/phi3/configuration_phi3.py",
+      "sha256": "708af17dfd7133bad59f97d5ccc934a98583845ed38b055a055fb02513166e6a"
+    },
+    {
+      "bytes": 74421,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/model/phi3/modeling_phi3.py",
+      "sha256": "102b0184a7869cba039af52fe650319aa9521af87ea4dcc1a33568b659f9b431"
+    },
+    {
+      "bytes": 1685,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/__init__.py",
+      "sha256": "31c4341f046e9bbc87da2f395a1677a59529ac81da6fe63e72878bd40cdb2d7a"
+    },
+    {
+      "bytes": 3161,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/internlm2_packed_training_patch.py",
+      "sha256": "e2c817a05fbd6c3c3c002ef85e934a9059686cca6c776aba1095440048f20a29"
+    },
+    {
+      "bytes": 633,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/internvit_liger_monkey_patch.py",
+      "sha256": "fcee45b4cdbf666ed73d54f4e80744ae45db40cf69bd82abeae812632b7c36fd"
+    },
+    {
+      "bytes": 8475,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/llama2_flash_attn_monkey_patch.py",
+      "sha256": "1365d495f8242f5dd2730187f29dc682c79161921435500745e351d56ba7531b"
+    },
+    {
+      "bytes": 8235,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/llama_flash_attn_monkey_patch.py",
+      "sha256": "415945260c3c65c0b8578697312335c376252f8de8622114ec06f0d66a93ce66"
+    },
+    {
+      "bytes": 4386,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/llama_packed_training_patch.py",
+      "sha256": "f0c45d251009f255435a8d5b15e0367c27f71ef7bf1cd39a049895c25104ff44"
+    },
+    {
+      "bytes": 826,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/llama_rmsnorm_monkey_patch.py",
+      "sha256": "0d5d886df82efe0a3181e26b53bd4b86bf6359897c659da8c00f9f1a2e079277"
+    },
+    {
+      "bytes": 7371,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/pad_data_collator.py",
+      "sha256": "896729056cde5ac0a51cc4697d2ac12b1ab3016feb0426ff8e371e58410d18ab"
+    },
+    {
+      "bytes": 4276,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/phi3_packed_training_patch.py",
+      "sha256": "62b2d454b53fdb8c40678a18253ae038a2d874b35d8aa2330c1109f1c3dc0720"
+    },
+    {
+      "bytes": 4386,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/qwen2_packed_training_patch.py",
+      "sha256": "83b479c2743a0e2733a54eeb9f0d2f212bb2bef626fed81e501720a4d6fc6fe7"
+    },
+    {
+      "bytes": 2097,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/train_dataloader_patch.py",
+      "sha256": "52acc07689f6e4cb6e7d426629abb6d897f5f88f181367d42edb2f9aee93b54f"
+    },
+    {
+      "bytes": 5127,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/patch/train_sampler_patch.py",
+      "sha256": "7e0195f8df1cbc2ea1d23677d2cf6046d4ded64192257be88781ddf88eb0d605"
+    },
+    {
+      "bytes": 219,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/__init__.py",
+      "sha256": "cbe75244b67498a277a710a6af85740de989d605ccc440e74960203982a98498"
+    },
+    {
+      "bytes": 690,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/constants.py",
+      "sha256": "ddfe444d345271d0e3e048ad8c76ed5d387019deaf993ee6031959e361aea083"
+    },
+    {
+      "bytes": 42850,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/dataset.py",
+      "sha256": "e26f045a15cd7f02dc1df83fe2a1473d3c5b8fd58035885c56393e6135732a93"
+    },
+    {
+      "bytes": 26749,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/dataset_packed.py",
+      "sha256": "31cd550ff0d62fc23236e8e045825227cddf7ba4b475d879f1d6511306cf4254"
+    },
+    {
+      "bytes": 46835,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/internvl_chat_finetune.py",
+      "sha256": "01eeae1f158e9565be712c669ee862e2525fc7b5fa00b8d3ef0167bdba607061"
+    },
+    {
+      "bytes": 44824,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/internvl_chat_mpo.py",
+      "sha256": "5c9f26f1084ded48606308cb1d774b30d05bc5bfcf18365efc5f0d4a3e7188f2"
+    },
+    {
+      "bytes": 49104,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/internvl_chat_pretrain.py",
+      "sha256": "96ac5948f3fbb9649e44c545c24deaacfd3b1bfed76c90fa79c8b9fc396ec797"
+    },
+    {
+      "bytes": 12985,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/internvl/train/trainer_dpo.py",
+      "sha256": "a3690f4f7c519560430243d59a478d176bfed02820069553461981eec043d8e3"
+    },
+    {
+      "bytes": 4107,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/semantic_eval.py",
+      "sha256": "6a09dbf2c481fb156c617805bfc165da38c7e7a41dec15f9ce407c12dec5e7cd"
+    },
+    {
+      "bytes": 14849,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/single_mask_infer.py",
+      "sha256": "8edeeba9cfe333d66afb00a2ef92289e58f32a970469babf91121a5a1e70842b"
+    },
+    {
+      "bytes": 1586,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/wow_eval/single_mask_infer.sh",
+      "sha256": "edd06b6aff2cf060b7dfadad7c7eaa221eca6dd24598cfa101ea7da9fdf5a690"
+    },
+    {
+      "bytes": 857,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/zero_stage1_config.json",
+      "sha256": "00a80098536e216fcedeae6e70462dd277bf1f416668abf0933b2ff6f407830f"
+    },
+    {
+      "bytes": 857,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/zero_stage2_config.json",
+      "sha256": "a4a1e873804454651fdc0334097bfebcd8fd72e1bded73c0ba6db601fdea8d3d"
+    },
+    {
+      "bytes": 1006,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta/zero_stage3_config.json",
+      "sha256": "8abd9b4d45fbb98727f8777dfa7a10e12f11b0631a866525308d881e6690440c"
+    }
+  ],
+  "legacy_first_six_max_abs_error": 4.112834281477795e-08,
+  "name_mapping": {
+    "embedding": {
+      "class_index": 2,
+      "class_name": "cabinet",
+      "cleaned_generation": "storage cupboard",
+      "interpretation_flag": false,
+      "method": "MINILM_COSINE",
+      "raw_generation": "storage cupboard",
+      "similarities": [
+        0.27672144546026445,
+        0.27662689106859,
+        0.6029377920875973,
+        0.1863299303860062,
+        0.26312704893334826,
+        0.2600424809100087,
+        0.3157586012345931,
+        0.24689471932781595,
+        0.1636862651410969,
+        0.5426057267127085,
+        0.13562239189464356,
+        0.21362130824715092,
+        0.051111240277922444,
+        0.3963631528799053,
+        0.5933848752048989,
+        0.20524835079830517,
+        0.41134727277283,
+        0.2052579733997299,
+        0.15573591896806244,
+        0.24905014040533943,
+        0.2559931359697821,
+        0.18038584035631744,
+        0.27565402069775324,
+        0.40783038472101796,
+        0.11029506042160134,
+        0.2225645299237432,
+        0.245082483094454,
+        0.17526313407205932,
+        0.3263303136099893,
+        0.24175767128536854,
+        0.1593415224871682,
+        0.36007201339414907,
+        0.25324407585977443,
+        0.2277751020088303,
+        0.16786793918037102,
+        0.25573682244299,
+        0.2944715523097703,
+        0.1521447018865511,
+        0.024377708669262366,
+        0.14313776446430096
+      ],
+      "top1_top2_gap": 0.009552916882698437
+    },
+    "exact": {
+      "class_index": 2,
+      "class_name": "cabinet",
+      "cleaned_generation": "cabinet",
+      "interpretation_flag": false,
+      "method": "EXACT",
+      "raw_generation": "cabinet",
+      "similarities": [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "top1_top2_gap": 1.0
+    }
+  },
+  "native_crop_shape": [
+    9,
+    1024
+  ],
+  "native_replay_evidence": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/receipt.json",
+  "phase": "semantic",
+  "physical": {
+    "name_model_loads": 1,
+    "native_crop_inputs": 9,
+    "siglip2_crop_inputs": 6,
+    "visual_model_loads": 3,
+    "visual_requests": 3,
+    "wow_generations": 1
+  },
+  "request_id": "064c1af343096e8aa342ee81524f18ae14b178fedc1c43a7c9eda4a503db7fae",
+  "schema_version": 1,
+  "scientific_result": false,
+  "scope": "one native captured request per visual adapter",
+  "siglip2_image_shape": [
+    6,
+    1024
+  ],
+  "siglip2_text_shape": [
+    40,
+    1024
+  ],
+  "status": "COMPLETE",
+  "wow": {
+    "final_mask_support": 14,
+    "original_mask_support": 33703,
+    "raw_generation": "cabinet",
+    "trace": {
+      "boundary": "official_generate.visual_token_mask_selection",
+      "combined_patch_count": 10,
+      "full_patch_count": 9,
+      "generate_source_sha256": "936e1cb91291614ebec708073a6b7af08be1685f5cea6e86c4a626660be65365",
+      "mask_consumed": true,
+      "mask_shape": [
+        16,
+        16
+      ],
+      "mask_support": 14,
+      "region_tile_index": 9
+    }
+  }
+}

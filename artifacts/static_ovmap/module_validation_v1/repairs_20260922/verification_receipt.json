@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "artifact_type": "OVIMAP_ENGINEERING_REPAIR_VERIFICATION",
+  "code_commit": "2cad816d98ea07270a032d22f47fe76005c278c0",
+  "module_tests": {"status": "PASS", "passed": 95, "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/module_validation"},
+  "lint": {"status": "PASS", "command": "ruff check src/static_ovmap/module_validation scripts/evaluation/run_ovimap_module_study.py scripts/evaluation/run_ovimap_module_smoke.py scripts/evaluation/rebuild_ovimap_module_native.py tests/module_validation"},
+  "instruction_bundle": {"status": "PASS", "checks": 33, "algorithm_execution": false},
+  "real_released_evaluator_context": "PASS",
+  "native_rebuild_import_replay": "PASS",
+  "study_attempt": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003",
+  "all_phase_exit_code": 0,
+  "executed_historical_boundaries": ["capture", "semantic", "geometry", "query"],
+  "resume": {"same_attempt": true, "new_boundary_executions": 0, "reused_boundary_smokes": 4},
+  "report_only": {"reused": true, "final_report_receipt_exported": true},
+  "scientific_evaluation_rows": 0,
+  "implementation_status": "PARTIAL",
+  "outstanding": ["UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE", "BLOCKED_INDEPENDENT_SCENES"]
+}

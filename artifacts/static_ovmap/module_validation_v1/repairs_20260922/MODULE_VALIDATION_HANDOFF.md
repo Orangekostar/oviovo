@@ -6,9 +6,7 @@
 - Experiment: `BLOCKED_PREREQUISITES`
 - Science: `INCONCLUSIVE_PREREQUISITES`
 - Confirmation: `NOT_RUN_PREREQUISITES`
-- Publication: `PUSH_VERIFIED` for executed code `2cad816d98ea07270a032d22f47fe76005c278c0`; see [publication receipt](../../../artifacts/static_ovmap/module_validation_v1/repairs_20260922/publication_receipt.json).
-
-This correction supersedes the earlier overall-completion claim. [Repair details and commands](module_validation_v1/ENGINEERING_REPAIRS_20260922.md) distinguish completed engineering fixes from the outstanding independent-scene driver and data requirements. The generated per-attempt report records publication as unchecked because reporting itself does not contact GitHub.
+- Publication: `NOT_CHECKED_BY_REPORT`
 
 Evidence:
 

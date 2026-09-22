@@ -1,0 +1,92 @@
+{
+  "artifact_type": "OVIMAP_MODULE_EXECUTION_MANIFEST",
+  "attempt": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003",
+  "code_identity": {
+    "dirty": false,
+    "head": "2cad816d98ea07270a032d22f47fe76005c278c0",
+    "status_digest": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+    "tracked_diff_digest": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+    "untracked_content_digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  "cost": {
+    "capture": {
+      "frame_count": 2,
+      "scene_count": 1
+    },
+    "geometry": {},
+    "query": {
+      "physical": {
+        "cache_hits": 36,
+        "crop_inputs": 0,
+        "inference_seconds": 0.0,
+        "model_forwards": 0,
+        "model_loads": 0,
+        "tiles": 0
+      },
+      "policy_replay": {
+        "Q_AREA": {
+          "attempts": 18,
+          "crop_inputs": 108,
+          "failures": 0,
+          "successes": 18
+        },
+        "Q_UNCERTAINTY": {
+          "attempts": 18,
+          "crop_inputs": 108,
+          "failures": 0,
+          "successes": 18
+        }
+      }
+    },
+    "semantic": {
+      "physical": {
+        "name_model_loads": 1,
+        "native_crop_inputs": 9,
+        "siglip2_crop_inputs": 6,
+        "visual_model_loads": 3,
+        "visual_requests": 3,
+        "wow_generations": 1
+      }
+    }
+  },
+  "errors": [
+    "BLOCKED_INDEPENDENT_SCENES",
+    "PHASE_NOT_COMPLETE:bind",
+    "PHASE_NOT_COMPLETE:capture",
+    "PHASE_NOT_COMPLETE:confirm",
+    "PHASE_NOT_COMPLETE:geometry",
+    "PHASE_NOT_COMPLETE:query",
+    "PHASE_NOT_COMPLETE:select",
+    "PHASE_NOT_COMPLETE:semantic",
+    "SELECTION_NOT_FROZEN",
+    "UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE"
+  ],
+  "phase_receipts": {
+    "bind": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/bind.json",
+    "capture": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/capture.json",
+    "confirm": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/confirm.json",
+    "geometry": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/geometry.json",
+    "query": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/query.json",
+    "report": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/report.json",
+    "select": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/select.json",
+    "semantic": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/receipts/semantic.json"
+  },
+  "reproduction_command": "/home/ww/miniconda3/envs/ovimap-map/bin/python /home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_module_study.py --spec /home/ww/crove/ovimap-module-validation/docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json --phase all --output-root /mnt/shared/ww/ovimap-module-validation-v1 --resolved-config /mnt/shared/ww/ovimap-module-validation-v1/attempt_003/resolved_config.json",
+  "schema_version": 2,
+  "statuses": {
+    "confirmation": "NOT_RUN_PREREQUISITES",
+    "experiment": "BLOCKED_PREREQUISITES",
+    "implementation": "PARTIAL",
+    "publication": "NOT_CHECKED_BY_REPORT",
+    "science": "INCONCLUSIVE_PREREQUISITES"
+  },
+  "timings_seconds": {
+    "bind": 0.059403711988124996,
+    "capture": 0.29383335600141436,
+    "confirm": 0.034976262017153203,
+    "geometry": 0.29350175900617614,
+    "query": 0.18113309401087463,
+    "select": 0.04859930998645723,
+    "semantic": 12.06999435799662
+  }
+}

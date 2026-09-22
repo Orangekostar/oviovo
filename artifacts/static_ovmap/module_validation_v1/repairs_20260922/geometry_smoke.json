@@ -1,0 +1,143 @@
+{
+  "artifact_type": "OVIMAP_EXECUTED_BOUNDARY_SMOKE",
+  "capture_manifest": {
+    "bytes": 70686,
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/manifest.json",
+    "sha256": "2c339b639297b01c82e4537a82d79915b94495115f00fca83f1c3716d77811ed"
+  },
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_module_smoke.py",
+    "--phase",
+    "geometry",
+    "--resolved-config",
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/resolved_config.json",
+    "--output",
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/geometry_smoke.json"
+  ],
+  "complete_hypothesis_count": 10,
+  "config_identity": "7c3f50246da30b9346754571f015c5490fce90cca47fb62d9227beebed461ed0",
+  "conflict_group_count": 4,
+  "elapsed_seconds": 2.780904532992281,
+  "environment": {
+    "executable": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "packages": {
+      "Pillow": "12.3.0",
+      "numpy": "1.26.4",
+      "torch": "2.1.1",
+      "transformers": "4.49.0"
+    },
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]"
+  },
+  "input_identities": [
+    {
+      "bytes": 70686,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/manifest.json",
+      "sha256": "2c339b639297b01c82e4537a82d79915b94495115f00fca83f1c3716d77811ed"
+    },
+    {
+      "bytes": 14566515,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/surface.npz",
+      "sha256": "dacc06b9a459a55d20a987c83e0915cbee68c17c5b100491e56d2c1eab31a4d2"
+    },
+    {
+      "bytes": 138791600,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/mapper/cropformer_inst/instance_mesh_2.ply",
+      "sha256": "f406ddfffc20fe001a2afcbf03f4d6bba532025284651309d3db52881654d50a"
+    },
+    {
+      "bytes": 569136,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+      "sha256": "7f49c52516b4a3031f48776a48076cda8226757f6e0d03cc7c72e1fd3fe684e1"
+    },
+    {
+      "bytes": 1456011,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/depth.npz",
+      "sha256": "2abe2b828ab0fe2ff477288a832c7b4cacc353d2669465b7272d5fc312adedd1"
+    },
+    {
+      "bytes": 924816,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/rgb.png",
+      "sha256": "b26384023e986d4757a256785fd610f3d85f4dfd5a54ee011c92a085e585d7ad"
+    },
+    {
+      "bytes": 13659,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/panoptic.png",
+      "sha256": "287aedb798658629c7ee71c5a6811c94c157bdb2b78b44aa4db03d24b7994148"
+    },
+    {
+      "bytes": 16497,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/global_owner.png",
+      "sha256": "7372cd124ddcfbdfa17e21f5a38ea8d4f6cccd50d4fa1f08c4d2427812673b07"
+    },
+    {
+      "bytes": 7097000,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/preinsert.npz",
+      "sha256": "d5d9a8c83716f72d1b85ce409cceee865373da4ff6fe007790c5f71b8d1c3e4a"
+    },
+    {
+      "bytes": 9205,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/native_state.json",
+      "sha256": "c91ad685974a0c29e753711c29aa0170f1dff24e4edd633493c864b6c4ca8112"
+    },
+    {
+      "bytes": 92883,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000000/requests.npz",
+      "sha256": "e8aaceeb0008f1b94502c247f54e76b82a1a4a8c54a0844e85ebbfeba5749a8c"
+    },
+    {
+      "bytes": 1645566,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/depth.npz",
+      "sha256": "845742db770bb6f8e0d4269ec4b34bdd94b144a1fc3c8fbb8b9b1fbfa410394a"
+    },
+    {
+      "bytes": 918127,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/rgb.png",
+      "sha256": "ab5bd11bbd9be3d909759096710366eb497957ea42fb6a3193ac99c87345418e"
+    },
+    {
+      "bytes": 13635,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/panoptic.png",
+      "sha256": "dc024c66eef505b664ee8ec60ceea21828c4406335a9c73fc2cc43366d460424"
+    },
+    {
+      "bytes": 17204,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/global_owner.png",
+      "sha256": "b000951887db4b875c62fba06b96a97cf5357e0c6a461dfaf1eab497f2806ab9"
+    },
+    {
+      "bytes": 7079393,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/preinsert.npz",
+      "sha256": "7affa45380db811bcb165e6cce477d77718b23bb4f4155919ab5e66748ac503c"
+    },
+    {
+      "bytes": 8924,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/native_state.json",
+      "sha256": "605cfcf4d7504ba46b9d7efa37621678726dfa41efcf4f6a354fc164d1719c47"
+    },
+    {
+      "bytes": 88855,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/frames/000010/requests.npz",
+      "sha256": "91d7fe462a9131f8f3b31b9bb5699dfc7c671ff7d2568cae451641b34c6f7373"
+    },
+    {
+      "bytes": 50497,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/receipt.json",
+      "sha256": "0fda5836a031fa5a4858d6a5a56719ae716bf3b14c8840b0bcc795867dcc04fb"
+    }
+  ],
+  "leaf_contact_count": 138,
+  "leaf_count": 4233,
+  "native_replay_evidence": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/receipt.json",
+  "noop_owner_exact": true,
+  "owner0_exact": true,
+  "phase": "geometry",
+  "scene_id": "room0",
+  "schema_version": 1,
+  "scientific_result": false,
+  "scope": "first_4096_native_faces",
+  "status": "COMPLETE",
+  "surface_faces": 4096,
+  "surface_rows": 12288,
+  "untouched_owner_count": 0
+}

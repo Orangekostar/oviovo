@@ -1,0 +1,39 @@
+{
+  "blockers": [
+    "BLOCKED_INDEPENDENT_SCENES"
+  ],
+  "cache_key": "45c05bb78423243076dcc7fb418a25e31351bd439cc85037ba4f00685199ab44",
+  "created_utc": "2026-09-22T13:19:49+00:00",
+  "dependency_identity": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "metrics": {
+    "bound_asset_count": 9,
+    "elapsed_seconds": 0.059403711988124996,
+    "eligible_confirmation_families": 0,
+    "eligible_development_families": 0,
+    "inventory_scene_count": 0,
+    "missing_asset_count": 1
+  },
+  "output_identities": {
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/asset_resolution.json": {
+      "bytes": 3912,
+      "sha256": "8e8857d8ba74366dbb1e3b5c4a72c15c645121aa0c1e8985f3f5063d97198c48"
+    },
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/scene_inventory.json": {
+      "bytes": 102,
+      "sha256": "9642757bbba12a5baa484a1c9d7361f8ad29a83f3560f28e862379e18527037c"
+    },
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/splits.json": {
+      "bytes": 396,
+      "sha256": "e3be87cd65b1d6c4ec315d59a3bf512a2fdec75ce424a0b5c746d6ce1b6b1459"
+    }
+  },
+  "outputs": {
+    "asset_resolution": "asset_resolution.json",
+    "scene_inventory": "scene_inventory.json",
+    "splits": "splits.json"
+  },
+  "phase": "bind",
+  "reused_from": null,
+  "schema_version": 2,
+  "status": "BLOCKED_INDEPENDENT_SCENES"
+}

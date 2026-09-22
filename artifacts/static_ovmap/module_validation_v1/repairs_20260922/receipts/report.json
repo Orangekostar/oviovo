@@ -1,0 +1,55 @@
+{
+  "blockers": [
+    "BLOCKED_INDEPENDENT_SCENES",
+    "PHASE_NOT_COMPLETE:bind",
+    "PHASE_NOT_COMPLETE:capture",
+    "PHASE_NOT_COMPLETE:confirm",
+    "PHASE_NOT_COMPLETE:geometry",
+    "PHASE_NOT_COMPLETE:query",
+    "PHASE_NOT_COMPLETE:select",
+    "PHASE_NOT_COMPLETE:semantic",
+    "SELECTION_NOT_FROZEN",
+    "UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE"
+  ],
+  "cache_key": "45c05bb78423243076dcc7fb418a25e31351bd439cc85037ba4f00685199ab44",
+  "created_utc": "2026-09-22T13:20:17+00:00",
+  "dependency_identity": "378b02f3ade11014315d6742e08e6e4ff2d904ec2740888bfe322d0690a32d67",
+  "metrics": {
+    "elapsed_seconds": 0.21965590596664697,
+    "measured_scientific_rows": 0,
+    "required_method_rows": 18
+  },
+  "output_identities": {
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/MODULE_VALIDATION_HANDOFF.md": {
+      "bytes": 1751,
+      "sha256": "8e9d8b37c9fe0c48d63b167160cbbc38882bf091fb5005afd9b3f5e67106425f"
+    },
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/MODULE_VALIDATION_RESULTS.md": {
+      "bytes": 3352,
+      "sha256": "b5265dc51498cebd42015a7e16797696fb7d40d8fd7366033cd57dad169cc053"
+    },
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/execution_manifest.json": {
+      "bytes": 3497,
+      "sha256": "df8f1791e765a7e0555efd14e216744eb1e40035a02e1553d11adea34d6a86ed"
+    },
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/external_artifacts.json": {
+      "bytes": 64575,
+      "sha256": "31db4b836c72e1ca1cf3c4d5115a6629ea3d56fa66c79769e8a471afc9e2b1c3"
+    },
+    "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/method_matrix.json": {
+      "bytes": 5397,
+      "sha256": "4200db4228e6ab9e3547eacb8911030219a3c90f34c0142251ed9b7f7ecf1181"
+    }
+  },
+  "outputs": {
+    "execution_manifest": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/execution_manifest.json",
+    "external_artifacts": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/external_artifacts.json",
+    "handoff": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/MODULE_VALIDATION_HANDOFF.md",
+    "method_matrix": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/method_matrix.json",
+    "results": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_003/MODULE_VALIDATION_RESULTS.md"
+  },
+  "phase": "report",
+  "reused_from": null,
+  "schema_version": 2,
+  "status": "COMPLETE"
+}
