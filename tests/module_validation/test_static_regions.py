@@ -34,3 +34,12 @@ def test_new_geometry_mask_has_own_bbox_union_lineage_and_request_identity():
     assert changed[0].request_id != request.request_id
     assert changed[0].target_mask_sha256 != request.target_mask_sha256
     assert static_region(owners, local, 9, frame, "static:changed", (7,), 0) is None
+
+
+def test_static_visible_area_uses_native_local_global_overlap():
+    owners = np.full((4, 4), 7)
+    entities = np.tile([1, 1, 1, 2], (4, 1))
+    request, target, _union = static_region(owners, entities, 7,
+        {"scene_id": "sceneA", "frame_id": 0, "rgb_sha256": "a" * 64}, "map", (7,), 0)
+    assert target.sum() == 16
+    assert request.visible_target_pixels == 12

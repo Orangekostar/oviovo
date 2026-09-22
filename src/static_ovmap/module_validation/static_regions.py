@@ -58,7 +58,7 @@ def static_region(owner_raster, local_entities, owner, frame, source_map_version
     request = RegionRequest(frame["scene_id"], int(frame["frame_id"]), target_id,
         tuple(f"parent:{parent}" for parent in sorted(parent_ids)) + (target_id,), source_map_version,
         _array_digest(target), (int(x.min()), int(y.min()), int(x.max()), int(y.max())),
-        _array_digest(union), int(target.sum()), "static_final_mask_native_union_exclusive_upper_v1",
+        _array_digest(union), int(counts.max()), "static_final_mask_native_union_exclusive_upper_v1",
         rank, frame["rgb_sha256"])
     return request, target, union
 
@@ -144,7 +144,8 @@ def prepare_static_manifest(data, ownership, ancestry, output):
             request = replace(original, requested_view_rank=rank)
             arrays_path = output / "masks" / f"{request.request_id}.npz"
             _write_npz(arrays_path, {"target": target, "union": union})
-            requests[request.request_id] = {"request": request.to_dict(), "masks": file_identity(arrays_path)}
+            requests[request.request_id] = {"request": request.to_dict(), "masks": file_identity(arrays_path),
+                                            "projected_target_pixels": int(target.sum())}
             view_ids.append(request.request_id)
             outputs.append(file_identity(arrays_path))
         views[f"owner:{owner}"] = view_ids

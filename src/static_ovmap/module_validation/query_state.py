@@ -17,14 +17,16 @@ def _readonly(value: Any, dtype: np.dtype | str | None = None) -> np.ndarray:
     return array
 
 
-def _unit_vector(value: Any) -> np.ndarray:
+def _feature_vector(value: Any) -> np.ndarray:
     vector = np.asarray(value, dtype=np.float64)
     if vector.ndim != 1 or not len(vector) or not np.isfinite(vector).all():
         raise ValueError("acquired feature must be a finite nonempty vector")
     norm = float(np.linalg.norm(vector))
     if norm <= 0.0:
         raise ValueError("acquired feature must have nonzero norm")
-    return _readonly(vector / norm, np.float64)
+    # Each paid view is the mean of six unit crops. Keep its magnitude until
+    # area fusion; pairwise cosine/entropy computations normalize separately.
+    return _readonly(vector, np.float64)
 
 
 @dataclass(frozen=True)
@@ -345,7 +347,7 @@ class AcquiredFeature:
             raise ValueError("acquired feature identity is invalid")
         if self.overlap_pixels <= 0:
             raise ValueError("acquired feature overlap must be positive")
-        object.__setattr__(self, "feature", _unit_vector(self.feature))
+        object.__setattr__(self, "feature", _feature_vector(self.feature))
         object.__setattr__(
             self, "spherical_cells", frozenset(int(value) for value in self.spherical_cells)
         )
@@ -449,7 +451,7 @@ class AcquisitionPayload:
         if self.physical_tiles < 0:
             raise ValueError("physical tile count must be nonnegative")
         if self.feature is not None:
-            object.__setattr__(self, "feature", _unit_vector(self.feature))
+            object.__setattr__(self, "feature", _feature_vector(self.feature))
 
 
 @dataclass
@@ -541,6 +543,8 @@ def dispatch_frame_batch(
 
     if quota < 0:
         raise ValueError("frame quota must be nonnegative")
+    if quota == 0:
+        return ()
     batch: list[QueryCandidate] = []
     seen: set[str] = set()
     for candidate in ranked_candidates:

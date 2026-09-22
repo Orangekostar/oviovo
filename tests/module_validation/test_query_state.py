@@ -120,6 +120,25 @@ def test_allowance_carries_forward_failed_attempts_debit_and_repeats_skip() -> N
     assert calls == ["success", "failure"]
 
 
+def test_zero_quota_never_debits_or_retrieves_a_candidate() -> None:
+    state = QueryPolicyState("Q_AREA", class_count=2)
+    calls = []
+    store = FeatureStore(lambda candidate: calls.append(candidate.request_id))
+    assert dispatch_frame_batch(state, store, [_candidate(1, "unpaid", 20)], quota=0) == ()
+    assert calls == []
+    assert state.logical_ledger.attempts == 0
+
+
+def test_common_query_fusion_preserves_raw_six_crop_mean_magnitudes() -> None:
+    state = QueryPolicyState("Q_AREA", class_count=2)
+    features = {"weak": np.array([.1, 0.]), "strong": np.array([0., 1.])}
+    store = FeatureStore(lambda candidate: AcquisitionPayload(features[candidate.request_id], 6, .1))
+    dispatch_frame_batch(state, store, [_candidate(1, "weak", 20), _candidate(1, "strong", 10)], quota=2)
+    labels = export_query_labels(state, [1], np.eye(2), valid_class_ids=(4, 7))
+    assert labels[1] == 7
+    np.testing.assert_allclose(state.successful_features(1)[0].feature, [.1, 0.])
+
+
 def test_frame_barrier_retention_alias_merge_and_shared_cache_isolation() -> None:
     features = {f"r{index}": np.array([float(index + 1), 1.0]) for index in range(12)}
     store = FeatureStore(
