@@ -166,7 +166,7 @@ index 4206311..7cb30d4 100644
 \ No newline at end of file
 +#endif  // GLOBAL_SEGMENT_MAP_PY_H_
 diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
-index 14e66ca..a87a4af 100644
+index 14e66ca..459a38b 100644
 --- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
 +++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
 @@ -1,63 +1,66 @@
@@ -236,7 +236,7 @@ index 14e66ca..a87a4af 100644
      map_config_.voxel_size = 0.01; // TODO yaml
      map_config_.inst_association = inst_association_;
      map_config_.voxels_per_side = 8u; // TODO yaml
-@@ -405,100 +408,300 @@ bool GlobalSegmentMap_py::integrateFrame()
+@@ -405,100 +408,307 @@ bool GlobalSegmentMap_py::integrateFrame()
                  dynamic_cast<SegmentConfidence *>(segment)->seg_label_confidence_,
                  segment->colors_, segment->label_,
                  kIsFreespacePointcloud); // TODO for confidence
@@ -325,6 +325,12 @@ index 14e66ca..a87a4af 100644
 +        }
 +    }
 +
++    // Query histories need current membership for unseen as well as observed
++    // segments: an association update can split or reassign an old instance.
++    // This accessor only reads the fusion table under the existing layer lock.
++    for (const auto &label : fusion->label_frames_count_) {
++        registered_labels.emplace(label.first);
++    }
 +    for (const Label segment_label : registered_labels) {
 +        pybind11::dict row;
 +        row["segment_label"] = segment_label;
@@ -344,6 +350,7 @@ index 14e66ca..a87a4af 100644
 +    state["segments"] = segments;
 +    state["aliases"] = aliases;
 +    state["label_instances"] = label_instances;
++    state["label_instances_scope"] = "all_known_labels";
 +    state["association"] = association;
 +    return state;
 +}
@@ -537,7 +544,7 @@ index 14e66ca..a87a4af 100644
      if (save_sem_mesh)
          mesh_semantic_integrator_->generateMesh(only_mesh_updated_blocks,clear_updated_flag);
      if (save_inst_mesh)
-@@ -786,66 +989,69 @@ void GlobalSegmentMap_py::raycastPanopticPredictions(
+@@ -786,66 +996,69 @@ void GlobalSegmentMap_py::raycastPanopticPredictions(
      int num_inst_labels = inst_sem_labels.shape()[0];
      for (int inst_i = 0; inst_i < num_inst_labels; inst_i++) {
          inst_sem_map[inst_i + 1] = ((uint8_t *)inst_sem_labels.data())[inst_i];

@@ -276,6 +276,17 @@ def main():
     manifest = verify_capture(manifest_path)
     if manifest["native_extension"]["path"] != str(extension):
         raise AssertionError("replay loaded a different native extension")
+    membership_counts = []
+    for frame in manifest["frames"]:
+        state = json.loads((manifest_path.parent / frame["native_state"]["path"]).read_text())["native_state"]
+        if state.get("label_instances_scope") != "all_known_labels":
+            raise AssertionError("native replay lacks full current label membership")
+        labels = [int(row["segment_label"]) for row in state["label_instances"]]
+        registered = {int(row["registered_label"]) for row in state["segments"]}
+        if labels != sorted(set(labels)) or not registered <= set(labels):
+            raise AssertionError("full native membership is unordered, duplicated, or incomplete")
+        membership_counts.append({"frame_id": frame["frame_id"], "all_known_labels": len(labels),
+                                  "currently_registered_labels": len(registered)})
     atomic_write_json(
         output / "receipt.json",
         {
@@ -286,6 +297,7 @@ def main():
             "extension": file_identity(extension),
             "capture_manifest": file_identity(manifest_path),
             "frame_ids": manifest["completed_frame_ids"],
+            "current_membership": membership_counts,
             "inputs": inputs,
             "commands": commands,
             "payloads": [

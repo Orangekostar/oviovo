@@ -42,6 +42,17 @@ first vertex's color, and drops instances with fewer than two observations.
 N0 reconstruction must preserve this original paint; S/Q freeze that exact
 owner vector. Numerical voxel owners remain separate capture diagnostics.
 
+Q integration found that v8 exported membership only for currently inserted
+segments. ScanNet instance IDs can change non-monotonically, so these sparse
+snapshots cannot justify causal owner aliases. Native-v9 adds a read-only scan
+of `label_frames_count_` under the same lock, marks `all_known_labels`, and
+passes the two-frame native replay (32/32 then 34/31 known/current labels).
+All S/G/Q branches will share the v9 replay. First two v8 native captures and
+one interrupted third capture are preserved under each scene's
+`historical_native_v8`; old study outputs are under `scenes_native_v8`.
+They are historical diagnostics, not active result receipts. Raw exports,
+annotation/text artifacts and three completed CropFormer outputs are reused.
+
 ## Task 2 — Native ScanNet200 readout and evaluation adapter
 
 Files: new `src/static_ovmap/module_validation/scannet_study.py`, `scannet_ground_truth.py`, tests `test_scannet_study.py`.

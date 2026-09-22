@@ -164,6 +164,12 @@ def test_ovi_patch_binds_locked_numerical_native_accessors() -> None:
     assert '.def("exportStudySurfaceLabels"' in patch
 
 
+def test_native_frame_snapshot_includes_unobserved_registered_membership() -> None:
+    patch = OVI_PATCH.read_text(encoding="utf-8")
+    assert "for (const auto &label : fusion->label_frames_count_)" in patch
+    assert 'state["label_instances_scope"] = "all_known_labels";' in patch
+
+
 def test_ovi_patch_places_three_capture_hooks_on_active_call_chain() -> None:
     patch = OVI_PATCH.read_text(encoding="utf-8")
 
