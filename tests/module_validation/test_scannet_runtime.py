@@ -68,6 +68,16 @@ def test_busy_gpu_fails_before_starting_any_visual_job(tmp_path):
     require_idle_gpu("2", tmp_path, sample="8, 0")
 
 
+def test_gpu_rechecks_transient_teardown_without_accepting_a_busy_sample(tmp_path, monkeypatch):
+    from src.static_ovmap.module_validation import scannet_runtime as runtime
+
+    samples = iter(["1489, 55", "0, 0"])
+    monkeypatch.setattr(runtime.subprocess, "check_output", lambda *args, **kwargs: next(samples))
+    monkeypatch.setattr(runtime.time, "sleep", lambda seconds: None)
+    runtime.require_idle_gpu("0", tmp_path)
+    assert json.loads((tmp_path / "resource_status.json").read_text())["status"] == "AVAILABLE"
+
+
 def test_interrupted_native_replay_preserves_partial_before_retry(tmp_path):
     from src.static_ovmap.module_validation.scannet_runtime import (
         preserve_interrupted_replay,

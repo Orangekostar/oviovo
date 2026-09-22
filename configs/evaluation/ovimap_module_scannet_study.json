@@ -1,0 +1,11 @@
+{
+  "runtime_config": "configs/evaluation/ovimap_module_scannet_runtime.json",
+  "study_root": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1",
+  "native_model": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+  "siglip2_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384",
+  "wow_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg",
+  "wow_code": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta",
+  "name_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2",
+  "native_text_cache": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/native/text.npz",
+  "siglip2_text_cache": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/siglip2/text.npz"
+}

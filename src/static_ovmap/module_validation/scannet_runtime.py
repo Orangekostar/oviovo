@@ -44,8 +44,16 @@ def _tree_inputs(root: Path, pattern: str = "*") -> list[dict]:
 
 def require_idle_gpu(device: str, output: Path, *, sample: str | None = None) -> None:
     if sample is None:
-        sample = subprocess.check_output(["nvidia-smi", "-i", device,
-            "--query-gpu=memory.used,utilization.gpu", "--format=csv,noheader,nounits"], text=True).strip()
+        # NVML can briefly report the just-exited visual process's context and
+        # utilization. Recheck for at most 15 seconds; never waive occupancy.
+        deadline = time.monotonic() + 15
+        while True:
+            sample = subprocess.check_output(["nvidia-smi", "-i", device,
+                "--query-gpu=memory.used,utilization.gpu", "--format=csv,noheader,nounits"], text=True).strip()
+            memory, utilization = (int(value.strip()) for value in sample.split(","))
+            if (memory <= 512 and utilization <= 5) or time.monotonic() >= deadline:
+                break
+            time.sleep(1)
     memory, utilization = (int(value.strip()) for value in sample.split(","))
     if memory > 512 or utilization > 5:
         atomic_write_json(output / "resource_status.json", {"status": "BLOCKED_GPU_BUSY",
