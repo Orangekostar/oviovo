@@ -54,6 +54,18 @@ def test_selector_keeps_threshold_ties_fallback_and_masks_ranks_unchanged():
     assert keep.prediction_key == native.prediction_key
 
 
+def test_successful_teacher_with_undefined_cal_metric_makes_comparison_inconclusive():
+    rows = [{"scene_id": scene, "role": "cal", "rows": [
+        {"method_id": method, "successful_requests": 2, "added_seconds": 1.,
+         "metrics": {"uap": None if method == "S_WOW_VOTE" and scene == "c1" else .2, "miou": .3}}
+        for method in ("S_SIGLIP2_AREA", "S_SIGLIP2_VOTE", "S_WOW_VOTE")]}
+        for scene in ("c1", "c2")]
+    result = calibrated_teacher(rows, ("c1", "c2"))
+    assert result["status"] == "INCONCLUSIVE_UNDEFINED_CAL_METRIC"
+    assert result["teacher_id"] is None
+    assert result["undefined_candidates"] == ["S_WOW_VOTE"]
+
+
 @pytest.mark.skipif(not (UPSTREAM / "scripts/eval_sem_seg.py").is_file(), reason="pinned native checkout required")
 def test_direct_scene_driver_locks_five_rows_then_uses_real_released_evaluator(tmp_path, monkeypatch):
     from src.static_ovmap.module_validation import semantic_pipeline as pipeline

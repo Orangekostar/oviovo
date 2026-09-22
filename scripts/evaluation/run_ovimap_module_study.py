@@ -624,6 +624,8 @@ def select_phase(context: PhaseContext) -> PhaseResult:
         status = ReceiptStatus.BLOCKED_PREREQUISITE
         blockers = tuple(dependency_blockers)
     else:
+        if "scannet_runtime" in context.resolved_config:
+            return _execute_scannet_selection(context)
         return PhaseResult(
             status=ReceiptStatus.BLOCKED_PREREQUISITE,
             blockers=("MISSING_SELECTION_METRICS",),
@@ -636,6 +638,50 @@ def select_phase(context: PhaseContext) -> PhaseResult:
         metrics={"retained_modules": 0, "combination_variants": 0},
         blockers=blockers,
     )
+
+
+def _execute_scannet_selection(context: PhaseContext) -> PhaseResult:
+    from src.static_ovmap.module_validation.study_execution import verify_receipt
+
+    config_path = Path(context.resolved_config.get("scannet_study_config",
+        REPOSITORY_ROOT / "configs/evaluation/ovimap_module_scannet_study.json"))
+    if not config_path.is_absolute():
+        config_path = REPOSITORY_ROOT / config_path
+    config = _read_json(config_path)
+    runtime_path = Path(config["runtime_config"])
+    runtime = _read_json(runtime_path if runtime_path.is_absolute() else REPOSITORY_ROOT / runtime_path)
+    if runtime != context.resolved_config["scannet_runtime"]:
+        raise ValueError("selection runtime differs from the bound capture configuration")
+    command = [runtime["mapping_python"], str(REPOSITORY_ROOT / "scripts/evaluation/run_ovimap_scannet_selection.py"),
+               "--config", str(config_path), "--phase", "all"]
+    log_path = context.attempt_dir / "selection_scientific.log"
+    with log_path.open("a") as log:
+        offset = log.tell()
+        result = subprocess.run(command, cwd=REPOSITORY_ROOT, stdout=log, stderr=subprocess.STDOUT, check=False)
+    if result.returncode:
+        with log_path.open(errors="replace") as log:
+            log.seek(offset)
+            message = log.read()
+        for marker in ("PENDING_REQUIRED_COMBINATIONS", "GPU_BUSY"):
+            if marker in message:
+                return PhaseResult(ReceiptStatus.BLOCKED_PREREQUISITE, outputs={"log": str(log_path)},
+                                   blockers=(marker,))
+        raise RuntimeError(f"scientific selection failed ({result.returncode}); see {log_path}")
+    source = Path(config["study_root"]) / "selection/receipt.json"
+    value = verify_receipt(source)
+    selection = _read_json(Path(value["selection_path"]))
+    output = context.attempt_dir / "selection.json"
+    atomic_write_json(output, selection)
+    manifest = context.attempt_dir / "selection_runtime.json"
+    atomic_write_json(manifest, {"status": "COMPLETE", "study_receipt": str(source), "command": command,
+                                "input_identities": _scientific_identities(source)})
+    modules = selection["module_selection"]
+    retained = sum((modules["semantic"]["selected_method"] != "N0",
+                    modules["geometry"]["selected_method"] != "G_ORIGINAL",
+                    modules["query"]["selected_method"] == "Q_GAIN"))
+    return PhaseResult(ReceiptStatus.COMPLETE,
+        outputs={"selection": str(output), "runtime": str(manifest), "log": str(log_path)},
+        metrics={"retained_modules": retained, "combination_variants": len(selection["combinations"])})
 
 
 def confirm_phase(context: PhaseContext) -> PhaseResult:

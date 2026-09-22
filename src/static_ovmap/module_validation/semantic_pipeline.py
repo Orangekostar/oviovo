@@ -146,18 +146,21 @@ def calibrated_teacher(cal_results: list[dict], cal_scenes: tuple[str, ...]) -> 
     if (len(cal_results) != len(cal_scenes) or {row["scene_id"] for row in cal_results} != set(cal_scenes)
             or any(row["role"] != "cal" for row in cal_results)):
         raise ValueError("teacher selection requires exactly the locked CAL scenes")
-    candidates = []
+    candidates, undefined = [], []
     for method in TEACHER_IDS:
         rows = [next(row for row in scene["rows"] if row["method_id"] == method) for scene in cal_results]
         if not any(row["successful_requests"] for row in rows):
             continue
         if any(row["metrics"].get(name) is None for row in rows for name in ("uap", "miou")):
+            undefined.append(method)
             continue
         candidates.append({"method": method, "mean_uap": float(np.mean([row["metrics"]["uap"] for row in rows])),
             "mean_miou": float(np.mean([row["metrics"]["miou"] for row in rows])),
             "median_cost": float(np.median([row["added_seconds"] for row in rows]))})
-    return {"teacher_id": select_teacher(candidates) if candidates else None, "candidates": candidates,
-            "selection_scenes": list(cal_scenes), "status": "COMPLETE" if candidates else "BLOCKED_NO_AVAILABLE_TEACHER"}
+    return {"teacher_id": select_teacher(candidates) if candidates and not undefined else None,
+            "candidates": candidates, "undefined_candidates": undefined,
+            "selection_scenes": list(cal_scenes), "status": "INCONCLUSIVE_UNDEFINED_CAL_METRIC" if undefined
+            else "COMPLETE" if candidates else "BLOCKED_NO_AVAILABLE_TEACHER"}
 
 
 def selector_prediction(native, head_id, suggestions, values, threshold, costs, metadata=None):

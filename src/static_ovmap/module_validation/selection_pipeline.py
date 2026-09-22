@@ -59,7 +59,9 @@ def standalone_selection(semantic, geometry, query_cal, query, *, select_scenes,
             raise ValueError("S and G N0 bridges differ on a shared SELECT scene")
     unavailable = _absent_heads(semantic_rows, ("S_SIMPLE", "S_NO_CONTEXT", "S_PAIRED"), semantic["learned_status"])
     if semantic["teacher_id"] is None:
-        s_selection = SemanticSelection("N0", None, False, semantic["learned_status"], "N0_FALLBACK_NO_AVAILABLE_TEACHER")
+        s_selection = SemanticSelection("N0", None, False, semantic["learned_status"],
+            semantic["learned_status"] if semantic["learned_status"].startswith("INCONCLUSIVE")
+            else "N0_FALLBACK_NO_AVAILABLE_TEACHER")
     else:
         s_selection = select_semantic_module(semantic_rows, frozen_teacher_id=semantic["teacher_id"], unavailable_methods=unavailable)
     g_unavailable = _absent_heads(geometry_rows, ("G_QUALITY",), geometry["learned_status"])
