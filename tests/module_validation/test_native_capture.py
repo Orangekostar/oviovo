@@ -183,8 +183,9 @@ def test_ovi_patch_places_three_capture_hooks_on_active_call_chain() -> None:
     assert positions == sorted(positions)
 
 
+@pytest.mark.parametrize("wrong_color", [False, True])
 def test_native_capture_session_records_all_boundaries_and_aligned_surface(
-    tmp_path: Path,
+    tmp_path: Path, wrong_color: bool,
 ) -> None:
     session = NativeCaptureSession(
         capture_root=tmp_path / "capture",
@@ -273,14 +274,30 @@ def test_native_capture_session_records_all_boundaries_and_aligned_surface(
         "element vertex 3\n"
         "property float x\nproperty float y\nproperty float z\n"
         "property float normal_x\nproperty float normal_y\nproperty float normal_z\n"
+        "property uchar red\nproperty uchar green\nproperty uchar blue\n"
         "element face 1\nproperty list uchar int vertex_indices\n"
         "end_header\n"
-        "0 0 0 0 0 1\n1 0 0 0 0 1\n0 1 0 0 0 1\n"
+        "0 0 0 0 0 1 10 20 30\n1 0 0 0 0 1 10 20 30\n0 1 0 0 0 1 0 0 0\n"
         "3 0 1 2\n",
         encoding="ascii",
     )
 
     class FakeGsm:
+        def getInstanceColor(self, owner):
+            if wrong_color:
+                return np.array([255, 255, 255], dtype=np.uint8)
+            return np.array([10, 20, 30] if owner == 11 else [0, 0, 0], dtype=np.uint8)
+
+        def exportStudyTsdfState(self):
+            return {
+                "block_indices": np.array([[1, -2, 3]], dtype=np.int32),
+                "distance": np.arange(8, dtype=np.float32) * 0.01,
+                "weight": np.arange(8, dtype=np.float32),
+                "color": np.tile(np.array([[10, 20, 30, 255]], dtype=np.uint8), (8, 1)),
+                "voxel_size": 0.01,
+                "voxels_per_side": 2,
+            }
+
         def exportStudySurfaceLabels(self, xyz):
             assert xyz.dtype == np.float32
             assert xyz.shape == (3, 3)
@@ -292,9 +309,22 @@ def test_native_capture_session_records_all_boundaries_and_aligned_surface(
                 "label_mapping_count_threshold_factor": np.float32(0.1),
             }
 
+    if wrong_color:
+        with pytest.raises(ValueError, match="owner export disagrees"):
+            session.finalize(gsm_node=FakeGsm(), instance_mesh_path=mesh_path)
+        assert not (session.scene_root / "manifest.json").exists()
+        return
     manifest = session.finalize(gsm_node=FakeGsm(), instance_mesh_path=mesh_path)
 
     assert manifest["completed_frame_ids"] == [10]
+    assert manifest["tsdf"]["voxel_count"] == 8
+    assert manifest["tsdf"]["block_count"] == 1
+    assert manifest["native_owner_mesh_parity"]["exact"] is True
+    assert manifest["native_owner_mesh_parity"]["checked_rows"] == 3
+    with np.load(tmp_path / "capture/scene0000_00" / manifest["tsdf"]["path"]) as tsdf:
+        np.testing.assert_array_equal(tsdf["block_indices"], [[1, -2, 3]])
+        np.testing.assert_array_equal(tsdf["weight"], np.arange(8, dtype=np.float32))
+        assert tsdf["color"][0].tolist() == [10, 20, 30, 255]
     assert manifest["surface"]["row_count"] == 3
     frame_manifest = manifest["frames"][0]
     assert frame_manifest["refined_segment_ids_array"] == (
@@ -312,3 +342,11 @@ def test_native_capture_session_records_all_boundaries_and_aligned_surface(
         assert arrays["normal_valid"].tolist() == [True, True, True]
         assert arrays[frame_manifest["refined_segment_ids_array"]].tolist() == [1]
         assert arrays[frame_manifest["registered_labels_array"]].tolist() == [7]
+
+    from src.static_ovmap.module_validation.boundary_jobs import verify_capture
+
+    verify_capture(session.scene_root / "manifest.json", allow_skipped=True)
+    tsdf_path = session.scene_root / manifest["tsdf"]["path"]
+    tsdf_path.write_bytes(tsdf_path.read_bytes() + b"tampered")
+    with pytest.raises(ValueError, match="payload hash mismatch"):
+        verify_capture(session.scene_root / "manifest.json", allow_skipped=True)

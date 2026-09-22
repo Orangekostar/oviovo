@@ -71,6 +71,9 @@ def main():
     extension_dir.mkdir()
     commands, inputs = [], [file_identity(patch)]
     environment = dict(os.environ)
+    environment.update({key: "8" for key in (
+        "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS",
+        "OPENCV_FOR_THREADS_NUM")})
     library_dirs = [
         str(extension_dir),
         str(baseline / "mapping_ros_ws/devel/lib"),
@@ -219,7 +222,7 @@ def main():
         [
             sys.executable,
             "-c",
-            "import consistent_gsm; print(consistent_gsm.__file__); assert hasattr(consistent_gsm.GlobalSegmentMap_py, 'exportStudySurfaceLabels')",
+            "import consistent_gsm; print(consistent_gsm.__file__); assert all(hasattr(consistent_gsm.GlobalSegmentMap_py, name) for name in ('exportStudySurfaceLabels', 'exportStudyTsdfState'))",
         ],
         output,
         "import.log",

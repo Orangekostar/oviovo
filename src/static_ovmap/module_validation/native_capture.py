@@ -644,6 +644,48 @@ def _read_native_mesh(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray, n
     return xyz, normals, normal_valid, faces
 
 
+def _native_tsdf_arrays(exported: Mapping[str, Any]) -> dict[str, np.ndarray]:
+    required = {"block_indices", "distance", "weight", "color", "voxel_size", "voxels_per_side"}
+    if set(exported) != required:
+        raise ValueError("native TSDF export returned an unexpected schema")
+    arrays = {name: np.asarray(value) for name, value in exported.items()}
+    side = arrays["voxels_per_side"]
+    size = arrays["voxel_size"]
+    if side.shape != () or side.dtype.kind not in "iu" or side <= 0:
+        raise ValueError("native TSDF voxels_per_side must be a positive integer")
+    if size.shape != () or not np.isfinite(size) or size <= 0:
+        raise ValueError("native TSDF voxel_size must be finite and positive")
+    blocks = arrays["block_indices"]
+    if blocks.dtype != np.int32 or blocks.ndim != 2 or blocks.shape[1] != 3:
+        raise ValueError("native TSDF block_indices must be int32 [B,3]")
+    if not np.array_equal(blocks, np.unique(blocks, axis=0)):
+        raise ValueError("native TSDF block indices must be unique and lexicographically sorted")
+    count = len(blocks) * int(side) ** 3
+    for name in ("distance", "weight"):
+        value = arrays[name]
+        if value.dtype != np.float32 or value.shape != (count,) or not np.isfinite(value).all():
+            raise ValueError(f"native TSDF {name} must preserve finite float32 voxel rows")
+    if np.any(arrays["weight"] < 0):
+        raise ValueError("native TSDF weight cannot be negative")
+    if arrays["color"].dtype != np.uint8 or arrays["color"].shape != (count, 4):
+        raise ValueError("native TSDF color must preserve uint8 RGBA voxel rows")
+    return arrays
+
+
+def _verify_native_owner_colors(mesh_path: Path, owners: np.ndarray, gsm_node: Any) -> dict:
+    from plyfile import PlyData
+
+    vertices = PlyData.read(mesh_path)["vertex"].data
+    if not all(name in vertices.dtype.names for name in ("red", "green", "blue")):
+        raise ValueError("native instance mesh is missing its original RGB colors")
+    colors = np.column_stack([vertices[name] for name in ("red", "green", "blue")])
+    unique_owners, inverse = np.unique(owners, return_inverse=True)
+    lookup = np.stack([gsm_node.getInstanceColor(int(owner)) for owner in unique_owners])
+    if lookup.shape != (len(unique_owners), 3) or not np.array_equal(colors, lookup[inverse]):
+        raise ValueError("native numerical owner export disagrees with instance mesh colors")
+    return {"exact": True, "checked_rows": len(owners), "owner_count": len(unique_owners)}
+
+
 class NativeCaptureSession:
     """Transactional receiver for the three instrumented native mapper boundaries."""
 
@@ -1074,6 +1116,10 @@ class NativeCaptureSession:
         threshold = float(exported["label_mapping_count_threshold_factor"])
         if not np.isclose(threshold, 0.1, rtol=0.0, atol=1e-7):
             raise ValueError("native surface export did not use the mesh label threshold")
+        owner_parity = _verify_native_owner_colors(mesh_path, arrays["original_owner"], gsm_node)
+        tsdf_arrays = _native_tsdf_arrays(gsm_node.exportStudyTsdfState())
+        tsdf_path = self.scene_root / "tsdf.npz"
+        _write_npz(tsdf_path, tsdf_arrays)
         surface_path = self.scene_root / "surface.npz"
         _write_npz(surface_path, arrays)
 
@@ -1132,6 +1178,16 @@ class NativeCaptureSession:
                 "label_mapping_count_threshold_factor": threshold,
             },
             "alias_table": [list(row) for row in aliases],
+            "tsdf": {
+                "path": self._relative(tsdf_path),
+                "sha256": sha256_file(tsdf_path),
+                "block_count": len(tsdf_arrays["block_indices"]),
+                "voxel_count": len(tsdf_arrays["distance"]),
+                "voxel_size": float(tsdf_arrays["voxel_size"]),
+                "voxels_per_side": int(tsdf_arrays["voxels_per_side"]),
+                "order": "lexicographic_blocks_native_linear_voxels",
+            },
+            "native_owner_mesh_parity": owner_parity,
             "instance_registry": registry,
             "native_extension": module_identity,
         }

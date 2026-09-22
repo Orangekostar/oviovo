@@ -30,6 +30,9 @@ def capture_inputs(manifest_path: Path | str, manifest: dict) -> tuple[dict, ...
     rows = [{"path": str(Path(manifest_path).resolve())}]
     surface = manifest["surface"]
     rows.append({"path": str(root / surface["path"]), "sha256": surface["sha256"]})
+    if "tsdf" in manifest:
+        tsdf = manifest["tsdf"]
+        rows.append({"path": str(root / tsdf["path"]), "sha256": tsdf["sha256"]})
     if "source_mesh_path" in surface:
         rows.append(
             {

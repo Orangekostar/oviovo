@@ -1,8 +1,8 @@
 diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
-index 4206311..ab929d8 100644
+index 4206311..7cb30d4 100644
 --- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
 +++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
-@@ -97,100 +97,106 @@ void insertSegments(
+@@ -97,100 +97,108 @@ void insertSegments(
      pybind11::array &T_G_C,
      bool is_thing,
      Label desginated_label = BackgroundLabel
@@ -54,6 +54,8 @@ index 4206311..ab929d8 100644
  bool integrateFrame();
  
 +pybind11::dict exportStudyFrameState();
++
++pybind11::dict exportStudyTsdfState();
 +
 +pybind11::dict exportStudySurfaceLabels(
 +    pybind11::array_t<float> native_xyz
@@ -109,7 +111,7 @@ index 4206311..ab929d8 100644
  private:
      std::string log_file_; // log file path
  
-@@ -233,51 +239,51 @@ private:
+@@ -233,51 +241,51 @@ private:
      /* map, meshes and integrators */
      std::shared_ptr<LabelTsdfMap> map_;
      std::shared_ptr<LabelTsdfConfidenceIntegrator> integrator_;
@@ -164,10 +166,10 @@ index 4206311..ab929d8 100644
 \ No newline at end of file
 +#endif  // GLOBAL_SEGMENT_MAP_PY_H_
 diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
-index 14e66ca..2102095 100644
+index 14e66ca..a87a4af 100644
 --- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
 +++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
-@@ -1,63 +1,65 @@
+@@ -1,63 +1,66 @@
  #include "consistent_mapping/global_segment_map_py.h"
  #include <global_segment_map/common.h>
  #include "voxblox/core/color.h"
@@ -178,6 +180,7 @@ index 14e66ca..2102095 100644
  #include <Eigen/Dense>
  
  #include <chrono>  // chrono::system_clock
++#include <algorithm>
 +#include <cmath>
  #include <ctime>   // localtime
  #include <iomanip> // put_time
@@ -233,7 +236,7 @@ index 14e66ca..2102095 100644
      map_config_.voxel_size = 0.01; // TODO yaml
      map_config_.inst_association = inst_association_;
      map_config_.voxels_per_side = 8u; // TODO yaml
-@@ -405,100 +407,253 @@ bool GlobalSegmentMap_py::integrateFrame()
+@@ -405,100 +408,300 @@ bool GlobalSegmentMap_py::integrateFrame()
                  dynamic_cast<SegmentConfidence *>(segment)->seg_label_confidence_,
                  segment->colors_, segment->label_,
                  kIsFreespacePointcloud); // TODO for confidence
@@ -343,6 +346,53 @@ index 14e66ca..2102095 100644
 +    state["label_instances"] = label_instances;
 +    state["association"] = association;
 +    return state;
++}
++
++
++pybind11::dict GlobalSegmentMap_py::exportStudyTsdfState()
++{
++    std::lock_guard<std::mutex> label_tsdf_layers_lock(label_tsdf_layers_mutex_);
++    auto *layer = map_->getTsdfLayerPtr();
++    BlockIndexList indices;
++    layer->getAllAllocatedBlocks(&indices);
++    std::sort(indices.begin(), indices.end(), [](const BlockIndex &a, const BlockIndex &b) {
++        if (a.x() != b.x()) return a.x() < b.x();
++        if (a.y() != b.y()) return a.y() < b.y();
++        return a.z() < b.z();
++    });
++    const size_t side = layer->voxels_per_side();
++    const size_t voxels_per_block = side * side * side;
++    const pybind11::ssize_t block_count = indices.size();
++    const pybind11::ssize_t voxel_count = indices.size() * voxels_per_block;
++    pybind11::array_t<int32_t> block_indices(std::vector<pybind11::ssize_t>{block_count, 3});
++    pybind11::array_t<float> distance(voxel_count), weight(voxel_count);
++    pybind11::array_t<uint8_t> color(std::vector<pybind11::ssize_t>{voxel_count, 4});
++    auto blocks = block_indices.mutable_unchecked<2>();
++    auto distances = distance.mutable_unchecked<1>();
++    auto weights = weight.mutable_unchecked<1>();
++    auto colors = color.mutable_unchecked<2>();
++    for (pybind11::ssize_t b = 0; b < block_count; ++b) {
++        const auto block = layer->getBlockPtrByIndex(indices[b]);
++        for (int axis = 0; axis < 3; ++axis) blocks(b, axis) = indices[b][axis];
++        for (size_t v = 0; v < voxels_per_block; ++v) {
++            const auto &voxel = block->getVoxelByLinearIndex(v);
++            const pybind11::ssize_t row = b * voxels_per_block + v;
++            distances(row) = voxel.distance;
++            weights(row) = voxel.weight;
++            colors(row, 0) = voxel.color.r;
++            colors(row, 1) = voxel.color.g;
++            colors(row, 2) = voxel.color.b;
++            colors(row, 3) = voxel.color.a;
++        }
++    }
++    pybind11::dict result;
++    result["block_indices"] = block_indices;
++    result["distance"] = distance;
++    result["weight"] = weight;
++    result["color"] = color;
++    result["voxel_size"] = layer->voxel_size();
++    result["voxels_per_side"] = side;
++    return result;
 +}
 +
 +
@@ -487,7 +537,7 @@ index 14e66ca..2102095 100644
      if (save_sem_mesh)
          mesh_semantic_integrator_->generateMesh(only_mesh_updated_blocks,clear_updated_flag);
      if (save_inst_mesh)
-@@ -786,66 +941,68 @@ void GlobalSegmentMap_py::raycastPanopticPredictions(
+@@ -786,66 +989,69 @@ void GlobalSegmentMap_py::raycastPanopticPredictions(
      int num_inst_labels = inst_sem_labels.shape()[0];
      for (int inst_i = 0; inst_i < num_inst_labels; inst_i++) {
          inst_sem_map[inst_i + 1] = ((uint8_t *)inst_sem_labels.data())[inst_i];
@@ -539,6 +589,7 @@ index 14e66ca..2102095 100644
          .def("insertSegmentsPoseConfidence", &GlobalSegmentMap_py::insertSegmentsPoseConfidence)
          .def("integrateFrame", &GlobalSegmentMap_py::integrateFrame)
 +        .def("exportStudyFrameState", &GlobalSegmentMap_py::exportStudyFrameState)
++        .def("exportStudyTsdfState", &GlobalSegmentMap_py::exportStudyTsdfState)
 +        .def("exportStudySurfaceLabels", &GlobalSegmentMap_py::exportStudySurfaceLabels)
          .def("LogSegmentsLabels", &GlobalSegmentMap_py::LogSegmentsLabels)
          .def("clearTemporaryMemory", &GlobalSegmentMap_py::clearTemporaryMemory)
