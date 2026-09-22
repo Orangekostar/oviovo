@@ -55,7 +55,11 @@ def area_readout(
 ) -> DirectReadout:
     """Visible-area feature mean, final L2 norm, and cosine argmax."""
 
-    views = _unit_rows(view_features, name="view features")
+    # Each view is already the arithmetic mean of six unit crop vectors.
+    # Preserve that mean's magnitude; the protocol normalizes only after fusion.
+    views = np.asarray(view_features, dtype=np.float64)
+    if views.ndim != 2 or not np.isfinite(views).all() or np.any(np.linalg.norm(views, axis=1) <= 0):
+        raise ValueError("view features must be finite nonzero rows")
     text = _unit_rows(text_features, name="text features")
     weights = np.asarray(visible_areas, dtype=np.float64)
     ids = tuple(int(value) for value in valid_ids)
