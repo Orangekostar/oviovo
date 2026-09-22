@@ -74,7 +74,7 @@ def reconcile_export(result, surface, text):
 
 
 def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget=200, checkpoint_path=None,
-                    confirmation_lock=None):
+                    confirmation_lock=None, confirmation_parent=None):
     import torch
 
     split, lock_path = roles(runtime)
@@ -87,19 +87,29 @@ def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget
             raise ValueError("confirmation query requires a frozen selection lock")
         from .confirmation_access import require_confirmation_method
 
-        contract = require_confirmation_method(scene, policy, runtime, config, confirmation_lock)
+        contract = require_confirmation_method(scene, confirmation_parent or policy, runtime, config, confirmation_lock)
+        if confirmation_parent is not None:
+            module = contract["selection"]["module_selection"]["query"]
+            expected = {"COMBO_Q_REFINEMENT": "Q_GAIN", "COMBO_Q_REFINEMENT_CONTROL": module["locked_comparator"]}
+            if expected.get(confirmation_parent) != policy:
+                raise ValueError("confirmation hybrid query constituent differs from its frozen parent")
         if policy == "Q_GAIN":
             calibration = read_json(contract["frozen"]["calibration"]["query"]["path"])
             if checkpoint_path is None or file_identity(checkpoint_path) != calibration["checkpoint"]:
                 raise ValueError("confirmation query checkpoint differs from the frozen CAL head")
     random = policy == "Q_RANDOM_TRACE"
+    if confirmation_parent is not None and role != "confirm":
+        raise ValueError("query confirmation parent is restricted to the frozen holdout pipeline")
     if random and role not in {"fit", "cal"}:
         raise ValueError("query exploration is restricted to FIT/CAL")
     if random and budget != (512 if role == "fit" else 256):
         raise ValueError("query exploration budget differs from its frozen split")
     if policy not in {*CONTROLS, "Q_GAIN", "Q_RANDOM_TRACE"}:
         raise ValueError("unknown study query policy")
-    output = Path(config["study_root"]) / "scenes" / scene / "query" / ("trace" if random else f"B{budget}/{policy}")
+    leaf = "trace" if random else f"B{budget}/{policy}"
+    if confirmation_parent is not None:
+        leaf = f"constituent_B{budget}/{policy}"
+    output = Path(config["study_root"]) / "scenes" / scene / "query" / leaf
     mapping_path = Path(runtime["output_root"]) / scene / "mapping_job/receipt.json"
     mapping = read_json(mapping_path)
     if mapping["status"] != "COMPLETE":
@@ -118,7 +128,8 @@ def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget
     frames = CapturedFrames(capture_path)
     loader = NativeQueryLoader(frames, config, Path(config["study_root"]) / "query/native_request_cache")
     inputs.extend(loader.inputs)
-    identity = _identity(inputs, role=role, policy=policy, budget=budget, seed=seed, model_identity=loader.model_identity)
+    identity = _identity(inputs, role=role, policy=policy, budget=budget, seed=seed, model_identity=loader.model_identity,
+                         confirmation_parent=confirmation_parent)
     cached = reuse(output / "receipt.json", identity)
     if cached:
         return verify_receipt(output / "receipt.json")
@@ -154,10 +165,12 @@ def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget
              "masks_without_observations": sum(value == 0 for value in labels.values()),
              "causal_capture": file_identity(capture_path), "final_registry_read_after_last_barrier": True})
         prediction_path = store_prediction(payload, output / "prediction")
-        row = evaluate_predictions([payload], {scene: evaluation_targets}, Path(runtime["upstream"]), output / "evaluation")[0]
-        row.update(logical_cost=logical, added_seconds=result["elapsed_seconds"],
-                   unobserved_owners=sum(value == 0 for value in labels.values()))
-        outputs += [prediction_path, prediction_path.parent / "prediction.npz", *evaluation_outputs(output / "evaluation")]
+        outputs += [prediction_path, prediction_path.parent / "prediction.npz"]
+        if confirmation_parent is None:
+            row = evaluate_predictions([payload], {scene: evaluation_targets}, Path(runtime["upstream"]), output / "evaluation")[0]
+            row.update(logical_cost=logical, added_seconds=result["elapsed_seconds"],
+                       unobserved_owners=sum(value == 0 for value in labels.values()))
+            outputs += evaluation_outputs(output / "evaluation")
     decision_path, events_path, arrays_path = output / "decisions.json", output / "events.json", output / "prefix.npz"
     events = result["events"]
     atomic_write_json(decision_path, {"scene_id": scene, "policy": policy, "budget": budget,
@@ -183,7 +196,8 @@ def run_query_scene(scene, role, policy, runtime, config, config_path, *, budget
     return receipt(output / "receipt.json", identity, inputs, outputs, _sources(), scene_id=scene, role=role,
         method_id=policy, budget=budget, seed=seed, row=row, logical_cost=logical, physical_cost=physical,
         identifiable_events=0 if targets is None else sum(event["gain_target"] is not None for event in targets.events),
-        end_to_end_seconds=result["elapsed_seconds"])
+        end_to_end_seconds=result["elapsed_seconds"], confirmation_parent=confirmation_parent,
+        constituent_readout_only=confirmation_parent is not None)
 
 
 def choose_comparator(rows, cal_scenes):

@@ -72,7 +72,8 @@ def test_final_registry_reconciliation_occurs_after_all_acquisition():
 
 @pytest.mark.skipif(not Path(os.environ.get("OVIMAP_NATIVE_UPSTREAM", "/home/ww/crove/ovimap-module-validation-upstream"),
                             "scripts/eval_sem_seg.py").is_file(), reason="pinned native checkout required")
-def test_query_scene_driver_uses_real_released_evaluation_and_zero_unobserved_label(tmp_path, monkeypatch):
+@pytest.mark.parametrize("parent", [None, "COMBO_Q_REFINEMENT_CONTROL"])
+def test_query_scene_driver_uses_real_released_evaluation_and_zero_unobserved_label(tmp_path, monkeypatch, parent):
     from dataclasses import replace
 
     from src.static_ovmap.module_validation import query_pipeline as pipeline
@@ -111,7 +112,23 @@ def test_query_scene_driver_uses_real_released_evaluation_and_zero_unobserved_la
         "gt_instance": owners, "gt_instance_path": gt_path, "valid_ids": np.array([1, 2]), "canonical_metrics": canonical_metrics}
     data = {"native": native, "native_manifest_path": native_path,
         "surface": {"segment_labels": np.repeat([11, 22], 120), "original_owner": owners}}
-    monkeypatch.setattr(pipeline, "roles", lambda _: ({"fit": (), "cal": (scene,), "select": (), "confirm": ()}, config_path))
+    role = "confirm" if parent else "cal"
+    monkeypatch.setattr(pipeline, "roles", lambda _: ({role: (scene,)}, config_path))
+    kwargs = {}
+    if parent:
+        from src.static_ovmap.module_validation import confirmation_access
+
+        def authorize(authorized_scene, method, *args):
+            assert authorized_scene == scene and method == parent
+            return {"selection": {"module_selection": {"query": {"locked_comparator": "Q_AREA"}}}}
+
+        monkeypatch.setattr(confirmation_access, "require_confirmation_method", authorize)
+        kwargs = {"confirmation_lock": config_path, "confirmation_parent": parent}
+
+        def forbidden_evaluation(*args):
+            raise AssertionError("a hybrid constituent must not add an extra held-out evaluation row")
+
+        monkeypatch.setattr(pipeline, "evaluate_predictions", forbidden_evaluation)
     monkeypatch.setattr(pipeline, "bind_scene", lambda *args: (data, targets))
     calls = []
 
@@ -143,11 +160,16 @@ def test_query_scene_driver_uses_real_released_evaluation_and_zero_unobserved_la
     config = {"study_root": str(tmp_path), "runtime_config": str(config_path), "native_text_cache": str(text_path)}
     runtime = {"output_root": str(tmp_path / "runtime"), "upstream": os.environ.get("OVIMAP_NATIVE_UPSTREAM",
                                                                                   "/home/ww/crove/ovimap-module-validation-upstream")}
-    result = pipeline.run_query_scene(scene, "cal", "Q_AREA", runtime, config, config_path)
-    predicted = load_prediction(tmp_path / "scenes" / scene / "query/B200/Q_AREA/prediction/manifest.json")
+    result = pipeline.run_query_scene(scene, role, "Q_AREA", runtime, config, config_path, **kwargs)
+    leaf = "constituent_B200" if parent else "B200"
+    predicted = load_prediction(tmp_path / "scenes" / scene / f"query/{leaf}/Q_AREA/prediction/manifest.json")
     assert predicted.instance_ranks == native.instance_ranks
     np.testing.assert_array_equal(predicted.owner_ids, owners)
     np.testing.assert_array_equal(predicted.semantic_labels, np.repeat([1, 0], 120))
     assert result["logical_cost"]["attempts"] == 1 and result["logical_cost"]["crop_inputs"] == 6
-    assert result["row"]["metrics"]["miou"] == .5
-    assert pipeline.run_query_scene(scene, "cal", "Q_AREA", runtime, config, config_path) == result
+    if parent:
+        assert result["row"] is None
+        assert result["constituent_readout_only"]
+    else:
+        assert result["row"]["metrics"]["miou"] == .5
+    assert pipeline.run_query_scene(scene, role, "Q_AREA", runtime, config, config_path, **kwargs) == result
