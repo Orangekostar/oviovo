@@ -89,6 +89,19 @@ def _name_embedder(model_path: str):
     return embed
 
 
+def wow_mapping_with_strengths(response: str, names: tuple[str, ...], embed) -> dict:
+    mapping = asdict(map_generated_name(response, names, clean_response=clean_wow_category_response, embed_text=embed))
+    if mapping["method"] == "EXACT":
+        # Exact-name recognition fixes the label, while selector strengths still
+        # need real within-MiniLM cosines rather than fabricated one-hot scores.
+        vectors = _unit(embed((mapping["cleaned_generation"], *names)))
+        scores = vectors[1:] @ vectors[0]
+        ordered = np.sort(scores)
+        mapping["similarities"] = scores.tolist()
+        mapping["top1_top2_gap"] = float(ordered[-1] - ordered[-2]) if len(scores) > 1 else 0.0
+    return mapping
+
+
 def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, output: Path,
                              *, device: str = "cuda") -> dict:
     """One loaded visual model; exact input identities and failures persist per request."""
@@ -177,8 +190,11 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
                     original_mask_support=result.original_mask_support, final_mask_support=result.final_mask_support,
                     trace=dict(result.trace), representation_survived=result.final_mask_support > 0)
                 if result.status == "COMPLETE":
-                    row["mapping"] = asdict(map_generated_name(result.raw_generation, names,
-                        clean_response=clean_wow_category_response, embed_text=embed))
+                    if not clean_wow_category_response(result.raw_generation).strip():
+                        row["status"] = "UNAVAILABLE_TECHNICAL_FAILURE"
+                        row["error"] = "EMPTY_CLEANED_CATEGORY_RESPONSE"
+                    else:
+                        row["mapping"] = wow_mapping_with_strengths(result.raw_generation, names, embed)
             else:
                 crops = native_crops(value["rgb"], value["target"], value["union"], value["bbox"])
                 row["crop_inputs"] = 6
@@ -186,17 +202,27 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
                 vectors = _unit(backend.encode_images(crops.legacy_six))
                 row["six_crop_seconds"] = time.monotonic() - six_started
                 arrays["feature"] = vectors.mean(axis=0)
+                background_available = True
                 if model_id == "native":
                     row["background_crop_inputs"] = 3
                     background_started = time.monotonic()
-                    background = _unit(backend.encode_images(crops.background))
+                    try:
+                        background = _unit(backend.encode_images(crops.background))
+                    except RuntimeError as error:
+                        background_available = False
+                        row["background_error"] = str(error)
+                        background = np.zeros((3, vectors.shape[1]), dtype=vectors.dtype)
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
                     row["background_seconds"] = time.monotonic() - background_started
                     vectors = np.concatenate((vectors, background))
                 arrays["vectors"] = vectors
                 row.update(crop_geometries=[list(box) for box in crops.geometries],
                     target_processor_support=_mask_support(backend, value["target"], crops.geometries),
                     union_processor_support=_mask_support(backend, value["union"], crops.geometries),
-                    background_usable=bool(any(np.any(~value["target"][y1:y2, x1:x2])
+                    background_scale_usable=[background_available and bool(np.any(~value["target"][y1:y2, x1:x2]))
+                        for x1, y1, x2, y2 in crops.geometries],
+                    background_usable=background_available and bool(any(np.any(~value["target"][y1:y2, x1:x2])
                         for x1, y1, x2, y2 in crops.geometries)), representation_survived=True)
         except RuntimeError as error:
             row.update(status="UNAVAILABLE_TECHNICAL_FAILURE", error=str(error))

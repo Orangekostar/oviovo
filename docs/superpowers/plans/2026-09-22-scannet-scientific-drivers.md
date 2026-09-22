@@ -46,22 +46,35 @@ owner vector. Numerical voxel owners remain separate capture diagnostics.
 
 Files: new `src/static_ovmap/module_validation/scannet_study.py`, `scannet_ground_truth.py`, tests `test_scannet_study.py`.
 
-- [ ] Bind 200 class names/IDs from pinned released constants; cache native/SigLIP2 text in their own model spaces with original strings, max length 64 and canonical phrases.
-- [ ] Read original native feature pickle; reproduce filtering, top10 visibility retention, minimum2 observations, last8 weighted aggregation and canonical classification. Keep every numerical native owner, class0 when unavailable.
-- [ ] Convert raw annotations through unchanged native conversion/export semantics; freeze strict 0.05m float32 nearest-neighbor projection. Preserve whole GT objects and source row order.
-- [ ] Construct/lock PredictionPayload before evaluation; freeze N0 serialized ranks, bind true TSDF and source hashes; attach canonical geometry diagnostics separately.
-- [ ] Test hand-calculated readout/rank fixtures and released trace parity on a real completed capture. Validate changed labels do not change S/Q masks or ranks.
+- [x] Bind 200 class names/IDs from pinned released constants; cache native/SigLIP2 text in their own model spaces with original strings, max length 64 and canonical phrases.
+- [x] Read original native feature pickle; reproduce filtering, top10 visibility retention, minimum2 observations, last8 weighted aggregation and canonical classification. Keep every numerical native owner, class0 when unavailable.
+- [x] Convert raw annotations through unchanged native conversion/export semantics; freeze strict 0.05m float32 nearest-neighbor projection. Preserve whole GT objects and source row order.
+- [x] Construct/lock PredictionPayload before evaluation; freeze N0 serialized ranks, bind true TSDF and source hashes; attach canonical geometry diagnostics separately.
+- [x] Test hand-calculated readout/rank fixtures and released trace parity on a real completed capture. Validate changed labels do not change S/Q masks or ranks.
+
+Real scene0547_00 baseline completed: 4,204,503 source rows; exact original
+mask/serialized-rank export and released evaluator trace parity. uAP
+0.034722222222222224, mIoU 0.13914137886170933. This is one FIT scene,
+not SELECT evidence or a module improvement claim.
 
 ## Task 3 — S driver
 
 Files: new `semantic_study.py` and leaf CLI; existing `semantic_selector.py` and `region_evidence.py` only for observed integration faults.
 
-- [ ] Build <=128 target / <=3 actual captured request manifests, exact masks/bboxes and explicit lineage reconciliation. Preserve excluded/incapable targets with native labels.
+- [x] Build <=128 target / <=3 actual captured request manifests, exact masks/bboxes and explicit lineage reconciliation. Preserve excluded/incapable targets with native labels.
 - [ ] Run native9/SigLIP2-six/WOW adapters sequentially; save every request result/failure, crop/mask support, raw response/mapping and physical costs. Only encode shared exact identities once.
 - [ ] Produce the five direct rows. Freeze the alternative teacher on CAL using uAP/mIoU/cost/ID ordering.
-- [ ] Separate FIT/CAL target builder: strict geometric IoU>0.5, GAIN/HARM/OTHER and scene weights; support gates exactly as spec.
+- [x] Separate FIT/CAL target builder: strict geometric IoU>0.5, GAIN/HARM/OTHER and scene weights; support gates exactly as spec.
 - [ ] Build32+32 features and all3 fixed heads; preserve FIT-only scalers, checkpoint selection and all6 CAL thresholds; evaluate frozen SELECT rows and correction/damage ledgers.
-- [ ] Add integration tests for GT isolation, no fallback counted as teacher success and CAL-only selection.
+- [x] Add integration tests for GT isolation, no fallback counted as teacher success and CAL-only selection.
+
+S driver now includes five direct rows, teacher selection, all three fixed
+heads, complete six-threshold CAL evaluations, frozen SELECT inference,
+separate prediction/event ledgers and checkpoint/optimizer/scaler provenance.
+These execution boxes remain open until actual frozen-scene receipts exist.
+Twenty affected semantic checks pass, including a five-row driver integration
+with the unchanged released evaluator. Native background encoding failure
+preserves the successful original six-crop control and marks only context missing.
 
 ## Task 4 — G driver
 

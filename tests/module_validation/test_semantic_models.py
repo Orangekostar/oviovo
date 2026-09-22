@@ -18,6 +18,18 @@ from src.static_ovmap.module_validation.native_capture import (
 )
 
 
+def test_exact_wow_name_keeps_exact_label_but_features_use_real_cosines():
+    def embed(values):
+        vectors = {"chair": [1., 0.], "table": [.8, .6]}
+        return np.array([vectors[value] for value in values])
+
+    mapping = models.wow_mapping_with_strengths("chair", ("chair", "table"), embed)
+    assert mapping["method"] == "EXACT"
+    assert mapping["class_index"] == 0
+    np.testing.assert_allclose(mapping["similarities"], [1, .8])
+    np.testing.assert_allclose(mapping["top1_top2_gap"], .2)
+
+
 def make_inputs(tmp_path, *, empty=False):
     root = tmp_path / "capture"
     root.mkdir()
@@ -81,3 +93,23 @@ def test_empty_manifest_does_not_load_visual_model_and_is_resumable(tmp_path, mo
     assert result["model_load_seconds"] == 0
     assert json.loads((tmp_path / "output/receipt.json").read_text())["outputs"]
     assert models.encode_semantic_requests(manifest, "native", config, tmp_path / "output", device="cpu") == result
+
+
+def test_context_encoder_failure_preserves_original_six_crop_control(tmp_path, monkeypatch):
+    manifest, config = make_inputs(tmp_path)
+
+    class ContextFailure:
+        def encode_images(self, images):
+            if len(images) == 3:
+                raise RuntimeError("background-only failure")
+            return np.tile([1., 0.], (6, 1))
+
+    monkeypatch.setattr(models.FrozenSiglipBackend, "from_local", lambda *args, **kwargs: ContextFailure())
+    monkeypatch.setattr(models, "_mask_support", lambda *args: [4, 4, 4])
+    result = models.encode_semantic_requests(manifest, "native", config, tmp_path / "output", device="cpu")
+    assert result["successful_requests"] == 1
+    row = next(iter(models.load_semantic_records(tmp_path / "output").values()))
+    np.testing.assert_array_equal(row["feature"], [1., 0.])
+    assert row["background_scale_usable"] == [False, False, False]
+    assert row["background_error"] == "background-only failure"
+    assert result["background_crop_inputs"] == 3  # Attempted work is still paid.
