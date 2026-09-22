@@ -441,16 +441,17 @@ def build_frame_leaf_evidence(
     observed = np.bincount(leaves, minlength=leaf_count).astype(np.int64)
     dominant_pixels = np.zeros(leaf_count, dtype=np.int64)
     entity_by_leaf = np.zeros(leaf_count, dtype=np.int64)
-    for leaf_id in range(leaf_count):
-        positive = entities[(leaves == leaf_id) & (entities > 0)]
-        if not len(positive):
-            continue
-        values, counts = np.unique(positive, return_counts=True)
-        maximum = int(counts.max())
-        entity = int(values[counts == maximum].min())
-        dominant_pixels[leaf_id] = maximum
-        if observed[leaf_id] >= minimum_pixels and maximum >= dominance * observed[leaf_id]:
-            entity_by_leaf[leaf_id] = entity
+    positive = entities > 0
+    if np.any(positive):
+        pairs, counts = np.unique(np.column_stack((leaves[positive], entities[positive])),
+                                  axis=0, return_counts=True)
+        np.maximum.at(dominant_pixels, pairs[:, 0], counts)
+        winners = pairs[counts == dominant_pixels[pairs[:, 0]]]
+        # np.unique orders (leaf, entity); the first tied entity is the smallest.
+        winners = winners[np.r_[True, winners[1:, 0] != winners[:-1, 0]]]
+        ids = winners[:, 0]
+        usable = (observed[ids] >= minimum_pixels) & (dominant_pixels[ids] >= dominance * observed[ids])
+        entity_by_leaf[ids[usable]] = winners[usable, 1]
     return FrameLeafEvidence(
         int(frame_id), leaves, entities, observed, dominant_pixels, entity_by_leaf
     )
@@ -467,6 +468,8 @@ def project_frame_leaf_evidence(
     *,
     depth_tolerance: float = 0.05,
 ) -> FrameLeafEvidence:
+    from .static_regions import project_visible_rows
+
     xyz = np.asarray(surface_xyz, dtype=np.float64)
     leaf_ids = np.asarray(row_leaf_ids, dtype=np.int64)
     pose = np.asarray(pose_c2w, dtype=np.float64)
@@ -477,31 +480,11 @@ def project_frame_leaf_evidence(
         raise ValueError("depth and local entity rasters must align")
     if xyz.shape != (len(leaf_ids), 3) or pose.shape != (4, 4) or camera_matrix.shape != (3, 3):
         raise ValueError("projection inputs have invalid dimensions")
-    world_to_camera = np.linalg.inv(pose)
-    camera = xyz @ world_to_camera[:3, :3].T + world_to_camera[:3, 3]
-    z = camera[:, 2]
-    forward = np.isfinite(camera).all(axis=1) & (z > 0.0)
-    columns = np.rint(camera_matrix[0, 0] * camera[:, 0] / np.maximum(z, 1e-12) + camera_matrix[0, 2]).astype(np.int64)
-    rows = np.rint(camera_matrix[1, 1] * camera[:, 1] / np.maximum(z, 1e-12) + camera_matrix[1, 2]).astype(np.int64)
-    inside = forward & (rows >= 0) & (rows < depth.shape[0]) & (columns >= 0) & (columns < depth.shape[1])
-    candidates = np.flatnonzero(inside)
-    measured = depth[rows[candidates], columns[candidates]]
-    consistent = np.isfinite(measured) & (measured > 0.0) & (np.abs(z[candidates] - measured) <= depth_tolerance)
-    candidates = candidates[consistent]
-    if len(candidates):
-        pixel = rows[candidates] * depth.shape[1] + columns[candidates]
-        order = np.lexsort((candidates, z[candidates], pixel))
-        ordered_pixels = pixel[order]
-        winners = candidates[order[np.r_[True, ordered_pixels[1:] != ordered_pixels[:-1]]]]
-        pixel_leaves = leaf_ids[winners]
-        pixel_entities = entities[rows[winners], columns[winners]]
-    else:
-        pixel_leaves = np.empty(0, dtype=np.int64)
-        pixel_entities = np.empty(0, dtype=np.int64)
+    winners, pixels = project_visible_rows(xyz, pose, camera_matrix, depth, depth_tolerance=depth_tolerance)
     return build_frame_leaf_evidence(
         frame_id,
-        pixel_leaves,
-        pixel_entities,
+        leaf_ids[winners],
+        entities.reshape(-1)[pixels],
         leaf_count=int(leaf_ids.max()) + 1,
     )
 

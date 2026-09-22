@@ -90,6 +90,29 @@ def test_frame_entities_use_pixel_denominator_and_unknown_thresholds() -> None:
     assert evidence.dominant_pixels.tolist() == [10, 12, 15]
 
 
+def test_sparse_leaf_evidence_matches_histogram_reference_with_unknowns_and_ties() -> None:
+    rng = np.random.default_rng(17)
+    pixels = np.concatenate((rng.integers(0, 30, 1500), np.repeat(99, 20)))
+    entities = np.concatenate((rng.integers(0, 4, 1500), [8] * 10 + [7] * 10))
+    result = build_frame_leaf_evidence(3, pixels, entities, leaf_count=100, dominance=.5)
+    expected = np.zeros(100, np.int64)
+    dominant = np.zeros(100, np.int64)
+    for leaf in range(100):
+        labels = entities[pixels == leaf]
+        if not np.any(labels > 0):
+            continue
+        counts = np.bincount(labels)
+        counts[0] = 0
+        winner = int(np.argmax(counts))
+        dominant[leaf] = counts[winner]
+        if len(labels) >= 16 and counts[winner] >= .5 * len(labels):
+            expected[leaf] = winner
+    np.testing.assert_array_equal(result.entity_by_leaf, expected)
+    np.testing.assert_array_equal(result.dominant_pixels, dominant)
+    assert result.entity_by_leaf[99] == 7
+    assert result.observed_pixels.sum() == len(pixels)
+
+
 def test_projection_uses_depth_consistency_and_one_zbuffer_winner_per_pixel() -> None:
     xyz = np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.01], [1.0, 0.0, 1.0]])
     depth = np.zeros((3, 3), dtype=np.float32)
