@@ -1,0 +1,281 @@
+{
+  "acquisition_lock": {
+    "bytes": 71526,
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_lock.json",
+    "sha256": "7b8fd52bcb57126e0055228c0ad4dcc34ba338eaa3867de8a2b52646b0c83720"
+  },
+  "candidate_requests": 22307,
+  "confirmation_processing": "DEFERRED_UNTIL_FROZEN_SELECTION",
+  "created_utc": "2026-09-23T03:28:15.893382+00:00",
+  "generating_code_commit": "fe7aa6a04a10c5962925aae9581dd13959fcaadc",
+  "invalid_pose_slots": 95,
+  "native_build_receipt": {
+    "bytes": 51767,
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-query-v10/receipt.json",
+    "sha256": "263c56a3fcffdacbebefd926839515d6cfe9fb6b941bc2efc03114f89ee9afbd"
+  },
+  "planned_frames": 2400,
+  "runtime_config": {
+    "bytes": 1545,
+    "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_runtime.json",
+    "sha256": "68b55973d8daccb5a8d3598d70b55a47ade722a38c6f2f187852ffcb06143b09"
+  },
+  "scenes": [
+    {
+      "capture": {
+        "bytes": 6071188,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0547_00/capture/scene0547_00/manifest.json",
+        "sha256": "fcd14266a6c868374863584273122008c9bf021f849464baeeb635b1e43406b5"
+      },
+      "elapsed_seconds": 29.00476645299932,
+      "planned_frames": 200,
+      "requests": 3201,
+      "role": "fit",
+      "scene_id": "scene0547_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1164,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0547_00/query_capture_validation.json",
+        "sha256": "84776c576eafecc3e562c58146f38f522f0afbaa331811577312d6f4200be903"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 3272428,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0434_00/capture/scene0434_00/manifest.json",
+        "sha256": "eeb7221b1b708f3a199a9d52cbf8706c1fd050e63527b98a158285b649f1cdf5"
+      },
+      "elapsed_seconds": 24.184102531988174,
+      "planned_frames": 200,
+      "requests": 1608,
+      "role": "fit",
+      "scene_id": "scene0434_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1165,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0434_00/query_capture_validation.json",
+        "sha256": "9dc43f21d0c9460dfe7e6b826677c4ac835a6d8abd78160088436fe6bd4a7c0a"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 1732292,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0639_00/capture/scene0639_00/manifest.json",
+        "sha256": "6c80b1ac67e3be77806846677e4120c52281dc82b5b8892180da40f198bd8e11"
+      },
+      "elapsed_seconds": 15.346715532999951,
+      "planned_frames": 200,
+      "requests": 737,
+      "role": "fit",
+      "scene_id": "scene0639_00",
+      "status": "COMPLETE",
+      "valid_frames": 127,
+      "validation_receipt": {
+        "bytes": 1164,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0639_00/query_capture_validation.json",
+        "sha256": "f17d256be51540eec3315d7bfcbf6d4b87589adf119f5ec3c92b8b212a1fdcad"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 2900145,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0027_00/capture/scene0027_00/manifest.json",
+        "sha256": "c4cd6b15cef887a66ff38b8c3e6ed56a3b8c43efe35c5def0fbc0709c2efdfcf"
+      },
+      "elapsed_seconds": 22.478155183023773,
+      "planned_frames": 200,
+      "requests": 1051,
+      "role": "fit",
+      "scene_id": "scene0027_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1165,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0027_00/query_capture_validation.json",
+        "sha256": "484ed1ad33807e7341a6972adad31751503b48063b4c15af8a8362a5b08604ad"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 4476623,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0107_00/capture/scene0107_00/manifest.json",
+        "sha256": "19f71b998cc24f887eae40b72b614e0fc7ddc8ccb5092cb0aae65090adff0627"
+      },
+      "elapsed_seconds": 29.143739932973403,
+      "planned_frames": 200,
+      "requests": 2135,
+      "role": "fit",
+      "scene_id": "scene0107_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1165,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0107_00/query_capture_validation.json",
+        "sha256": "befb9b7ed54f1cdf12b9eb5d6f8379dc6d6a7efeb61a2319fa85e9bbb09f9bc8"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 3105600,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0538_00/capture/scene0538_00/manifest.json",
+        "sha256": "f99053a8f930e043e8930f5cb0af8b1f9ca47342b03f837d6a6d07763ae4fce8"
+      },
+      "elapsed_seconds": 24.906477298995014,
+      "planned_frames": 200,
+      "requests": 1413,
+      "role": "fit",
+      "scene_id": "scene0538_00",
+      "status": "COMPLETE",
+      "valid_frames": 189,
+      "validation_receipt": {
+        "bytes": 1165,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0538_00/query_capture_validation.json",
+        "sha256": "b5cb29ce51a86c7206c2991d40613bfaadc077b2c363cb09b301693009f24dd6"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 3182348,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0571_00/capture/scene0571_00/manifest.json",
+        "sha256": "1089b87490173eddd238f96f8f221fed64f76707459735146d9aeec8672f8b53"
+      },
+      "elapsed_seconds": 24.94015847198898,
+      "planned_frames": 200,
+      "requests": 1513,
+      "role": "fit",
+      "scene_id": "scene0571_00",
+      "status": "COMPLETE",
+      "valid_frames": 189,
+      "validation_receipt": {
+        "bytes": 1164,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0571_00/query_capture_validation.json",
+        "sha256": "ca22cc353dba6e2f8091419e199c97416371c21988406d21a9e5a230472ed35a"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 4731544,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0106_00/capture/scene0106_00/manifest.json",
+        "sha256": "ce213f9ab4f342b14391b58ce26991ef37137513fd9d0795bc8d0ca7ac5c93a5"
+      },
+      "elapsed_seconds": 24.699494478001725,
+      "planned_frames": 200,
+      "requests": 2559,
+      "role": "fit",
+      "scene_id": "scene0106_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1165,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0106_00/query_capture_validation.json",
+        "sha256": "f2eaab0d1ef4808dda938b9e2730ffdc94c69d1b2318a127780401c69ec8fafd"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 5209272,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/manifest.json",
+        "sha256": "47467a2a8e963108f36cbf0e7a0a0f55c26e430984350bd4a2b51800de73ef19"
+      },
+      "elapsed_seconds": 27.16501179797342,
+      "planned_frames": 200,
+      "requests": 2833,
+      "role": "cal",
+      "scene_id": "scene0056_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1164,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/query_capture_validation.json",
+        "sha256": "a5e6dae836e30b204ac89becad6ff63dbeddef0d3a1cd41c11a0fdd0fec68477"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 4775400,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0534_00/capture/scene0534_00/manifest.json",
+        "sha256": "1e3bd01694aa50c727a463e005950f29767c9f309aac269aeadad7c4ed7d8ec7"
+      },
+      "elapsed_seconds": 26.374592419015244,
+      "planned_frames": 200,
+      "requests": 2230,
+      "role": "cal",
+      "scene_id": "scene0534_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1165,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/query_capture_validation.json",
+        "sha256": "bc18b6a50f5e2a2cc7c4900f6f3d0543bc25bd9399543dadcdc89b243140fc4f"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 3617825,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0445_00/capture/scene0445_00/manifest.json",
+        "sha256": "eeaba28edad900853fb13ef7329dc15888be2c236da1cbb9fd5acb9c47017f7d"
+      },
+      "elapsed_seconds": 28.208732781989966,
+      "planned_frames": 200,
+      "requests": 1261,
+      "role": "select",
+      "scene_id": "scene0445_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1165,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/query_capture_validation.json",
+        "sha256": "0c08550a477d9f3819af0288b09a246839f12989302a12917229db599fa36dd2"
+      }
+    },
+    {
+      "capture": {
+        "bytes": 4133921,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0626_00/capture/scene0626_00/manifest.json",
+        "sha256": "b18440a51d2e171cdd2f20be98874d82ff4c27790008690e4e2aa46e65518e35"
+      },
+      "elapsed_seconds": 30.34902280702954,
+      "planned_frames": 200,
+      "requests": 1766,
+      "role": "select",
+      "scene_id": "scene0626_00",
+      "status": "COMPLETE",
+      "valid_frames": 200,
+      "validation_receipt": {
+        "bytes": 1164,
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/query_capture_validation.json",
+        "sha256": "051d0cb3760f8fa8e5032467d887a84c87b68f6b4b1fc4e9851a8c551d2ade6e"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "scientific_result": false,
+  "scope": "NATIVE_V10_CAPTURE_AND_CAUSAL_MEMBERSHIP_TECHNICAL_VALIDATION",
+  "sources": [
+    {
+      "bytes": 8477,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_study.py",
+      "sha256": "d1c14f260c6664c3d1feb3ada501cc6852b2d3f36b2d352cd959fde43a129d41"
+    },
+    {
+      "bytes": 6937,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_lineage.py",
+      "sha256": "9ba99bc94df7194ba7120b5b3aaf31f13c8f88d3348c9436bffd86f289b30a27"
+    },
+    {
+      "bytes": 30793,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_state.py",
+      "sha256": "0c38507bbebd99609ac2b122e36025007d132185abbd96e5c37b8359b31dce01"
+    }
+  ],
+  "status": "COMPLETE",
+  "valid_frames": 2305,
+  "validation_path": [
+    "CapturedFrames.load",
+    "CurrentLineage.advance",
+    "CurrentLineage.register_candidates"
+  ],
+  "validation_seconds": 306.8009696889785
+}

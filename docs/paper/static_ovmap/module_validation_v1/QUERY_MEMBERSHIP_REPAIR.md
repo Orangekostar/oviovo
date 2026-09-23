@@ -31,5 +31,11 @@ not mixed. CONFIRM remains unopened until selection is frozen.
 Validation: the targeted capture/Q tests cover a current positive raycast owner
 whose export owner is zero, current-only reads, complete ancestry, paid-feature
 merge/split rules, unchanged final geometry/ranks and confirmation restrictions.
-The compiled accessor also passed the two-frame native build fixture. Full
-development reruns remain required before scientific completion.
+The compiled accessor also passed the two-frame native build fixture. On
+2026-09-23, all 12 corrected development captures completed. Full causal-membership
+validation passed on 2,305 valid frames and 22,307 candidate requests across 2,400
+scheduled slots, including all 200 frames and 2,230 requests of scene0534_00.
+The [technical validation receipt](../../../../artifacts/static_ovmap/module_validation_v1/native_v10_capture_validation.json)
+records per-scene capture and checker identities. This is technical repair
+evidence; S/G/Q experiments and frozen selection remain required before
+scientific completion.
