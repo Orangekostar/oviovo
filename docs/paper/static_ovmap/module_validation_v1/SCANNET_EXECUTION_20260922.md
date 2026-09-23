@@ -1,11 +1,12 @@
 # Authorized ScanNet execution — 2026-09-22
 
-Current update (21:38 UTC): data preparation is COMPLETE, native-v9 capture is
-running on GPU 2 with 5/12 development scenes complete, and all independent
-S/G/Q/selection/confirmation/report/release drivers are implemented. Four FIT
-baselines pass native export and evaluator parity; these are not module-gain
-measurements. The full scientific study is still IN_PROGRESS. `attempt_006`
-bind matches the frozen 8/2/2/2 acquisition split. CONFIRM remains unopened.
+Current update (2026-09-23 00:08 UTC): data preparation and all 12 CropFormer
+caches are COMPLETE. Corrected native-v10 capture is running on GPU 2, following
+the [query membership repair](QUERY_MEMBERSHIP_REPAIR.md). Native-v9 scene
+artifacts remain historical and are excluded from the current scientific study.
+All S/G/Q/selection/confirmation/report/release drivers are implemented; actual
+execution remains IN_PROGRESS. The original 8/2/2/2 split is unchanged and
+CONFIRM remains unopened.
 See the [execution plan](../../../superpowers/plans/2026-09-22-scannet-scientific-drivers.md).
 
 The data preparation and earlier resource-blocked execution below are retained

@@ -1,17 +1,19 @@
 # OVI-MAP Module Validation Handoff
 
-- Current execution (2026-09-22 21:38 UTC): all 14 locked raw captures and all
-  12 development exports are ready. Native-v9 capture has completed 5/12
-  development scenes; `scene0538_00` is next. GPU 2 is assigned to this study.
+- Current execution (2026-09-23 00:08 UTC): all 14 locked raw captures, all
+  12 development exports and all 12 CropFormer caches are ready. The corrected
+  native-v10 capture is running on GPU 2. Its first 42 frames and 662 current
+  owner ancestries passed a technical prefix check.
 - S/G/Q, conditional combinations, frozen confirmation, reporting and bounded
   release export are implemented. Full empirical execution remains **IN_PROGRESS**;
   no retained candidate or positive module claim exists yet.
-- Four completed FIT baselines pass unchanged native mask/rank export and released
-  evaluator parity. They are baseline measurements, not SELECT gains. The fifth
-  baseline is being evaluated. CONFIRM image export and annotation conversion have
-  not run.
+- Native-v9 captures and dependent scene artifacts are preserved as historical
+  diagnostics: the export membership threshold differed from the query raycaster.
+  All current S/G/Q rows will share regenerated v10 captures. See the
+  [repair evidence](module_validation_v1/QUERY_MEMBERSHIP_REPAIR.md).
+  CONFIRM image export and annotation conversion have not run.
 - Source branch: `research/ovimap-module-validation-v1`; latest implementation
-  includes `f006e25`. These new implementation commits are not yet pushed.
+  includes `b5e4813`. These new implementation commits are not yet pushed.
 - Public bind: `/mnt/shared/ww/ovimap-module-validation-v1/attempt_006`, COMPLETE;
   all four roles exactly match the pre-inference acquisition lock.
 - Runtime: `configs/evaluation/ovimap_module_scannet_runtime.json`; study:

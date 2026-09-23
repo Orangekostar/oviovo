@@ -18,8 +18,8 @@ threshold and no raycaster field is rejected for causal Q.
 An attempted CPU supplement was rejected: despite identical pre-insertion
 inputs, native replay allocated different segment IDs, and a persistent ordered
 bijection failed by frame 80. Its files and diagnostics remain external under
-`tooling/repairs-20260922/rejected-membership-replay` and
-`scannet_study_v1/query/membership`. No supplement is used in scientific rows.
+`tooling/repairs-20260922/rejected-membership-replay`. No supplement is used in
+scientific rows.
 
 All affected development native captures and dependent scene artifacts are
 preserved under explicit `historical_native_v9` / `scenes_native_v9` directories.
