@@ -13,7 +13,8 @@ from .assets import sha256_file
 from .boundary_jobs import file_identity, verify_capture
 from .contracts import atomic_write_json, canonical_digest
 from .native_capture import RegionRequest, _array_digest, _write_npz
-from .region_evidence import FrozenSiglipBackend, native_crops
+from .region_evidence import native_crops
+from .rgb_siglip import FrozenSiglipBackend
 from .scannet_runtime import _tree_inputs, reusable_job
 from .semantic_selector import area_readout
 
@@ -32,7 +33,7 @@ def encode_static_requests(manifest_path, config, cache_root, output, *, device=
     capture = verify_capture(capture_path, allow_skipped=True)
     frames = {row["frame_id"]: row for row in capture["frames"]}
     model_inputs = _tree_inputs(Path(config["native_model"])) + [file_identity(path) for path in (
-        Path(__file__), Path(__file__).with_name("region_evidence.py"))]
+        Path(__file__), Path(__file__).with_name("region_evidence.py"), Path(__file__).with_name("rgb_siglip.py"))]
     model_identity = canonical_digest({"inputs": model_inputs, "torch": torch.__version__,
         "transformers": transformers.__version__, "device": device, "dtype": "float32", "schema": "native_six_v1"})
     inputs = [file_identity(manifest_path), *model_inputs]

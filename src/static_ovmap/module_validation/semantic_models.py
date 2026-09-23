@@ -15,13 +15,13 @@ from .boundary_jobs import file_identity, verify_capture
 from .contracts import atomic_write_json, canonical_digest
 from .native_capture import _array_digest, _write_npz
 from .region_evidence import (
-    FrozenSiglipBackend,
     OfficialWowRunner,
     WowRegionAdapter,
     clean_wow_category_response,
     map_generated_name,
     native_crops,
 )
+from .rgb_siglip import FrozenSiglipBackend
 from .scannet_runtime import _tree_inputs, reusable_job
 
 
@@ -130,7 +130,8 @@ def encode_semantic_requests(manifest_path: Path, model_id: str, config: dict, o
     requests = {key: value["request"] if static else value for key, value in manifest["requests"].items()}
     model_path = Path(config[model_id + "_model"])
     inputs = _tree_inputs(model_path)
-    inputs += [file_identity(path) for path in (manifest_path, Path(__file__), Path(__file__).with_name("region_evidence.py"))]
+    inputs += [file_identity(path) for path in (manifest_path, Path(__file__),
+        Path(__file__).with_name("region_evidence.py"), Path(__file__).with_name("rgb_siglip.py"))]
     if model_id == "wow":
         inputs += _tree_inputs(Path(config["wow_code"]), "*.py") + _tree_inputs(Path(config["name_model"]))
     native_text_path = Path(config["native_text_cache"])

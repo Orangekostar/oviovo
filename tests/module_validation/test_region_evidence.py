@@ -22,6 +22,7 @@ from src.static_ovmap.module_validation.region_evidence import (
     native_crops,
     stable_target_subset,
 )
+from src.static_ovmap.module_validation.rgb_siglip import FrozenSiglipBackend
 
 SHA = "a" * 64
 
@@ -167,6 +168,25 @@ def test_native_encoder_returns_unit_nine_vectors_and_legacy_first_six_mean() ->
     np.testing.assert_allclose(np.linalg.norm(encoded.vectors, axis=1), 1.0)
     np.testing.assert_allclose(encoded.legacy_mean, legacy, atol=1e-12)
     assert encoded.vectors.shape == (9, 3)
+
+
+@pytest.mark.parametrize("shape", [(1, 2, 3), (3, 5, 3), (8, 9, 3)])
+def test_siglip_backend_preserves_rgb_hwc_for_narrow_crops(shape) -> None:
+    torch = pytest.importorskip("torch")
+    transformers = pytest.importorskip("transformers")
+    processor = transformers.SiglipImageProcessor(size={"height": 8, "width": 8})
+
+    class Model(torch.nn.Module):
+        def get_image_features(self, pixel_values):
+            return pixel_values.mean(dim=(-1, -2))
+
+    rgb = np.arange(np.prod(shape), dtype=np.uint8).reshape(shape)
+    expected = processor(images=[rgb], input_data_format="channels_last", return_tensors="pt")
+    backend = FrozenSiglipBackend(model=Model(), processor=processor, tokenizer=None, device="cpu")
+
+    np.testing.assert_array_equal(
+        backend.encode_images([rgb]), expected["pixel_values"].mean(dim=(-1, -2)).numpy()
+    )
 
 
 class _WowRunner:

@@ -14,7 +14,8 @@ from .boundary_jobs import file_identity
 from .contracts import atomic_write_json, canonical_digest
 from .native_capture import _array_digest, _write_npz
 from .query_state import AcquisitionPayload
-from .region_evidence import FrozenSiglipBackend, native_crops
+from .region_evidence import native_crops
+from .rgb_siglip import FrozenSiglipBackend
 from .scannet_runtime import _tree_inputs, reusable_job
 
 
@@ -27,7 +28,7 @@ class NativeQueryLoader:
 
         self.frames, self.config, self.cache_root, self.device = frames, config, Path(cache_root), device
         self.inputs = _tree_inputs(Path(config["native_model"])) + [file_identity(path) for path in (
-            Path(__file__), Path(__file__).with_name("region_evidence.py"))]
+            Path(__file__), Path(__file__).with_name("region_evidence.py"), Path(__file__).with_name("rgb_siglip.py"))]
         self.model_identity = canonical_digest({"inputs": self.inputs, "dtype": "float32", "device": device,
             "torch": torch.__version__, "transformers": transformers.__version__, "native_crops": 6})
         self.backend = None
