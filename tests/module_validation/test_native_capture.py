@@ -190,8 +190,9 @@ def test_ovi_patch_places_three_capture_hooks_on_active_call_chain() -> None:
 
 
 @pytest.mark.parametrize("wrong_color", [False, True])
+@pytest.mark.parametrize("raycast_only_owner", [False, True])
 def test_native_capture_session_records_all_boundaries_and_aligned_surface(
-    tmp_path: Path, wrong_color: bool,
+    tmp_path: Path, wrong_color: bool, raycast_only_owner: bool,
 ) -> None:
     session = NativeCaptureSession(
         capture_root=tmp_path / "capture",
@@ -242,7 +243,8 @@ def test_native_capture_session_records_all_boundaries_and_aligned_surface(
             ],
             "aliases": [],
             "label_instances": [
-                {"segment_label": 7, "instance_label": 11, "semantic_label": 1}
+                {"segment_label": 7, "instance_label": 0 if raycast_only_owner else 11,
+                 "semantic_label": 1, **({"raycast_instance_label": 11} if raycast_only_owner else {})}
             ],
             "association": {"instance_association": 6},
         },
@@ -338,6 +340,7 @@ def test_native_capture_session_records_all_boundaries_and_aligned_surface(
     )
     assert frame_manifest["registered_labels_array"] == "frame_0000_registered_labels"
     assert len(frame_manifest["requests"]) == 1
+    assert frame_manifest["requests"][0]["lineage"] == ("segment:7", "owner:11")
     assert frame_manifest["native_selected_request_ids"] == [
         frame_manifest["requests"][0]["request_id"]
     ]

@@ -56,6 +56,13 @@ class CapturedFrames:
             return None
         state_entry = frame["native_state"]
         snapshot = json.loads(self._path(state_entry["path"], state_entry["sha256"]).read_text())["native_state"]
+        rows = snapshot.get("label_instances", [])
+        if rows and all("raycast_instance_label" in row for row in rows):
+            snapshot = {**snapshot, "label_instances": [
+                {**row, "instance_label": row["raycast_instance_label"]} for row in rows],
+                "association": {**snapshot.get("association", {}), "label_mapping_count_threshold_factor": 0.}}
+        if snapshot.get("association", {}).get("label_mapping_count_threshold_factor", 0.) != 0.:
+            raise ValueError("BLOCKED_CAUSAL_LINEAGE: membership threshold differs from the native raycaster")
         if snapshot.get("label_instances_scope") != "all_known_labels":
             raise ValueError("BLOCKED_CAUSAL_LINEAGE: native frame snapshot has only partial membership")
         owners = np.asarray(Image.open(self._path(frame["global_owner_path"], frame["global_owner_sha256"])))

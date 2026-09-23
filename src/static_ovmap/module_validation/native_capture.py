@@ -946,7 +946,7 @@ class NativeCaptureSession:
 
         label_instances: dict[int, list[int]] = {}
         for row in frame["native_state"].get("label_instances", []):
-            owner = int(row["instance_label"])
+            owner = int(row.get("raycast_instance_label", row["instance_label"]))
             if owner > 0:
                 label_instances.setdefault(owner, []).append(int(row["segment_label"]))
 
@@ -957,6 +957,9 @@ class NativeCaptureSession:
             owner = int(candidate["glo_inst_id"])
             if owner <= 0 or owner in requests_by_owner:
                 raise ValueError("admissible requests require unique positive current owners")
+            if (any("raycast_instance_label" in row for row in frame["native_state"].get("label_instances", []))
+                    and owner not in label_instances):
+                raise ValueError("native query owner has no current raycaster-threshold segment ancestry")
             target_mask = np.asarray(candidate["glo_inst_mask"], dtype=bool)
             union_mask = np.asarray(candidate["union_mask"], dtype=bool)
             if target_mask.shape != self.image_size_hw or union_mask.shape != self.image_size_hw:

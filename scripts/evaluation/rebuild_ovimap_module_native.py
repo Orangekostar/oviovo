@@ -43,6 +43,8 @@ def main():
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--frontend-cache", type=Path, required=True)
     parser.add_argument("--generated-ros-headers", type=Path, required=True)
+    parser.add_argument("--query-membership", action="store_true",
+        help="Build an isolated read-only raycaster-membership accessor; preserve the baseline extension")
     args = parser.parse_args()
     started = time.monotonic()
     upstream, baseline, output = (
@@ -140,6 +142,17 @@ def main():
             / f"mapping_ros_ws/src/consistent_panoptic_mapping/{target}/{source}"
         )
         inputs.append(file_identity(source_path))
+        if args.query_membership and target == "consistent_gsm":
+            # Generate a separate build input; never mutate the running upstream
+            # checkout or change its export-threshold membership/readout.
+            original_source = source_path.read_text()
+            marker = '        row["instance_label"] = fusion->getInstanceLabel(segment_label, 0.1f);'
+            if original_source.count(marker) != 1:
+                raise ValueError("query accessor requires the exact pinned native export")
+            source_path = build / "query_global_segment_map_py.cpp"
+            source_path.write_text(original_source.replace(marker, marker + '\n'
+                '        row["raycast_instance_label"] = fusion->getInstanceLabel(segment_label, 0.0f);'))
+            inputs += [file_identity(source_path), file_identity(__file__)]
         obj = build / f"{Path(source).name}.o"
         tokens = flags["CXX_DEFINES"] + flags["CXX_INCLUDES"] + flags["CXX_FLAGS"]
         old = str(baseline / "mapping_ros_ws/src/consistent_panoptic_mapping")
@@ -282,6 +295,8 @@ def main():
         if state.get("label_instances_scope") != "all_known_labels":
             raise AssertionError("native replay lacks full current label membership")
         labels = [int(row["segment_label"]) for row in state["label_instances"]]
+        if args.query_membership and any("raycast_instance_label" not in row for row in state["label_instances"]):
+            raise AssertionError("query replay lacks the raycaster-threshold membership")
         registered = {int(row["registered_label"]) for row in state["segments"]}
         if labels != sorted(set(labels)) or not registered <= set(labels):
             raise AssertionError("full native membership is unordered, duplicated, or incomplete")
@@ -293,6 +308,7 @@ def main():
             "artifact_type": "OVIMAP_REPRODUCIBLE_NATIVE_REPLAY",
             "status": "COMPLETE",
             "scientific_result": False,
+            "raycast_membership_accessor": args.query_membership,
             "elapsed_seconds": time.monotonic() - started,
             "extension": file_identity(extension),
             "capture_manifest": file_identity(manifest_path),

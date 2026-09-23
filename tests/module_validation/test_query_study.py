@@ -4,6 +4,7 @@ import json
 from dataclasses import replace
 
 import numpy as np
+import pytest
 from PIL import Image
 
 from src.static_ovmap.module_validation.assets import sha256_file
@@ -50,6 +51,23 @@ def test_capture_reader_builds_exact_native_requests_without_reading_final_or_fu
     assert current["candidates"][0].majority_entity_zero
     assert current["candidates"][0].frame_index == 1
     assert current["candidates"][0].overlap_pixels == 1600
+    # ScanNet scene0534 frame1064 exposed a positive raycast owner whose
+    # final-export confidence gate gave owner zero. Never use that gate for Q.
+    snapshot = _snapshot({11: 0})
+    snapshot["association"] = {"label_mapping_count_threshold_factor": .1}
+    (tmp_path / "state.json").write_text(json.dumps({"native_state": snapshot}))
+    frame["native_state"]["sha256"] = sha256_file(tmp_path / "state.json")
+    path.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="threshold differs"):
+        CapturedFrames(path).load(1)
+    snapshot["label_instances"][0]["raycast_instance_label"] = 1
+    (tmp_path / "state.json").write_text(json.dumps({"native_state": snapshot}))
+    frame["native_state"]["sha256"] = sha256_file(tmp_path / "state.json")
+    path.write_text(json.dumps(manifest))
+    current = CapturedFrames(path).load(1)
+    assert current["snapshot"]["label_instances"][0]["instance_label"] == 1
+    assert current["candidates"][0].request_id == request.request_id
+    assert json.loads((tmp_path / "state.json").read_text())["native_state"]["label_instances"][0]["instance_label"] == 0
 
 
 def test_captured_replay_sentinel_barrier_and_current_merge():
