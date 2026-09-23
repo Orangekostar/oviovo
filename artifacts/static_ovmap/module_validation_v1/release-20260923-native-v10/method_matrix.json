@@ -1,0 +1,584 @@
+{
+  "artifact_type": "OVIMAP_MODULE_METHOD_MATRIX",
+  "rows": [
+    {
+      "branch": "N0",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "N0",
+      "metrics": {
+        "ap25": 0.425,
+        "ap50": 0.41363636363636364,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "attempts": 573,
+          "crop_inputs": 3438
+        },
+        "macc": 0.4340445403510228,
+        "miou": 0.35334443201828547,
+        "scene_count": 2,
+        "uap": 0.2574074074074074
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_NATIVE_AREA",
+      "metrics": {
+        "ap25": 0.43068181818181817,
+        "ap50": 0.37386363636363634,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 124,
+          "added_background_inputs": 0,
+          "added_crop_inputs": 744,
+          "added_seconds": 25.17250455991598,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 0
+        },
+        "macc": 0.3624733493025463,
+        "miou": 0.2570853022206705,
+        "scene_count": 2,
+        "uap": 0.2407407407407407
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_NATIVE_VOTE",
+      "metrics": {
+        "ap25": 0.4420454545454545,
+        "ap50": 0.38522727272727275,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 124,
+          "added_background_inputs": 0,
+          "added_crop_inputs": 744,
+          "added_seconds": 25.17250455991598,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 0
+        },
+        "macc": 0.3721221642957596,
+        "miou": 0.26668539200045727,
+        "scene_count": 2,
+        "uap": 0.24705387205387203
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_SIGLIP2_AREA",
+      "metrics": {
+        "ap25": 0.5034090909090909,
+        "ap50": 0.4352272727272727,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 124,
+          "added_background_inputs": 0,
+          "added_crop_inputs": 744,
+          "added_seconds": 29.602648584579583,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 0
+        },
+        "macc": 0.4533774774252969,
+        "miou": 0.3642305995823202,
+        "scene_count": 2,
+        "uap": 0.2748316498316498
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_SIGLIP2_VOTE",
+      "metrics": {
+        "ap25": 0.49204545454545456,
+        "ap50": 0.4352272727272727,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 124,
+          "added_background_inputs": 0,
+          "added_crop_inputs": 744,
+          "added_seconds": 29.602648584579583,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 0
+        },
+        "macc": 0.45006987517517555,
+        "miou": 0.3610806789604819,
+        "scene_count": 2,
+        "uap": 0.2748316498316498
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_WOW_VOTE",
+      "metrics": {
+        "ap25": 0.4452272727272727,
+        "ap50": 0.3284090909090909,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 124,
+          "added_background_inputs": 0,
+          "added_crop_inputs": 0,
+          "added_seconds": 90.18391557788709,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 123
+        },
+        "macc": 0.3957009482057632,
+        "miou": 0.3418168579906751,
+        "scene_count": 2,
+        "uap": 0.1933922558922559
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_SIMPLE",
+      "metrics": {
+        "ap25": 0.45204545454545453,
+        "ap50": 0.38522727272727275,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 248,
+          "added_background_inputs": 372,
+          "added_crop_inputs": 744,
+          "added_seconds": 131.3237586976029,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 123,
+          "selector_seconds": 0.0032074510236270726
+        },
+        "macc": 0.44137746387468246,
+        "miou": 0.3634957661869066,
+        "scene_count": 2,
+        "uap": 0.2401094276094276
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_NO_CONTEXT",
+      "metrics": {
+        "ap25": 0.5065909090909091,
+        "ap50": 0.38977272727272727,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 248,
+          "added_background_inputs": 372,
+          "added_crop_inputs": 744,
+          "added_seconds": 131.3237586976029,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 123,
+          "selector_seconds": 0.002090335008688271
+        },
+        "macc": 0.4695147833098338,
+        "miou": 0.3940401484467916,
+        "scene_count": 2,
+        "uap": 0.23354377104377103
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "S",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "S_PAIRED",
+      "metrics": {
+        "ap25": 0.49522727272727274,
+        "ap50": 0.38977272727272727,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 248,
+          "added_background_inputs": 372,
+          "added_crop_inputs": 744,
+          "added_seconds": 131.3237586976029,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "generations": 123,
+          "selector_seconds": 0.0023937789956107736
+        },
+        "macc": 0.42710540850122214,
+        "miou": 0.3849894224256468,
+        "scene_count": 2,
+        "uap": 0.23354377104377103
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "G",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "G_ORIGINAL",
+      "metrics": {
+        "ap25": 0.45,
+        "ap50": 0.3931818181818182,
+        "canonical_ap50": 0.27864869684091653,
+        "canonical_ap75": 0.10290796160361378,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 134,
+          "added_crop_inputs": 804,
+          "added_seconds": 29.51556081266608,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "selection_seconds": 1.2910856059752405
+        },
+        "macc": 0.43867555606643516,
+        "miou": 0.3824831186382162,
+        "scene_count": 2,
+        "uap": 0.2813973063973064
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "G",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "G_AGREEMENT",
+      "metrics": {
+        "ap25": 0.45,
+        "ap50": 0.3931818181818182,
+        "canonical_ap50": 0.27864869684091653,
+        "canonical_ap75": 0.10290796160361378,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "added_attempts": 134,
+          "added_crop_inputs": 804,
+          "added_seconds": 28.87738325900864,
+          "attempts": 573,
+          "crop_inputs": 3438,
+          "selection_seconds": 1.5588234339957125
+        },
+        "macc": 0.43867555606643516,
+        "miou": 0.3824831186382162,
+        "scene_count": 2,
+        "uap": 0.2813973063973064
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "G",
+      "disposition": "BLOCKED",
+      "evidence_path": null,
+      "method_id": "G_QUALITY",
+      "metrics": {
+        "miou": null,
+        "uap": null
+      },
+      "reason": "BLOCKED_PARTITION_TARGET_SUPPORT",
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "Q",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "Q_COMBINE",
+      "metrics": {
+        "ap25": 0.478030303030303,
+        "ap50": 0.4212121212121212,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "attempts": 397,
+          "crop_inputs": 2382,
+          "failures": 0,
+          "successes": 397
+        },
+        "macc": 0.38665177411585283,
+        "miou": 0.3066895925630939,
+        "scene_count": 2,
+        "uap": 0.2767676767676768
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "Q",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "Q_AREA",
+      "metrics": {
+        "ap25": 0.2909090909090909,
+        "ap50": 0.24545454545454548,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "attempts": 400,
+          "crop_inputs": 2400,
+          "failures": 0,
+          "successes": 400
+        },
+        "macc": 0.2997306363731437,
+        "miou": 0.2512491967695272,
+        "scene_count": 2,
+        "uap": 0.1898989898989899
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "Q",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "Q_UNCERTAINTY",
+      "metrics": {
+        "ap25": 0.34545454545454546,
+        "ap50": 0.3340909090909091,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "attempts": 400,
+          "crop_inputs": 2400,
+          "failures": 0,
+          "successes": 400
+        },
+        "macc": 0.38395088491947066,
+        "miou": 0.29486265909593495,
+        "scene_count": 2,
+        "uap": 0.1973063973063973
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "Q",
+      "disposition": "MEASURED",
+      "evidence_path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "method_id": "Q_GAIN",
+      "metrics": {
+        "ap25": 0.51,
+        "ap50": 0.4431818181818182,
+        "canonical_ap50": 0.31294365572315885,
+        "canonical_ap75": 0.11180124223602485,
+        "defined_scene_counts": {
+          "ap25": 2,
+          "ap50": 2,
+          "canonical_ap50": 2,
+          "canonical_ap75": 2,
+          "macc": 2,
+          "miou": 2,
+          "uap": 2
+        },
+        "logical_cost_sum": {
+          "attempts": 400,
+          "crop_inputs": 2400,
+          "failures": 0,
+          "successes": 400
+        },
+        "macc": 0.4916992404004763,
+        "miou": 0.43621311823937187,
+        "scene_count": 2,
+        "uap": 0.3202861952861953
+      },
+      "reason": null,
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "COMBO",
+      "disposition": "NOT_REQUIRED",
+      "evidence_path": null,
+      "method_id": "COMBO_GS",
+      "metrics": {
+        "miou": null,
+        "uap": null
+      },
+      "reason": "REQUIRES_RETAINED_S_AND_CHANGED_G",
+      "required": true,
+      "reused_from": null
+    },
+    {
+      "branch": "COMBO",
+      "disposition": "NOT_REQUIRED",
+      "evidence_path": null,
+      "method_id": "COMBO_Q_REFINEMENT",
+      "metrics": {
+        "miou": null,
+        "uap": null
+      },
+      "reason": "REQUIRES_STATIC_REFINEMENT_AND_Q_GAIN",
+      "required": true,
+      "reused_from": null
+    }
+  ],
+  "schema_version": 1
+}

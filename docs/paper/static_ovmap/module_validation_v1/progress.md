@@ -1,26 +1,22 @@
 # OVI-MAP module validation progress
 
-Latest (2026-09-23 03:28 UTC): all 12 corrected native-v10 development captures are complete. Full causal-membership validation passed on all 2,305 valid frames and 22,307 candidate requests across 2,400 scheduled slots, including the former failure on scene0534_00. FIT/CAL baseline evaluation and geometry-request preparation are complete. S/G/Q inference is now running or queued on GPU 2. The full study remains IN_PROGRESS with no SELECT gain or retained candidate. Native-v9 results remain historical; the 8/2/2/2 split and 95 invalid-pose slots are unchanged. See [repair evidence](QUERY_MEMBERSHIP_REPAIR.md) and the [technical validation receipt](../../../../artifacts/static_ovmap/module_validation_v1/native_v10_capture_validation.json). Data authorization is already confirmed; do not request it again.
+更新：2026-09-23 11:31 UTC。当前公共流程：`/mnt/shared/ww/ovimap-module-validation-v1/attempt_011`。
 
-Update (2026-09-23 03:40 UTC): a valid one-pixel-high G crop exposed ambiguous channel inference in the shared image backend. The [RGB adapter repair](RGB_CROP_REPAIR.md) passed 19 targeted tests and real-request preprocessing in both encoder environments. Affected first-scene inference is archived for rerun; captures, text caches, N0 and geometry-request preparation remain valid.
+- 数据：14 个预选原始场景已齐备；12 个开发场景已导出，2 个 CONFIRM 场景保留原始文件。
+- 原生 capture：12 场景完成；2,400 槽位中 2,305 帧有效、95 帧无效；native-v10 因果 membership 验证通过。
+- S：直接方法和三个小头均已测量，CAL 教师 S_WOW_VOTE；SELECT 保留 N0。
+- G：G_ORIGINAL/G_AGREEMENT 已测量；G_QUALITY 为 BLOCKED_PARTITION_TARGET_SUPPORT（仅 5 个可区分分组、2 场景，冻结门槛为 20/4）。
+- Q：三个比较策略和 Q_GAIN 已测量；CAL 比较策略 Q_COMBINE。Q_GAIN 未通过逐场景非负门槛。
+- 选择：已 FROZEN，最终 N0／NO_NET_GAIN；组合及 B100/400 曲线不触发。
+- CONFIRM：NOT_REQUIRED_NO_RETAINED_CANDIDATE；没有导出、转换或评价 holdout。
+- 交付：公共 bind/capture/semantic/geometry/query/select/report 均 COMPLETE，confirm 为 NOT_REQUIRED_BY_FROZEN_GATE。报告数值审计及 16,430 个发布文件的来源、哈希和解压内容核验全部通过；包大小 96,099,584 字节。
 
-Next work: finish corrected S/G/Q, execute the frozen conditional gates, publish actual results and verify the remote branch SHA. CONFIRM remains unopened. Current implementation details and evidence: [scientific execution plan](../../../superpowers/plans/2026-09-22-scannet-scientific-drivers.md).
+S/G/Q 实际生成代码：`1d83aec5e3c5220b0a5397e1bc3f720dfcbac3b9`。
+冻结/报告代码：`b6ab45b8dadf6672d2bcc2a6cfaed9bf41d60a0c`。
+当前冻结材料已归档至 `artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/`。
 
-The following historical attempt is retained for provenance:
+本轮限定审计已通过：199 项模块测试、104 个实际预测的域/所有权/排序验证、24 条 Q 轨迹的因果/计费核对；随后报告文字修订 3 项、哈希缓存 8 项及相关回执 40 项测试通过（测试有重叠，不累加为独立总数）。新增无损压缩 3 项测试通过；116 条报告行、34 组均值和 421 个冻结源文件均已核对。
 
-Attempt: `/mnt/shared/ww/ovimap-module-validation-v1/attempt_003`
+公共 all 进程在全部阶段回执完成后，于重复进度刷新期间终止，退出码 143；独立核对 8 个阶段依赖摘要及 20 个主要输出后完成归档。首次导出超过 100 MiB，经仓库外中间包与无损 JSON 压缩解决，冻结科学代码和权重未变。完整命令与核验见 finalization-20260923-native-v10/scoped_final_audit.json；最终提交、本地/远端 SHA 比对及包含代码/文档的总交付大小见仓库外 `/mnt/shared/ww/ovimap-module-validation-v1/publication-20260923.json`。
 
-| Phase | Status | Blockers |
-|---|---|---|
-| bind | BLOCKED_INDEPENDENT_SCENES | BLOCKED_INDEPENDENT_SCENES |
-| capture | PARTIAL | BLOCKED_INDEPENDENT_SCENES |
-| semantic | PARTIAL | BLOCKED_INDEPENDENT_SCENES |
-| geometry | PARTIAL | BLOCKED_INDEPENDENT_SCENES |
-| query | PARTIAL | BLOCKED_INDEPENDENT_SCENES |
-| select | BLOCKED_PREREQUISITE | BLOCKED_INDEPENDENT_SCENES |
-| confirm | BLOCKED_PREREQUISITE | SELECTION_NOT_FROZEN |
-| report | COMPLETE | BLOCKED_INDEPENDENT_SCENES, PHASE_NOT_COMPLETE:bind, PHASE_NOT_COMPLETE:capture, PHASE_NOT_COMPLETE:confirm, PHASE_NOT_COMPLETE:geometry, PHASE_NOT_COMPLETE:query, PHASE_NOT_COMPLETE:select, PHASE_NOT_COMPLETE:semantic, SELECTION_NOT_FROZEN, UNIMPLEMENTED_DEVELOPMENT_SCENE_PIPELINE |
-
-2026-09-22 data preparation: scoped download/resume and native frame export are implemented and tested. Public ScanNet splits and a provisional 14-capture acquisition plan are ready. Raw downloads await confirmation of existing ScanNet authorization and terms agreement. See [ScanNet preparation](SCANNET_PREPARATION_20260922.md).
-
-The historical phase statuses above remain unchanged. Their former data-authorization blocker has been resolved by the newer execution recorded at the top of this document.
+此前 attempt_001–010、native-v8/v9 和修复前 RGB 产物保留作历史证据，不参与当前结论；旧文档中的缺数据或驱动未实现状态已被本轮完成的工程工作取代。数据授权早已确认，无须再次请求。

@@ -1,0 +1,75 @@
+{
+  "command": [
+    "scripts/evaluation/run_ovimap_scannet_selection.py",
+    "--config",
+    "configs/evaluation/ovimap_module_scannet_study.json",
+    "--phase",
+    "all"
+  ],
+  "gate_status": "NOT_REQUIRED_QUERY_GAIN_NOT_ELIGIBLE",
+  "input_identity": "c65690b3a72ac6e86a52850f5d85e4e274262ab1f65d8b9c4ee2f0f14219418a",
+  "inputs": [
+    {
+      "bytes": 799,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_study.json",
+      "sha256": "cd404320e4fd73a292494ab1866677450324b88bb292a0ac46126cf5d9b58378"
+    },
+    {
+      "bytes": 1545,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_runtime.json",
+      "sha256": "68b55973d8daccb5a8d3598d70b55a47ade722a38c6f2f187852ffcb06143b09"
+    },
+    {
+      "bytes": 4779,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/module_receipt.json",
+      "sha256": "f20d2509529857e8dd00dbed57545e9b7262a7fb70ac7174bfeb7dd38a0d5fd6"
+    },
+    {
+      "bytes": 1252814,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/query/calibration_receipt.json",
+      "sha256": "d51ef6c0c25abae342d8aaa321b4b79b39942d257eb77afd90af3f167e3ed470"
+    },
+    {
+      "bytes": 71526,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_lock.json",
+      "sha256": "7b8fd52bcb57126e0055228c0ad4dcc34ba338eaa3867de8a2b52646b0c83720"
+    }
+  ],
+  "outputs": [
+    {
+      "bytes": 134,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/budget_curve_gate.json",
+      "sha256": "bfcd3ef4bf5ade138e7ab764ee677581b6bea5ccc2e40846c606154743c62744"
+    }
+  ],
+  "rows": [],
+  "source_commit": "70781943c72a1ce001a476918c75ebff1b368c84",
+  "sources": [
+    {
+      "bytes": 14244,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/selection_execution.py",
+      "sha256": "375e066cab34a150be7f4ee395bc1a1480b0b416e301e5bca7a2d4adb144fa25"
+    },
+    {
+      "bytes": 7698,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/selection_pipeline.py",
+      "sha256": "f89b440ab1afc6cbcbe556bbfaa4e65d3acd982bc7fed1e9cd5f1db1cf2b4908"
+    },
+    {
+      "bytes": 18495,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/selection.py",
+      "sha256": "98b2e9bdffa7178923d17a48ccbae8fb08d979a98b7c70e23662996ae819f72f"
+    },
+    {
+      "bytes": 767,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/metric_order.py",
+      "sha256": "a8af22c14428f7e8f4eee954f70fb8e2e6cafdafff7b32a51f3ae97223c7a36e"
+    },
+    {
+      "bytes": 3517,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_selection.py",
+      "sha256": "aa4de30d9bf1c328efb84907a5cc1860a992621a1ac846ead9c86617796502e4"
+    }
+  ],
+  "status": "COMPLETE"
+}

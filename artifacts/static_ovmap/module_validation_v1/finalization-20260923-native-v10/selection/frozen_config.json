@@ -1,0 +1,5750 @@
+{
+  "calibration": {
+    "geometry": {
+      "bytes": 6809,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/geometry/calibration_receipt.json",
+      "sha256": "8c30ff20a009c1d9acd5561f1892ca774ccf6232c92679e0a21d5d41201c2eb3"
+    },
+    "query": {
+      "bytes": 1252814,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/query/calibration_receipt.json",
+      "sha256": "d51ef6c0c25abae342d8aaa321b4b79b39942d257eb77afd90af3f167e3ed470"
+    },
+    "semantic": {
+      "bytes": 1597816,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/semantic/calibration_receipt.json",
+      "sha256": "2eae067e327c2d17d56d318ff93864ba739956bc8db6a60a7236d5581bfc5a8b"
+    }
+  },
+  "evidence_inputs": [
+    {
+      "bytes": 799,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_study.json",
+      "sha256": "cd404320e4fd73a292494ab1866677450324b88bb292a0ac46126cf5d9b58378"
+    },
+    {
+      "bytes": 1545,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_runtime.json",
+      "sha256": "68b55973d8daccb5a8d3598d70b55a47ade722a38c6f2f187852ffcb06143b09"
+    },
+    {
+      "bytes": 4779,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/module_receipt.json",
+      "sha256": "f20d2509529857e8dd00dbed57545e9b7262a7fb70ac7174bfeb7dd38a0d5fd6"
+    },
+    {
+      "bytes": 2963,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/budget_curve_receipt.json",
+      "sha256": "9edcb8f4a56f153b7904ab736ebef95932c291c77533a0370dae095f51de58b8"
+    },
+    {
+      "bytes": 71526,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_lock.json",
+      "sha256": "7b8fd52bcb57126e0055228c0ad4dcc34ba338eaa3867de8a2b52646b0c83720"
+    },
+    {
+      "bytes": 93308,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/semantic/select_receipt.json",
+      "sha256": "dca4679ff70da57153778e69fd238d62921a82075b2ef2f4dba6b4c23620a8bb"
+    },
+    {
+      "bytes": 10720,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/geometry/select_receipt.json",
+      "sha256": "64eb7d5fcba695796791d10221b3a90501ef6388ee33f7c10a1202a17d28ee9d"
+    },
+    {
+      "bytes": 1398665,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/query/select_receipt.json",
+      "sha256": "54b2da1a8bedcbc16d9e5d4bc9c18f18407e687373bfd7b1594be85ed3409666"
+    }
+  ],
+  "prediction_code_commit": "b6ab45b8dadf6672d2bcc2a6cfaed9bf41d60a0c",
+  "runtime": {
+    "baseline_build": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP",
+    "cropformer_config": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/Entityv2/CropFormer/configs/entityv2/entity_segmentation/cropformer_hornet_3x.yaml",
+    "cropformer_root": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/Entityv2/CropFormer",
+    "cropformer_weights": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+    "cuda_device": "2",
+    "data_root": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet",
+    "frontend_python": "/home/ww/miniconda3/envs/ovimap-cropformer/bin/python",
+    "hf_modules_cache": "/mnt/shared/ww/ovimap-module-validation-v1/models/hf_modules",
+    "mapping_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "native_build_receipt": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-query-v10/receipt.json",
+    "native_extension": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-query-v10/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+    "native_model": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+    "native_perception_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "output_root": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1",
+    "semantic_python": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/semantic-env/bin/python",
+    "upstream": "/home/ww/crove/ovimap-module-validation-upstream"
+  },
+  "sources": [
+    {
+      "bytes": 730,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/baselines/conceptgraphs_canonical_replica.json",
+      "sha256": "dec89b69228102c89f7468959697592cd760682fab4ba5bfe6fe0505c5fb3a14"
+    },
+    {
+      "bytes": 6113,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/baselines/scannet200_methods.json",
+      "sha256": "f6512e1a56e5562aa3144ce1a6d1cd8c07e0a9fb4bb7f128caf8010963ffbce3"
+    },
+    {
+      "bytes": 13803,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/benchmark_suitability_pre_result.json",
+      "sha256": "f4de8e629dacc3a8e13a1123636179fe3c20ec0a145bbcdf1aff87c64a607694"
+    },
+    {
+      "bytes": 399,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/crove_dense_moved_geometry_gate_v1.json",
+      "sha256": "9cd0933b0418ebe2391830aaa468e5d2954e8fc168eb97355ba13077f67333c8"
+    },
+    {
+      "bytes": 6952,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/crove_fine_current_map_v1.json",
+      "sha256": "beeff7e55dea6c66d7f4979fe03028eeb5ba6a75fb3f8a0c82876589448ee887"
+    },
+    {
+      "bytes": 518,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/crove_ovimap_localized_visibility_l1_v1.json",
+      "sha256": "53f4d808bda65e12a88496e2d27c887b24d9b1c5b47699b300261f4f1a67ec3c"
+    },
+    {
+      "bytes": 477,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/crove_ovimap_unbound_visibility_v1.json",
+      "sha256": "ddc1514b78a9903fdfb62362422e100380d3bb285fc6b8d88dc87e1f6a59aa90"
+    },
+    {
+      "bytes": 7435,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/external_benchmark_sources.json",
+      "sha256": "d36251fe43ddedced315e268db9d9a0178b78e2d1e59bb32f2ba708f039b75b2"
+    },
+    {
+      "bytes": 7775,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/3rscan_causal_pilot_v1.json",
+      "sha256": "b3bed41a0d25c7931aaf26ed460778186738f98259281099efcc35b346c7bf1f"
+    },
+    {
+      "bytes": 52716,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/3rscan_t2_dev_v1.json",
+      "sha256": "f6224c10ea7891dac50baf1a814a44f3a3e54210daaf76fdc6a7df993af67b91"
+    },
+    {
+      "bytes": 39285,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/observation_query_multienv_v3_confirm_pairs.json",
+      "sha256": "0e6698b28152870f7c6a7cc07bbcc193321f246f90aa3bba62dc7fa76cc045d9"
+    },
+    {
+      "bytes": 3980,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/observation_query_train_pair_v2.json",
+      "sha256": "22ac096a0351900692a33a7875874ce6b7b78a1fbc4637457135b88c4d6bd6eb"
+    },
+    {
+      "bytes": 21628,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/observation_query_train_pairs_multienv_v3.json",
+      "sha256": "c3435b3d0ff8ba1cf06a213e6cca4436f00a399f16144bdd287c50f9901f3b6d"
+    },
+    {
+      "bytes": 4636,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/ovi_rescene_dense_instance_repair_pairs_v1.json",
+      "sha256": "ac150fe87d83af04f1275405c502488c0b4c2ccb148c7945f93ed3839e1f0d27"
+    },
+    {
+      "bytes": 79594,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37"
+    },
+    {
+      "bytes": 27416,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/ovi_rescene_resolver_transfer_v1.json",
+      "sha256": "605307d314007cb0ca008867c5c0a30d82e54e27cda62f057b6ed9771b2e2db1"
+    },
+    {
+      "bytes": 491989,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/oviv2_scannet200_5.json",
+      "sha256": "8224210262b31eae77e466184f9538facb804d33bcf3065e75b94ec0e51996b7"
+    },
+    {
+      "bytes": 5735,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json",
+      "sha256": "68b67c55e83009318ad35c600d096780e6a0dee035ce76224a6c1a6cb843c410"
+    },
+    {
+      "bytes": 4422,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/oviv2_tesse_cd_cache.json",
+      "sha256": "05088b4d75039179220e8462bdab51ae182138cefbad5cdfb4f524df775efbba"
+    },
+    {
+      "bytes": 17279,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json",
+      "sha256": "885e0fcc4ef64ec6f97e97edc3cd54243e0614b63baaff4ad0132644dd006968"
+    },
+    {
+      "bytes": 2612,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/oviv2_tesse_t4_v1.json",
+      "sha256": "de97897d055833c4e40a65e529a037d185882a93ace9a8aac2d27335eb24e27c"
+    },
+    {
+      "bytes": 6453,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/replica7_heldout.json",
+      "sha256": "bdf3cbf35cad5cbf394e50d6236e2aa19aca042affd237f24af40904a9c0dc9c"
+    },
+    {
+      "bytes": 7016,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    {
+      "bytes": 8875,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/tesse_cd.json",
+      "sha256": "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
+    },
+    {
+      "bytes": 28302,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+      "sha256": "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+    },
+    {
+      "bytes": 3509,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/tesse_cd_common_v2.json",
+      "sha256": "1e5a5f76705aaf5875b253c416805fdcc09c8b333bd2e53ec751ff0683a205d8"
+    },
+    {
+      "bytes": 4660,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/tesse_cd_occlusion_v1.json",
+      "sha256": "48d7a1eda7a9b159fd6a51c83b27e36362c95f84f47214c226a69cb38aaa58c6"
+    },
+    {
+      "bytes": 1435,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/manifests/tesse_cd_rgbd_v1.json",
+      "sha256": "1840ca76f3a31836dcef7a07b00ed810c3e166e999e04081cbd6308613792fd2"
+    },
+    {
+      "bytes": 3620,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_3rscan_t2_matrix_v1.json",
+      "sha256": "9708c0d9b9cb97b7ed1803d49bad280bc2f8bd925d500376f2f049430cf17e86"
+    },
+    {
+      "bytes": 856,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_adaptation_decision_v1.json",
+      "sha256": "cae0f0d3b19018d950e4ea24f1523011d3ee3eb28e17a42929a51533c8958cad"
+    },
+    {
+      "bytes": 11864,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_b7_g_v1.json",
+      "sha256": "3db609b78c44609c84033242389ead08badc698b067ff4cafa0f4800a984f3a2"
+    },
+    {
+      "bytes": 3775,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_c2_repair_b5_v2.json",
+      "sha256": "f17bd4356258c8c6795ee3746b65cbcce4d97bee2ba27e25d716806c47c1f281"
+    },
+    {
+      "bytes": 2902,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_dense_instance_repair_scene0009_confirm_v3.json",
+      "sha256": "0c8ed668cf676af83c0bfb0200b9c747a970cba198896e6d5f7b3159178c6bf8"
+    },
+    {
+      "bytes": 2982,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_dense_instance_repair_scene0359_v1.json",
+      "sha256": "7103a982399f766173d8a322fbbd061f96254f52db2ba9551477f97d15809584"
+    },
+    {
+      "bytes": 2903,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_dense_instance_repair_scene0449_confirm_v3.json",
+      "sha256": "6356b92f33bb31653fe5796ba780dced25ed04c43db95978770d9784f33a5021"
+    },
+    {
+      "bytes": 2983,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_dense_instance_repair_scene0459_v1.json",
+      "sha256": "6321ca4f8cc39676462b96465cf661eb4382cf64324faa84041be114e5e64980"
+    },
+    {
+      "bytes": 2842,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_dense_instance_repair_v1.json",
+      "sha256": "ae0cf8c3ea7e11f0130902d96870f8378c7961fe7ea9e0f036524ca7237e1946"
+    },
+    {
+      "bytes": 1128,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_local_adaptation_v1.json",
+      "sha256": "8dfda7552ec7fd1d58dec8b04d8521b0ef6d1db56bc08e78dbf0f3a64a9cace9"
+    },
+    {
+      "bytes": 3653,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_object_level_transfer_matrix_v1.json",
+      "sha256": "4dc16897136c0931ef2f295bf8ea0b44d47129568a4c33bd8338906c72baf53e"
+    },
+    {
+      "bytes": 4078,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_object_level_transfer_scene0009_confirm_v3.json",
+      "sha256": "b5a7e630e08b6ac57da0df44f00da3d467bdf7b3b5fbbe4a17ad60b4b0ec300e"
+    },
+    {
+      "bytes": 3978,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_object_level_transfer_scene0359_v1.json",
+      "sha256": "d7a95ebb9903636639d299a77bb308fa9dc384d3ffd1a8db5437d4499d9c90a5"
+    },
+    {
+      "bytes": 4078,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_object_level_transfer_scene0449_confirm_v3.json",
+      "sha256": "8c0d980f3e3938875f3d129ffc4a0870cddcac797380b2c131529915e6b50fff"
+    },
+    {
+      "bytes": 3978,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_object_level_transfer_scene0459_v1.json",
+      "sha256": "8b654abe7b180caaf67ed16f1d5a1d63064b3378f993aa5147d7123fe4ad0b03"
+    },
+    {
+      "bytes": 4501,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+      "sha256": "cf8422dd21aa72b66fbdb2a8918b689efcb12cb20b488e8dd3ff56c08f7a41ef"
+    },
+    {
+      "bytes": 4942,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_object_recovery_v1.json",
+      "sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429"
+    },
+    {
+      "bytes": 2593,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_observation_query_train_v2.json",
+      "sha256": "23878e6f71bec26afe55c9919e64bc45255da3411908fbc1ba6d9ec9c3003dcd"
+    },
+    {
+      "bytes": 1419,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_ownership_completion_v1.json",
+      "sha256": "6b9f73a22edbed87fd8596179d8db8f40f22efcadf2d7e8cd262a4d40542b038"
+    },
+    {
+      "bytes": 291,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_supported_v3.json",
+      "sha256": "89b75d201d64175b2414eefa05491297cfc3a77adab399fa1ea8fe619eece1af"
+    },
+    {
+      "bytes": 4113,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_transfer_diagnosis_v1.json",
+      "sha256": "67f0d6e276fda76f0b63e8547446d3679eef41ccbb2230e393aeb6795fc4189b"
+    },
+    {
+      "bytes": 14335,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovi_rescene_two_visit_matrix.json",
+      "sha256": "08dc52143b6c976d2b9f516fb312aa9e52ad42befe47e4fbb99cfaee6f07ee4d"
+    },
+    {
+      "bytes": 1537,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_local_ownership_v1.json",
+      "sha256": "a3d4423571b4d5b7f0b73002eec3a3f0a0c445d218eaa4e0d0b99491d650fc17"
+    },
+    {
+      "bytes": 1680,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_historical_smoke.json",
+      "sha256": "76f40314c603566a9dac8278d1a02051a295ff1e3da100427b515642f3220632"
+    },
+    {
+      "bytes": 1545,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_runtime.json",
+      "sha256": "68b55973d8daccb5a8d3598d70b55a47ade722a38c6f2f187852ffcb06143b09"
+    },
+    {
+      "bytes": 799,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_study.json",
+      "sha256": "cd404320e4fd73a292494ab1866677450324b88bb292a0ac46126cf5d9b58378"
+    },
+    {
+      "bytes": 6172,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_object_decoupling_v1.json",
+      "sha256": "2867e91c725aa4f6e5d1f7fe9433bd7c3e7b1ac8ca96b97b33b046f5aaf255db"
+    },
+    {
+      "bytes": 3999,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_sf_ovi_semantics_v1.json",
+      "sha256": "2d87f2ed7a89fd9cf3ccb1e278c38f2d616690432c606d239a7573bd0c1aad54"
+    },
+    {
+      "bytes": 574,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_static_anchor_apartment_v1.json",
+      "sha256": "1ef8e81f23dd7a6106ebb4d1cfc77fec0fc8f7a48b2228e9747b1bd10529ce98"
+    },
+    {
+      "bytes": 8017,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_static_conditions_v1.json",
+      "sha256": "8444e6d14648a1d92d29942bcfeee0d3dc7fdd199c337082cd8bd0fe84b604d0"
+    },
+    {
+      "bytes": 3778,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_t1_attribution_v1.json",
+      "sha256": "16c57d9388eaba39d9ee05901547195d76bd3a6aa361792188ae8aa750ea6b69"
+    },
+    {
+      "bytes": 3528,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/replica41_semantic_palette.json",
+      "sha256": "ffabd5b40254811dbb6a77de80fbba511c0ed767000742c16652de37f85a1b7d"
+    },
+    {
+      "bytes": 1140,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/rescene_two_visit_backend.json",
+      "sha256": "2b0336feac693b84bd8b7db94d903172c12818b0afbd887b77b476488cd2abcb"
+    },
+    {
+      "bytes": 1608,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/rescene_two_visit_backend_persist4d_repro.json",
+      "sha256": "53ea2e4d62be6a7174212d1f0a296e6b44eb049c57cdbb17da94863dee70fbb4"
+    },
+    {
+      "bytes": 3101,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/compact_artifact_index.json",
+      "sha256": "356a2a495cd3d81ba269a0faabb6471cad862df3720873dcf6b96cdd711c5a89"
+    },
+    {
+      "bytes": 1995,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/cost_control_2cm.json",
+      "sha256": "4e338ac6b605117b10cf39ab92b4fcec6c0b19df8588f4c2d93013ee154a1982"
+    },
+    {
+      "bytes": 858,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/effective_geometry_config.json",
+      "sha256": "3b721fa3b5f6d774737274d46fb369c1e36dc864a7aea805e7bbff98213f7db4"
+    },
+    {
+      "bytes": 4486,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/export_diagnostics.json",
+      "sha256": "7207d9be0a8070c7b11e59b1bd78386f7924eee5b4151468cf019739d964219e"
+    },
+    {
+      "bytes": 1686,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/figures/dynamic_dev_four_views.json",
+      "sha256": "490a95f68f172ef7a1b12b7ddd73ff8ff66322d44c827e0613fbd7ccb01586cf"
+    },
+    {
+      "bytes": 1685,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/figures/legacy_static_display_control.json",
+      "sha256": "55663c00a4d17411ba0709aa608c0319278c0bcd209f91f067404b9e04233566"
+    },
+    {
+      "bytes": 1680,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/figures/static_dev_four_views.json",
+      "sha256": "6cbd858da529e4f5e309736051550473a409fd7390e41a24c7f34df9298a9f24"
+    },
+    {
+      "bytes": 7241,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/input_selection.json",
+      "sha256": "2bafad6a0329982a29af70c688f9b2323f23fd00459158e4aa84b6dbf04232a2"
+    },
+    {
+      "bytes": 69145,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/metrics_summary.json",
+      "sha256": "8dbfb038d84b66992af4d86ed1f02f8638894f5501469acea9a20bfed271a7bf"
+    },
+    {
+      "bytes": 1984,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/selected_config.json",
+      "sha256": "942519c5f6e5f54d2829c910f912314837eeb2b909e389a48ff7ae920f8b299d"
+    },
+    {
+      "bytes": 4540,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/crove_fine_current_map_v1/table_values.json",
+      "sha256": "2eaf805335a8431aa16898fbf1d7db26af509879c3a4d78e71686bc85f48c86d"
+    },
+    {
+      "bytes": 3832,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/artifact_manifest.json",
+      "sha256": "e746f428c84bb5151be751054a727d428aaebf09195f9939d75beb8da033185b"
+    },
+    {
+      "bytes": 4750,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/asset_inventory.json",
+      "sha256": "3e8074eb997d4409ff1ec9bfd171eae93ba0168cb29c29c0730bd89d363df1da"
+    },
+    {
+      "bytes": 2893,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/experiment_status.json",
+      "sha256": "baacb2ec167ac37ab5a163909ac7ed684d6388aa42869e144fec0ef9c1b70121"
+    },
+    {
+      "bytes": 2200,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_attn_asset_gate_v2/summary.json",
+      "sha256": "596a33152c48127595595a67f528cc053a93dca0065fa2604fb8cc1edf86e0fb"
+    },
+    {
+      "bytes": 5015,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_base_frozen_v2/summary.json",
+      "sha256": "3c0a4e9624ce3aba98eb4241ae07ed5c4f71f877137f4e11739b2e5de971a24f"
+    },
+    {
+      "bytes": 2212,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_base_tuned_asset_gate_v2/summary.json",
+      "sha256": "1b1e02f55b5587805f832745e97883164c7b709b4c33b4b7c2840b87e7cbc103"
+    },
+    {
+      "bytes": 2200,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_full_asset_gate_v2/summary.json",
+      "sha256": "e0378e4c6dc54455c11a02010c65bb8fa4ca9160328ec5a9cba61d10dbb7f571"
+    },
+    {
+      "bytes": 2200,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_fuse_asset_gate_v2/summary.json",
+      "sha256": "2f1d0ad66db4359ffc7d906d2b20e191d1544d2eef81bfa889d46b62f9cb4af1"
+    },
+    {
+      "bytes": 2200,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_late_asset_gate_v2/summary.json",
+      "sha256": "dd0889bc90b336b2c67d20fe8b1d6a18ef17a5b2599c9786f66d8b0ea36f70fe"
+    },
+    {
+      "bytes": 2210,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_per_visit_asset_gate_v2/summary.json",
+      "sha256": "a24f4fc33d1bd45816f9f97ee8e0ba3d84b9086d20e006425debeea4dad3d039"
+    },
+    {
+      "bytes": 3418,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/t01_t02_dev_v1.json",
+      "sha256": "16e7902d46b10a69b351f4479f05ff1be213a12c81d1e919ea4f8ec3afa2fd96"
+    },
+    {
+      "bytes": 3834,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/t03_train_preflight_v1.json",
+      "sha256": "6efdbd9e437a36d8b3ca6e933ab673f0f48322fefccdb7267b6b3084fc347bdd"
+    },
+    {
+      "bytes": 2518,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/t04_real_dev_forward_v1.json",
+      "sha256": "b79155eed6c959c72c9ea7380ecdc6b42f0012f0c5da0d72dc5a4a35e23c0682"
+    },
+    {
+      "bytes": 2370,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/t05_real_dev_loss_v1.json",
+      "sha256": "814f801b599c646f6c87cfe8aec1a307c1abcfc08dad2bf28650477cacaef92f"
+    },
+    {
+      "bytes": 2066,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/t06_training_asset_gate_v2.json",
+      "sha256": "d1c596cc7e4f344e2cc2b6b08153a7089ba19ec9f6d6dce1f22f0d81f7734fd0"
+    },
+    {
+      "bytes": 2676,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query/t06_training_closure_v1.json",
+      "sha256": "c7891a99ef56978fd30471ba4f75efc2906c1b854c345ee0c8a80415cce7209e"
+    },
+    {
+      "bytes": 6535,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/confirm/scene0009_00-scene0009_02/d2_ovimap_receipt.json",
+      "sha256": "53b104e0f894d6c3190d834303c4f0100a30499a5e179491e8afee4118471221"
+    },
+    {
+      "bytes": 49870,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/confirm/scene0009_00-scene0009_02/d2_pair_receipt.json",
+      "sha256": "c0b64e08c985e47bc3da208991633ed1ddd9e2a592fa79e224ec15b11707e7e6"
+    },
+    {
+      "bytes": 6003,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/confirm/scene0449_00-scene0449_05/d2_ovimap_receipt.json",
+      "sha256": "00c4d81318d27189c2c9913c2263fc7088ec311c1ef373b7334a5ab7af2e83c9"
+    },
+    {
+      "bytes": 51341,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/confirm/scene0449_00-scene0449_05/d2_pair_receipt.json",
+      "sha256": "022e167b1ade9be09549fa2d2ba8e5c023fe913d427d41e5090351329d49a89a"
+    },
+    {
+      "bytes": 29380,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/data_selection.json",
+      "sha256": "8516025a2c5829ebfd6f7b5ebe52bc058710b5ef455dc93f2cd990d9d9829cbc"
+    },
+    {
+      "bytes": 7288,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/diagnostics/summary.json",
+      "sha256": "0d8468af03937d7958598fce48d0fda9b72340bed2cf3cb41f8248b929b9276a"
+    },
+    {
+      "bytes": 7317,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/figures/manifest.json",
+      "sha256": "e20d8e5e1f86131541139920cfbd561bf3e5d4eb9b028d902e6744d33a8c38ec"
+    },
+    {
+      "bytes": 1354,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/figures/qualitative_cases.json",
+      "sha256": "a7fe6286fc82973430fd8bfdba2e8b639071ab92a4b318adc4330d95d3d2ffe8"
+    },
+    {
+      "bytes": 37342,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/models/OBS_BASE_TUNED/best_u0200/manifest.json",
+      "sha256": "7aad0fcc7ab15a2819639b0400e08195a90d3268f140edeae5336fa93c416c8b"
+    },
+    {
+      "bytes": 37343,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/models/OBS_BASE_TUNED/terminal_u1000/manifest.json",
+      "sha256": "bdf28ec713074e48488437cc85bd873ff1ff642148201f313275758b2016adbe"
+    },
+    {
+      "bytes": 57965,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/models/OBS_FULL/best_terminal_u1000/manifest.json",
+      "sha256": "ab09a1d59762624371e5227a1793de008ca7059cff25b9347d2899108c7e7c99"
+    },
+    {
+      "bytes": 41918,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/models/OBS_FUSE/best_terminal_u1000/manifest.json",
+      "sha256": "07dd799ceb005f4ad89d20241c91ac1a9c6f6dbd39c21415311b70f6b80d5ee1"
+    },
+    {
+      "bytes": 3916,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/run_index.json",
+      "sha256": "1cf4d9921c8cafb81f835a8a78afbd57139d9b5f6e58bf1ea6c97b824c9b337f"
+    },
+    {
+      "bytes": 3113,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_multienv_v3/scientific_decision.json",
+      "sha256": "f776cb374e7099306f951d16d2c3acd50b0a9830fe860d2d23574f4b174998bd"
+    },
+    {
+      "bytes": 5683,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/baseline_current_v2/summary.json",
+      "sha256": "727f569fc60f6f237cecb8187d0ea9a4c4f0e966e049a5ea53b7eb050f4d0259"
+    },
+    {
+      "bytes": 5683,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_base_frozen_v2_domains/summary.json",
+      "sha256": "727f569fc60f6f237cecb8187d0ea9a4c4f0e966e049a5ea53b7eb050f4d0259"
+    },
+    {
+      "bytes": 6423,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_base_tuned_train1000_dev_v2/summary.json",
+      "sha256": "512bf2a14ad021e36aa1b50dcda2a02000901f8a542e537872b87cc8f6c8e7ef"
+    },
+    {
+      "bytes": 6473,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_base_tuned_train200_dev_v2/summary.json",
+      "sha256": "8da6cd970e9d015891c4b36b587fadc5b8e20f61a6cd2ad12ca72550d691d8ed"
+    },
+    {
+      "bytes": 6473,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_base_tuned_train500_dev_v2/summary.json",
+      "sha256": "bbe8f741310a7afcd8625723980bdd69a15fb83048db039a98653bfef9aef251"
+    },
+    {
+      "bytes": 6396,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_full_smoke200_dev_v2/summary.json",
+      "sha256": "8712d7fdc7fdc80cd9295758b7c3030ea398165ddcde0b2b17b99cdb4c4097b3"
+    },
+    {
+      "bytes": 6400,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_full_train1000_dev_v2/summary.json",
+      "sha256": "01f4a0a886d1a197ae5a416387ee065ce5399d6c7df857d5b7f57cbc47310e54"
+    },
+    {
+      "bytes": 6450,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_full_train500_dev_v2/summary.json",
+      "sha256": "845b7090ced627c00b41d6dba8538efccde7d3d0b9a7087fc7151bda21032c4b"
+    },
+    {
+      "bytes": 6399,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_fuse_train1000_dev_v2/summary.json",
+      "sha256": "2b1599d9d8993f8dd7545c81c28c896bb87cd09dc89a0e091f3a39eeb091e9a3"
+    },
+    {
+      "bytes": 6449,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_fuse_train200_dev_v2/summary.json",
+      "sha256": "a37c5354486f3cdeb1a54e78dd2f7073411635c862b929dccb7662d8ae73c4a2"
+    },
+    {
+      "bytes": 6449,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/evaluations/20260908_scene0109_obs_fuse_train500_dev_v2/summary.json",
+      "sha256": "39950f2a19396dd8272019079d05adc5a13dbfb807ee07b8add9637027676a9c"
+    },
+    {
+      "bytes": 33905,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_base_tuned/best_dev_checkpoint/manifest.json",
+      "sha256": "baf990adbc13f4e6143976477ba6a045931b867ff8d8e96a0cf99827af7e3bf6"
+    },
+    {
+      "bytes": 33906,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_base_tuned/checkpoint/manifest.json",
+      "sha256": "9a88936f926a9c01379085df0616cab5bec6d1fdd71648872b272d58de414c5d"
+    },
+    {
+      "bytes": 6703,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_base_tuned/summary.json",
+      "sha256": "ee6a6b7be4a7a6f4156de1a28a0404387e824b3e6ff45b607ad30832038e75db"
+    },
+    {
+      "bytes": 4574,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_base_tuned/training_config.json",
+      "sha256": "b5ff6ed04c8b922fcd34498deaadd2d199ec9e737a954c443ebda03c8c10f405"
+    },
+    {
+      "bytes": 54527,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_full/best_dev_checkpoint/manifest.json",
+      "sha256": "5459dfb2118dd8397ba5b0a7ed84ffc8a57ab479ab52132151f9847e30722eec"
+    },
+    {
+      "bytes": 54528,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_full/checkpoint/manifest.json",
+      "sha256": "aed0325267f9079fba347a2d9ebeec94e75cba9355c2dabe6623123c3ab81cee"
+    },
+    {
+      "bytes": 10403,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_full/summary.json",
+      "sha256": "189434384e95e06ee6a7419b56f71bc70d1eef4afba5272265ff6484f40a02de"
+    },
+    {
+      "bytes": 4574,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_full/training_config.json",
+      "sha256": "b5ff6ed04c8b922fcd34498deaadd2d199ec9e737a954c443ebda03c8c10f405"
+    },
+    {
+      "bytes": 38480,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_fuse/best_dev_checkpoint/manifest.json",
+      "sha256": "87a5e07aaa98a74c8508382213661392d56684cbc856e1a0db505bec83c259ad"
+    },
+    {
+      "bytes": 38481,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_fuse/checkpoint/manifest.json",
+      "sha256": "b9a17fce445d5ebf5f32c4b995a74b739e857add410985720852193af3ec24a2"
+    },
+    {
+      "bytes": 7498,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_fuse/summary.json",
+      "sha256": "11812c9c28503dd9bd4a299bbfef42937b4574732bed6e0f861444cce79ac2f7"
+    },
+    {
+      "bytes": 4574,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/models/obs_fuse/training_config.json",
+      "sha256": "b5ff6ed04c8b922fcd34498deaadd2d199ec9e737a954c443ebda03c8c10f405"
+    },
+    {
+      "bytes": 6106,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/run_index.json",
+      "sha256": "559d8bf15de9e5b7ca084c326f584b52873ca62685ce41268d757d84710284c4"
+    },
+    {
+      "bytes": 2954,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/selected_pairs.json",
+      "sha256": "3b66741009740d8461c6f5ff191fca114fcfa0e684e2d80a1149d6de35d8dc9d"
+    },
+    {
+      "bytes": 6070,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/train_pair/mapping_receipt.json",
+      "sha256": "2ff764a7ce9ee9748e8f490b7878fdf17b22acbb1e9f7eeb20382f4c70aa530d"
+    },
+    {
+      "bytes": 23458,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/train_pair/pair_receipt.json",
+      "sha256": "3b05fc4f35b1e2903137d7695bd7c93a0956b8ef0e60502e0cd04032dd9fef48"
+    },
+    {
+      "bytes": 2807,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/observation_query_training_v2/visualization_manifest.json",
+      "sha256": "82b61a0023e002f39fd27d09a9e9adc84cb0429b865a0301701b3e13708280f0"
+    },
+    {
+      "bytes": 7235,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b5_identity/apartment_pair_receipt.json",
+      "sha256": "ba0e9e94079cf348d648b3ab4dd0ac01410044ab1c4be403eaf232c5cdc14080"
+    },
+    {
+      "bytes": 2817,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b5_identity/b4_relation_summary.json",
+      "sha256": "03d2525ce70cd0c797786b5fa190cd003c16d6152db3e8edfe26d89f203a69d0"
+    },
+    {
+      "bytes": 2204,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b5_identity/b5_relation_summary.json",
+      "sha256": "ce46916603a398c938f8a3ffec50de4837533dfabf72fe9039b83add8ebd1daf"
+    },
+    {
+      "bytes": 975,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b5_identity/b5_vs_b4_relation_diff.json",
+      "sha256": "25d0cf1a192eaf29443ded7353b253ba37642b3babec501ef5a411cc1631c2c9"
+    },
+    {
+      "bytes": 2932,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b5_identity/checkpoint_audit_summary.json",
+      "sha256": "9ca5a25196139425979f4da2ab84342c024b9aa153a6a072f630e6636adb70f7"
+    },
+    {
+      "bytes": 3217,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b5_identity/decision.json",
+      "sha256": "d47a1e9996baaf415a83d10fbc4d26dd19fc32ed21346e99b89e9e3046e0d143"
+    },
+    {
+      "bytes": 5578,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b5_identity/input_contract_summary.json",
+      "sha256": "ee9b64abc8173707603d0c081947a6cb09da9fa48cec15db83575cb94abe1e0c"
+    },
+    {
+      "bytes": 4075,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b7/apartment_b7_g_v1.json",
+      "sha256": "320c6f71aa178a22d61c46334735e4ac0d590ea412b33ad05c9b8664af83f0a6"
+    },
+    {
+      "bytes": 1594,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_b7/apartment_it1_v1.json",
+      "sha256": "8a9927635a7a4119fcb53b4a6079d87f78ff56253eb5c6948ab669360b46404b"
+    },
+    {
+      "bytes": 1619,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/artifact_manifest.json",
+      "sha256": "b37b32f67c72069a07037af0e16cd73da563b0f249be71794452365fd4bfc129"
+    },
+    {
+      "bytes": 1394,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/attribute_coverage.json",
+      "sha256": "773c9fecfc1b1d94a42f8c416d26852019abfd33616a8ab321cb0d2aed507e11"
+    },
+    {
+      "bytes": 471,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/b4_relations.json",
+      "sha256": "5d9e95d71e873065cb6760641e53a2bc6f810660505733a5010d2a4e7b59e16b"
+    },
+    {
+      "bytes": 1141,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/b5_backend_receipt.json",
+      "sha256": "3f3cb784f10e956d88e81c760845fff2c8f17f5f5a3578ab9762947ced37771d"
+    },
+    {
+      "bytes": 561,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/b5_relations.json",
+      "sha256": "824a533e22c03c8d2431887d37163d7cb563a9ebbb04aa814428519a6a4fa950"
+    },
+    {
+      "bytes": 1755,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/decision.json",
+      "sha256": "6fdb14b300484a8c3f6d0343a626d25e485855e69419a940fa8c6b6fa17986e6"
+    },
+    {
+      "bytes": 1226,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/input_contract_v2.json",
+      "sha256": "c5c7d60059bfd51b80fb5876dfb1d5a5ce38e9e7d4dbe355ad381d5777634352"
+    },
+    {
+      "bytes": 489,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/relation_delta.json",
+      "sha256": "d71178ea993af8b5bd6d417161c3f77d946f9c637686fc8789b74738e8e8bbac"
+    },
+    {
+      "bytes": 1453,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/reuse_ledger.json",
+      "sha256": "e2d6dee6769b56ee28ae527fe3a6828fb4c0385120b8e69c9a7ddc6b335d5770"
+    },
+    {
+      "bytes": 1465,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_c2_repair_b5_v2/sampling_map_summary.json",
+      "sha256": "a9db5b1d195d3a0e6a6a00e2853f8a6e94ac197fce586f3e1c0d2a2ec1cae671"
+    },
+    {
+      "bytes": 6563,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/aggregate/manifest.json",
+      "sha256": "2202fee218fb77aee66729dd304c2569c4e46d19fd369413395494214a028373"
+    },
+    {
+      "bytes": 2736,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/aggregate/recovery_status.json",
+      "sha256": "d88b8e5e2b1e7b5658e320c905b837210ab43427890b2ccef81794fb951dc4aa"
+    },
+    {
+      "bytes": 15371,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/compact_artifact_index.json",
+      "sha256": "e8c55db36afe300b45f01134e4f6a499ae05b948b7e68870bb5df37693ed6e55"
+    },
+    {
+      "bytes": 2003,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/fixed_p2_association/manifest.json",
+      "sha256": "34f5491c85f9c7b398981f1370ed78c30b338902d57785b42289c33d6c7a8cc0"
+    },
+    {
+      "bytes": 2774,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/followup_decision.json",
+      "sha256": "571509ad0a6f83d05eed5df7cdd255fd1a10ca3e4937e849ed120760778aa3a1"
+    },
+    {
+      "bytes": 2003,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0359_00-scene0359_01/fixed_p2_association/manifest.json",
+      "sha256": "98c6fd34cba10f0876e3153f1411fcad48f1ddc8410dd98a5354c16af46bdfd6"
+    },
+    {
+      "bytes": 2008,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0459_00-scene0459_01/fixed_p2_association/manifest.json",
+      "sha256": "c95b3109dba7dccaf054045c488df18a04d690fa3db7a1701a9dbe69c7302f18"
+    },
+    {
+      "bytes": 5993,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0359_00-scene0359_01/d2_ovimap_receipt.json",
+      "sha256": "87379bad379b1e52275c10bc1092785ebfa80db2c8da3e0cd2ba759906f47ea8"
+    },
+    {
+      "bytes": 10722,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0359_00-scene0359_01/d2_pair_receipt.json",
+      "sha256": "236a5764a20e44887f652fbe1c2cfc87d36d04e9b4e1f9eeb7792773fb479d37"
+    },
+    {
+      "bytes": 6526,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0459_00-scene0459_01/d2_ovimap_receipt.json",
+      "sha256": "ed601704f4315b17863c8c7cd16615afcc1337ecbb7827dc21afd37df7b27f1d"
+    },
+    {
+      "bytes": 62969,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0459_00-scene0459_01/d2_pair_receipt.json",
+      "sha256": "8051b890becfbeaf3c5222c9665d5fd1a5cdbdcb772ce2a088e227d31e031a04"
+    },
+    {
+      "bytes": 5548,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_object_level_transfer/adaptation_decision_v2.json",
+      "sha256": "fb7f2203c678bf3b6906ef634652834cbfe0a2264dec73b3b2dd942b6770d23b"
+    },
+    {
+      "bytes": 18118,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_object_level_transfer/compact_artifact_index.json",
+      "sha256": "2d8f313722a6d0d0149448a0bbed3ebc86969df96952c2be6610fe918295b3f9"
+    },
+    {
+      "bytes": 22911,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_object_level_transfer/completion_oracles_v1.json",
+      "sha256": "289466e63399836b4abc0e87b33c1a0bfd8f9d00c028b830752191091c261d7a"
+    },
+    {
+      "bytes": 11032,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+      "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6"
+    },
+    {
+      "bytes": 7825,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+      "sha256": "db27af0ca02e360994ffac42b094cc31f06d12f416fae2d42378cda4c7fc1746"
+    },
+    {
+      "bytes": 8384,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout_v1.json",
+      "sha256": "310b373a4b067623885de899b483a24cf3b44607f366f856cdcdc35d836f843f"
+    },
+    {
+      "bytes": 2154,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_real_evidence/3rscan_t2_dev_gt_v1.json",
+      "sha256": "76862531efaf3c88568e34eb12c9e0284c03240f1c175b8380d9a46f4b3a0767"
+    },
+    {
+      "bytes": 122496,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_real_evidence/3rscan_t2_matrix_v1.json",
+      "sha256": "2bb719c6d511387e07228cb0ba3f2faacbf334321f51408b0e7b01c99e1167b4"
+    },
+    {
+      "bytes": 4342,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_real_evidence/adaptation_decision_v1.json",
+      "sha256": "47bb9c889c96e6ee880148f5345f4141439a8086f45758cd55a6827429b8dc3e"
+    },
+    {
+      "bytes": 2763,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_real_evidence/apartment_native_b5_v3.json",
+      "sha256": "72e5c5b91d99956ceec17784371208eeb8afba4bffd698bd69b657e6208d18c4"
+    },
+    {
+      "bytes": 10023,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_real_evidence/apartment_ownership_completion_v1.json",
+      "sha256": "c7f2ea84dc8b4337af47f1dc0aeaba904f97e139c9393598ae6fedd6305f1575"
+    },
+    {
+      "bytes": 1151,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_real_evidence/apartment_supported_input_v3.json",
+      "sha256": "ba82f80fc892a1a34467779cf172685a4302843b4e3efc55b88705da247313e2"
+    },
+    {
+      "bytes": 213864,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_real_evidence/resolver_tuning_v1.json",
+      "sha256": "53d0ef99ee234592e6c1a17c7e756943976b1a528a3ff9b2c485224158713c61"
+    },
+    {
+      "bytes": 19742,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/results/ovi_rescene_two_visit/apartment-96ba693.json",
+      "sha256": "dc7fe49ed20e785ff113b892486f58393ef04ed96edbb7e70afc38a62da5fd84"
+    },
+    {
+      "bytes": 1108,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+      "sha256": "217b3bcd730a6485159e23e56ee9e97ac3c1c56007a016cdc8a20e9fc07abdbc"
+    },
+    {
+      "bytes": 61049,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/tesse_two_visit_current_v1.json",
+      "sha256": "720952cd75e214de36e318051d6aae18bd762109ba0d3a8ccb73a14f7398e650"
+    },
+    {
+      "bytes": 697,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/vocabularies/tesse_cd_apartment.json",
+      "sha256": "dea3a2e0508c887c6c701ee5250374e2a06c63eefbf2e185110462b81f4ccbcf"
+    },
+    {
+      "bytes": 1013,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json",
+      "sha256": "19aa37c1e9370ded43f94a099dd6b2e9e47ce577f94bb874808aa6e5e9b2b269"
+    },
+    {
+      "bytes": 457,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/vocabularies/tesse_cd_apartment_temporal_aliases.json",
+      "sha256": "8b8ac7c91daf8d1bcfa836082bd1bfa04d61431727dd5cdcd4c9114280ac4f2e"
+    },
+    {
+      "bytes": 685,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/vocabularies/tesse_cd_office.json",
+      "sha256": "bd122f130b525ddda687d007e62bcaf3370988464baf99014ab9cc4f4f12235c"
+    },
+    {
+      "bytes": 1023,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/vocabularies/tesse_cd_office_ovi_full.json",
+      "sha256": "39ef2c139dfeca19c205847627c677a620bef931e4587942daeb94020eee60f4"
+    },
+    {
+      "bytes": 810,
+      "path": "/home/ww/crove/ovimap-module-validation/configs/evaluation/vocabularies/tesse_cd_office_temporal_aliases.json",
+      "sha256": "a17bc8c058fc3c2b00e2eb6ebdc2c6cc0fc7b12501bbd90d9b11255dee6e76b7"
+    },
+    {
+      "bytes": 6199,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/aggregate_ovi_rescene_dense_instance_repair.py",
+      "sha256": "ce10c1df4103e4bd30a8716a60deb6a62c983abeb0848e233f180b90340d4968"
+    },
+    {
+      "bytes": 1555,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/aggregate_replica_static.py",
+      "sha256": "8cef110f99ae619ca20e158484a584e093e4bdd6b882392c9f7e442f39f34f0d"
+    },
+    {
+      "bytes": 11916,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/aggregate_static_replica_readouts.py",
+      "sha256": "0cc3dd22dea072c77e37c7db3341934191ac3e4d04014561c0cd0f4e47dd7ed4"
+    },
+    {
+      "bytes": 2302,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/attribute_crove_tesse_failures.py",
+      "sha256": "f427e21407b5c5975a6a8819172fb479c9544a1e01ccb6d1905ba7c43212f34a"
+    },
+    {
+      "bytes": 5906,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/attribute_ovi_rescene_b7.py",
+      "sha256": "2f265499087a70ae9cfdf9b4f1be79cfeceee02cd01d95881592d0a00c4596f9"
+    },
+    {
+      "bytes": 12242,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/attribute_two_visit_failures.py",
+      "sha256": "1f0098d36728c535630aae0f9783ee2b61ed93c8c9ee1296f4c6a631966a4451"
+    },
+    {
+      "bytes": 13393,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_crove_dense_readout.py",
+      "sha256": "96f07432ae6718d379e55ee47f6088feae33144d21f533bed0e038e0813f89f1"
+    },
+    {
+      "bytes": 45807,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_crove_map_quality.py",
+      "sha256": "c9f06ee4425b5348587a4f0c8207c168c02c34361a5b7c2304858d59b462aaaa"
+    },
+    {
+      "bytes": 3314,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_khronos_exact_attribution.py",
+      "sha256": "e1c3052a968e7618a925d3704b4d59325d2cbc492bbe17a2073f6ec9775e4961"
+    },
+    {
+      "bytes": 4753,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_khronos_metric_parity.py",
+      "sha256": "29be3c63611128958e22a399b3d166a2ed217a941953d7f04fb36bf51f9dadc3"
+    },
+    {
+      "bytes": 34780,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_ovi_rescene_b5_input_contract.py",
+      "sha256": "1d83465b5e05d78bd51dc25446b0b48db5a6e8e83cadb8364771f5d543cc2abf"
+    },
+    {
+      "bytes": 14701,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_ovi_rescene_sources.py",
+      "sha256": "cd764301693718f5e608449a338648dd050369403527bc0a6b1269c611c8f3e8"
+    },
+    {
+      "bytes": 2787,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_ovimap_native_frame.py",
+      "sha256": "305d2ff0715397ef04461e6478aa92b500479bb85cc3f8f7592b6b45e3e98010"
+    },
+    {
+      "bytes": 3109,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_ovimap_paper_parity.py",
+      "sha256": "c76bcb92eda0f6d817e6ec7fc6a28ed1421d680e88845c4aca1707bb5c7778a0"
+    },
+    {
+      "bytes": 7035,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_oviv2_replica_protocol.py",
+      "sha256": "6b6afa5643426bf0193c5d51e3203fad7d741742fd7d6cd97969beb1e3c2f74b"
+    },
+    {
+      "bytes": 24302,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_persist4d_rescene_checkpoint.py",
+      "sha256": "cf6767dd74ac53d7305c38ae575b14fcc76697e04d1ec9460bf226d8d8c61226"
+    },
+    {
+      "bytes": 3450,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_static_dense_backend.py",
+      "sha256": "21108b722b061922ba85febb07f6f3dbf2712596d536c336b95a28a164a6a069"
+    },
+    {
+      "bytes": 3258,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_static_ovmap_native_readout.py",
+      "sha256": "45d00c0004b0474ea30a69ce902b7c9825b49ced084039f6d7e6ddca01f8d3d9"
+    },
+    {
+      "bytes": 4674,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_static_ovmap_projection.py",
+      "sha256": "ac7fbf252265b64ec62da4fc740ca7b2853b658dc0800250e4cb970d532afa49"
+    },
+    {
+      "bytes": 5757,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/audit_tesse_input_fairness.py",
+      "sha256": "b11f283aa0df67bbb1c5b6d968af6a5f0c5e3f14a5dcf03273122e135b2bc1ee"
+    },
+    {
+      "bytes": 1408,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_3rscan_gt_sidecars.py",
+      "sha256": "0123329bf25fff70c18d5aa14b27d576dd1814adf9db2bcd33a66fbe538def90"
+    },
+    {
+      "bytes": 2534,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_3rscan_t2_dev.py",
+      "sha256": "ae9276fdd527497b3cb101005bcc2a94e731a1cae683dd228d60078f62ab5c28"
+    },
+    {
+      "bytes": 1573,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_crove_dyn_provenance.py",
+      "sha256": "56c9952062110eacf7b14ab61a936d0b9cd6dcfef52f973f993e480cb31b163e"
+    },
+    {
+      "bytes": 22015,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_oviv2_tesse_occlusion_ablation.py",
+      "sha256": "f30cd2662a299e7cf8b08de9c003194409834d525c2f94e54d2893617d63d554"
+    },
+    {
+      "bytes": 31650,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_oviv2_tesse_search_preflight.py",
+      "sha256": "58e4e9abfbf7edfce6ae6bd2fcc73e5387d8c66bfd0509dbf2da6f687adac3cd"
+    },
+    {
+      "bytes": 76380,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_oviv2_tesse_search_preflight_sources.py",
+      "sha256": "a8a65b0b412331514f21e8fd210b8da16df7674723cc78119a247deaace4a1b3"
+    },
+    {
+      "bytes": 60574,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_oviv2_tesse_t2_provenance.py",
+      "sha256": "714030a8fb673cf7bc39c9bc23ec15602f12babc4348f81c97cb01bf73d16259"
+    },
+    {
+      "bytes": 6894,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_static_ovmap_instance_graph.py",
+      "sha256": "893aef042ae5164e5c113be6df9b460e13c2bf36907caf5babd648580f899351"
+    },
+    {
+      "bytes": 3239,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_static_rgbd_cloud.py",
+      "sha256": "bce2b224849771482690fa8cc26064a7f6361161f64c9ca92df90be331e90e1e"
+    },
+    {
+      "bytes": 1220,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_tesse_oracle_inputs.py",
+      "sha256": "90804fc16c9e560a2fe67d671d685a68691f3bf012173052a792bf027720dc59"
+    },
+    {
+      "bytes": 46079,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/build_tesse_ovimap_static_anchor.py",
+      "sha256": "8195e2a2611da24e1c0f2f8b4cf57944f1c4e11fa85cf8b97fe7c4e77f535ce3"
+    },
+    {
+      "bytes": 3803,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/cache_static_ovmap_text.py",
+      "sha256": "433e6b1d8e537bdd18e00df19a35b16393765eab7d52dc5383388e9f01053207"
+    },
+    {
+      "bytes": 19374,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/canonicalize_tesse_common_v2_summary.py",
+      "sha256": "a5222632a385a7700b3814ce1bd8f60d6a4be4cb8b84c3d0641ec4e260e30be3"
+    },
+    {
+      "bytes": 3183,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/capture_ovimap_diagnostics.py",
+      "sha256": "e5b408b87b67d6f9fc3370d8941e61d99fc8163ae7c0d357178dc80b4c599525"
+    },
+    {
+      "bytes": 2702,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/capture_static_native_history.py",
+      "sha256": "5643f7e6a76976dc6ec6b84e8e801703c2d4f501328840e6b28053dcf01090ca"
+    },
+    {
+      "bytes": 11963,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/compare_ovi_rescene_relations.py",
+      "sha256": "1d42fc78def7626f259b1c9ade469cfe6cda6de5a6bd2aa07df8ef0973bea1a0"
+    },
+    {
+      "bytes": 130509,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/compare_oviv2_cumulative_artifacts.py",
+      "sha256": "79732acae3267ac71fc691517c468c54ed7ae43aa2f9dd19a9bf4b5587213f02"
+    },
+    {
+      "bytes": 13341,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/compare_oviv2_pareto.py",
+      "sha256": "df2445f0c893392f2e16b9cff404884c406cb57da5dd56e425c12e2a49db9972"
+    },
+    {
+      "bytes": 4025,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/compose_ovi_rescene_current_map.py",
+      "sha256": "45ade0ef88702c402d4a3c1224142964333c14257ce7083f0a6622b259d6b6ae"
+    },
+    {
+      "bytes": 26635,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/decide_ovi_rescene_adaptation.py",
+      "sha256": "bb83be6a665d0766ffbca66c9cd37d20dfb947dad26c6414dd531c92b56c5966"
+    },
+    {
+      "bytes": 17520,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/derive_tesse_cd_causal_schedule.py",
+      "sha256": "fb05d33856fdf69fbd78bc5e6e5b8f6095e6a5518e2fbb00c56eab5a01f4d50b"
+    },
+    {
+      "bytes": 72833,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/derive_tesse_cd_common_v2.py",
+      "sha256": "63ad99ecd03bc0d6c769d14ad0e7298086fc5f121b0d33bb0c8ebfa538f18cd6"
+    },
+    {
+      "bytes": 86478,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/derive_tesse_cd_occlusion_v1.py",
+      "sha256": "26be4f0242e19021b133f0d1e91f3bad84ee99622ec7f9838a20c057748f98dc"
+    },
+    {
+      "bytes": 30701,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/diagnose_observation_query_v3.py",
+      "sha256": "85cd088d35e4d8457b9beea58011aec77eeea81e2643a83a5563f033c454e8d8"
+    },
+    {
+      "bytes": 31124,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/diagnose_ovi_observation_support.py",
+      "sha256": "85d7b088a3f46fcf3da4182909814d4a398a7c29af0a22d8823cf734263b7890"
+    },
+    {
+      "bytes": 5493,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/diagnose_oviv2_room0.py",
+      "sha256": "5e1acbd482448727a87c30a9df5af1d3053d686da6ad0244a9c452bbcf9f2f27"
+    },
+    {
+      "bytes": 3362,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/diagnose_static_dense_budget.py",
+      "sha256": "f1fe424cad163f5f88ec6fd375a8d8192c371946689e75bed2cd74d34f43e78d"
+    },
+    {
+      "bytes": 4933,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/diagnose_static_fallback.py",
+      "sha256": "a82c6c292f4386e1d1c4d612ae4cbd3caca273f804fb77dd8fb2688c28ee4852"
+    },
+    {
+      "bytes": 17710,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/diagnose_static_t1_attribution.py",
+      "sha256": "99b9f335b1e4470c454746798d0e2c73fd0ec612b43d80ddc3ea8bd334698969"
+    },
+    {
+      "bytes": 6742,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/enrich_static_ovmap_observations.py",
+      "sha256": "fae9706bffe2797ec54e2c2c01ed12195d5d6bb6453f15cfe0a8cf00bcfe06b9"
+    },
+    {
+      "bytes": 5060,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_3rscan_temporal.py",
+      "sha256": "3a4f694e1c7fc9d1e3d3fd8b1c412bad78d4027ff3a0f1a20f9f7f79b93aa563"
+    },
+    {
+      "bytes": 16265,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_crove_ovimap_static_anchor.py",
+      "sha256": "dd50ca2a34830cbe3c5b261f57656c6a1d5eb62df4d92674d3bbee9d0dbcf432"
+    },
+    {
+      "bytes": 8958,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_crove_surface_voxel_control.py",
+      "sha256": "6e798a43febc6a8f995ddac6bc8fd1776d0d340879b0eef684732d2bec8ca178"
+    },
+    {
+      "bytes": 26158,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_ovi_ownership_completion.py",
+      "sha256": "e4b32d3066ef48e37b3a6c2a3e8fc59023dbc587af0d8d0be289c0568dbe6188"
+    },
+    {
+      "bytes": 31226,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_ovi_rescene_apartment_v3.py",
+      "sha256": "0871381b1a6b60bfaff5c467e00cbb3a4e9afb00273f408e1b27674e5e2c5bdf"
+    },
+    {
+      "bytes": 11170,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_ovi_two_visit_current.py",
+      "sha256": "71ac5d89464620812c6be6678c78fbba5976c4f0b0f1b861d82fe85d2f09378d"
+    },
+    {
+      "bytes": 22753,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_oviv2_instance_head.py",
+      "sha256": "2abeb3829a379abf75bab6784dddd4fce0529c92cc9c91ffcc06a941d9d1049d"
+    },
+    {
+      "bytes": 37728,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_oviv2_replica.py",
+      "sha256": "4148ea3cdffb071886671c314b9969d9e58ae65519647e6486891b9b80426ce2"
+    },
+    {
+      "bytes": 17171,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_oviv2_scannet200.py",
+      "sha256": "5ebf813cd3e0a44a5fb40c9bc54b39c41cf00a8ed2ea05b9765f856b6e91116b"
+    },
+    {
+      "bytes": 58929,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_oviv2_tesse_occlusion.py",
+      "sha256": "8787f038006494f5cdec83aeb7b08bc80d5329f24053ff4d09e32814712a3819"
+    },
+    {
+      "bytes": 31437,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_oviv2_tesse_temporal_occlusion.py",
+      "sha256": "985b6c098b5802244bd631c9b42300253adc80f8015719ec9c1a3310ebfcbf50"
+    },
+    {
+      "bytes": 5745,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_panoptic_flat_current.py",
+      "sha256": "d270fbbe4c964b5c3addfb7afecb01cfda35529a6e6a5b465b0aaba9f4aacd57"
+    },
+    {
+      "bytes": 21521,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_replica_static.py",
+      "sha256": "2517f4c11521bb260ed5fcb7b0c891dfbfe6d7908d8f3c8f421564ecdaf4d03e"
+    },
+    {
+      "bytes": 11272,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_local_ownership.py",
+      "sha256": "5cc1e18af495529547dbb369edb243873607c9a6c1aa83545aa34b9d464bc8b4"
+    },
+    {
+      "bytes": 4196,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_native_geometry.py",
+      "sha256": "5555f4b94a00ad20c3d2bccf55b7228fb4908dafa7e10f4ee4f1f9cd02ef387b"
+    },
+    {
+      "bytes": 8760,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_object_decoupling.py",
+      "sha256": "d9c8a99ecddb184969da5a7ff99da9ab4c6ed37fa58c504976eb7f8cd4290d5c"
+    },
+    {
+      "bytes": 13738,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_ovmap_graph.py",
+      "sha256": "e3d91babec79fc2c30b693b60c46275af2bbeef9524d22645b905fea593a50eb"
+    },
+    {
+      "bytes": 7988,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_ovmap_instances.py",
+      "sha256": "d2314addd777ae501f6dca48f199034b57c6988d1509a12597a619c9d1268e92"
+    },
+    {
+      "bytes": 6458,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_ovmap_readout.py",
+      "sha256": "62e25d5514ed38713e3dcfc7e86d21a03cd2f6db925c780bd1c4033819d8dabe"
+    },
+    {
+      "bytes": 6027,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_proposals.py",
+      "sha256": "fbf96054e1520e05f003d5a732e0ee3cccbed1f7d6d44234ffbb3371573313a7"
+    },
+    {
+      "bytes": 7536,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_sf_ovi_semantics.py",
+      "sha256": "7cd1db01f3d2f06e51d47fe45ea195f8de4c8bf97db5e6ad60a26185bad56648"
+    },
+    {
+      "bytes": 9280,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_static_t1_geometry_bridge.py",
+      "sha256": "94c4c6ed9bc5f9733140e00284ccba2fca9c9238cfbf971c1f33798aaf8902c6"
+    },
+    {
+      "bytes": 44714,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_tesse_cd_common_v2.py",
+      "sha256": "e3cec5e2c9c6e1088d648b631a455a641313adeaa0d6a76c957ba5e8a94e3caf"
+    },
+    {
+      "bytes": 2527,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/evaluate_tesse_current_slice.py",
+      "sha256": "74269188d5cce20d91520247f92258bf92fbeda622f532aadf2a90983a87aeae"
+    },
+    {
+      "bytes": 49435,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/execute_ovi_rescene_two_visit_matrix.py",
+      "sha256": "68fc1e34d0daf76401c20234fd67b84ea476df0e82c75600aa91188f990bf5c3"
+    },
+    {
+      "bytes": 6109,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/export_baseline_fixture.py",
+      "sha256": "f6fe65647b092b5a8bad9defce6a12113e226b2a5e4f9397d37c916bfb87a92f"
+    },
+    {
+      "bytes": 1450,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/export_crove_map_visualization.py",
+      "sha256": "0055eba3e00fde736b3c6fdc6fc96d41a8e030f0a3bc600ceac8482ec60f50c3"
+    },
+    {
+      "bytes": 3430,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/export_ovi_rescene_pair.py",
+      "sha256": "2f014f3e39b42fd85c6f52915c13a676ef369aa3d39de3fefd36e3523567bfdd"
+    },
+    {
+      "bytes": 1252,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/export_oviv2_semantic_visualizations.py",
+      "sha256": "58640a2d85abaa0736d25663de19e855970717b1ee0de1c794a30356d0da40b3"
+    },
+    {
+      "bytes": 2115,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/export_static_ovmap_partition.py",
+      "sha256": "d8796bdb7b04ee68842cb626f586136483ca403662094b8650ae5e0897746486"
+    },
+    {
+      "bytes": 12337,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/export_tesse_cd_rgbd.py",
+      "sha256": "dae2dab002942ec94bcaf80dbbd6cef63a4498f871cc56e6dba2075038a8977e"
+    },
+    {
+      "bytes": 91721,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/export_tesse_temporal_artifact.py",
+      "sha256": "9b2c55acbdad97907e0611e9531429771e922785af29c94b15451124f03f4daf"
+    },
+    {
+      "bytes": 13228,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_ovimap_native.py",
+      "sha256": "6b2e728025e411f72c2b51e8f6de220d5ee61a2ee34c999e6a5602da311f25a3"
+    },
+    {
+      "bytes": 11251,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_oviv2_reevaluation.py",
+      "sha256": "6c0075429ab2469bed3d08988055e64bf8df1d6d56700d08b199678a1efa877a"
+    },
+    {
+      "bytes": 19065,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_oviv2_replica_result.py",
+      "sha256": "ce3ddcd6d14918907b6fd1e8c3f65e258d3d07b7118119d694f96951d5f9feff"
+    },
+    {
+      "bytes": 13305,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_oviv2_scannet200_result.py",
+      "sha256": "50a2dcca714cd791f348b88cbb154ab7ac2bcfaed975a7dc4091057b8717c47b"
+    },
+    {
+      "bytes": 61888,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_oviv2_tesse_common_v2_release.py",
+      "sha256": "2b338687cff1caf4f5df376ad80dbee8d6129f841a9dbefc839a0f60336b1ddc"
+    },
+    {
+      "bytes": 38408,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_oviv2_tesse_occlusion_ablation.py",
+      "sha256": "37d5a77f6b2db662a5a9ebbe6f2fc61f12d509c905686a6f8880ff6cd45f9d13"
+    },
+    {
+      "bytes": 36167,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_static_local_ownership.py",
+      "sha256": "355f83d95f0d296a8c22ad73192b2a9590cba2861b711ac08b540fbc5956bf50"
+    },
+    {
+      "bytes": 943,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_static_result.py",
+      "sha256": "33373f7516f0814c812e221c941a4c034bba1c693c363a788c7673c72b748afb"
+    },
+    {
+      "bytes": 22521,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_tesse_common_v2.py",
+      "sha256": "d3a39241d017e1b225c6b48954e4243760ded63a62303aacf80a3e5815c07f56"
+    },
+    {
+      "bytes": 37757,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/finalize_tesse_t2.py",
+      "sha256": "79889d7d62007db7078f6cafdedbfff393f56ba2b25b1e550b94152050a7baf1"
+    },
+    {
+      "bytes": 9160,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/freeze_oviv2_scannet200_manifest.py",
+      "sha256": "b52befb7a89e8af39f218eaf810a066517b1d83f915473c9b93fe72ae7cddceb"
+    },
+    {
+      "bytes": 7490,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/freeze_oviv2_tesse_baseline_evidence.py",
+      "sha256": "8a4f9db63f5ac974c744b31c1ad950d63db91f8b7ee5671e01c53f3a1c18c332"
+    },
+    {
+      "bytes": 98599,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/freeze_oviv2_tesse_cd.py",
+      "sha256": "8b0eb14483ff44428e37a906e3c92aecfdabcfd4f5df85067e9bdbb738c12cda"
+    },
+    {
+      "bytes": 58951,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/freeze_oviv2_tesse_cd_v2.py",
+      "sha256": "867ac8d7313c6f28b7bd668f73c4dc56b6577542e515ec913718e996caed2e86"
+    },
+    {
+      "bytes": 4615,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/freeze_scannet200_manifest.py",
+      "sha256": "59d5e86c3054616d9426b49001424760f1cc1b21ffb280496aebefc8cf2402e0"
+    },
+    {
+      "bytes": 53081,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/freeze_tesse_two_visit_protocol.py",
+      "sha256": "d36afaa9b0cd4d1f1e67b87b24f024b4645ba7f173caa2de0a45837b2d2bb6fe"
+    },
+    {
+      "bytes": 3807,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/fuse_static_spaceformer.py",
+      "sha256": "a6d95a1b380901f99f346e57d342f6adbe1c7e06860ec64c4716403821d65d91"
+    },
+    {
+      "bytes": 5887,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/generate_scannet200_run_specs.py",
+      "sha256": "cb1ca25a5031863d4b7e66e36a4f559c6b42ee3f4b166573a229f0fbfdbe2f5a"
+    },
+    {
+      "bytes": 20276,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/materialize_3rscan_ovi_visit.py",
+      "sha256": "ff5f93ca0184379ea59ff65ac3a74b4ecac2354951e64934e47279e416fa4d96"
+    },
+    {
+      "bytes": 18126,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/measure_baseline_queries.py",
+      "sha256": "c4bf0659de7438d55e687f009a7f03711bd9cb5f9770fb7aa613d7ab03cbcbfe"
+    },
+    {
+      "bytes": 63834,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/measure_oviv2_tesse_t4.py",
+      "sha256": "ba11c83d1175ec05cf65002b0f429f1d70f648330943a1a75b4ab113d3882b02"
+    },
+    {
+      "bytes": 5782,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/measure_static_ovmap_geometry_support.py",
+      "sha256": "d26ae99da207c41bf3a86584ad55e38f766dcbb8b01c3502716f85a0f8023ea2"
+    },
+    {
+      "bytes": 777,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/ovimap_module_perception_worker.py",
+      "sha256": "53b03aea900c3cb4f3c27a4269f19670bb6d271f3862b2e07cd5e1df6372add7"
+    },
+    {
+      "bytes": 989,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/oviv2_tesse_cd_v2_config.py",
+      "sha256": "c6a0a621077290bcf9a6e1171077b5f7a80e1f80f935fc08cd374016f71101e7"
+    },
+    {
+      "bytes": 4348,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/oviv2_tesse_cd_v2_provenance.py",
+      "sha256": "7ca2f5bb7aeeac36c931d6e647d542c7f1e00b41d85fd9f18c100cff2b36ad14"
+    },
+    {
+      "bytes": 82812,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/package_oviv2_tesse_dual_readout_result.py",
+      "sha256": "7ab3cd1a5f335a10d1d2a9ddb87dfff75c605e2c71dea53d65dc521f47e67ca4"
+    },
+    {
+      "bytes": 6674,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/preflight_scannet200_methods.py",
+      "sha256": "3f6d089cc9a6e4d5186d1fe87a163b362b38986784e7579ea3aa691e323f1e13"
+    },
+    {
+      "bytes": 78570,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_ovi_observations.py",
+      "sha256": "273245c09bbc30b9d7d7a4aa512646220e8256c6971adef24ab69e60f19bb50e"
+    },
+    {
+      "bytes": 20186,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_ovi_rescene_dense_instance_pair.py",
+      "sha256": "560627c8ce6156e42df2faaf524719923e791d9b3d8d76d496a2d465a3c29f5a"
+    },
+    {
+      "bytes": 118527,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_ovi_rescene_input_v2.py",
+      "sha256": "9078ed199751053485c547005d788e3dd125819c9c20ce32bbbb4e61d637ef27"
+    },
+    {
+      "bytes": 19525,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_ovi_rescene_supported_v3.py",
+      "sha256": "98b51d7f137655841cc3d5d078344444a7a5836536cf17b625448a3675c16c32"
+    },
+    {
+      "bytes": 1607,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_ovimap_geometry_pool.py",
+      "sha256": "c726a4777cac6f1c64b7af77e3ef3732ca7443ca48aa4136c561c4d04ca7bc3e"
+    },
+    {
+      "bytes": 2142,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_ovimap_scannet.py",
+      "sha256": "f26a95017254850ee9e49eec6ac68e7b1b94f861bfe183ff0720060e52f69de4"
+    },
+    {
+      "bytes": 2573,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_ovimap_scannet_study.py",
+      "sha256": "f45e895edbecc5aa6c7c9b1207ed07a9eeab5cc03d6e972c21aa51179f8673b5"
+    },
+    {
+      "bytes": 76089,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/prepare_temporal_khronos_bridge.py",
+      "sha256": "7d54f3a2ceeb36b46c031d4a5bad2b708105ae140f0be60e936d07e862724201"
+    },
+    {
+      "bytes": 4350,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/readout_static_ovmap_graph.py",
+      "sha256": "162581a045f24bb23930496eecd51d6a8c1a22815a799f28db60945537dc3a1d"
+    },
+    {
+      "bytes": 12362,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/rebuild_ovimap_module_native.py",
+      "sha256": "0ad34231738099939e7605f8168d038146c1a4631e62aad3cfe08e7b698c2c24"
+    },
+    {
+      "bytes": 24315,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/recover_oviv2_temporal_staging_proxy.py",
+      "sha256": "0f7355f6ddaf5aa414665ac97c0c248531287340323d05ba203d1dffd03ea545"
+    },
+    {
+      "bytes": 34811,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/recover_oviv2_tesse_dual_readout_search.py",
+      "sha256": "358853a8b8eb9dc923efaf46d447216e44a9139c9a05edc6c4d160ca703d1e48"
+    },
+    {
+      "bytes": 13324,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/render_crove_fine_current_views.py",
+      "sha256": "c170c8ae67648adb9af3977d1813e11a8e4a21f1ab98b0e6e15631c89f4b8b4e"
+    },
+    {
+      "bytes": 1350,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/render_crove_legacy_views.py",
+      "sha256": "4a1b451e03305148a07883a0f4cd6391190e25f72f8c4697057c0314fd391fe4"
+    },
+    {
+      "bytes": 16276,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/render_observation_query_v3_qualitative.py",
+      "sha256": "03f4208affeaffcc2a86c2cec519b82113b31f1db313f10a71f44505952e05e1"
+    },
+    {
+      "bytes": 17938,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/replay_oviv2_semantic_evidence.py",
+      "sha256": "d341a0e462f84b5114472a236d8ae95cc4114aca056ef670530796ce336ca57a"
+    },
+    {
+      "bytes": 5647,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/replay_static_ovmap_queries.py",
+      "sha256": "b2354de498e88f7f4a4aac0980163cb316312aedc0847084678a76990a081192"
+    },
+    {
+      "bytes": 4296,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/rerun_static_native_mapping.py",
+      "sha256": "3d3c5cdbcfcdf224ef30b896c44176ea2c45c8b120d6716fed0f11981c434ecb"
+    },
+    {
+      "bytes": 31266,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/rescene_pair_executor.py",
+      "sha256": "4f06e89f98becdc90ac3acadf0b9a324df61e472a965062db3050a4824dedaed"
+    },
+    {
+      "bytes": 76996,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_3rscan_t2_matrix.py",
+      "sha256": "39b78dbb5b4e9d06693bb198289e69e62696d78a90a3f93c4b73ed6702cad349"
+    },
+    {
+      "bytes": 25172,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_crove_anchor_counterfactuals.py",
+      "sha256": "bb7872059a61663fc876e6ee7b4401f8c3877b2807848b2e4f4844e7f7540e2c"
+    },
+    {
+      "bytes": 66173,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_crove_fine_current_map.py",
+      "sha256": "0cc20a7582d5e4a4559ca3ed1a4ba15a81738f1193570aa538a5fcf79d87834e"
+    },
+    {
+      "bytes": 77727,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_crove_ovimap_static_anchor.py",
+      "sha256": "58dd39de4c5c238a44c7e9c2f4d4804135c57bca5d521c3626e71d21c42c7a70"
+    },
+    {
+      "bytes": 4962,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_crove_tesse_attribution.py",
+      "sha256": "a03fc0cad9e3e13ab736711981e25ea43bd18d61cd8a152d76d9bec64cb33bc6"
+    },
+    {
+      "bytes": 21419,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_khronos_official_eval.py",
+      "sha256": "1d4e28786b44b58334f84badc105269809837569215f09d803b59cc916cd84fb"
+    },
+    {
+      "bytes": 15978,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_observation_query_multienv.py",
+      "sha256": "891a092d44ac7f68afe8d7c4c8509bb90751146bd657d303d45ad0f8eb5fea8e"
+    },
+    {
+      "bytes": 52030,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_observation_query.py",
+      "sha256": "a03c88d64c28b31922b846eb31791fde80539670ac8022d66616d7ffa4d1ec9c"
+    },
+    {
+      "bytes": 57963,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_rescene_b7.py",
+      "sha256": "2423cb6125550d29f8db84638cd88f07b6b1313b165c49207f94c1bcbcd234c8"
+    },
+    {
+      "bytes": 31370,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_rescene_dense_instance_repair.py",
+      "sha256": "54fdc1688313c6ee5be4135f1b8c8d9b2e2e4820e2e469a96ccb7b00779ffd0c"
+    },
+    {
+      "bytes": 19034,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_rescene_dense_p2_association.py",
+      "sha256": "fa95192fce77fb04530108d77d4dd8aab8e2097814df16a5cf021c8363d15e65"
+    },
+    {
+      "bytes": 51450,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_rescene_object_level_transfer.py",
+      "sha256": "0530e6cce00c286dc5c81077a1c129d4ed5e244f765b8054d7583d7cf258e8ee"
+    },
+    {
+      "bytes": 61251,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_rescene_object_recovery.py",
+      "sha256": "82e4fc3c3fb3095cbd3a993c9ec5e59a9e3825a159ab34f4bbe665413dfc0fc3"
+    },
+    {
+      "bytes": 41206,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_rescene_transfer_diagnosis.py",
+      "sha256": "64d532fb4f655805081c00865a8269c00f799d6d1a16d0c031510afb81331b2b"
+    },
+    {
+      "bytes": 30058,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_rescene_two_visit_matrix.py",
+      "sha256": "15406089d7b425fc24ef1a5fa9809f494dff607f498533510b759986021a003c"
+    },
+    {
+      "bytes": 16583,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovi_two_visit.py",
+      "sha256": "ce157e61555fc2a6280e98e02b6b2fcc826a6dae693c910be3a0e598e68d3c47"
+    },
+    {
+      "bytes": 1863,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_geometry_model.py",
+      "sha256": "2b017c4117ff9298c7e166169729da7ba527496a2603ed150aa02a815c067d2d"
+    },
+    {
+      "bytes": 4142,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_module_smoke.py",
+      "sha256": "149b087a25918845ac0fbd3f33112871261b17d8e1ea6518ce77cde4e746f892"
+    },
+    {
+      "bytes": 51039,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_module_study.py",
+      "sha256": "4c11b4510a8267371de3edec13e400b5c29ec729913521c1502e312acb7090c6"
+    },
+    {
+      "bytes": 37173,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_native.py",
+      "sha256": "11c86dc4318cbefc1bb8f7cc3703d7fe359cc39026e9d6402382fc4e47af7983"
+    },
+    {
+      "bytes": 19070,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_paper_protocol.py",
+      "sha256": "b323b91533fe2bcd2c37fc451cd0927fbac22cebbea471afe6747ed3737357b5"
+    },
+    {
+      "bytes": 2986,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_baseline.py",
+      "sha256": "f509c7dccf367d5755e8585afe23b315538bb0f985c1e174ec498e1b4b62922f"
+    },
+    {
+      "bytes": 832,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_capture.py",
+      "sha256": "355003d8c1101a113cc67145b3e609500fb684ed04d773f9d9b17358b4791dc2"
+    },
+    {
+      "bytes": 1531,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_confirmation.py",
+      "sha256": "cb098f5da27f008b7f1e39c8873411f38bd75dab95784195fa46e9e8ed5db2b0"
+    },
+    {
+      "bytes": 2494,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_geometry.py",
+      "sha256": "628cf9d3997a93cfddbbed7c87849a558835b16e79d3853e91b118467dd594e9"
+    },
+    {
+      "bytes": 3568,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_query.py",
+      "sha256": "0e8ecacd638d8791654adf1fef0f00138ec29a498d78fd3bed83a0242f45d412"
+    },
+    {
+      "bytes": 3517,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_selection.py",
+      "sha256": "aa4de30d9bf1c328efb84907a5cc1860a992621a1ac846ead9c86617796502e4"
+    },
+    {
+      "bytes": 2505,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_scannet_semantic.py",
+      "sha256": "a4cfee3a4dee36b029d2f79c8e95d81b0423f3821dd6991e2c6c541e257426fa"
+    },
+    {
+      "bytes": 2012,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_ovimap_semantic_model.py",
+      "sha256": "c7ca544120e58a6ff2803e3ffad1241c5985bd4372a152b36641bc743f0c300a"
+    },
+    {
+      "bytes": 10544,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_oviv2_t1_reference.py",
+      "sha256": "70d544e197a1cddb6821bb039f62b8ccec8041cdf4a8909ca00c3a385c141547"
+    },
+    {
+      "bytes": 81073,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_oviv2_tesse_cd.py",
+      "sha256": "301d56651b4fb14154ebaf2601b5339d7d7ce061c9deaeb95d531df3552262f8"
+    },
+    {
+      "bytes": 186728,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_oviv2_tesse_cd_v2.py",
+      "sha256": "c39fe4ed7119bc6cf93c5ffd3d6cd0b7814cc8daa97c82cedcc9ee53d41a42b8"
+    },
+    {
+      "bytes": 62632,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_oviv2_tesse_dual_readout_search.py",
+      "sha256": "0d80973b4ec9c1b864cd9488909a28d8b8de2b49ee9054de01011897f50b9105"
+    },
+    {
+      "bytes": 18459,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_rescene_pair_backend.py",
+      "sha256": "b6d09e59567de28b271dae6fb22c01676c43064b0842e71fd32f0ad3af213c14"
+    },
+    {
+      "bytes": 19657,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_local_ownership.py",
+      "sha256": "fd8d0d268ae460259b38ec2b77420aac6a1a04e000bbe979f09dbcfd2325eee8"
+    },
+    {
+      "bytes": 13357,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_object_decoupling.py",
+      "sha256": "2a2f327f1a171ff5125ea16c2cee544333f41e5d1264be01329f45b448dd8860"
+    },
+    {
+      "bytes": 17754,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_ovmap_dense.py",
+      "sha256": "292482adb7e0db97417567ef133b5d8f13196d6c11330562639407daaac5f0aa"
+    },
+    {
+      "bytes": 10285,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_ovmap_readout.py",
+      "sha256": "ffe15d9c47334e125a75501ee2288201428efbd7c5d41275198c200c0aac5b01"
+    },
+    {
+      "bytes": 12106,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_replica_scene.py",
+      "sha256": "db58ccf586241176b3d62b5d879aa5b5b97a110b1a3a3fb4586941c8d4ce8043"
+    },
+    {
+      "bytes": 10946,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_sf_ovi_semantics.py",
+      "sha256": "19af46886606c7eca1e9a0eee15a989f41a67d602880a307c9ec36b82c267d4a"
+    },
+    {
+      "bytes": 8739,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_spaceformer.py",
+      "sha256": "f918c286db04acae6e33af6ede182dc5026e2e34cbd0bf150ed74980eaf9b669"
+    },
+    {
+      "bytes": 15493,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_static_t1_attribution.py",
+      "sha256": "5d336a2a1bdb712d083261394a9cb5ecf36848ee3496624f85a80ed12b4ab77f"
+    },
+    {
+      "bytes": 26562,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/run_temporal_khronos_bridge.py",
+      "sha256": "9eba908104bb7c600b638b18b785116fb4f5b0646825615734e9120ac666e077"
+    },
+    {
+      "bytes": 6396,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/slice_3rscan_t2_selection.py",
+      "sha256": "75b41d5d4cff6bc803e01bf827d6f344a99a43d12f33380abeb9f9627ed1a130"
+    },
+    {
+      "bytes": 9123,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/split_static_ovmap_graph.py",
+      "sha256": "45a6295732c756b40b06f4fcc984083cc83918257680bc5f662e45f257b0d8dc"
+    },
+    {
+      "bytes": 5945,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/summarize_baseline_runtime.py",
+      "sha256": "271833a9a67148a50dcc7102bcd2ef9cb7b545f32b21199aaa9d34a4f7ed5c6d"
+    },
+    {
+      "bytes": 11302,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/summarize_crove_fine_current_map.py",
+      "sha256": "ff943cd026a3727b0452419ce38207c2f739589687bb3d64afa56d3917c09cec"
+    },
+    {
+      "bytes": 11157,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/summarize_ovi_rescene_two_visit_matrix.py",
+      "sha256": "e7088e86b5ba641f596fd628b0dd9bfb4f13c66319d9081bf7516a6263cc93ac"
+    },
+    {
+      "bytes": 16049,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/summarize_static_local_ownership.py",
+      "sha256": "e3af9415e086ee4baba597dae177eac1a79b71095e3683862a4583c390d83657"
+    },
+    {
+      "bytes": 21278,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/summarize_static_object_decoupling.py",
+      "sha256": "aa20fef66f1e46f95d109c1fec89583880c2779a7491bcdb80520b74602e9077"
+    },
+    {
+      "bytes": 19676,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/summarize_static_sf_ovi_semantics.py",
+      "sha256": "9ef9748443125a208d9251ddb8a54da0a858740a455fb9ccedcf1f0da309c36a"
+    },
+    {
+      "bytes": 21306,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/summarize_static_t1_attribution.py",
+      "sha256": "219c7d223043a2eecada200192db292f6175a897c87cfa5081fa37bc2aa59efb"
+    },
+    {
+      "bytes": 48645,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/tune_ovi_rescene_resolver.py",
+      "sha256": "ccfba95fd20ba0e386bf8e25bc47908434f4a9e2ecf1a4c9a1b39a9eccb65a2f"
+    },
+    {
+      "bytes": 33294,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/tune_oviv2_tesse_apartment.py",
+      "sha256": "8c4cb44c0f303da9f5b9db9e0c7bea0f14e946efd567d1fae6cbf458a6e97955"
+    },
+    {
+      "bytes": 38674,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/tune_oviv2_tesse_dual_readout.py",
+      "sha256": "39b2b238606e3bd7adaab83eb7f1c9e511319f9b86b0de4cdd52bbc29038d6a8"
+    },
+    {
+      "bytes": 8419,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/validate_conceptgraphs_gate.py",
+      "sha256": "e767fa0c353b79fc9bd7551bdb0c607430b5b1538cdcf5b199159cbd5d0991d5"
+    },
+    {
+      "bytes": 2290,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/verification_cache/file_hash_cache.py",
+      "sha256": "690898e570f68b064f34539bf4214c79dbed394bb3a2d9ad2c4a7b96f9c54fb9"
+    },
+    {
+      "bytes": 301,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/verification_cache/sitecustomize.py",
+      "sha256": "e739992ae0cdc04d7fc9a58607a0d8f8d37db8675b03f207b522cbf372ec1103"
+    },
+    {
+      "bytes": 88591,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/verify_oviv2_dual_readout_development_gates.py",
+      "sha256": "7a52a82f0583ede7c8c44e07b499f82fb6829cf953351e61af9eaa292908a403"
+    },
+    {
+      "bytes": 35695,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/verify_oviv2_tesse_t4_gate.py",
+      "sha256": "e0c288467111e21e32718333fe4e9a881dc976b4569ac2910657d37c8e9f1e23"
+    },
+    {
+      "bytes": 4053,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/verify_static_object_decoupling.py",
+      "sha256": "91104534c59e05941f5f802ccb8c6727efba016dc5f5414fb092645c36fba389"
+    },
+    {
+      "bytes": 3014,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/verify_static_sf_ovi_semantics.py",
+      "sha256": "760428ace6cae3041cb1cf7d2d4df889bd4d50a714c2ae9bee3925eacf3e72a2"
+    },
+    {
+      "bytes": 2964,
+      "path": "/home/ww/crove/ovimap-module-validation/scripts/evaluation/write_ovi_mapping_receipt.py",
+      "sha256": "89ad04f37f155241a8e4253ad2d61d6f1b18b1463635c1ea1511abf393fed81a"
+    },
+    {
+      "bytes": 192,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/__init__.py",
+      "sha256": "d3e12dd4c15e971c8f78c084009e0b53d3eda0408a2d562b5057bf46d2e1b920"
+    },
+    {
+      "bytes": 26603,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/assets.py",
+      "sha256": "4fc9309dda7a4dce245917ff2f07ef0aea062bc46ea7e30a7a4690fc7ee3ee11"
+    },
+    {
+      "bytes": 14533,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/boundary_jobs.py",
+      "sha256": "595cbe90e99b927445d38f84462ea1632be3415546c2ec08589f288ff1b9ef6f"
+    },
+    {
+      "bytes": 14544,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/combination_pipeline.py",
+      "sha256": "abf284fa094080bbb6a6ea995241f31de3205d03a7f2d77cf67620c4b15d321a"
+    },
+    {
+      "bytes": 3320,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/confirmation_access.py",
+      "sha256": "af6b3e4221dd7808bba8324d1726a37bd0c55df327c881121cb466651a970324"
+    },
+    {
+      "bytes": 9646,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/confirmation_pipeline.py",
+      "sha256": "51d0ab24e93cc975090b1d29e44fa3d850dfce1f2b829e5b3c2825a627b6e35e"
+    },
+    {
+      "bytes": 9328,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/contracts.py",
+      "sha256": "863509a633dd3f5138e506c73bbd1921d430e9c6d1a94b09d44d67b470b2e781"
+    },
+    {
+      "bytes": 38070,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/entity_hypotheses.py",
+      "sha256": "46f43ebcd6a5b8c2db6e673642302d42d59479687894ed5ea628561b05c9f91a"
+    },
+    {
+      "bytes": 23435,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/evaluation.py",
+      "sha256": "9271a5dfad01981f047ede872c371e38ce685e429ecf72c71eb966448d77246e"
+    },
+    {
+      "bytes": 9144,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/frozen_semantic.py",
+      "sha256": "1d7e38210e65e9a5a0883c89831ada69de0d7ae9cf6820d89439fb8eda896423"
+    },
+    {
+      "bytes": 8229,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/geometry_models.py",
+      "sha256": "c0c9f1647d94f1cf41c8ebe4a684608544b7a070a19358b1fc484a1116cfeb6e"
+    },
+    {
+      "bytes": 17255,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/geometry_pipeline.py",
+      "sha256": "beb42a43890239fdb8c5ac51e6044eb2231fbc03cdf9811a58dee354923dc873"
+    },
+    {
+      "bytes": 11642,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/geometry_study.py",
+      "sha256": "7a85a7058673e1f517aaed7fb1e0d911e5acbbade86f449d5ef8e8541e47a043"
+    },
+    {
+      "bytes": 4466,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/geometry_targets.py",
+      "sha256": "2b2025d8141d57fc0cc667b21dabf1e269e882fff9c925692b78e3be8592c62a"
+    },
+    {
+      "bytes": 767,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/metric_order.py",
+      "sha256": "a8af22c14428f7e8f4eee954f70fb8e2e6cafdafff7b32a51f3ae97223c7a36e"
+    },
+    {
+      "bytes": 55053,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/native_capture.py",
+      "sha256": "7b574a386afe0cde0462eaacaa4781b1ef9eae431ec31b7e78df35c1b3c7b228"
+    },
+    {
+      "bytes": 24218,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/partition_quality.py",
+      "sha256": "e72134ccf367305cb3ad3101dd61d474039392f3626de8a52a2f71f6bafb9a44"
+    },
+    {
+      "bytes": 29051,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_gain_policy.py",
+      "sha256": "ad639b2c235ee87206f22803592a8d7df18cc58a3853bdcd1cf896f5bdb4667f"
+    },
+    {
+      "bytes": 6937,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_lineage.py",
+      "sha256": "9ba99bc94df7194ba7120b5b3aaf31f13c8f88d3348c9436bffd86f289b30a27"
+    },
+    {
+      "bytes": 5369,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_models.py",
+      "sha256": "07e2b3f9976a93fb02d9724cf9ac7170c6093f8ed006d2bc29c481ed9ecb0870"
+    },
+    {
+      "bytes": 18380,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_pipeline.py",
+      "sha256": "956a5838656b5f2bfb02c9957fcbffb9c2c6f1c89382146423367fcebb25b33f"
+    },
+    {
+      "bytes": 30793,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_state.py",
+      "sha256": "0c38507bbebd99609ac2b122e36025007d132185abbd96e5c37b8359b31dce01"
+    },
+    {
+      "bytes": 8477,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_study.py",
+      "sha256": "d1c14f260c6664c3d1feb3ada501cc6852b2d3f36b2d352cd959fde43a129d41"
+    },
+    {
+      "bytes": 1670,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/query_targets.py",
+      "sha256": "645cf233f7267b58fec457f6f8dc77d0c16b90d1b2c54df034e0d4f9ebf83ba0"
+    },
+    {
+      "bytes": 33016,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/region_evidence.py",
+      "sha256": "ed6a7992dcdbffe92b5a5ead9573e1109d85bece4440f00826dccaee308d126a"
+    },
+    {
+      "bytes": 7640,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/release_package.py",
+      "sha256": "44091962bc5e96a2d16ae2df9fbd56622d38b49bbde3c5f20cdfbc1322c4bb85"
+    },
+    {
+      "bytes": 10985,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/reporting.py",
+      "sha256": "e0523f69afd7cb0f35755eda70f7865bedd66f1eba1ccde82c52001bc0211faf"
+    },
+    {
+      "bytes": 729,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/rgb_siglip.py",
+      "sha256": "e0a29ca60eeedff7c1662b98d13702728a793ee5227ddd4b47ab5692017010a1"
+    },
+    {
+      "bytes": 15554,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/scannet_download.py",
+      "sha256": "fd6deee3b31e45cd3fcd8e2f4adefa727aaea0e5acb429552a8dfb3cd6e7b828"
+    },
+    {
+      "bytes": 8817,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/scannet_frames.py",
+      "sha256": "86318943f6c9e56455f491e7a30b7849f28bdf6b2fba151e30414dbcae099c28"
+    },
+    {
+      "bytes": 6517,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/scannet_ground_truth.py",
+      "sha256": "d3f0e2c2b25ee8deedf4f3e3a3a9810794611e14cfd3557b63841571f224c971"
+    },
+    {
+      "bytes": 15998,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/scannet_runtime.py",
+      "sha256": "805b9f14bc33e1df63393704ea8000725caea6e991279b4fb0a86db312f232ce"
+    },
+    {
+      "bytes": 18427,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/scannet_study.py",
+      "sha256": "a7df7cfdbc680a414842bb9f8b25736a7a5253b44b3fcecc2f402ca3674498e2"
+    },
+    {
+      "bytes": 18495,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/selection.py",
+      "sha256": "98b2e9bdffa7178923d17a48ccbae8fb08d979a98b7c70e23662996ae819f72f"
+    },
+    {
+      "bytes": 14244,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/selection_execution.py",
+      "sha256": "375e066cab34a150be7f4ee395bc1a1480b0b416e301e5bca7a2d4adb144fa25"
+    },
+    {
+      "bytes": 7698,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/selection_pipeline.py",
+      "sha256": "f89b440ab1afc6cbcbe556bbfaa4e65d3acd982bc7fed1e9cd5f1db1cf2b4908"
+    },
+    {
+      "bytes": 5893,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/semantic_features.py",
+      "sha256": "bf1c59a0f41fcbaa73a4a53ff4faca6bb31a1f2675607e2d360e354a314e8c0a"
+    },
+    {
+      "bytes": 16014,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/semantic_models.py",
+      "sha256": "ab7c4809633dd23d797fd93a4cb91613ba1bf0959a1bb9587b3529e38ae7a9b7"
+    },
+    {
+      "bytes": 28303,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/semantic_pipeline.py",
+      "sha256": "a564bfbbccc1d571fba11a4f8d86dd5cdf2d400a0a2788b007c4bdd386599aa2"
+    },
+    {
+      "bytes": 28213,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/semantic_selector.py",
+      "sha256": "aea46a39ac065b3ff86cd58fc9185f5c9e54bf00a109775246e6e86d74a920fb"
+    },
+    {
+      "bytes": 8584,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/semantic_study.py",
+      "sha256": "19e346c1cb83b0efcacd6e962d0830326122bf5d4ae83652a6b59fee68ca1a72"
+    },
+    {
+      "bytes": 9898,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/static_regions.py",
+      "sha256": "96d023ba13fc19ac1f0ac7b196da2c2ae21905ba2ab63577fe934c041961da8b"
+    },
+    {
+      "bytes": 3470,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/study_execution.py",
+      "sha256": "075e1c0dcc9321afd047e0833524b2fae65b29540a77ee7cd8930af395b4643e"
+    },
+    {
+      "bytes": 22020,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/study_report.py",
+      "sha256": "d540a5faee8f3db96f6b3961f34cc515429755d418ec33b469e5a65cb9a40926"
+    },
+    {
+      "bytes": 6009,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/study_scene.py",
+      "sha256": "930b1b3e46909fa9993d45e8e6a38ea851e4271ad364c36bf089b1798f538dba"
+    },
+    {
+      "bytes": 2839,
+      "path": "/home/ww/crove/ovimap-module-validation/src/static_ovmap/module_validation/study_targets.py",
+      "sha256": "288ecc6e1311366560c62ba94558cd0a00555b1883b017efc90eeb3bdf3bda84"
+    },
+    {
+      "bytes": 49412,
+      "path": "/home/ww/crove/ovimap-module-validation/third_party_patches/ovimap/module_validation_v1/ovimap_module_validation_v1.patch",
+      "sha256": "b8ef35aef2490b563d2cca1451baef6f5afad2963e071016bcb837aee3e935b5"
+    }
+  ],
+  "split": {
+    "authorization": "User explicitly confirmed prior ScanNet authorization and terms agreement",
+    "plan_digest": "22e8983751a76da80334a1ceda1ad4698eeaffa063985df95936ba50a2e5d2b5",
+    "rejected": [],
+    "schema_version": 1,
+    "selected": [
+      {
+        "family_id": "scene0547",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"2ff3-605cd391de4b7\"",
+            "last_modified": "Wed, 20 Sep 2023 16:54:04 GMT",
+            "size_bytes": 12275,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0547_00/scene0547_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"278d0d67-6414a339cb8e8\"",
+            "last_modified": "Thu, 16 Oct 2025 17:46:49 GMT",
+            "size_bytes": 663555431,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0547_00/scene0547_00.sens"
+          },
+          ".txt": {
+            "etag": "\"212-605cd391de4b7\"",
+            "last_modified": "Wed, 20 Sep 2023 16:54:04 GMT",
+            "size_bytes": 530,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0547_00/scene0547_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"12d464-605cd39f7f104\"",
+            "last_modified": "Wed, 20 Sep 2023 16:54:19 GMT",
+            "size_bytes": 1234020,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0547_00/scene0547_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"7c7707-605cd39fbc194\"",
+            "last_modified": "Wed, 20 Sep 2023 16:54:19 GMT",
+            "size_bytes": 8156935,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0547_00/scene0547_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"76959f-605cd3a002e64\"",
+            "last_modified": "Wed, 20 Sep 2023 16:54:19 GMT",
+            "size_bytes": 7771551,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0547_00/scene0547_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0547_00",
+        "schedule": {
+          "end": 1991,
+          "frame_ids": [
+            0,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60,
+            70,
+            80,
+            90,
+            100,
+            110,
+            120,
+            130,
+            140,
+            150,
+            160,
+            170,
+            180,
+            190,
+            200,
+            210,
+            220,
+            230,
+            240,
+            250,
+            260,
+            270,
+            280,
+            290,
+            300,
+            310,
+            320,
+            330,
+            340,
+            350,
+            360,
+            370,
+            380,
+            390,
+            400,
+            410,
+            420,
+            430,
+            440,
+            450,
+            460,
+            470,
+            480,
+            490,
+            500,
+            510,
+            520,
+            530,
+            540,
+            550,
+            560,
+            570,
+            580,
+            590,
+            600,
+            610,
+            620,
+            630,
+            640,
+            650,
+            660,
+            670,
+            680,
+            690,
+            700,
+            710,
+            720,
+            730,
+            740,
+            750,
+            760,
+            770,
+            780,
+            790,
+            800,
+            810,
+            820,
+            830,
+            840,
+            850,
+            860,
+            870,
+            880,
+            890,
+            900,
+            910,
+            920,
+            930,
+            940,
+            950,
+            960,
+            970,
+            980,
+            990,
+            1000,
+            1010,
+            1020,
+            1030,
+            1040,
+            1050,
+            1060,
+            1070,
+            1080,
+            1090,
+            1100,
+            1110,
+            1120,
+            1130,
+            1140,
+            1150,
+            1160,
+            1170,
+            1180,
+            1190,
+            1200,
+            1210,
+            1220,
+            1230,
+            1240,
+            1250,
+            1260,
+            1270,
+            1280,
+            1290,
+            1300,
+            1310,
+            1320,
+            1330,
+            1340,
+            1350,
+            1360,
+            1370,
+            1380,
+            1390,
+            1400,
+            1410,
+            1420,
+            1430,
+            1440,
+            1450,
+            1460,
+            1470,
+            1480,
+            1490,
+            1500,
+            1510,
+            1520,
+            1530,
+            1540,
+            1550,
+            1560,
+            1570,
+            1580,
+            1590,
+            1600,
+            1610,
+            1620,
+            1630,
+            1640,
+            1650,
+            1660,
+            1670,
+            1680,
+            1690,
+            1700,
+            1710,
+            1720,
+            1730,
+            1740,
+            1750,
+            1760,
+            1770,
+            1780,
+            1790,
+            1800,
+            1810,
+            1820,
+            1830,
+            1840,
+            1850,
+            1860,
+            1870,
+            1880,
+            1890,
+            1900,
+            1910,
+            1920,
+            1930,
+            1940,
+            1950,
+            1960,
+            1970,
+            1980,
+            1990
+          ],
+          "source_end": 2040,
+          "source_step": -1,
+          "start": 0,
+          "step": 10
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0434",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"f3a-605cc833b401e\"",
+            "last_modified": "Wed, 20 Sep 2023 16:03:13 GMT",
+            "size_bytes": 3898,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0434_00/scene0434_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"205df950-6414937f117c2\"",
+            "last_modified": "Thu, 16 Oct 2025 16:36:27 GMT",
+            "size_bytes": 543029584,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0434_00/scene0434_00.sens"
+          },
+          ".txt": {
+            "etag": "\"209-605cc833b401e\"",
+            "last_modified": "Wed, 20 Sep 2023 16:03:13 GMT",
+            "size_bytes": 521,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0434_00/scene0434_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"324fc-605cc837cb5ee\"",
+            "last_modified": "Wed, 20 Sep 2023 16:03:17 GMT",
+            "size_bytes": 206076,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0434_00/scene0434_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"174bc6-605cc837d793d\"",
+            "last_modified": "Wed, 20 Sep 2023 16:03:17 GMT",
+            "size_bytes": 1526726,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0434_00/scene0434_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"16330c-605cc837eb1bd\"",
+            "last_modified": "Wed, 20 Sep 2023 16:03:17 GMT",
+            "size_bytes": 1454860,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0434_00/scene0434_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0434_00",
+        "schedule": {
+          "end": 1792,
+          "frame_ids": [
+            0,
+            9,
+            18,
+            27,
+            36,
+            45,
+            54,
+            63,
+            72,
+            81,
+            90,
+            99,
+            108,
+            117,
+            126,
+            135,
+            144,
+            153,
+            162,
+            171,
+            180,
+            189,
+            198,
+            207,
+            216,
+            225,
+            234,
+            243,
+            252,
+            261,
+            270,
+            279,
+            288,
+            297,
+            306,
+            315,
+            324,
+            333,
+            342,
+            351,
+            360,
+            369,
+            378,
+            387,
+            396,
+            405,
+            414,
+            423,
+            432,
+            441,
+            450,
+            459,
+            468,
+            477,
+            486,
+            495,
+            504,
+            513,
+            522,
+            531,
+            540,
+            549,
+            558,
+            567,
+            576,
+            585,
+            594,
+            603,
+            612,
+            621,
+            630,
+            639,
+            648,
+            657,
+            666,
+            675,
+            684,
+            693,
+            702,
+            711,
+            720,
+            729,
+            738,
+            747,
+            756,
+            765,
+            774,
+            783,
+            792,
+            801,
+            810,
+            819,
+            828,
+            837,
+            846,
+            855,
+            864,
+            873,
+            882,
+            891,
+            900,
+            909,
+            918,
+            927,
+            936,
+            945,
+            954,
+            963,
+            972,
+            981,
+            990,
+            999,
+            1008,
+            1017,
+            1026,
+            1035,
+            1044,
+            1053,
+            1062,
+            1071,
+            1080,
+            1089,
+            1098,
+            1107,
+            1116,
+            1125,
+            1134,
+            1143,
+            1152,
+            1161,
+            1170,
+            1179,
+            1188,
+            1197,
+            1206,
+            1215,
+            1224,
+            1233,
+            1242,
+            1251,
+            1260,
+            1269,
+            1278,
+            1287,
+            1296,
+            1305,
+            1314,
+            1323,
+            1332,
+            1341,
+            1350,
+            1359,
+            1368,
+            1377,
+            1386,
+            1395,
+            1404,
+            1413,
+            1422,
+            1431,
+            1440,
+            1449,
+            1458,
+            1467,
+            1476,
+            1485,
+            1494,
+            1503,
+            1512,
+            1521,
+            1530,
+            1539,
+            1548,
+            1557,
+            1566,
+            1575,
+            1584,
+            1593,
+            1602,
+            1611,
+            1620,
+            1629,
+            1638,
+            1647,
+            1656,
+            1665,
+            1674,
+            1683,
+            1692,
+            1701,
+            1710,
+            1719,
+            1728,
+            1737,
+            1746,
+            1755,
+            1764,
+            1773,
+            1782,
+            1791
+          ],
+          "source_end": 1816,
+          "source_step": -1,
+          "start": 0,
+          "step": 9
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0639",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"6ca-605cde334d299\"",
+            "last_modified": "Wed, 20 Sep 2023 17:41:38 GMT",
+            "size_bytes": 1738,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0639_00/scene0639_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"100f0478-6414b1f966885\"",
+            "last_modified": "Thu, 16 Oct 2025 18:52:48 GMT",
+            "size_bytes": 269419640,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0639_00/scene0639_00.sens"
+          },
+          ".txt": {
+            "etag": "\"2bc-605cde334f9a9\"",
+            "last_modified": "Wed, 20 Sep 2023 17:41:38 GMT",
+            "size_bytes": 700,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0639_00/scene0639_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"1aaa9-605cde35f3df8\"",
+            "last_modified": "Wed, 20 Sep 2023 17:41:41 GMT",
+            "size_bytes": 109225,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0639_00/scene0639_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"cd032-605cde35f8c18\"",
+            "last_modified": "Wed, 20 Sep 2023 17:41:41 GMT",
+            "size_bytes": 839730,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0639_00/scene0639_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"c3548-605cde3602858\"",
+            "last_modified": "Wed, 20 Sep 2023 17:41:41 GMT",
+            "size_bytes": 800072,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0639_00/scene0639_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0639_00",
+        "schedule": {
+          "end": 598,
+          "frame_ids": [
+            0,
+            3,
+            6,
+            9,
+            12,
+            15,
+            18,
+            21,
+            24,
+            27,
+            30,
+            33,
+            36,
+            39,
+            42,
+            45,
+            48,
+            51,
+            54,
+            57,
+            60,
+            63,
+            66,
+            69,
+            72,
+            75,
+            78,
+            81,
+            84,
+            87,
+            90,
+            93,
+            96,
+            99,
+            102,
+            105,
+            108,
+            111,
+            114,
+            117,
+            120,
+            123,
+            126,
+            129,
+            132,
+            135,
+            138,
+            141,
+            144,
+            147,
+            150,
+            153,
+            156,
+            159,
+            162,
+            165,
+            168,
+            171,
+            174,
+            177,
+            180,
+            183,
+            186,
+            189,
+            192,
+            195,
+            198,
+            201,
+            204,
+            207,
+            210,
+            213,
+            216,
+            219,
+            222,
+            225,
+            228,
+            231,
+            234,
+            237,
+            240,
+            243,
+            246,
+            249,
+            252,
+            255,
+            258,
+            261,
+            264,
+            267,
+            270,
+            273,
+            276,
+            279,
+            282,
+            285,
+            288,
+            291,
+            294,
+            297,
+            300,
+            303,
+            306,
+            309,
+            312,
+            315,
+            318,
+            321,
+            324,
+            327,
+            330,
+            333,
+            336,
+            339,
+            342,
+            345,
+            348,
+            351,
+            354,
+            357,
+            360,
+            363,
+            366,
+            369,
+            372,
+            375,
+            378,
+            381,
+            384,
+            387,
+            390,
+            393,
+            396,
+            399,
+            402,
+            405,
+            408,
+            411,
+            414,
+            417,
+            420,
+            423,
+            426,
+            429,
+            432,
+            435,
+            438,
+            441,
+            444,
+            447,
+            450,
+            453,
+            456,
+            459,
+            462,
+            465,
+            468,
+            471,
+            474,
+            477,
+            480,
+            483,
+            486,
+            489,
+            492,
+            495,
+            498,
+            501,
+            504,
+            507,
+            510,
+            513,
+            516,
+            519,
+            522,
+            525,
+            528,
+            531,
+            534,
+            537,
+            540,
+            543,
+            546,
+            549,
+            552,
+            555,
+            558,
+            561,
+            564,
+            567,
+            570,
+            573,
+            576,
+            579,
+            582,
+            585,
+            588,
+            591,
+            594,
+            597
+          ],
+          "source_end": 624,
+          "source_step": -1,
+          "start": 0,
+          "step": 3
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0027",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"167e-605ca1bb260f6\"",
+            "last_modified": "Wed, 20 Sep 2023 13:11:06 GMT",
+            "size_bytes": 5758,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0027_00/scene0027_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"29b2cfd3-6414628fb5c0f\"",
+            "last_modified": "Thu, 16 Oct 2025 12:57:31 GMT",
+            "size_bytes": 699584467,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0027_00/scene0027_00.sens"
+          },
+          ".txt": {
+            "etag": "\"2c7-605ca1bb28806\"",
+            "last_modified": "Wed, 20 Sep 2023 13:11:06 GMT",
+            "size_bytes": 711,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0027_00/scene0027_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"c086e-605ca1c6cd754\"",
+            "last_modified": "Wed, 20 Sep 2023 13:11:18 GMT",
+            "size_bytes": 788590,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0027_00/scene0027_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"545229-605ca1c70f604\"",
+            "last_modified": "Wed, 20 Sep 2023 13:11:18 GMT",
+            "size_bytes": 5526057,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0027_00/scene0027_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"506983-605ca1c740344\"",
+            "last_modified": "Wed, 20 Sep 2023 13:11:19 GMT",
+            "size_bytes": 5269891,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0027_00/scene0027_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0027_00",
+        "schedule": {
+          "end": 996,
+          "frame_ids": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            25,
+            30,
+            35,
+            40,
+            45,
+            50,
+            55,
+            60,
+            65,
+            70,
+            75,
+            80,
+            85,
+            90,
+            95,
+            100,
+            105,
+            110,
+            115,
+            120,
+            125,
+            130,
+            135,
+            140,
+            145,
+            150,
+            155,
+            160,
+            165,
+            170,
+            175,
+            180,
+            185,
+            190,
+            195,
+            200,
+            205,
+            210,
+            215,
+            220,
+            225,
+            230,
+            235,
+            240,
+            245,
+            250,
+            255,
+            260,
+            265,
+            270,
+            275,
+            280,
+            285,
+            290,
+            295,
+            300,
+            305,
+            310,
+            315,
+            320,
+            325,
+            330,
+            335,
+            340,
+            345,
+            350,
+            355,
+            360,
+            365,
+            370,
+            375,
+            380,
+            385,
+            390,
+            395,
+            400,
+            405,
+            410,
+            415,
+            420,
+            425,
+            430,
+            435,
+            440,
+            445,
+            450,
+            455,
+            460,
+            465,
+            470,
+            475,
+            480,
+            485,
+            490,
+            495,
+            500,
+            505,
+            510,
+            515,
+            520,
+            525,
+            530,
+            535,
+            540,
+            545,
+            550,
+            555,
+            560,
+            565,
+            570,
+            575,
+            580,
+            585,
+            590,
+            595,
+            600,
+            605,
+            610,
+            615,
+            620,
+            625,
+            630,
+            635,
+            640,
+            645,
+            650,
+            655,
+            660,
+            665,
+            670,
+            675,
+            680,
+            685,
+            690,
+            695,
+            700,
+            705,
+            710,
+            715,
+            720,
+            725,
+            730,
+            735,
+            740,
+            745,
+            750,
+            755,
+            760,
+            765,
+            770,
+            775,
+            780,
+            785,
+            790,
+            795,
+            800,
+            805,
+            810,
+            815,
+            820,
+            825,
+            830,
+            835,
+            840,
+            845,
+            850,
+            855,
+            860,
+            865,
+            870,
+            875,
+            880,
+            885,
+            890,
+            895,
+            900,
+            905,
+            910,
+            915,
+            920,
+            925,
+            930,
+            935,
+            940,
+            945,
+            950,
+            955,
+            960,
+            965,
+            970,
+            975,
+            980,
+            985,
+            990,
+            995
+          ],
+          "source_end": 1148,
+          "source_step": -1,
+          "start": 0,
+          "step": 5
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0107",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"265c-605cab87634d6\"",
+            "last_modified": "Wed, 20 Sep 2023 13:54:56 GMT",
+            "size_bytes": 9820,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0107_00/scene0107_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"2b4b4935-64146c733806a\"",
+            "last_modified": "Thu, 16 Oct 2025 13:41:45 GMT",
+            "size_bytes": 726354229,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0107_00/scene0107_00.sens"
+          },
+          ".txt": {
+            "etag": "\"212-605cab87634d6\"",
+            "last_modified": "Wed, 20 Sep 2023 13:54:56 GMT",
+            "size_bytes": 530,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0107_00/scene0107_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"1300cc-605cab95ee723\"",
+            "last_modified": "Wed, 20 Sep 2023 13:55:11 GMT",
+            "size_bytes": 1245388,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0107_00/scene0107_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"7ed709-605cab963f033\"",
+            "last_modified": "Wed, 20 Sep 2023 13:55:12 GMT",
+            "size_bytes": 8312585,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0107_00/scene0107_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"78f5c7-605cab9680ee3\"",
+            "last_modified": "Wed, 20 Sep 2023 13:55:12 GMT",
+            "size_bytes": 7927239,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0107_00/scene0107_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0107_00",
+        "schedule": {
+          "end": 2190,
+          "frame_ids": [
+            0,
+            11,
+            22,
+            33,
+            44,
+            55,
+            66,
+            77,
+            88,
+            99,
+            110,
+            121,
+            132,
+            143,
+            154,
+            165,
+            176,
+            187,
+            198,
+            209,
+            220,
+            231,
+            242,
+            253,
+            264,
+            275,
+            286,
+            297,
+            308,
+            319,
+            330,
+            341,
+            352,
+            363,
+            374,
+            385,
+            396,
+            407,
+            418,
+            429,
+            440,
+            451,
+            462,
+            473,
+            484,
+            495,
+            506,
+            517,
+            528,
+            539,
+            550,
+            561,
+            572,
+            583,
+            594,
+            605,
+            616,
+            627,
+            638,
+            649,
+            660,
+            671,
+            682,
+            693,
+            704,
+            715,
+            726,
+            737,
+            748,
+            759,
+            770,
+            781,
+            792,
+            803,
+            814,
+            825,
+            836,
+            847,
+            858,
+            869,
+            880,
+            891,
+            902,
+            913,
+            924,
+            935,
+            946,
+            957,
+            968,
+            979,
+            990,
+            1001,
+            1012,
+            1023,
+            1034,
+            1045,
+            1056,
+            1067,
+            1078,
+            1089,
+            1100,
+            1111,
+            1122,
+            1133,
+            1144,
+            1155,
+            1166,
+            1177,
+            1188,
+            1199,
+            1210,
+            1221,
+            1232,
+            1243,
+            1254,
+            1265,
+            1276,
+            1287,
+            1298,
+            1309,
+            1320,
+            1331,
+            1342,
+            1353,
+            1364,
+            1375,
+            1386,
+            1397,
+            1408,
+            1419,
+            1430,
+            1441,
+            1452,
+            1463,
+            1474,
+            1485,
+            1496,
+            1507,
+            1518,
+            1529,
+            1540,
+            1551,
+            1562,
+            1573,
+            1584,
+            1595,
+            1606,
+            1617,
+            1628,
+            1639,
+            1650,
+            1661,
+            1672,
+            1683,
+            1694,
+            1705,
+            1716,
+            1727,
+            1738,
+            1749,
+            1760,
+            1771,
+            1782,
+            1793,
+            1804,
+            1815,
+            1826,
+            1837,
+            1848,
+            1859,
+            1870,
+            1881,
+            1892,
+            1903,
+            1914,
+            1925,
+            1936,
+            1947,
+            1958,
+            1969,
+            1980,
+            1991,
+            2002,
+            2013,
+            2024,
+            2035,
+            2046,
+            2057,
+            2068,
+            2079,
+            2090,
+            2101,
+            2112,
+            2123,
+            2134,
+            2145,
+            2156,
+            2167,
+            2178,
+            2189
+          ],
+          "source_end": 2366,
+          "source_step": -1,
+          "start": 0,
+          "step": 11
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0538",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"16a5-605cd2d60acf0\"",
+            "last_modified": "Wed, 20 Sep 2023 16:50:48 GMT",
+            "size_bytes": 5797,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0538_00/scene0538_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"5fe44d13-6414a21016319\"",
+            "last_modified": "Thu, 16 Oct 2025 17:41:37 GMT",
+            "size_bytes": 1608797459,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0538_00/scene0538_00.sens"
+          },
+          ".txt": {
+            "etag": "\"30b-605cd2d617040\"",
+            "last_modified": "Wed, 20 Sep 2023 16:50:48 GMT",
+            "size_bytes": 779,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0538_00/scene0538_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"b4450-605cd2e4a499d\"",
+            "last_modified": "Wed, 20 Sep 2023 16:51:03 GMT",
+            "size_bytes": 738384,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0538_00/scene0538_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"4eee38-605cd2e4d2fcd\"",
+            "last_modified": "Wed, 20 Sep 2023 16:51:03 GMT",
+            "size_bytes": 5172792,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0538_00/scene0538_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"4b3c80-605cd2e4f79bd\"",
+            "last_modified": "Wed, 20 Sep 2023 16:51:03 GMT",
+            "size_bytes": 4930688,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0538_00/scene0538_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0538_00",
+        "schedule": {
+          "end": 3384,
+          "frame_ids": [
+            0,
+            17,
+            34,
+            51,
+            68,
+            85,
+            102,
+            119,
+            136,
+            153,
+            170,
+            187,
+            204,
+            221,
+            238,
+            255,
+            272,
+            289,
+            306,
+            323,
+            340,
+            357,
+            374,
+            391,
+            408,
+            425,
+            442,
+            459,
+            476,
+            493,
+            510,
+            527,
+            544,
+            561,
+            578,
+            595,
+            612,
+            629,
+            646,
+            663,
+            680,
+            697,
+            714,
+            731,
+            748,
+            765,
+            782,
+            799,
+            816,
+            833,
+            850,
+            867,
+            884,
+            901,
+            918,
+            935,
+            952,
+            969,
+            986,
+            1003,
+            1020,
+            1037,
+            1054,
+            1071,
+            1088,
+            1105,
+            1122,
+            1139,
+            1156,
+            1173,
+            1190,
+            1207,
+            1224,
+            1241,
+            1258,
+            1275,
+            1292,
+            1309,
+            1326,
+            1343,
+            1360,
+            1377,
+            1394,
+            1411,
+            1428,
+            1445,
+            1462,
+            1479,
+            1496,
+            1513,
+            1530,
+            1547,
+            1564,
+            1581,
+            1598,
+            1615,
+            1632,
+            1649,
+            1666,
+            1683,
+            1700,
+            1717,
+            1734,
+            1751,
+            1768,
+            1785,
+            1802,
+            1819,
+            1836,
+            1853,
+            1870,
+            1887,
+            1904,
+            1921,
+            1938,
+            1955,
+            1972,
+            1989,
+            2006,
+            2023,
+            2040,
+            2057,
+            2074,
+            2091,
+            2108,
+            2125,
+            2142,
+            2159,
+            2176,
+            2193,
+            2210,
+            2227,
+            2244,
+            2261,
+            2278,
+            2295,
+            2312,
+            2329,
+            2346,
+            2363,
+            2380,
+            2397,
+            2414,
+            2431,
+            2448,
+            2465,
+            2482,
+            2499,
+            2516,
+            2533,
+            2550,
+            2567,
+            2584,
+            2601,
+            2618,
+            2635,
+            2652,
+            2669,
+            2686,
+            2703,
+            2720,
+            2737,
+            2754,
+            2771,
+            2788,
+            2805,
+            2822,
+            2839,
+            2856,
+            2873,
+            2890,
+            2907,
+            2924,
+            2941,
+            2958,
+            2975,
+            2992,
+            3009,
+            3026,
+            3043,
+            3060,
+            3077,
+            3094,
+            3111,
+            3128,
+            3145,
+            3162,
+            3179,
+            3196,
+            3213,
+            3230,
+            3247,
+            3264,
+            3281,
+            3298,
+            3315,
+            3332,
+            3349,
+            3366,
+            3383
+          ],
+          "source_end": 3528,
+          "source_step": -1,
+          "start": 0,
+          "step": 17
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0571",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"1112-605cd595396b7\"",
+            "last_modified": "Wed, 20 Sep 2023 17:03:05 GMT",
+            "size_bytes": 4370,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0571_00/scene0571_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"2c1a94b0-6414a662c4ae9\"",
+            "last_modified": "Thu, 16 Oct 2025 18:00:57 GMT",
+            "size_bytes": 739939504,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0571_00/scene0571_00.sens"
+          },
+          ".txt": {
+            "etag": "\"20a-605cd5953bdc7\"",
+            "last_modified": "Wed, 20 Sep 2023 17:03:05 GMT",
+            "size_bytes": 522,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0571_00/scene0571_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"54826-605cd59c1e8e6\"",
+            "last_modified": "Wed, 20 Sep 2023 17:03:12 GMT",
+            "size_bytes": 346150,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0571_00/scene0571_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"26daaa-605cd59c3bda6\"",
+            "last_modified": "Wed, 20 Sep 2023 17:03:12 GMT",
+            "size_bytes": 2546346,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0571_00/scene0571_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"250866-605cd59c60796\"",
+            "last_modified": "Wed, 20 Sep 2023 17:03:12 GMT",
+            "size_bytes": 2426982,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0571_00/scene0571_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0571_00",
+        "schedule": {
+          "end": 1991,
+          "frame_ids": [
+            0,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60,
+            70,
+            80,
+            90,
+            100,
+            110,
+            120,
+            130,
+            140,
+            150,
+            160,
+            170,
+            180,
+            190,
+            200,
+            210,
+            220,
+            230,
+            240,
+            250,
+            260,
+            270,
+            280,
+            290,
+            300,
+            310,
+            320,
+            330,
+            340,
+            350,
+            360,
+            370,
+            380,
+            390,
+            400,
+            410,
+            420,
+            430,
+            440,
+            450,
+            460,
+            470,
+            480,
+            490,
+            500,
+            510,
+            520,
+            530,
+            540,
+            550,
+            560,
+            570,
+            580,
+            590,
+            600,
+            610,
+            620,
+            630,
+            640,
+            650,
+            660,
+            670,
+            680,
+            690,
+            700,
+            710,
+            720,
+            730,
+            740,
+            750,
+            760,
+            770,
+            780,
+            790,
+            800,
+            810,
+            820,
+            830,
+            840,
+            850,
+            860,
+            870,
+            880,
+            890,
+            900,
+            910,
+            920,
+            930,
+            940,
+            950,
+            960,
+            970,
+            980,
+            990,
+            1000,
+            1010,
+            1020,
+            1030,
+            1040,
+            1050,
+            1060,
+            1070,
+            1080,
+            1090,
+            1100,
+            1110,
+            1120,
+            1130,
+            1140,
+            1150,
+            1160,
+            1170,
+            1180,
+            1190,
+            1200,
+            1210,
+            1220,
+            1230,
+            1240,
+            1250,
+            1260,
+            1270,
+            1280,
+            1290,
+            1300,
+            1310,
+            1320,
+            1330,
+            1340,
+            1350,
+            1360,
+            1370,
+            1380,
+            1390,
+            1400,
+            1410,
+            1420,
+            1430,
+            1440,
+            1450,
+            1460,
+            1470,
+            1480,
+            1490,
+            1500,
+            1510,
+            1520,
+            1530,
+            1540,
+            1550,
+            1560,
+            1570,
+            1580,
+            1590,
+            1600,
+            1610,
+            1620,
+            1630,
+            1640,
+            1650,
+            1660,
+            1670,
+            1680,
+            1690,
+            1700,
+            1710,
+            1720,
+            1730,
+            1740,
+            1750,
+            1760,
+            1770,
+            1780,
+            1790,
+            1800,
+            1810,
+            1820,
+            1830,
+            1840,
+            1850,
+            1860,
+            1870,
+            1880,
+            1890,
+            1900,
+            1910,
+            1920,
+            1930,
+            1940,
+            1950,
+            1960,
+            1970,
+            1980,
+            1990
+          ],
+          "source_end": 2083,
+          "source_step": -1,
+          "start": 0,
+          "step": 10
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0106",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"2e55-605cab4fe2523\"",
+            "last_modified": "Wed, 20 Sep 2023 13:53:58 GMT",
+            "size_bytes": 11861,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0106_00/scene0106_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"4ae310c5-64146c3e0fa15\"",
+            "last_modified": "Thu, 16 Oct 2025 13:40:50 GMT",
+            "size_bytes": 1256394949,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0106_00/scene0106_00.sens"
+          },
+          ".txt": {
+            "etag": "\"2c2-605cab4fe4c33\"",
+            "last_modified": "Wed, 20 Sep 2023 13:53:58 GMT",
+            "size_bytes": 706,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0106_00/scene0106_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"1f0ead-605cab6b4fcdd\"",
+            "last_modified": "Wed, 20 Sep 2023 13:54:27 GMT",
+            "size_bytes": 2035373,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0106_00/scene0106_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"c6fd04-605cab6bd132c\"",
+            "last_modified": "Wed, 20 Sep 2023 13:54:27 GMT",
+            "size_bytes": 13040900,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0106_00/scene0106_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"bda564-605cab6c5026c\"",
+            "last_modified": "Wed, 20 Sep 2023 13:54:28 GMT",
+            "size_bytes": 12428644,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0106_00/scene0106_00_vh_clean_2.ply"
+          }
+        },
+        "role": "fit",
+        "scene_id": "scene0106_00",
+        "schedule": {
+          "end": 2190,
+          "frame_ids": [
+            0,
+            11,
+            22,
+            33,
+            44,
+            55,
+            66,
+            77,
+            88,
+            99,
+            110,
+            121,
+            132,
+            143,
+            154,
+            165,
+            176,
+            187,
+            198,
+            209,
+            220,
+            231,
+            242,
+            253,
+            264,
+            275,
+            286,
+            297,
+            308,
+            319,
+            330,
+            341,
+            352,
+            363,
+            374,
+            385,
+            396,
+            407,
+            418,
+            429,
+            440,
+            451,
+            462,
+            473,
+            484,
+            495,
+            506,
+            517,
+            528,
+            539,
+            550,
+            561,
+            572,
+            583,
+            594,
+            605,
+            616,
+            627,
+            638,
+            649,
+            660,
+            671,
+            682,
+            693,
+            704,
+            715,
+            726,
+            737,
+            748,
+            759,
+            770,
+            781,
+            792,
+            803,
+            814,
+            825,
+            836,
+            847,
+            858,
+            869,
+            880,
+            891,
+            902,
+            913,
+            924,
+            935,
+            946,
+            957,
+            968,
+            979,
+            990,
+            1001,
+            1012,
+            1023,
+            1034,
+            1045,
+            1056,
+            1067,
+            1078,
+            1089,
+            1100,
+            1111,
+            1122,
+            1133,
+            1144,
+            1155,
+            1166,
+            1177,
+            1188,
+            1199,
+            1210,
+            1221,
+            1232,
+            1243,
+            1254,
+            1265,
+            1276,
+            1287,
+            1298,
+            1309,
+            1320,
+            1331,
+            1342,
+            1353,
+            1364,
+            1375,
+            1386,
+            1397,
+            1408,
+            1419,
+            1430,
+            1441,
+            1452,
+            1463,
+            1474,
+            1485,
+            1496,
+            1507,
+            1518,
+            1529,
+            1540,
+            1551,
+            1562,
+            1573,
+            1584,
+            1595,
+            1606,
+            1617,
+            1628,
+            1639,
+            1650,
+            1661,
+            1672,
+            1683,
+            1694,
+            1705,
+            1716,
+            1727,
+            1738,
+            1749,
+            1760,
+            1771,
+            1782,
+            1793,
+            1804,
+            1815,
+            1826,
+            1837,
+            1848,
+            1859,
+            1870,
+            1881,
+            1892,
+            1903,
+            1914,
+            1925,
+            1936,
+            1947,
+            1958,
+            1969,
+            1980,
+            1991,
+            2002,
+            2013,
+            2024,
+            2035,
+            2046,
+            2057,
+            2068,
+            2079,
+            2090,
+            2101,
+            2112,
+            2123,
+            2134,
+            2145,
+            2156,
+            2167,
+            2178,
+            2189
+          ],
+          "source_end": 2324,
+          "source_step": -1,
+          "start": 0,
+          "step": 11
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0056",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"2fda-605ca56ccfda9\"",
+            "last_modified": "Wed, 20 Sep 2023 13:27:38 GMT",
+            "size_bytes": 12250,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0056_00/scene0056_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"43ff67bf-641466969581f\"",
+            "last_modified": "Thu, 16 Oct 2025 13:15:32 GMT",
+            "size_bytes": 1140811711,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0056_00/scene0056_00.sens"
+          },
+          ".txt": {
+            "etag": "\"2c2-605ca56cd4bc9\"",
+            "last_modified": "Wed, 20 Sep 2023 13:27:38 GMT",
+            "size_bytes": 706,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0056_00/scene0056_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"1b71f8-605ca586095f4\"",
+            "last_modified": "Wed, 20 Sep 2023 13:28:04 GMT",
+            "size_bytes": 1798648,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0056_00/scene0056_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"b2bb98-605ca58696f94\"",
+            "last_modified": "Wed, 20 Sep 2023 13:28:05 GMT",
+            "size_bytes": 11713432,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0056_00/scene0056_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"aa55ee-605ca5871fb14\"",
+            "last_modified": "Wed, 20 Sep 2023 13:28:05 GMT",
+            "size_bytes": 11163118,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0056_00/scene0056_00_vh_clean_2.ply"
+          }
+        },
+        "role": "cal",
+        "scene_id": "scene0056_00",
+        "schedule": {
+          "end": 1792,
+          "frame_ids": [
+            0,
+            9,
+            18,
+            27,
+            36,
+            45,
+            54,
+            63,
+            72,
+            81,
+            90,
+            99,
+            108,
+            117,
+            126,
+            135,
+            144,
+            153,
+            162,
+            171,
+            180,
+            189,
+            198,
+            207,
+            216,
+            225,
+            234,
+            243,
+            252,
+            261,
+            270,
+            279,
+            288,
+            297,
+            306,
+            315,
+            324,
+            333,
+            342,
+            351,
+            360,
+            369,
+            378,
+            387,
+            396,
+            405,
+            414,
+            423,
+            432,
+            441,
+            450,
+            459,
+            468,
+            477,
+            486,
+            495,
+            504,
+            513,
+            522,
+            531,
+            540,
+            549,
+            558,
+            567,
+            576,
+            585,
+            594,
+            603,
+            612,
+            621,
+            630,
+            639,
+            648,
+            657,
+            666,
+            675,
+            684,
+            693,
+            702,
+            711,
+            720,
+            729,
+            738,
+            747,
+            756,
+            765,
+            774,
+            783,
+            792,
+            801,
+            810,
+            819,
+            828,
+            837,
+            846,
+            855,
+            864,
+            873,
+            882,
+            891,
+            900,
+            909,
+            918,
+            927,
+            936,
+            945,
+            954,
+            963,
+            972,
+            981,
+            990,
+            999,
+            1008,
+            1017,
+            1026,
+            1035,
+            1044,
+            1053,
+            1062,
+            1071,
+            1080,
+            1089,
+            1098,
+            1107,
+            1116,
+            1125,
+            1134,
+            1143,
+            1152,
+            1161,
+            1170,
+            1179,
+            1188,
+            1197,
+            1206,
+            1215,
+            1224,
+            1233,
+            1242,
+            1251,
+            1260,
+            1269,
+            1278,
+            1287,
+            1296,
+            1305,
+            1314,
+            1323,
+            1332,
+            1341,
+            1350,
+            1359,
+            1368,
+            1377,
+            1386,
+            1395,
+            1404,
+            1413,
+            1422,
+            1431,
+            1440,
+            1449,
+            1458,
+            1467,
+            1476,
+            1485,
+            1494,
+            1503,
+            1512,
+            1521,
+            1530,
+            1539,
+            1548,
+            1557,
+            1566,
+            1575,
+            1584,
+            1593,
+            1602,
+            1611,
+            1620,
+            1629,
+            1638,
+            1647,
+            1656,
+            1665,
+            1674,
+            1683,
+            1692,
+            1701,
+            1710,
+            1719,
+            1728,
+            1737,
+            1746,
+            1755,
+            1764,
+            1773,
+            1782,
+            1791
+          ],
+          "source_end": 1994,
+          "source_step": -1,
+          "start": 0,
+          "step": 9
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0534",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"22e1-605cd28aa77f0\"",
+            "last_modified": "Wed, 20 Sep 2023 16:49:28 GMT",
+            "size_bytes": 8929,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0534_00/scene0534_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"23b9a8bc-6414a196cc653\"",
+            "last_modified": "Thu, 16 Oct 2025 17:39:30 GMT",
+            "size_bytes": 599369916,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0534_00/scene0534_00.sens"
+          },
+          ".txt": {
+            "etag": "\"20f-605cd28aac610\"",
+            "last_modified": "Wed, 20 Sep 2023 16:49:28 GMT",
+            "size_bytes": 527,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0534_00/scene0534_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"10e6a0-605cd2967d47e\"",
+            "last_modified": "Wed, 20 Sep 2023 16:49:41 GMT",
+            "size_bytes": 1107616,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0534_00/scene0534_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"71a28d-605cd296bf32e\"",
+            "last_modified": "Wed, 20 Sep 2023 16:49:41 GMT",
+            "size_bytes": 7447181,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0534_00/scene0534_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"6c5005-605cd296f4e8e\"",
+            "last_modified": "Wed, 20 Sep 2023 16:49:41 GMT",
+            "size_bytes": 7098373,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0534_00/scene0534_00_vh_clean_2.ply"
+          }
+        },
+        "role": "cal",
+        "scene_id": "scene0534_00",
+        "schedule": {
+          "end": 1593,
+          "frame_ids": [
+            0,
+            8,
+            16,
+            24,
+            32,
+            40,
+            48,
+            56,
+            64,
+            72,
+            80,
+            88,
+            96,
+            104,
+            112,
+            120,
+            128,
+            136,
+            144,
+            152,
+            160,
+            168,
+            176,
+            184,
+            192,
+            200,
+            208,
+            216,
+            224,
+            232,
+            240,
+            248,
+            256,
+            264,
+            272,
+            280,
+            288,
+            296,
+            304,
+            312,
+            320,
+            328,
+            336,
+            344,
+            352,
+            360,
+            368,
+            376,
+            384,
+            392,
+            400,
+            408,
+            416,
+            424,
+            432,
+            440,
+            448,
+            456,
+            464,
+            472,
+            480,
+            488,
+            496,
+            504,
+            512,
+            520,
+            528,
+            536,
+            544,
+            552,
+            560,
+            568,
+            576,
+            584,
+            592,
+            600,
+            608,
+            616,
+            624,
+            632,
+            640,
+            648,
+            656,
+            664,
+            672,
+            680,
+            688,
+            696,
+            704,
+            712,
+            720,
+            728,
+            736,
+            744,
+            752,
+            760,
+            768,
+            776,
+            784,
+            792,
+            800,
+            808,
+            816,
+            824,
+            832,
+            840,
+            848,
+            856,
+            864,
+            872,
+            880,
+            888,
+            896,
+            904,
+            912,
+            920,
+            928,
+            936,
+            944,
+            952,
+            960,
+            968,
+            976,
+            984,
+            992,
+            1000,
+            1008,
+            1016,
+            1024,
+            1032,
+            1040,
+            1048,
+            1056,
+            1064,
+            1072,
+            1080,
+            1088,
+            1096,
+            1104,
+            1112,
+            1120,
+            1128,
+            1136,
+            1144,
+            1152,
+            1160,
+            1168,
+            1176,
+            1184,
+            1192,
+            1200,
+            1208,
+            1216,
+            1224,
+            1232,
+            1240,
+            1248,
+            1256,
+            1264,
+            1272,
+            1280,
+            1288,
+            1296,
+            1304,
+            1312,
+            1320,
+            1328,
+            1336,
+            1344,
+            1352,
+            1360,
+            1368,
+            1376,
+            1384,
+            1392,
+            1400,
+            1408,
+            1416,
+            1424,
+            1432,
+            1440,
+            1448,
+            1456,
+            1464,
+            1472,
+            1480,
+            1488,
+            1496,
+            1504,
+            1512,
+            1520,
+            1528,
+            1536,
+            1544,
+            1552,
+            1560,
+            1568,
+            1576,
+            1584,
+            1592
+          ],
+          "source_end": 1771,
+          "source_step": -1,
+          "start": 0,
+          "step": 8
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0445",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"1176-605cc8cc989fd\"",
+            "last_modified": "Wed, 20 Sep 2023 16:05:53 GMT",
+            "size_bytes": 4470,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0445_00/scene0445_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"189cb392-6414949403e86\"",
+            "last_modified": "Thu, 16 Oct 2025 16:41:17 GMT",
+            "size_bytes": 412922770,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0445_00/scene0445_00.sens"
+          },
+          ".txt": {
+            "etag": "\"2c2-605cc8cc9ff2d\"",
+            "last_modified": "Wed, 20 Sep 2023 16:05:53 GMT",
+            "size_bytes": 706,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0445_00/scene0445_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"8a953-605cc8d1f722c\"",
+            "last_modified": "Wed, 20 Sep 2023 16:05:59 GMT",
+            "size_bytes": 567635,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0445_00/scene0445_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"3f5f7a-605cc8d21e32c\"",
+            "last_modified": "Wed, 20 Sep 2023 16:05:59 GMT",
+            "size_bytes": 4153210,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0445_00/scene0445_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"3c6e10-605cc8d23b7ec\"",
+            "last_modified": "Wed, 20 Sep 2023 16:05:59 GMT",
+            "size_bytes": 3960336,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0445_00/scene0445_00_vh_clean_2.ply"
+          }
+        },
+        "role": "select",
+        "scene_id": "scene0445_00",
+        "schedule": {
+          "end": 598,
+          "frame_ids": [
+            0,
+            3,
+            6,
+            9,
+            12,
+            15,
+            18,
+            21,
+            24,
+            27,
+            30,
+            33,
+            36,
+            39,
+            42,
+            45,
+            48,
+            51,
+            54,
+            57,
+            60,
+            63,
+            66,
+            69,
+            72,
+            75,
+            78,
+            81,
+            84,
+            87,
+            90,
+            93,
+            96,
+            99,
+            102,
+            105,
+            108,
+            111,
+            114,
+            117,
+            120,
+            123,
+            126,
+            129,
+            132,
+            135,
+            138,
+            141,
+            144,
+            147,
+            150,
+            153,
+            156,
+            159,
+            162,
+            165,
+            168,
+            171,
+            174,
+            177,
+            180,
+            183,
+            186,
+            189,
+            192,
+            195,
+            198,
+            201,
+            204,
+            207,
+            210,
+            213,
+            216,
+            219,
+            222,
+            225,
+            228,
+            231,
+            234,
+            237,
+            240,
+            243,
+            246,
+            249,
+            252,
+            255,
+            258,
+            261,
+            264,
+            267,
+            270,
+            273,
+            276,
+            279,
+            282,
+            285,
+            288,
+            291,
+            294,
+            297,
+            300,
+            303,
+            306,
+            309,
+            312,
+            315,
+            318,
+            321,
+            324,
+            327,
+            330,
+            333,
+            336,
+            339,
+            342,
+            345,
+            348,
+            351,
+            354,
+            357,
+            360,
+            363,
+            366,
+            369,
+            372,
+            375,
+            378,
+            381,
+            384,
+            387,
+            390,
+            393,
+            396,
+            399,
+            402,
+            405,
+            408,
+            411,
+            414,
+            417,
+            420,
+            423,
+            426,
+            429,
+            432,
+            435,
+            438,
+            441,
+            444,
+            447,
+            450,
+            453,
+            456,
+            459,
+            462,
+            465,
+            468,
+            471,
+            474,
+            477,
+            480,
+            483,
+            486,
+            489,
+            492,
+            495,
+            498,
+            501,
+            504,
+            507,
+            510,
+            513,
+            516,
+            519,
+            522,
+            525,
+            528,
+            531,
+            534,
+            537,
+            540,
+            543,
+            546,
+            549,
+            552,
+            555,
+            558,
+            561,
+            564,
+            567,
+            570,
+            573,
+            576,
+            579,
+            582,
+            585,
+            588,
+            591,
+            594,
+            597
+          ],
+          "source_end": 683,
+          "source_step": -1,
+          "start": 0,
+          "step": 3
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0626",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"17e2-605cdc150fb6f\"",
+            "last_modified": "Wed, 20 Sep 2023 17:32:10 GMT",
+            "size_bytes": 6114,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0626_00/scene0626_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"158eac51-6414b0685a18c\"",
+            "last_modified": "Thu, 16 Oct 2025 18:45:48 GMT",
+            "size_bytes": 361671761,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0626_00/scene0626_00.sens"
+          },
+          ".txt": {
+            "etag": "\"2b8-605cdc151498f\"",
+            "last_modified": "Wed, 20 Sep 2023 17:32:10 GMT",
+            "size_bytes": 696,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0626_00/scene0626_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"ae42f-605cdc27d466a\"",
+            "last_modified": "Wed, 20 Sep 2023 17:32:29 GMT",
+            "size_bytes": 713775,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0626_00/scene0626_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"4d1e32-605cdc28312ca\"",
+            "last_modified": "Wed, 20 Sep 2023 17:32:30 GMT",
+            "size_bytes": 5054002,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0626_00/scene0626_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"498432-605cdc288df2a\"",
+            "last_modified": "Wed, 20 Sep 2023 17:32:30 GMT",
+            "size_bytes": 4817970,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0626_00/scene0626_00_vh_clean_2.ply"
+          }
+        },
+        "role": "select",
+        "scene_id": "scene0626_00",
+        "schedule": {
+          "end": 598,
+          "frame_ids": [
+            0,
+            3,
+            6,
+            9,
+            12,
+            15,
+            18,
+            21,
+            24,
+            27,
+            30,
+            33,
+            36,
+            39,
+            42,
+            45,
+            48,
+            51,
+            54,
+            57,
+            60,
+            63,
+            66,
+            69,
+            72,
+            75,
+            78,
+            81,
+            84,
+            87,
+            90,
+            93,
+            96,
+            99,
+            102,
+            105,
+            108,
+            111,
+            114,
+            117,
+            120,
+            123,
+            126,
+            129,
+            132,
+            135,
+            138,
+            141,
+            144,
+            147,
+            150,
+            153,
+            156,
+            159,
+            162,
+            165,
+            168,
+            171,
+            174,
+            177,
+            180,
+            183,
+            186,
+            189,
+            192,
+            195,
+            198,
+            201,
+            204,
+            207,
+            210,
+            213,
+            216,
+            219,
+            222,
+            225,
+            228,
+            231,
+            234,
+            237,
+            240,
+            243,
+            246,
+            249,
+            252,
+            255,
+            258,
+            261,
+            264,
+            267,
+            270,
+            273,
+            276,
+            279,
+            282,
+            285,
+            288,
+            291,
+            294,
+            297,
+            300,
+            303,
+            306,
+            309,
+            312,
+            315,
+            318,
+            321,
+            324,
+            327,
+            330,
+            333,
+            336,
+            339,
+            342,
+            345,
+            348,
+            351,
+            354,
+            357,
+            360,
+            363,
+            366,
+            369,
+            372,
+            375,
+            378,
+            381,
+            384,
+            387,
+            390,
+            393,
+            396,
+            399,
+            402,
+            405,
+            408,
+            411,
+            414,
+            417,
+            420,
+            423,
+            426,
+            429,
+            432,
+            435,
+            438,
+            441,
+            444,
+            447,
+            450,
+            453,
+            456,
+            459,
+            462,
+            465,
+            468,
+            471,
+            474,
+            477,
+            480,
+            483,
+            486,
+            489,
+            492,
+            495,
+            498,
+            501,
+            504,
+            507,
+            510,
+            513,
+            516,
+            519,
+            522,
+            525,
+            528,
+            531,
+            534,
+            537,
+            540,
+            543,
+            546,
+            549,
+            552,
+            555,
+            558,
+            561,
+            564,
+            567,
+            570,
+            573,
+            576,
+            579,
+            582,
+            585,
+            588,
+            591,
+            594,
+            597
+          ],
+          "source_end": 635,
+          "source_step": -1,
+          "start": 0,
+          "step": 3
+        },
+        "source_split": "train"
+      },
+      {
+        "family_id": "scene0553",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"bd1-605cd433a3dc4\"",
+            "last_modified": "Wed, 20 Sep 2023 16:56:54 GMT",
+            "size_bytes": 3025,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"1ac4e6ab-6414a42b04794\"",
+            "last_modified": "Thu, 16 Oct 2025 17:51:02 GMT",
+            "size_bytes": 449111723,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0553_00/scene0553_00.sens"
+          },
+          ".txt": {
+            "etag": "\"20b-605cd433a64d4\"",
+            "last_modified": "Wed, 20 Sep 2023 16:56:54 GMT",
+            "size_bytes": 523,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"596cd-605cd438e5133\"",
+            "last_modified": "Wed, 20 Sep 2023 16:57:00 GMT",
+            "size_bytes": 366285,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"2983c1-605cd43904d03\"",
+            "last_modified": "Wed, 20 Sep 2023 16:57:00 GMT",
+            "size_bytes": 2720705,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"27989f-605cd4391fab3\"",
+            "last_modified": "Wed, 20 Sep 2023 16:57:00 GMT",
+            "size_bytes": 2594975,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00_vh_clean_2.ply"
+          }
+        },
+        "role": "confirm",
+        "scene_id": "scene0553_00",
+        "schedule": {
+          "end": 1394,
+          "frame_ids": [
+            0,
+            7,
+            14,
+            21,
+            28,
+            35,
+            42,
+            49,
+            56,
+            63,
+            70,
+            77,
+            84,
+            91,
+            98,
+            105,
+            112,
+            119,
+            126,
+            133,
+            140,
+            147,
+            154,
+            161,
+            168,
+            175,
+            182,
+            189,
+            196,
+            203,
+            210,
+            217,
+            224,
+            231,
+            238,
+            245,
+            252,
+            259,
+            266,
+            273,
+            280,
+            287,
+            294,
+            301,
+            308,
+            315,
+            322,
+            329,
+            336,
+            343,
+            350,
+            357,
+            364,
+            371,
+            378,
+            385,
+            392,
+            399,
+            406,
+            413,
+            420,
+            427,
+            434,
+            441,
+            448,
+            455,
+            462,
+            469,
+            476,
+            483,
+            490,
+            497,
+            504,
+            511,
+            518,
+            525,
+            532,
+            539,
+            546,
+            553,
+            560,
+            567,
+            574,
+            581,
+            588,
+            595,
+            602,
+            609,
+            616,
+            623,
+            630,
+            637,
+            644,
+            651,
+            658,
+            665,
+            672,
+            679,
+            686,
+            693,
+            700,
+            707,
+            714,
+            721,
+            728,
+            735,
+            742,
+            749,
+            756,
+            763,
+            770,
+            777,
+            784,
+            791,
+            798,
+            805,
+            812,
+            819,
+            826,
+            833,
+            840,
+            847,
+            854,
+            861,
+            868,
+            875,
+            882,
+            889,
+            896,
+            903,
+            910,
+            917,
+            924,
+            931,
+            938,
+            945,
+            952,
+            959,
+            966,
+            973,
+            980,
+            987,
+            994,
+            1001,
+            1008,
+            1015,
+            1022,
+            1029,
+            1036,
+            1043,
+            1050,
+            1057,
+            1064,
+            1071,
+            1078,
+            1085,
+            1092,
+            1099,
+            1106,
+            1113,
+            1120,
+            1127,
+            1134,
+            1141,
+            1148,
+            1155,
+            1162,
+            1169,
+            1176,
+            1183,
+            1190,
+            1197,
+            1204,
+            1211,
+            1218,
+            1225,
+            1232,
+            1239,
+            1246,
+            1253,
+            1260,
+            1267,
+            1274,
+            1281,
+            1288,
+            1295,
+            1302,
+            1309,
+            1316,
+            1323,
+            1330,
+            1337,
+            1344,
+            1351,
+            1358,
+            1365,
+            1372,
+            1379,
+            1386,
+            1393
+          ],
+          "source_end": 1501,
+          "source_step": -1,
+          "start": 0,
+          "step": 7
+        },
+        "source_split": "validation"
+      },
+      {
+        "family_id": "scene0064",
+        "files": {
+          ".aggregation.json": {
+            "etag": "\"3c05-605ca660663d5\"",
+            "last_modified": "Wed, 20 Sep 2023 13:31:53 GMT",
+            "size_bytes": 15365,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00.aggregation.json"
+          },
+          ".sens": {
+            "etag": "\"17e074d7-6414677842eee\"",
+            "last_modified": "Thu, 16 Oct 2025 13:19:28 GMT",
+            "size_bytes": 400585943,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0064_00/scene0064_00.sens"
+          },
+          ".txt": {
+            "etag": "\"2c8-605ca66068ae5\"",
+            "last_modified": "Wed, 20 Sep 2023 13:31:53 GMT",
+            "size_bytes": 712,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00.txt"
+          },
+          "_vh_clean_2.0.010000.segs.json": {
+            "etag": "\"16d1fc-605ca672a7171\"",
+            "last_modified": "Wed, 20 Sep 2023 13:32:12 GMT",
+            "size_bytes": 1495548,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00_vh_clean_2.0.010000.segs.json"
+          },
+          "_vh_clean_2.labels.ply": {
+            "etag": "\"960b1d-605ca673287c0\"",
+            "last_modified": "Wed, 20 Sep 2023 13:32:13 GMT",
+            "size_bytes": 9833245,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00_vh_clean_2.labels.ply"
+          },
+          "_vh_clean_2.ply": {
+            "etag": "\"8f00e9-605ca67387b30\"",
+            "last_modified": "Wed, 20 Sep 2023 13:32:13 GMT",
+            "size_bytes": 9371881,
+            "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00_vh_clean_2.ply"
+          }
+        },
+        "role": "confirm",
+        "scene_id": "scene0064_00",
+        "schedule": {
+          "end": 1195,
+          "frame_ids": [
+            0,
+            6,
+            12,
+            18,
+            24,
+            30,
+            36,
+            42,
+            48,
+            54,
+            60,
+            66,
+            72,
+            78,
+            84,
+            90,
+            96,
+            102,
+            108,
+            114,
+            120,
+            126,
+            132,
+            138,
+            144,
+            150,
+            156,
+            162,
+            168,
+            174,
+            180,
+            186,
+            192,
+            198,
+            204,
+            210,
+            216,
+            222,
+            228,
+            234,
+            240,
+            246,
+            252,
+            258,
+            264,
+            270,
+            276,
+            282,
+            288,
+            294,
+            300,
+            306,
+            312,
+            318,
+            324,
+            330,
+            336,
+            342,
+            348,
+            354,
+            360,
+            366,
+            372,
+            378,
+            384,
+            390,
+            396,
+            402,
+            408,
+            414,
+            420,
+            426,
+            432,
+            438,
+            444,
+            450,
+            456,
+            462,
+            468,
+            474,
+            480,
+            486,
+            492,
+            498,
+            504,
+            510,
+            516,
+            522,
+            528,
+            534,
+            540,
+            546,
+            552,
+            558,
+            564,
+            570,
+            576,
+            582,
+            588,
+            594,
+            600,
+            606,
+            612,
+            618,
+            624,
+            630,
+            636,
+            642,
+            648,
+            654,
+            660,
+            666,
+            672,
+            678,
+            684,
+            690,
+            696,
+            702,
+            708,
+            714,
+            720,
+            726,
+            732,
+            738,
+            744,
+            750,
+            756,
+            762,
+            768,
+            774,
+            780,
+            786,
+            792,
+            798,
+            804,
+            810,
+            816,
+            822,
+            828,
+            834,
+            840,
+            846,
+            852,
+            858,
+            864,
+            870,
+            876,
+            882,
+            888,
+            894,
+            900,
+            906,
+            912,
+            918,
+            924,
+            930,
+            936,
+            942,
+            948,
+            954,
+            960,
+            966,
+            972,
+            978,
+            984,
+            990,
+            996,
+            1002,
+            1008,
+            1014,
+            1020,
+            1026,
+            1032,
+            1038,
+            1044,
+            1050,
+            1056,
+            1062,
+            1068,
+            1074,
+            1080,
+            1086,
+            1092,
+            1098,
+            1104,
+            1110,
+            1116,
+            1122,
+            1128,
+            1134,
+            1140,
+            1146,
+            1152,
+            1158,
+            1164,
+            1170,
+            1176,
+            1182,
+            1188,
+            1194
+          ],
+          "source_end": 1205,
+          "source_step": -1,
+          "start": 0,
+          "step": 6
+        },
+        "source_split": "validation"
+      }
+    ],
+    "status": "AVAILABILITY_LOCKED_NOT_YET_DOWNLOADED",
+    "total_remote_bytes": 10052476765
+  },
+  "study": {
+    "name_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2",
+    "native_model": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+    "native_text_cache": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/native/text.npz",
+    "runtime_config": "configs/evaluation/ovimap_module_scannet_runtime.json",
+    "siglip2_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384",
+    "siglip2_text_cache": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/siglip2/text.npz",
+    "study_root": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1",
+    "wow_code": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta",
+    "wow_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg"
+  }
+}

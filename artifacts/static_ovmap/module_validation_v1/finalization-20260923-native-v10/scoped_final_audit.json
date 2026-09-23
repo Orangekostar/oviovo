@@ -1,0 +1,410 @@
+{
+  "generating_commit": "1d83aec5e3c5220b0a5397e1bc3f720dfcbac3b9",
+  "scoped_tests": {
+    "status": "PASS",
+    "command": "OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/module_validation",
+    "passed": 199,
+    "seconds": 20.28
+  },
+  "lint": {
+    "status": "PASS",
+    "command": "git diff --name-only -z origin/research/ovimap-module-validation-v1 HEAD -- '*.py' | xargs -0 -r /home/ww/miniconda3/bin/ruff check"
+  },
+  "predictions": {
+    "status": "PASS",
+    "scene_count": 12,
+    "checked_predictions": {
+      "S": 66,
+      "G": 24,
+      "Q": 14
+    },
+    "records_sha256": "3452b0a520fb4b92c4abb4be77d26c96898fe07ccc779552496b515539648ab9",
+    "checks": [
+      "locked prediction and array hashes",
+      "same source geometry identity",
+      "S/Q fixed ownership and ranks",
+      "G complete unique ownership over unchanged native support",
+      "G source point-count ranks"
+    ],
+    "audit_correction": "The initial audit count incorrectly included 10 training-only Q traces as predictions. Corrected expected Q predictions to 14; the complete prediction audit then passed."
+  },
+  "query": {
+    "status": "PASS",
+    "policy_traces": 24,
+    "attempts": 7369,
+    "successes": 7369,
+    "failures": 0,
+    "crop_inputs": 44214,
+    "physical_forwards": 6634,
+    "physical_cache_hits": 735,
+    "input_digest": "606126a477ee02ce44481c5118e17f37b2a6bdade20dd6c8eefc585acb6da123",
+    "checks": [
+      "cumulative allowance includes invalid-pose slots",
+      "every attempted request charged six crops",
+      "no repeated or out-of-ranking request",
+      "physical cache and forward accounting reconciles",
+      "SELECT events contain no supervised targets"
+    ]
+  },
+  "remote_preflight": {
+    "status": "ACCESSIBLE",
+    "sha": "0ecaa8db66e20671fabfcba6ea7a67dc46ab7688",
+    "branch": "research/ovimap-module-validation-v1"
+  },
+  "outstanding": [
+    "ordinary Git publication: see /mnt/shared/ww/ovimap-module-validation-v1/publication-20260923.json"
+  ],
+  "native_identity": {
+    "status": "PASS",
+    "upstream_head": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+    "patch_sha256": "b8ef35aef2490b563d2cca1451baef6f5afad2963e071016bcb837aee3e935b5",
+    "extension_sha256": "4ecf3debd102382c2a2ca489e045be10091b029fb7ed965a4c3c6e2f5dc47f57",
+    "extension_bytes": 587512,
+    "raycast_membership_accessor": true,
+    "build_technical_smoke_seconds": 133.2503486200003
+  },
+  "evaluation_payloads": {
+    "status": "PASS",
+    "evaluation_rows": 174,
+    "trace_parity_all": true,
+    "undefined_primary": [],
+    "invalid_metric_ranges": [],
+    "scope": "current scene and semantic-head calibration metric files; duplicate N0/control evaluations remain distinct here and are deduplicated in report summaries"
+  },
+  "reporting_fix": {
+    "issue": "Report scope hardcoded native-v9 although all active captures are native-v10.",
+    "change": "Describe active configured native captures without a stale version literal.",
+    "commit": "70781943c72a1ce001a476918c75ebff1b368c84",
+    "tests": {
+      "command": "OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/module_validation/test_study_report.py",
+      "passed": 3,
+      "seconds": 0.07
+    },
+    "ruff": "PASS",
+    "diff_check": "PASS",
+    "scientific_predictions_invalidated": 0
+  },
+  "active_run_costs": {
+    "native_capture": {
+      "scenes": 12,
+      "scheduled_slots": 2400,
+      "valid_frames": 2305,
+      "invalid_pose_slots": 95,
+      "elapsed_seconds": 11866.383228162013
+    },
+    "semantic": {
+      "requests_per_model": 1903,
+      "successes": {
+        "native": 1903,
+        "siglip2": 1903,
+        "wow": 1894
+      },
+      "physical_crop_inputs": {
+        "native": 17127,
+        "siglip2": 11418
+      },
+      "wow_generations": 1894,
+      "request_seconds": {
+        "native": 658.5245639015338,
+        "siglip2": 448.1468432335532,
+        "wow": 1395.8185396904591
+      },
+      "elapsed_seconds": {
+        "native": 864.5150977750891,
+        "siglip2": 806.2867171271355,
+        "wow": 1690.009772728954
+      }
+    },
+    "geometry": {
+      "logical_requests": 4035,
+      "logical_crops": 24210,
+      "physical_requests": 3326,
+      "physical_crops": 19956,
+      "unique_request_inference_seconds": 706.1565570756211,
+      "model_load_seconds": 70.62625198101159
+    },
+    "query": {
+      "logical_requests": 7369,
+      "logical_crops": 44214,
+      "physical_forwards": 6634,
+      "physical_crops": 39804,
+      "cache_hits": 735,
+      "physical_inference_seconds": 1421.880463231646,
+      "model_load_seconds": 23.135385438916273
+    },
+    "training_seconds": {
+      "S_SIMPLE": 0.5504813410225324,
+      "S_NO_CONTEXT": 0.06889060203684494,
+      "S_PAIRED": 0.062997730972711,
+      "Q_GAIN": 0.8393994619837031
+    },
+    "definition": "Only active native-v10 artifacts with corrected RGB adapter; retired v8/v9 and aborted pre-adapter engineering runs are preserved outside this cost total. Capture wall time, semantic request time and physical encoder time have distinct measurement scopes.",
+    "cropformer": {
+      "scenes": 12,
+      "elapsed_seconds": 3337.062770130986,
+      "source": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/scientific_evidence.json",
+      "calculation": "sum(costs[key]['elapsed_seconds'] for key in costs if key.endswith('/CropFormer'))"
+    }
+  },
+  "artifact_type": "OVIMAP_SCOPED_FINAL_AUDIT",
+  "status": "PASS",
+  "prediction_verification_command": "OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python - <<'PY'\nimport hashlib, json\nfrom collections import Counter\nfrom pathlib import Path\nimport numpy as np\nfrom src.static_ovmap.module_validation.scannet_study import load_prediction\nfrom src.static_ovmap.module_validation.study_execution import roles\nconfig = json.loads(Path('configs/evaluation/ovimap_module_scannet_study.json').read_text())\nruntime = json.loads(Path(config['runtime_config']).read_text())\nsplits, _ = roles(runtime)\nroot = Path(config['study_root']) / 'scenes'\ncounts, records = Counter(), []\nfor scene in (*splits['fit'], *splits['cal'], *splits['select']):\n    directory = root / scene\n    native = load_prediction(directory / 'baseline/N0/manifest.json')\n    paths = sorted({*directory.glob('semantic/direct/*/manifest.json'), *directory.glob('semantic/learned/*/manifest.json'), *directory.glob('geometry/direct/*/prediction/manifest.json'), *directory.glob('query/**/prediction/manifest.json')})\n    for path in paths:\n        value = load_prediction(path)\n        assert value.geometry == native.geometry, path\n        assert value.owner_ids.shape == native.owner_ids.shape, path\n        assert value.semantic_labels.shape == native.semantic_labels.shape, path\n        if value.branch in {'S', 'Q'}:\n            assert np.array_equal(value.owner_ids, native.owner_ids), path\n            assert value.instance_ranks == native.instance_ranks, path\n        elif value.branch == 'G':\n            assert np.array_equal(value.owner_ids > 0, native.owner_ids > 0), path\n            assert len(value.owner_ids) == value.geometry.source_row_count, path\n            owners, sizes = np.unique(value.owner_ids, return_counts=True)\n            expected = {int(owner): float(size) for owner, size in zip(owners, sizes) if owner > 0}\n            assert dict(value.instance_ranks) == expected, path\n            assert value.metadata['rank_rule'] == 'source_component_point_count', path\n        else:\n            raise AssertionError(value.branch)\n        counts[value.branch] += 1\n        records.append({'path': str(path), 'record_key': value.record_key, 'prediction_key': value.prediction_key, 'branch': value.branch})\n        del value\n    del native\nassert counts == {'S':66,'G':24,'Q':14}, counts\nprint(json.dumps({'status':'PASS','scope':'current native-v10 FIT/CAL/SELECT predictions','scene_count':12,'checked_predictions':dict(counts),'records_sha256':hashlib.sha256(json.dumps(records,sort_keys=True).encode()).hexdigest(),'checks':['locked prediction and array hashes','same source geometry identity','S/Q fixed ownership and ranks','G complete unique ownership over unchanged native support','G source point-count ranks']}))\nPY",
+  "source_attempt": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011",
+  "publication_branch": "research/ovimap-module-validation-v1",
+  "run_state": {
+    "worktree": "/home/ww/crove/ovimap-module-validation",
+    "head": "b6ab45b8dadf6672d2bcc2a6cfaed9bf41d60a0c",
+    "original_public_all_session": 86808,
+    "original_public_all_exit_code": 143,
+    "direct_export_session": 92905,
+    "status": "ALL_PHASES_AND_EXPORT_VERIFIED",
+    "direct_export_exit_code": 1
+  },
+  "verification_cache": {
+    "status": "PASS",
+    "commit": "b6ab45b8dadf6672d2bcc2a6cfaed9bf41d60a0c",
+    "activation": "OVIMAP_VERIFY_HASH_CACHE=1; add scripts/evaluation/verification_cache and repository root to PYTHONPATH",
+    "scope": "process-local bounded LRU over SHA-256; stat device/inode/size/mtime/ctime before reuse; first access reads bytes; files modified within 2 seconds re-read twice and are not cached",
+    "tests": {
+      "command": "OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/module_validation/test_verification_hash_cache.py",
+      "passed": 8,
+      "seconds": 8.44
+    },
+    "integration": {
+      "command": "OVIMAP_VERIFY_HASH_CACHE=1 PYTHONPATH=/home/ww/crove/ovimap-module-validation/scripts/evaluation/verification_cache:/home/ww/crove/ovimap-module-validation OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/module_validation/test_assets_and_contracts.py tests/module_validation/test_boundary_jobs.py tests/module_validation/test_orchestrator.py tests/module_validation/test_selection_execution.py tests/module_validation/test_confirmation_access.py tests/module_validation/test_release_package.py",
+      "passed": 40,
+      "seconds": 0.73
+    },
+    "alias_identity": "PASS: boundary_jobs, scannet_runtime, study_execution share the cached assets.sha256_file",
+    "ruff": "PASS",
+    "observed_fault_fixed": "same filesystem clock tick could retain stat timestamps; recent files now re-read rather than cached",
+    "scientific_predictions_invalidated": 0
+  },
+  "final_selection": {
+    "status": "FROZEN",
+    "final_candidate": "N0",
+    "science_status": "NO_NET_GAIN",
+    "confirmation_status": "NOT_REQUIRED_NO_RETAINED_CANDIDATE",
+    "prediction_code_commit": "b6ab45b8dadf6672d2bcc2a6cfaed9bf41d60a0c",
+    "frozen_config_sha256": "d6066b23f3442bab4508c63ec01e31ec7664f700bdf60109f58ba9aad03b70b7"
+  },
+  "original_downloader": {
+    "path": "/home/ww/getscannet.py",
+    "sha256": "2d6a1524aaee010f842647c28fef380d35aa3449f108d85ff11c7c7c1b37f590",
+    "unchanged": true
+  },
+  "report_audit": {
+    "status": "PASS",
+    "rows": 116,
+    "summaries": 34,
+    "method_status": {
+      "COMBO_GS": "REQUIRES_RETAINED_S_AND_CHANGED_G",
+      "COMBO_Q_REFINEMENT": "REQUIRES_STATIC_REFINEMENT_AND_Q_GAIN",
+      "G_QUALITY": "BLOCKED_PARTITION_TARGET_SUPPORT"
+    },
+    "tables": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ],
+    "canonical_tables_A_to_D_match": true,
+    "canonical_combination_gates_match": true,
+    "phases": {
+      "bind": "COMPLETE",
+      "geometry": "COMPLETE",
+      "report": "COMPLETE",
+      "query": "COMPLETE",
+      "confirm": "NOT_REQUIRED_BY_FROZEN_GATE",
+      "capture": "COMPLETE",
+      "select": "COMPLETE",
+      "semantic": "COMPLETE"
+    },
+    "native_headline": {
+      "ap25": 0.425,
+      "ap50": 0.41363636363636364,
+      "canonical_ap50": 0.31294365572315885,
+      "canonical_ap75": 0.11180124223602485,
+      "macc": 0.4340445403510228,
+      "miou": 0.35334443201828547,
+      "uap": 0.2574074074074074
+    },
+    "query_comparator": {
+      "ap25": 0.478030303030303,
+      "ap50": 0.4212121212121212,
+      "canonical_ap50": 0.31294365572315885,
+      "canonical_ap75": 0.11180124223602485,
+      "macc": 0.38665177411585283,
+      "miou": 0.3066895925630939,
+      "uap": 0.2767676767676768
+    },
+    "query_gain": {
+      "ap25": 0.51,
+      "ap50": 0.4431818181818182,
+      "canonical_ap50": 0.31294365572315885,
+      "canonical_ap75": 0.11180124223602485,
+      "macc": 0.4916992404004763,
+      "miou": 0.43621311823937187,
+      "uap": 0.3202861952861953
+    },
+    "holdout_unopened": true,
+    "frozen_sources_checked": 421,
+    "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/audit_report.py",
+    "elapsed_seconds": 0.945085372
+  },
+  "finalization_copies": {
+    "status": "PASS",
+    "files": 12,
+    "total_bytes": 292985,
+    "manifest": "artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/source_manifest.json",
+    "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python - <<'PY'\nimport hashlib,json\nfrom pathlib import Path\npairs=[{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_lock.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/data/acquisition_lock.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/download_receipt.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/data/download_receipt.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/export_receipt.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/data/export_receipt.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/input_structure_audit.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/data/input_structure_audit.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/native_loader_audit.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/data/native_loader_audit.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/module_decision.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/selection/module_decision.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/module_receipt.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/selection/module_receipt.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/budget_curve_gate.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/selection/budget_curve_gate.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/budget_curve_receipt.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/selection/budget_curve_receipt.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/frozen_config.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/selection/frozen_config.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/receipt.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/selection/receipt.json\"},{\"source\":\"/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/selection/selection.json\",\"destination\":\"/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/selection/selection.json\"}]\nrows=[]\nfor pair in pairs:\n    source,target=Path(pair['source']),Path(pair['destination'])\n    blob=source.read_bytes()\n    assert target.read_bytes()==blob, target\n    rows.append({'source':str(source),'destination':str(target.relative_to(Path.cwd())),'bytes':len(blob),'sha256':hashlib.sha256(blob).hexdigest()})\nprint(json.dumps({'artifact_type':'OVIMAP_FINALIZATION_SOURCE_COPIES','status':'PASS','files':rows},indent=2,sort_keys=True))\nPY"
+  },
+  "completed_phase_finalization": {
+    "artifact_type": "OVIMAP_COMPLETED_ATTEMPT_FINALIZATION",
+    "status": "PASS",
+    "attempt": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011",
+    "cache_key": "ba7524c473e45f326adc3ae9fcd4b2be19ffa4d6b6863191b8f138f54a8918f9",
+    "original_all_phase_process": {
+      "pid": 1631354,
+      "exit_code": 143,
+      "stopped_at": "final progress-display verification; all eight phase receipts already complete or not required"
+    },
+    "verification_scope": "All phase statuses, cache identities, dependency digests, and principal output hashes. Full scientific payload checks are preserved in the completed phase receipts and scoped final audit.",
+    "phase_receipts": [
+      {
+        "phase": "bind",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/bind.json",
+        "bytes": 1325,
+        "sha256": "cc0943921522f5afcd5a116825f3cde566048e9aef12579c067ac05dc1b270e3"
+      },
+      {
+        "phase": "capture",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/capture.json",
+        "bytes": 6569252,
+        "sha256": "30366f2d134825ec0efbb9925f1e6754cc57376750fe45b1e5ffda321b4a4ac8"
+      },
+      {
+        "phase": "semantic",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/semantic.json",
+        "bytes": 10893305,
+        "sha256": "684d745af8e76051254aaea97b3ee6bd600db74060ecaf106f068297f2a9b751"
+      },
+      {
+        "phase": "geometry",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/geometry.json",
+        "bytes": 4513148,
+        "sha256": "fa26933e28aadb6db05a92cf652a1609a03ab7f938525db5d8f5cbe31725ae40"
+      },
+      {
+        "phase": "query",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/query.json",
+        "bytes": 11494549,
+        "sha256": "21e82d383aa2b69323e253c53c70b7ce181370790ad32d690efd10b1d7f246d3"
+      },
+      {
+        "phase": "select",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/select.json",
+        "bytes": 22928196,
+        "sha256": "1fc75c906f78b83999a1251b883f26a878220e249ee8fbe06426129e9307c48d"
+      },
+      {
+        "phase": "confirm",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/confirm.json",
+        "bytes": 724,
+        "sha256": "c7997ecaa26a7f4dc1ff036641cb2b1936ec7786c074d57c4d3b3cf705f9b3e3"
+      },
+      {
+        "phase": "report",
+        "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/report.json",
+        "bytes": 2351,
+        "sha256": "76470299d0954faebaad328584b802f95a84a3f7c7446f3612661b45419b3454"
+      }
+    ],
+    "principal_outputs_checked": 20,
+    "verification_command": "/home/ww/miniconda3/envs/ovimap-map/bin/python - <<'PY'\nimport hashlib,json\nfrom pathlib import Path\nfrom scripts.evaluation.run_ovimap_module_study import PHASE_DEPENDENCIES\nfrom src.static_ovmap.module_validation.contracts import PhaseReceipt,canonical_digest\nattempt=Path('/mnt/shared/ww/ovimap-module-validation-v1/attempt_011')\nexpected_cache='ba7524c473e45f326adc3ae9fcd4b2be19ffa4d6b6863191b8f138f54a8918f9'\ndef sha(path):\n    h=hashlib.sha256()\n    with path.open('rb') as stream:\n        for chunk in iter(lambda:stream.read(8*1024*1024),b''):\n            h.update(chunk)\n    return h.hexdigest()\nreceipts={name:PhaseReceipt.load(attempt/'receipts'/f'{name}.json') for name in PHASE_DEPENDENCIES}\nprincipal,identities=[],[]\nfor name,receipt in receipts.items():\n    assert receipt.cache_key==expected_cache\n    assert receipt.status.value==('NOT_REQUIRED_BY_FROZEN_GATE' if name=='confirm' else 'COMPLETE')\n    assert not receipt.blockers\n    dependencies={key:receipts[key].to_dict() for key in PHASE_DEPENDENCIES[name]}\n    assert receipt.dependency_identity==canonical_digest(dependencies),name\n    for value in receipt.outputs.values():\n        if not isinstance(value,str):\n            continue\n        path=Path(value)\n        path=path if path.is_absolute() else attempt/path\n        if str(path) not in receipt.output_identities:\n            continue\n        expected=receipt.output_identities[str(path)]\n        assert path.is_file() and sha(path)==expected['sha256'],path\n        if 'bytes' in expected:\n            assert path.stat().st_size==expected['bytes'],path\n        principal.append(str(path))\n    path=attempt/'receipts'/f'{name}.json'\n    identities.append({'phase':name,'path':str(path),'bytes':path.stat().st_size,'sha256':sha(path)})\nprogress=['# OVI-MAP module validation progress','','Attempt: '+str(attempt),'',\n          '| Phase | Status | Blockers |','|---|---|---|']\nprogress += [f'| {name} | {receipt.status.value} |  |' for name,receipt in receipts.items()]\nprogress += ['', 'All phase receipts are complete or not required by the frozen gate. Final export and publication are recorded separately.',\n             '', 'The original all-phase process was stopped during redundant progress-display verification after every phase receipt completed. Receipt dependency digests and principal output hashes were independently verified before finalizing this display.', '']\nprint(json.dumps({'artifact_type':'OVIMAP_COMPLETED_ATTEMPT_FINALIZATION','status':'PASS',\n 'attempt':str(attempt),'cache_key':expected_cache,\n 'original_all_phase_process':{'pid':1631354,'exit_code':143,'stopped_at':'final progress-display verification; all eight phase receipts already complete or not required'},\n 'verification_scope':'All phase statuses, cache identities, dependency digests, and principal output hashes. Full scientific payload checks are preserved in the completed phase receipts and scoped final audit.',\n 'phase_receipts':identities,'principal_outputs_checked':len(principal),\n 'progress_markdown':'\\n'.join(progress)},indent=2))\nPY"
+  },
+  "direct_export_command": "OVIMAP_VERIFY_HASH_CACHE=1 PYTHONPATH=/home/ww/crove/ovimap-module-validation/scripts/evaluation/verification_cache:/home/ww/crove/ovimap-module-validation OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom src.static_ovmap.module_validation.contracts import canonical_digest\nfrom src.static_ovmap.module_validation.release_package import export_release\nattempt=Path('/mnt/shared/ww/ovimap-module-validation-v1/attempt_011')\nrecord=json.loads((attempt/'resolved_config.json').read_text())\nassert canonical_digest({'orchestrator_schema':record['schema_version'],'spec_digest':record['spec_digest'],'resolved_config':record['resolved_config']})==record['cache_key']\nmanifest=export_release(attempt,Path('artifacts/static_ovmap/module_validation_v1/release-20260923-native-v10'),record['cache_key'],record['resolved_config'])\nprint(json.dumps({'status':'COMPLETE','source_attempt':manifest['source_attempt'],'total_bytes':manifest['total_bytes'],'files':len(manifest['files']),'cache_key':manifest['cache_key']}))\nPY",
+  "scope": "One scoped final scientific/report/export audit; ordinary Git publication is recorded separately after the delivery commit.",
+  "packaging": {
+    "first_export": {
+      "command": "OVIMAP_VERIFY_HASH_CACHE=1 PYTHONPATH=/home/ww/crove/ovimap-module-validation/scripts/evaluation/verification_cache:/home/ww/crove/ovimap-module-validation OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom src.static_ovmap.module_validation.contracts import canonical_digest\nfrom src.static_ovmap.module_validation.release_package import export_release\nattempt=Path('/mnt/shared/ww/ovimap-module-validation-v1/attempt_011')\nrecord=json.loads((attempt/'resolved_config.json').read_text())\nassert canonical_digest({'orchestrator_schema':record['schema_version'],'spec_digest':record['spec_digest'],'resolved_config':record['resolved_config']})==record['cache_key']\nmanifest=export_release(attempt,Path('artifacts/static_ovmap/module_validation_v1/release-20260923-native-v10'),record['cache_key'],record['resolved_config'])\nprint(json.dumps({'status':'COMPLETE','source_attempt':manifest['source_attempt'],'total_bytes':manifest['total_bytes'],'files':len(manifest['files']),'cache_key':manifest['cache_key']}))\nPY",
+      "exit_code": 1,
+      "total_bytes": 143325566,
+      "maximum_bytes": 104857600,
+      "destination_created": false,
+      "reason": "Original exporter compressed only JSON over 256 KiB; small ledgers exceeded the release cap."
+    },
+    "intermediate": {
+      "status": "INTERMEDIATE_ONLY",
+      "total_bytes": 143325566,
+      "files": 16429,
+      "exit_code": 0,
+      "source_attempt": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011",
+      "destination": "/tmp/ovimap-release-compaction-PsAnpg/intermediate",
+      "command": "OVIMAP_VERIFY_HASH_CACHE=1 PYTHONPATH=/home/ww/crove/ovimap-module-validation/scripts/evaluation/verification_cache:/home/ww/crove/ovimap-module-validation OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 /home/ww/miniconda3/envs/ovimap-map/bin/python - <<'PY'\nimport json\nfrom pathlib import Path\nfrom src.static_ovmap.module_validation.contracts import canonical_digest\nfrom src.static_ovmap.module_validation import release_package\nattempt=Path('/mnt/shared/ww/ovimap-module-validation-v1/attempt_011')\nrecord=json.loads((attempt/'resolved_config.json').read_text())\nassert canonical_digest({'orchestrator_schema':record['schema_version'],'spec_digest':record['spec_digest'],'resolved_config':record['resolved_config']})==record['cache_key']\n# Intermediate outside Git only; final compactor enforces the original 100 MiB limit.\nrelease_package.MAX_RELEASE_BYTES=256*1024*1024\nmanifest=release_package.export_release(attempt,Path('/tmp/ovimap-release-compaction-PsAnpg/intermediate'),record['cache_key'],record['resolved_config'])\nprint(json.dumps({'status':'INTERMEDIATE_ONLY','source_attempt':manifest['source_attempt'],'total_bytes':manifest['total_bytes'],'files':len(manifest['files']),'cache_key':manifest['cache_key']}))\nPY",
+      "manifest_archive": "artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/intermediate_export_manifest.json.gz",
+      "manifest_decoded_sha256": "369b2a3d252684e5d911536ddfb231f3637c08af92f4293da3ea9821645b18d6"
+    },
+    "compaction": {
+      "status": "COMPLETE",
+      "total_bytes": 96099584,
+      "files": 16429,
+      "lossless_compaction": {
+        "script": {
+          "path": "/home/ww/crove/ovimap-module-validation/artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/compact_release.py",
+          "sha256": "bcad8208576a7170e71f127a4063a310b8e086f60644ff7cf6d974dcbe350114"
+        },
+        "input_manifest": {
+          "path": "/tmp/ovimap-release-compaction-PsAnpg/intermediate/export_manifest.json",
+          "sha256": "369b2a3d252684e5d911536ddfb231f3637c08af92f4293da3ea9821645b18d6",
+          "bytes": 13959692
+        },
+        "input_total_bytes": 143325566,
+        "input_maximum_bytes": 268435456,
+        "policy": "gzip JSON saving over 512 bytes; keep principal documents and all non-JSON bytes exact",
+        "newly_compressed_files": 12929,
+        "payload_bytes_saved": 49206555
+      },
+      "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/compact_release.py /tmp/ovimap-release-compaction-PsAnpg/intermediate artifacts/static_ovmap/module_validation_v1/release-20260923-native-v10",
+      "tests": {
+        "status": "PASS",
+        "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/module_validation/test_compact_release.py",
+        "passed": 3,
+        "seconds": 0.04,
+        "red": "3 tests failed before the compactor existed (FileNotFoundError).",
+        "checks": [
+          "small JSON lossless decompression and original source/transformation provenance",
+          "principal documents and checkpoint exact bytes",
+          "tampered input and size overflow rejected before creating destination"
+        ],
+        "ruff": "PASS"
+      },
+      "scientific_sources_modified": 0,
+      "checkpoints_modified": 0
+    },
+    "audit": {
+      "status": "PASS",
+      "file_count": 16430,
+      "total_bytes": 96099584,
+      "heads": {
+        "study/semantic/heads/S_NO_CONTEXT/checkpoint.pt": 35170,
+        "study/semantic/heads/S_SIMPLE/checkpoint.pt": 35170,
+        "study/semantic/heads/S_PAIRED/checkpoint.pt": 35170,
+        "study/query/checkpoint.pt": 26018
+      },
+      "transformations": {
+        "exact_copy": 688,
+        "request_ledger_without_class_similarity_vector": 15717,
+        "partition_counts_without_leaf_arrays": 12
+      },
+      "all_hashes_and_source_transformations_verified": true,
+      "compaction_provenance_verified": true,
+      "export_manifest_sha256": "2a5b71b2463e4f4c4a4113c19d8e5a77bdda8e47296595747faf70e49f525a51",
+      "exit_code": 0,
+      "command": "/home/ww/miniconda3/envs/ovimap-map/bin/python artifacts/static_ovmap/module_validation_v1/finalization-20260923-native-v10/audit_export.py"
+    }
+  },
+  "finished_at_utc": "2026-09-23 11:31 UTC",
+  "publication_receipt": "/mnt/shared/ww/ovimap-module-validation-v1/publication-20260923.json"
+}

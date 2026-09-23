@@ -1,5 +1,7 @@
 # Authorized ScanNet execution — 2026-09-22
 
+本页保留早期执行记录。当前 native-v10 实验与选择已完成，最终为 N0／NO_NET_GAIN；最新结果、交付状态和复现命令见 [结果报告](../MODULE_VALIDATION_RESULTS.md)、[交接文档](../MODULE_VALIDATION_HANDOFF.md)与 [progress.md](progress.md)。
+
 Current update (2026-09-23 00:08 UTC): data preparation and all 12 CropFormer
 caches are COMPLETE. Corrected native-v10 capture is running on GPU 2, following
 the [query membership repair](QUERY_MEMBERSHIP_REPAIR.md). Native-v9 scene

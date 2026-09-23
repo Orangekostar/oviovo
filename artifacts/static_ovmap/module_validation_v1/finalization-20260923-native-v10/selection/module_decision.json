@@ -1,0 +1,56 @@
+{
+  "CAL_scenes": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "SELECT_scenes": [
+    "scene0445_00",
+    "scene0626_00"
+  ],
+  "bootstrap": {},
+  "budget_curves": {
+    "budgets": [
+      100,
+      400
+    ],
+    "comparator_id": "Q_COMBINE",
+    "status": "NOT_REQUIRED_QUERY_GAIN_NOT_ELIGIBLE"
+  },
+  "combination_plan": {
+    "blocked": {},
+    "not_required": {
+      "COMBO_GS": "REQUIRES_RETAINED_S_AND_CHANGED_G",
+      "COMBO_Q_REFINEMENT": "REQUIRES_STATIC_REFINEMENT_AND_Q_GAIN"
+    },
+    "required": []
+  },
+  "confirmation_authorized": false,
+  "geometry": {
+    "quality_eligible": false,
+    "selected_method": "G_ORIGINAL",
+    "status": "ORIGINAL_FALLBACK"
+  },
+  "inconclusive_branches": [],
+  "independent_final": {
+    "eligible_methods": [],
+    "science_status": "NO_NET_GAIN",
+    "selected_method": "N0"
+  },
+  "query": {
+    "gain_status": "NOT_ELIGIBLE",
+    "locked_comparator": "Q_COMBINE",
+    "selected_method": "Q_COMBINE",
+    "status": "COMPARATOR_RETAINED"
+  },
+  "semantic": {
+    "frozen_teacher_id": "S_WOW_VOTE",
+    "mechanism_status": "NOT_ELIGIBLE",
+    "paired_eligible": false,
+    "selected_method": "N0",
+    "status": "N0_FALLBACK"
+  },
+  "status": "STANDALONE_MODULES_SELECTED",
+  "unavailable_methods": {
+    "G_QUALITY": "BLOCKED_PARTITION_TARGET_SUPPORT"
+  }
+}

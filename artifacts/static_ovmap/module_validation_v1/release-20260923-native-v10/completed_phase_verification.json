@@ -1,0 +1,64 @@
+{
+  "artifact_type": "OVIMAP_COMPLETED_ATTEMPT_FINALIZATION",
+  "status": "PASS",
+  "attempt": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011",
+  "cache_key": "ba7524c473e45f326adc3ae9fcd4b2be19ffa4d6b6863191b8f138f54a8918f9",
+  "original_all_phase_process": {
+    "pid": 1631354,
+    "exit_code": 143,
+    "stopped_at": "final progress-display verification; all eight phase receipts already complete or not required"
+  },
+  "verification_scope": "All phase statuses, cache identities, dependency digests, and principal output hashes. Full scientific payload checks are preserved in the completed phase receipts and scoped final audit.",
+  "phase_receipts": [
+    {
+      "phase": "bind",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/bind.json",
+      "bytes": 1325,
+      "sha256": "cc0943921522f5afcd5a116825f3cde566048e9aef12579c067ac05dc1b270e3"
+    },
+    {
+      "phase": "capture",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/capture.json",
+      "bytes": 6569252,
+      "sha256": "30366f2d134825ec0efbb9925f1e6754cc57376750fe45b1e5ffda321b4a4ac8"
+    },
+    {
+      "phase": "semantic",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/semantic.json",
+      "bytes": 10893305,
+      "sha256": "684d745af8e76051254aaea97b3ee6bd600db74060ecaf106f068297f2a9b751"
+    },
+    {
+      "phase": "geometry",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/geometry.json",
+      "bytes": 4513148,
+      "sha256": "fa26933e28aadb6db05a92cf652a1609a03ab7f938525db5d8f5cbe31725ae40"
+    },
+    {
+      "phase": "query",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/query.json",
+      "bytes": 11494549,
+      "sha256": "21e82d383aa2b69323e253c53c70b7ce181370790ad32d690efd10b1d7f246d3"
+    },
+    {
+      "phase": "select",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/select.json",
+      "bytes": 22928196,
+      "sha256": "1fc75c906f78b83999a1251b883f26a878220e249ee8fbe06426129e9307c48d"
+    },
+    {
+      "phase": "confirm",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/confirm.json",
+      "bytes": 724,
+      "sha256": "c7997ecaa26a7f4dc1ff036641cb2b1936ec7786c074d57c4d3b3cf705f9b3e3"
+    },
+    {
+      "phase": "report",
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/attempt_011/receipts/report.json",
+      "bytes": 2351,
+      "sha256": "76470299d0954faebaad328584b802f95a84a3f7c7446f3612661b45419b3454"
+    }
+  ],
+  "principal_outputs_checked": 20,
+  "verification_command": "/home/ww/miniconda3/envs/ovimap-map/bin/python - <<'PY'\nimport hashlib,json\nfrom pathlib import Path\nfrom scripts.evaluation.run_ovimap_module_study import PHASE_DEPENDENCIES\nfrom src.static_ovmap.module_validation.contracts import PhaseReceipt,canonical_digest\nattempt=Path('/mnt/shared/ww/ovimap-module-validation-v1/attempt_011')\nexpected_cache='ba7524c473e45f326adc3ae9fcd4b2be19ffa4d6b6863191b8f138f54a8918f9'\ndef sha(path):\n    h=hashlib.sha256()\n    with path.open('rb') as stream:\n        for chunk in iter(lambda:stream.read(8*1024*1024),b''):\n            h.update(chunk)\n    return h.hexdigest()\nreceipts={name:PhaseReceipt.load(attempt/'receipts'/f'{name}.json') for name in PHASE_DEPENDENCIES}\nprincipal,identities=[],[]\nfor name,receipt in receipts.items():\n    assert receipt.cache_key==expected_cache\n    assert receipt.status.value==('NOT_REQUIRED_BY_FROZEN_GATE' if name=='confirm' else 'COMPLETE')\n    assert not receipt.blockers\n    dependencies={key:receipts[key].to_dict() for key in PHASE_DEPENDENCIES[name]}\n    assert receipt.dependency_identity==canonical_digest(dependencies),name\n    for value in receipt.outputs.values():\n        if not isinstance(value,str):\n            continue\n        path=Path(value)\n        path=path if path.is_absolute() else attempt/path\n        if str(path) not in receipt.output_identities:\n            continue\n        expected=receipt.output_identities[str(path)]\n        assert path.is_file() and sha(path)==expected['sha256'],path\n        if 'bytes' in expected:\n            assert path.stat().st_size==expected['bytes'],path\n        principal.append(str(path))\n    path=attempt/'receipts'/f'{name}.json'\n    identities.append({'phase':name,'path':str(path),'bytes':path.stat().st_size,'sha256':sha(path)})\nprogress=['# OVI-MAP module validation progress','','Attempt: '+str(attempt),'',\n          '| Phase | Status | Blockers |','|---|---|---|']\nprogress += [f'| {name} | {receipt.status.value} |  |' for name,receipt in receipts.items()]\nprogress += ['', 'All phase receipts are complete or not required by the frozen gate. Final export and publication are recorded separately.',\n             '', 'The original all-phase process was stopped during redundant progress-display verification after every phase receipt completed. Receipt dependency digests and principal output hashes were independently verified before finalizing this display.', '']\nprint(json.dumps({'artifact_type':'OVIMAP_COMPLETED_ATTEMPT_FINALIZATION','status':'PASS',\n 'attempt':str(attempt),'cache_key':expected_cache,\n 'original_all_phase_process':{'pid':1631354,'exit_code':143,'stopped_at':'final progress-display verification; all eight phase receipts already complete or not required'},\n 'verification_scope':'All phase statuses, cache identities, dependency digests, and principal output hashes. Full scientific payload checks are preserved in the completed phase receipts and scoped final audit.',\n 'phase_receipts':identities,'principal_outputs_checked':len(principal),\n 'progress_markdown':'\\n'.join(progress)},indent=2))\nPY"
+}

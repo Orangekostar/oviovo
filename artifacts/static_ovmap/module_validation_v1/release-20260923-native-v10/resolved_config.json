@@ -1,0 +1,225 @@
+{
+  "cache_key": "ba7524c473e45f326adc3ae9fcd4b2be19ffa4d6b6863191b8f138f54a8918f9",
+  "resolved_config": {
+    "asset_resolution": {
+      "ambiguities": {},
+      "bindings": {
+        "historical_baseline_root": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": null,
+            "sha256": "1be1dc694ba7dfbdf35144d9109cdcc67e02c447906f3e1138f3ab70e5059858",
+            "size_bytes": null
+          },
+          "key": "historical_baseline_root",
+          "path": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap",
+          "source": "configuration"
+        },
+        "historical_evaluation": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": null,
+            "sha256": "8bd5cf8bc12f81534164394b1ec1e5446509a92dcb8d3a5c8f55cb1b6cac0578",
+            "size_bytes": null
+          },
+          "key": "historical_evaluation",
+          "path": "/mnt/shared/ww/ovimap-t1-attribution-v1/evaluation",
+          "source": "configuration"
+        },
+        "historical_native_mesh": {
+          "aliases": [],
+          "identity": {
+            "kind": "file",
+            "manifest_path": null,
+            "sha256": "58617e29c0720edc0086490a6c43dd6b47bf84d493c8b6adb2c7045d42fb6382",
+            "size_bytes": 698368528
+          },
+          "key": "historical_native_mesh",
+          "path": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply",
+          "source": "configuration"
+        },
+        "historical_predictions": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": null,
+            "sha256": "ef512b1de580233d7a79f2405d89d4769f6512be0c2b352e75106740f772b9b5",
+            "size_bytes": null
+          },
+          "key": "historical_predictions",
+          "path": "/mnt/shared/ww/ovimap-t1-attribution-v1/predictions_verified",
+          "source": "configuration"
+        },
+        "incumbent_model": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/config.json",
+            "sha256": "ddefe38fdfe333d5dbb7d56a247bdc6fe84dbcdb4eafd2f462e05e9b13c532bc",
+            "size_bytes": null
+          },
+          "key": "incumbent_model",
+          "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+          "source": "configuration"
+        },
+        "native_text_cache": {
+          "aliases": [],
+          "identity": {
+            "kind": "file",
+            "manifest_path": null,
+            "sha256": "abd31960f64fb10511dc464e1df083f24834788c761008ed9573451d70c6f9ad",
+            "size_bytes": 226998
+          },
+          "key": "native_text_cache",
+          "path": "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+          "source": "configuration"
+        },
+        "object_decoupling_root": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": null,
+            "sha256": "86118d2d1998a64f5f0184198b9a96bccddeff4888e380b4dc7b8f1bc0c2b105",
+            "size_bytes": null
+          },
+          "key": "object_decoupling_root",
+          "path": "/mnt/shared/ww/ovimap-object-semantic-decoupling-v1",
+          "source": "configuration"
+        },
+        "official_ovi_checkout": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": null,
+            "sha256": "4b52c10beb6ce441c28c81fb1c5c56e00cf904ae88eba9d78c11ba7cf962f0f2",
+            "size_bytes": null
+          },
+          "key": "official_ovi_checkout",
+          "path": "/home/ww/crove/ovimap-module-validation-upstream",
+          "source": "configuration"
+        },
+        "scannet_root": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_lock.json",
+            "sha256": "7b8fd52bcb57126e0055228c0ad4dcc34ba338eaa3867de8a2b52646b0c83720",
+            "size_bytes": null
+          },
+          "key": "scannet_root",
+          "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet",
+          "source": "environment"
+        },
+        "semantic_study_root": {
+          "aliases": [],
+          "identity": {
+            "kind": "directory",
+            "manifest_path": null,
+            "sha256": "a33d67e3681592645704549b9537d074178b8080198287ba0a48548f70e8bb97",
+            "size_bytes": null
+          },
+          "key": "semantic_study_root",
+          "path": "/mnt/shared/ww/ovimap-sf-to-ovi-semantics-v1",
+          "source": "configuration"
+        }
+      },
+      "missing": [],
+      "searched_roots": [
+        "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet"
+      ],
+      "status": "COMPLETE"
+    },
+    "code_identity": {
+      "dirty": false,
+      "head": "b6ab45b8dadf6672d2bcc2a6cfaed9bf41d60a0c",
+      "status_digest": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "tracked_diff_digest": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+      "untracked_content_digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    "environment_overrides": {
+      "OVIMAP_DATA_ROOTS": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet"
+    },
+    "historical_smoke": {
+      "capture_manifest": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/capture/room0/manifest.json",
+      "class_names": [
+        "wall",
+        "floor",
+        "cabinet",
+        "bed",
+        "chair",
+        "sofa",
+        "table",
+        "door",
+        "window",
+        "bookshelf",
+        "picture",
+        "counter",
+        "blinds",
+        "desk",
+        "shelves",
+        "curtain",
+        "dresser",
+        "pillow",
+        "mirror",
+        "floor mat",
+        "clothes",
+        "ceiling",
+        "books",
+        "refridgerator",
+        "television",
+        "paper",
+        "towel",
+        "shower curtain",
+        "box",
+        "whiteboard",
+        "person",
+        "nightstand",
+        "toilet",
+        "sink",
+        "lamp",
+        "bathtub",
+        "bag",
+        "otherstructure",
+        "otherfurniture",
+        "otherprop"
+      ],
+      "feature_root": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst/temp_feats",
+      "hf_modules_cache": "/mnt/shared/ww/ovimap-module-validation-v1/models/hf_modules",
+      "name_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/all-MiniLM-L6-v2",
+      "native_model": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+      "native_replay_receipt": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-v7/receipt.json",
+      "semantic_python": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/semantic-env/bin/python",
+      "siglip2_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384",
+      "target_id": "owner:3",
+      "text_cache": "/home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/dev/room0/native_cached_batch/text_features.npz",
+      "wow_code": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg-Meta",
+      "wow_model": "/mnt/shared/ww/ovimap-module-validation-v1/models/WOW-Seg"
+    },
+    "repository_root": "/home/ww/crove/ovimap-module-validation",
+    "scannet_runtime": {
+      "baseline_build": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP",
+      "cropformer_config": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/Entityv2/CropFormer/configs/entityv2/entity_segmentation/cropformer_hornet_3x.yaml",
+      "cropformer_root": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/Entityv2/CropFormer",
+      "cropformer_weights": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+      "cuda_device": "2",
+      "data_root": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet",
+      "frontend_python": "/home/ww/miniconda3/envs/ovimap-cropformer/bin/python",
+      "hf_modules_cache": "/mnt/shared/ww/ovimap-module-validation-v1/models/hf_modules",
+      "mapping_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+      "native_build_receipt": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-query-v10/receipt.json",
+      "native_extension": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-query-v10/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+      "native_model": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384",
+      "native_perception_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+      "output_root": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1",
+      "semantic_python": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/semantic-env/bin/python",
+      "upstream": "/home/ww/crove/ovimap-module-validation-upstream"
+    },
+    "scannet_study_config": "/home/ww/crove/ovimap-module-validation/configs/evaluation/ovimap_module_scannet_study.json",
+    "spec_path": "/home/ww/crove/ovimap-module-validation/docs/paper/static_ovmap/module_validation_v1/spec/PROTOCOL_SPEC.json"
+  },
+  "schema_version": 2,
+  "spec_digest": "a32c6feaf530775677b3c4a200b6f3eab7d5f5d1f768bc72e9abc3d6059ef46d",
+  "study": "ovimap-module-validation-v1"
+}
