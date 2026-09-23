@@ -226,7 +226,7 @@ def collect_study_evidence(runtime, config):
     return {"rows": values, "summaries": summarize_rows(values), "semantic_events": semantic_events,
         "geometry_events": geometry_events, "query_events": query_events, "costs": costs,
         "method_status": method_status, "inputs": list(inputs.values()),
-        "scope": "active native-v9 artifacts only; historical runs excluded"}
+        "scope": "active configured native captures only; historical runs excluded"}
 
 
 def released_comparisons(evidence, config, comparator=None):
