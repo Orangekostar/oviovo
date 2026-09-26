@@ -613,18 +613,19 @@ def report(config):
         "",
         "Historical CAL and regression scenes are previously exposed; Q_GAIN checkpoint selection already used historical CAL. Cross-fitted temperatures do not create a fresh holdout. Two confirmation scenes cannot establish generalization. No deployment was changed.",
         "",
-        "## Table A — complete measured performance",
+        "## Table A — available measured performance",
         "",
         "Metrics are percentages. Logical N/S2 counts are conservative required source operations; the common native map is listed separately in each numerical row. Physical shared work is counted once in Table D.",
         "",
-        "| Role | Scene | Method | uAP | AP50 | AP25 | mIoU | mAcc | Changed/all owners | Positive/evaluated | Logical N/S2/crops |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Role | Scene | Method | uAP | AP50 | AP25 | mIoU | mAcc | Changed/all owners | Positive/evaluated | Logical N/S2/crops | Physical work / shared dependencies | Source reuse | Evaluation first method |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|",
     ]
     for row in rows:
         lines.append(
             f"| {row['role']} | {row['scene_id']} | {row['method_id']} | "
             + " | ".join(_display(row["metrics"].get(key)) for key in METRICS)
             + f" | {row['changed_owners']}/{row['owners']} | {row['positive_owners']}/{row['evaluator_prediction_count']} | {row['logical']['native_requests']}/{row['logical']['siglip2_requests']}/{row['logical']['crop_inputs']} |"
+            + f" `{json.dumps(row['physical'], sort_keys=True)}` | {row['source_reuse']} | {row['shared_evaluation_first_method']} |"
         )
     lines += [
         "",
@@ -654,7 +655,7 @@ def report(config):
         )
     lines += [
         "",
-        "All-owner correctness, source GT-class ranks, unavailable/unmatched/ambiguous categories and M1/M2 routing counts are preserved in the numerical tables. Oracle-correctable object counts are diagnostic, not an AP upper bound.",
+        "For scenes with complete source evidence, the numerical tables preserve all-owner correctness, source GT-class ranks, unavailable/unmatched/ambiguous categories and available M1/M2 routing counts. SOURCE_EVIDENCE_INCOMPLETE means those analyses remain pending. Oracle-correctable object counts are diagnostic, not an AP upper bound.",
         "",
         "## Table C — controlled contrasts and trajectory mechanics",
         "",

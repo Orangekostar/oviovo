@@ -4,17 +4,17 @@ Status: **PARTIAL**. Confirmation: **NOT_RUN**.
 
 Historical CAL and regression scenes are previously exposed; Q_GAIN checkpoint selection already used historical CAL. Cross-fitted temperatures do not create a fresh holdout. Two confirmation scenes cannot establish generalization. No deployment was changed.
 
-## Table A — complete measured performance
+## Table A — available measured performance
 
 Metrics are percentages. Logical N/S2 counts are conservative required source operations; the common native map is listed separately in each numerical row. Physical shared work is counted once in Table D.
 
-| Role | Scene | Method | uAP | AP50 | AP25 | mIoU | mAcc | Changed/all owners | Positive/evaluated | Logical N/S2/crops |
-|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| compose_cal | scene0056_00 | N0 | 1.818855 | 9.853574 | 21.813028 | 15.376647 | 18.601010 | 0/99 | 99/61 | 1079/0/6474 |
-| compose_cal | scene0056_00 | Q_COMBINE | 2.117977 | 11.391723 | 23.176729 | 18.866548 | 20.950140 | 68/99 | 43/33 | 200/0/1200 |
-| compose_cal | scene0056_00 | S_SIGLIP2_AREA | 1.566830 | 7.939342 | 27.544407 | 16.875080 | 18.884515 | 43/99 | 99/61 | 1079/280/8154 |
-| compose_cal | scene0534_00 | N0 | 5.068226 | 17.543860 | 35.619096 | 25.936995 | 35.668579 | 0/93 | 93/78 | 902/0/5412 |
-| compose_cal | scene0534_00 | S_SIGLIP2_AREA | 5.896686 | 19.736842 | 26.864035 | 27.521707 | 38.932137 | 45/93 | 93/78 | 902/264/6996 |
+| Role | Scene | Method | uAP | AP50 | AP25 | mIoU | mAcc | Changed/all owners | Positive/evaluated | Logical N/S2/crops | Physical work / shared dependencies | Source reuse | Evaluation first method |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
+| compose_cal | scene0056_00 | N0 | 1.818855 | 9.853574 | 21.813028 | 15.376647 | 18.601010 | 0/99 | 99/61 | 1079/0/6474 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | N0 |
+| compose_cal | scene0056_00 | Q_COMBINE | 2.117977 | 11.391723 | 23.176729 | 18.866548 | 20.950140 | 68/99 | 43/33 | 200/0/1200 | `{"cache_hits": 200, "charged_once": true, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_loads": 0, "reused_integration_check": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/technical/native_parity/scene0056_00/receipt.json", "tiles": 0}` | REUSE_REQUIRED_NATIVE_PARITY | Q_COMBINE |
+| compose_cal | scene0056_00 | S_SIGLIP2_AREA | 1.566830 | 7.939342 | 27.544407 | 16.875080 | 18.884515 | 43/99 | 99/61 | 1079/280/8154 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
+| compose_cal | scene0534_00 | N0 | 5.068226 | 17.543860 | 35.619096 | 25.936995 | 35.668579 | 0/93 | 93/78 | 902/0/5412 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | N0 |
+| compose_cal | scene0534_00 | S_SIGLIP2_AREA | 5.896686 | 19.736842 | 26.864035 | 27.521707 | 38.932137 | 45/93 | 93/78 | 902/264/6996 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
 
 | Role | Method | Mean uAP (defined/total) | Mean mIoU (defined/total) | Status |
 |---|---|---:|---:|---|
@@ -31,7 +31,7 @@ Missing required control/composition records: 35. Missing rows are not zero-valu
 | scene0056_00 | SOURCE_EVIDENCE_INCOMPLETE | — | — | — |
 | scene0534_00 | SOURCE_EVIDENCE_INCOMPLETE | — | — | — |
 
-All-owner correctness, source GT-class ranks, unavailable/unmatched/ambiguous categories and M1/M2 routing counts are preserved in the numerical tables. Oracle-correctable object counts are diagnostic, not an AP upper bound.
+For scenes with complete source evidence, the numerical tables preserve all-owner correctness, source GT-class ranks, unavailable/unmatched/ambiguous categories and available M1/M2 routing counts. SOURCE_EVIDENCE_INCOMPLETE means those analyses remain pending. Oracle-correctable object counts are diagnostic, not an AP upper bound.
 
 ## Table C — controlled contrasts and trajectory mechanics
 
