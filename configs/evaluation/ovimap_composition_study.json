@@ -1,0 +1,12 @@
+{
+  "spec": "docs/paper/static_ovmap/complementary_composition_v1/spec/PROTOCOL_SPEC.json",
+  "output_root": "/mnt/shared/ww/ovimap-complementary-composition-v1",
+  "source_runtime_config": "configs/evaluation/ovimap_module_scannet_runtime.json",
+  "source_study_config": "configs/evaluation/ovimap_module_scannet_study.json",
+  "cpu_threads": 8,
+  "gpu": "resolve from source runtime; use its original global lock",
+  "precision": "float32",
+  "native_query_budget": 200,
+  "new_visual_models": false,
+  "phases": ["bind", "prepare-cal", "calibrate", "compose-cal", "freeze", "regression", "confirm", "report", "publish", "all"]
+}

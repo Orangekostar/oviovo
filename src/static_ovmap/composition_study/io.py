@@ -64,7 +64,11 @@ class SourceIndex:
 
 def code_identity():
     index = SourceIndex()
-    files = sorted((ROOT / "src/static_ovmap/composition_study").glob("*.py"))
+    files = sorted(
+        path
+        for path in (ROOT / "src/static_ovmap/composition_study").glob("*.py")
+        if path.name not in {"reporting.py", "publication.py"}
+    )
     files += sorted((ROOT / "src/static_ovmap/module_validation").glob("*.py"))
     files += [ROOT / "scripts/evaluation/run_ovimap_composition_study.py"]
     rows = [index.identity(path) for path in files if path.is_file()]

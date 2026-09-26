@@ -90,4 +90,10 @@ Files: `evaluation.py`, `reporting.py`; tests `test_reporting.py`.
 
 ## Current evidence
 
-2026-09-26: source branch is clean at pinned revision; sibling task worktree created. Source runtime contains exactly the 12 development captures; source scene output directory has no confirmation scenes. Full exposure/binding checks remain Task 1, and no new experiment has run yet. Supplied scope is the approved design; autonomous execution follows the user's explicit no-question instruction.
+2026-09-26: source worktree remains untouched at the pinned revision. New attempt_001 binds 97 actual source assets and records a metadata-only confirmation exposure check. Both CAL N0 and static S2 source score tables reproduce every frozen top1 label; all 1,684 saved native observations across the two scene pickles have unique paid frame/bbox/area/pose matches.
+
+The required real scene0056_00 native forced replay passed exact label and retained-ID parity: 200 logical attempts, 1,200 logical crops, 200 cache hits, zero visual forwards. Its outputs were reused in the formal Q_COMBINE leaf. Five actual released-evaluator control records now exist, with exact trace parity. The public leaf→evaluator→report path and a nonempty cache-resume path were exercised. The report explicitly remains PARTIAL: no mandatory composition row, nomination, regression or confirmation is yet complete.
+
+The new public runner, source evidence, temperature jobs, ordered pipeline, confirmation bridge, four-table reporter, reconstruction and ordinary publication implementation are present. The primary agent inspected the mechanically copied native capture recipe and retained review ownership. Twenty-eight focused new tests passed; scoped Ruff, compilation and diff checks passed. No old suite or whole old release audit was run.
+
+Runtime blocker observed: the configured GPU 2 is occupied by an unrelated persist4d project. The real Q_GAIN leaf stopped at the existing GPU occupancy guard before any new inference. The other process was not changed and no device/model/precision fallback was introduced. Continue CPU-side verification and resume the actual visual leaves when the bound GPU becomes available. The goal is not complete.
