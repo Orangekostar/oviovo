@@ -15,8 +15,8 @@ This is a progress audit, not a completion certificate. The primary agent owns t
 | 9: modular implementation | New package and additive public runner; exact native command recipe copied mechanically and reviewed by primary | Actual new visual inference and held-out capture integration remain unverified |
 | 10: costs and caches | Full operation identities, separate native/S2 stores, imported cache proofs, distinct logical/physical ledgers; zero new forwards so far | Verify realized development caps and confirmation costs after all jobs |
 | 11: evaluation and tables | Five actual released control rows, full metric/trace receipts, four-table partial report; complete protocol-content evaluation keys | Full A–D tables, routing/correctness patterns, all controlled contrasts and nominee holdout deltas |
-| 12: focused verification | 28 focused new tests; scoped lint/compile; real native parity and public leaf→evaluator→report plus resume | No broad success claim until required visual leaves and all rows exist |
-| 13: GitHub delivery | Publication and compact reconstruction implementation; reports explicitly PARTIAL | Validate compact reconstruction, publish new-only evidence, ordinary push, full remote SHA receipt |
+| 12: focused verification | 30 focused new tests passed; scoped lint/compile; real native parity and public leaf→evaluator→report plus resume | No broad success claim until required visual leaves and all rows exist |
+| 13: GitHub delivery | Compact scene0056_00 Q_COMBINE reconstruction passed exact prediction and record key checks; reports explicitly PARTIAL | Publish new-only evidence, ordinary push, full remote SHA receipt; final complete release remains pending |
 
 ## Current exact blocker
 

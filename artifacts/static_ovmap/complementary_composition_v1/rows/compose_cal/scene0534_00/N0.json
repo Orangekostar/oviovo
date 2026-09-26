@@ -1,0 +1,46 @@
+{
+  "changed_owners": 0,
+  "evaluation_identity": "53270017a615d306d00f76cf6588678bdccdcb180b23e420ac3a3d15682b0816",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/53270017a615d306d00f76cf6588678bdccdcb180b23e420ac3a3d15682b0816/receipt.json",
+  "evaluator_prediction_count": 78,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 902,
+    "crop_inputs": 5412,
+    "native_requests": 902,
+    "siglip2_requests": 0
+  },
+  "logical_requests": 902,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/53270017a615d306d00f76cf6588678bdccdcb180b23e420ac3a3d15682b0816/released/scene0534_00/3d684dcab73402669cd04b2753858c3ee4a71e9eec9858a21df5368659e76628/bacb5e6b8cb0ef3381be71b48ecf9c38ed004e132f8bf99fb7cc652f0af622c8/released/released_matches.json.gz",
+  "method_id": "N0",
+  "metrics": {
+    "ap25": 0.35619095816464236,
+    "ap50": 0.17543859649122806,
+    "canonical_ap50": 0.12794612794612795,
+    "canonical_ap75": 0.0202020202020202,
+    "classes_observed": 28,
+    "macc": 0.3566857930771714,
+    "masks_observed": 93,
+    "miou": 0.2593699500745409,
+    "trace_parity": true,
+    "uap": 0.050682261208576995
+  },
+  "owners": 93,
+  "physical": {
+    "crop_inputs": 0,
+    "model_forwards": 0,
+    "model_loads": 0,
+    "reused_source": true
+  },
+  "positive_owners": 93,
+  "prediction_key": "3d684dcab73402669cd04b2753858c3ee4a71e9eec9858a21df5368659e76628",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/baseline/N0/manifest.json",
+  "record_key": "bbd1fa985c3bf3f6894fb4010cf0cd15a1969d5065e8e1f2cb84b6544c40fd59",
+  "role": "compose_cal",
+  "scene_id": "scene0534_00",
+  "shared_evaluation_first_method": "N0",
+  "source_reuse": "EXACT_FROZEN_SOURCE_PREDICTION",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/53270017a615d306d00f76cf6588678bdccdcb180b23e420ac3a3d15682b0816/released/scene0534_00/3d684dcab73402669cd04b2753858c3ee4a71e9eec9858a21df5368659e76628/bacb5e6b8cb0ef3381be71b48ecf9c38ed004e132f8bf99fb7cc652f0af622c8/released/released_trace.json.gz",
+  "unknown_owners": 0
+}

@@ -1,0 +1,9 @@
+{
+  "status": "PROVENANCE_ONLY_REBIND",
+  "reason": "The new execution leaf now rejects composition jobs in prepare-cal and checks frozen runtime/model/checkpoint identities before regression or confirmation. The full execution.py content key therefore changed.",
+  "prior_receipt": "formal_receipt_before_phase_guard_hardening.json",
+  "preserved_outputs": ["source_evidence.json", "decisions.json", "cache_imports.json"],
+  "scientific_inputs_changed": false,
+  "prediction_changed": false,
+  "authorized_reuse": "Rebind the already passed native parity output after checking unchanged replay/acquisition scientific dependencies; no trajectory rerun and no new inference. Immutable formal output comparisons must still pass."
+}

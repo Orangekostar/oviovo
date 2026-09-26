@@ -1,0 +1,12 @@
+{
+  "status": "TECHNICAL_CHECK_FAILED_BEFORE_INFERENCE",
+  "source_commit": "c6fc5051070a47cdc6926056668b944696564192",
+  "scene_id": "scene0056_00",
+  "request_id": "513e3c626affe1899a4727359f35750c567fc0210c44bd982857098e38e6a9e2",
+  "error": "native import is not the exact original operation",
+  "root_cause": "Direct Python dict equality rejected tuple lineage/bbox versus JSON lists, although canonical request hashes, model identity and six-crop count matched.",
+  "repair": "Compare canonical JSON content identities at both native and static cache-import boundaries.",
+  "new_visual_inference": 0,
+  "scientific_predictions_created": 0,
+  "source_data_modified": false
+}
