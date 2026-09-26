@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "study": "ovimap-complementary-composition-v1",
+  "version": "2026-09-26-reviewed-v1",
+  "specification_only": true,
+  "authoritative_instruction": "CODEX_FINAL_EXECUTION_EN.md",
+  "repository": "Orangekostar/oviovo",
+  "reviewed_commit": "498f2c5a2fa511c919a83ff9c27946e37cb46a0f",
+  "task_branch": "research/ovimap-complementary-composition-v1",
+  "output_root": "/mnt/shared/ww/ovimap-complementary-composition-v1",
+  "source_runtime_config": "configs/evaluation/ovimap_module_scannet_runtime.json",
+  "source_study_config": "configs/evaluation/ovimap_module_scannet_study.json",
+  "source_study_root": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1",
+  "upstream_pin": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+  "models": {
+    "native": "receipt-bound original native SigLIP FP32",
+    "siglip2": "receipt-bound google/siglip2-large-patch16-384 FP32",
+    "q_gain": "existing native-v10 FIT/CAL-selected checkpoint AND standardizer; no refit",
+    "no_new_models": [
+      "WOW",
+      "SpaCeFormer",
+      "SAM",
+      "Open3DIS"
+    ]
+  },
+  "phases": [
+    "bind",
+    "prepare-cal",
+    "calibrate",
+    "compose-cal",
+    "freeze",
+    "regression",
+    "confirm",
+    "report",
+    "publish",
+    "all"
+  ],
+  "data": {
+    "compose_cal": [
+      "scene0056_00",
+      "scene0534_00"
+    ],
+    "regression_only": [
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "confirmation": [
+      "scene0553_00",
+      "scene0064_00"
+    ],
+    "fit_usage": "read-only historical provenance; no new visual run or head training",
+    "confirm_requires": "new composition selection lock, unchanged method settings, actual exposure check",
+    "max_new_captures": 2,
+    "scheduled_slots_per_new_capture": 200,
+    "no_new_restricted_data_download": true
+  },
+  "controls": [
+    "N0",
+    "Q_COMBINE",
+    "Q_GAIN",
+    "S_SIGLIP2_AREA"
+  ],
+  "methods": {
+    "M1": {
+      "id": "CP_M1_AGREE_KEEP",
+      "family": "static_parallel",
+      "rule": "replace N0 only on available positive Q_GAIN == available S_SIGLIP2_AREA; otherwise keep",
+      "payload_branch": "S"
+    },
+    "M2_RAW": {
+      "id": "CP_M2_EQUAL_RAW",
+      "family": "static_parallel",
+      "rule": "equal arithmetic probability mixture over genuinely available sources",
+      "temperature": 0.07,
+      "payload_branch": "S"
+    },
+    "M2_CAL": {
+      "id": "CP_M2_EQUAL_CAL",
+      "family": "static_parallel",
+      "rule": "same mixture and sources as M2_RAW, separate source temperatures",
+      "payload_branch": "S"
+    },
+    "M3": {
+      "id": "CP_M3_COMBINE_S2",
+      "family": "fixed_trajectory_reread",
+      "controller": "Q_COMBINE",
+      "reader": "siglip2",
+      "payload_branch": "Q"
+    },
+    "M4": {
+      "id": "CP_M4_GAIN_S2",
+      "family": "fixed_trajectory_reread",
+      "controller": "Q_GAIN",
+      "reader": "siglip2",
+      "payload_branch": "Q"
+    },
+    "M5": {
+      "id": "CP_M5_MIX50_NATIVE",
+      "family": "causal_mixed_query",
+      "reader": "native",
+      "controller": "odd paid slot COMBINE, even paid slot GAIN; deterministic work-conserving fallback",
+      "payload_branch": "Q"
+    },
+    "M6": {
+      "id": "CP_M6_MIX50_S2",
+      "family": "fixed_trajectory_reread",
+      "controller": "M5",
+      "reader": "siglip2",
+      "conditional": true,
+      "payload_branch": "Q"
+    }
+  },
+  "mandatory": [
+    "M1",
+    "M2_RAW",
+    "M2_CAL",
+    "M3",
+    "M4",
+    "M5"
+  ],
+  "mandatory_new_rows_before_confirmation": 24,
+  "conditional_new_rows_before_confirmation": 4,
+  "calibration": {
+    "sources": [
+      "N0",
+      "Q_GAIN",
+      "S_SIGLIP2_AREA"
+    ],
+    "folds": "leave-one-COMPOSE_CAL-scene-out; fit each source temperature on the other scene",
+    "objective": "scene-balanced NLL on unique strict-IoU>0.5 source-available object correspondences",
+    "min_objects_per_source_fit": 5,
+    "min_classes_per_source_fit": 2,
+    "temperature_bounds": [
+      0.01,
+      2.0
+    ],
+    "default_temperature": 0.07,
+    "optimizer": "scipy.optimize.minimize_scalar(method=bounded) over log(T)",
+    "maxiter": 64,
+    "xatol": 0.0001,
+    "fallback": "UNCALIBRATED_DEFAULT_T, never fabricated supervision",
+    "refit": "once on both COMPOSE_CAL scenes after cross-fitted nomination; regression/confirm use those fixed temperatures",
+    "fusion_weights": "equal over available sources, no weight search",
+    "mixture_renormalization": true
+  },
+  "query": {
+    "budget": 200,
+    "cumulative_quota": "floor(B*(frame_index+1)/F)-spent, clipped below at 0",
+    "native_result_barrier": "one per frame; rank once before paying/retrieving the batch",
+    "mixed_preference": "odd attempted slot COMBINE; even GAIN; fall back to other list if exhausted",
+    "mixed_ratio_interpretation": "50:50 preferred slots, not a guarantee of 100 realized selections per lane",
+    "combine_mutation": "call native_combine_candidates exactly once per valid frame, including quota=0",
+    "shared_state": true,
+    "retain": "existing top10 overlap/frame/request order with irreversible lineage drops",
+    "readout": "area-weight raw six-crop means, then final L2 normalization; class0 with no successful evidence",
+    "siglip2_feedback_to_controller": false,
+    "frozen_trajectory": "all ordered paid attempts, masks, frame barriers; never reconstruct from final retained IDs only"
+  },
+  "gates": {
+    "metric_tolerance": 1e-10,
+    "m6": "On COMPOSE_CAL only: ((M3 weakly dominates Q_COMBINE in mean uAP and mIoU with one strict gain) OR (M4 similarly dominates Q_GAIN)) AND (M5 similarly dominates Q_COMBINE)",
+    "nomination": "best technically complete, effective-change composition by CAL mean uAP, mean mIoU, smaller mean required logical six-crop request count, fixed method order",
+    "nomination_order": [
+      "M1",
+      "M2_RAW",
+      "M2_CAL",
+      "M3",
+      "M4",
+      "M5",
+      "M6"
+    ],
+    "no_individual_retention_prerequisite": true,
+    "confirm_even_if_cal_tradeoff": true,
+    "confirm_candidate_count": 1,
+    "confirm_controls": [
+      "N0",
+      "Q_COMBINE",
+      "Q_GAIN",
+      "S_SIGLIP2_AREA"
+    ],
+    "additional_confirm_control": "M5 only if M6 nominated",
+    "confirmation_max_methods": 6,
+    "promotion": "report frozen nominee only; mean-positive, every-scene nonnegative, and tradeoff statuses separately; do not deploy automatically"
+  },
+  "runtime": {
+    "cuda_device_hint": "2",
+    "cpu_threads": 8,
+    "one_visual_model_resident_per_gpu": true,
+    "shared_gpu_lock": "source_runtime.output_root parent/.visual-gpu-2.lock (resolve actual configured device)",
+    "max_frozen_trajectory_attempts": 200,
+    "static_siglip2_max_targets": 128,
+    "static_siglip2_max_views": 3,
+    "six_crops_per_visual_request": 6,
+    "native_background_crops_new": 0,
+    "no_new_head_training": true,
+    "no_new_dev_mapping": true,
+    "cal_reg_max_trajectory_native_requests": 2400,
+    "cal_reg_max_trajectory_siglip2_requests_including_m6": 2400,
+    "cal_reg_max_static_siglip2_requests": 1536
+  },
+  "release": {
+    "results": "docs/paper/static_ovmap/COMPOSITION_RESULTS.md",
+    "handoff": "docs/paper/static_ovmap/COMPOSITION_HANDOFF.md",
+    "small_artifacts": "artifacts/static_ovmap/complementary_composition_v1",
+    "new_only": true,
+    "copy_previous_16430_files": false,
+    "large_artifacts": "external content-hash manifest plus exact regeneration commands",
+    "push": "ordinary push, compare full local HEAD against ls-remote for task branch",
+    "self_reference": "experiment commit A in tracked reports; actual final release commit B in external publication_receipt.json"
+  },
+  "readout_review": {
+    "current_static_area": "raw six-crop means, area-weighted, final normalization; repair already present at reviewed revision",
+    "static_pool": "max3 lineage-resolved native requests",
+    "query_pool": "existing retained top10 with irreversible drops",
+    "n0_pool": "original saved native order, last8 of top10 and its minimum-observation rule"
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "artifact_type": "INSTRUCTION_PACKAGE_AUDIT",
+  "status": "PASS",
+  "scope": "Package structure and explicit contract consistency only; no model or benchmark was executed.",
+  "reviewed_revision": "498f2c5a2fa511c919a83ff9c27946e37cb46a0f",
+  "checks": [
+    {
+      "check": "required_files_exist_and_nonempty",
+      "result": "PASS"
+    },
+    {
+      "check": "reviewed_revision_is_full_sha",
+      "result": "PASS"
+    },
+    {
+      "check": "reviewed_revision_matches_instruction",
+      "result": "PASS"
+    },
+    {
+      "check": "spec_is_not_pretended_runnable_config",
+      "result": "PASS"
+    },
+    {
+      "check": "phase_names_in_instruction",
+      "result": "PASS"
+    },
+    {
+      "check": "fixed_mandatory_matrix",
+      "result": "PASS"
+    },
+    {
+      "check": "unique_method_ids",
+      "result": "PASS"
+    },
+    {
+      "check": "method_ids_exist_in_instruction",
+      "result": "PASS"
+    },
+    {
+      "check": "fixed_geometry_checks_remain_active",
+      "result": "PASS"
+    },
+    {
+      "check": "three_disjoint_two_scene_roles",
+      "result": "PASS"
+    },
+    {
+      "check": "role_ids_explicit_in_instruction",
+      "result": "PASS"
+    },
+    {
+      "check": "24_mandatory_new_rows",
+      "result": "PASS"
+    },
+    {
+      "check": "4_conditional_rows",
+      "result": "PASS"
+    },
+    {
+      "check": "m6_not_old_standalone_gate",
+      "result": "PASS"
+    },
+    {
+      "check": "single_nominee_max_six_holdout_methods",
+      "result": "PASS"
+    },
+    {
+      "check": "frozen_native_controllers_no_s2_feedback",
+      "result": "PASS"
+    },
+    {
+      "check": "B200_and_single_shared_state",
+      "result": "PASS"
+    },
+    {
+      "check": "temperature_default_inside_bounds",
+      "result": "PASS"
+    },
+    {
+      "check": "only_finite_scalar_calibration",
+      "result": "PASS"
+    },
+    {
+      "check": "crossfit_then_freeze_no_holdout_fit",
+      "result": "PASS"
+    },
+    {
+      "check": "native_request_budget_arithmetic",
+      "result": "PASS"
+    },
+    {
+      "check": "s2_request_budget_arithmetic",
+      "result": "PASS"
+    },
+    {
+      "check": "static_request_budget_arithmetic",
+      "result": "PASS"
+    },
+    {
+      "check": "no_new_background_or_head_training",
+      "result": "PASS"
+    },
+    {
+      "check": "current_area_fix_reflected",
+      "result": "PASS"
+    },
+    {
+      "check": "obsolete_area_claim_removed",
+      "result": "PASS"
+    },
+    {
+      "check": "raw_fallback_is_not_independent_vote",
+      "result": "PASS"
+    },
+    {
+      "check": "explicit_trace_retention_and_model_separation",
+      "result": "PASS"
+    },
+    {
+      "check": "truthful_method_and_physical_costs",
+      "result": "PASS"
+    },
+    {
+      "check": "four_required_tables",
+      "result": "PASS"
+    },
+    {
+      "check": "both_reports_and_push_verification",
+      "result": "PASS"
+    },
+    {
+      "check": "no_old_release_copy",
+      "result": "PASS"
+    },
+    {
+      "check": "scientific_status_not_test_count",
+      "result": "PASS"
+    },
+    {
+      "check": "no_editorial_placeholders",
+      "result": "PASS"
+    },
+    {
+      "check": "all_source_ids_documented",
+      "result": "PASS"
+    },
+    {
+      "check": "primary_calibration_and_model_sources",
+      "result": "PASS"
+    }
+  ],
+  "files": {
+    "CODEX_FINAL_EXECUTION_EN.md": {
+      "bytes": 43773,
+      "sha256": "f9737895995cee5de484557ee361059e359abdf38855e7b2e61bbce90b434713"
+    },
+    "PROTOCOL_SPEC.json": {
+      "bytes": 8023,
+      "sha256": "92460d1e0f1aa371b21a15e7bbc9f6f80e1cfcfcd6c2dd93f7ebd92588245ab2"
+    },
+    "CODE_REVIEW_AND_AUDIT_ZH.md": {
+      "bytes": 12536,
+      "sha256": "c3ce505dd5463ad0bda7b0176986f271841b4b9a34caf45e80be904552311911"
+    },
+    "SOURCES.md": {
+      "bytes": 8191,
+      "sha256": "133d03bab25b8bb09c26bba81cbd4a47956280b190e6b9d8fc5908d3ddfe0a40"
+    },
+    "README.md": {
+      "bytes": 2360,
+      "sha256": "56ec2fa909f62ac19bce50fc9435164129b64884555687fc76ac4e60f82dff55"
+    },
+    "audit_package.py": {
+      "bytes": 6729,
+      "sha256": "1f3faabbf10c49bfff1747815d376bbd565054f9aba45dfa15954edad8462a57"
+    }
+  },
+  "manual_review": {
+    "scope_and_phase_dependencies": "REVIEWED",
+    "CAL_vs_regression_vs_confirmation": "REVIEWED",
+    "current_AREA_normalization_corrected_after_source_reread": "REVIEWED_AND_CORRECTED",
+    "fixed_trajectory_vs_online_model_change": "REVIEWED",
+    "fallback_and_lineage": "REVIEWED",
+    "logical_cost_vs_cache_reuse": "REVIEWED",
+    "new_confirmation_contract_vs_old_gate": "REVIEWED",
+    "release_identity_and_no_self_reference": "REVIEWED"
+  },
+  "runtime_verification": {
+    "server_asset_readability": "NOT_PERFORMED_HERE",
+    "new_method_execution": "NOT_PERFORMED",
+    "remote_repository_mutation": "NONE"
+  }
+}
