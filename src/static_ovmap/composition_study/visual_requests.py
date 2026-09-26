@@ -156,7 +156,7 @@ class VisualRequestLoader:
             if (
                 row["model_identity"] != model_key
                 or row["input_identity"] != identity
-                or row["request"] != request
+                or canonical_digest(row["request"]) != canonical_digest(request)
                 or row["crop_inputs"] != 6
             ):
                 raise ValueError("native import is not the exact original operation")
@@ -170,7 +170,7 @@ class VisualRequestLoader:
         ):
             return None
         original = self.static_manifest["requests"][request["request_id"]]
-        if original != request:
+        if canonical_digest(original) != canonical_digest(request):
             raise ValueError("static import crop/RGB/mask identity differs")
         directory = Path(
             self.config["scenes"][self.frames.scene_id]["source_directory"]
