@@ -11,8 +11,35 @@ from src.static_ovmap.composition_study.reporting import (
     compare_methods,
     metric_summary,
 )
+from src.static_ovmap.composition_study.selection import TOLERANCE
 
 from .protocol import SOURCE_ROOT
+
+
+def complete_metrics(summary, scenes):
+    return summary["status"] == "COMPLETE" and all(
+        summary["denominators"][key]["defined"] == len(scenes) for key in METRICS
+    )
+
+
+def compare_all_metrics(rows, role, candidate, reference, scenes):
+    comparison = compare_methods(rows, role, candidate, reference, scenes)
+    left, right = (metric_summary(rows, role, method, scenes) for method in (candidate, reference))
+    if not all(complete_metrics(value, scenes) for value in (left, right)):
+        return {"status": "INCONCLUSIVE_INCOMPLETE_ROWS", "candidate": candidate,
+                "reference": reference, "role": role}
+    by_key = {(row["scene_id"], row["method_id"]): row for row in rows if row["role"] == role}
+    deltas = {scene: {key: by_key[scene, candidate]["metrics"][key] - by_key[scene, reference]["metrics"][key]
+                      for key in METRICS} for scene in scenes}
+    mean = {key: left["means"][key] - right["means"][key] for key in METRICS}
+    nonnegative = all(value >= -TOLERANCE for row in deltas.values() for value in row.values())
+    mean_gain = all(value >= -TOLERANCE for value in mean.values()) and any(value > TOLERANCE for value in mean.values())
+    status = ("MEAN_GAIN_NO_OBSERVED_SCENE_LOSS" if nonnegative else "MEAN_GAIN_WITH_SCENE_TRADEOFF") if mean_gain else "NO_MEAN_GAIN"
+    return {**comparison, "status": status, "status_metrics": list(METRICS), "mean_deltas": mean,
+            "scene_deltas": deltas, "every_scene_nonnegative": nonnegative,
+            "every_scene_strictly_positive": all(value > TOLERANCE for row in deltas.values() for value in row.values()),
+            "worst_scene_deltas": {key: min(row[key] for row in deltas.values()) for key in METRICS},
+            "positive_scene_counts": {key: sum(row[key] > TOLERANCE for row in deltas.values()) for key in METRICS}}
 
 
 def summarize(rows, scenes, methods):
@@ -29,11 +56,9 @@ def summarize(rows, scenes, methods):
         for reference in ("N0", "Q_GAIN", "S_SIGLIP2_AREA"):
             if reference == candidate or reference not in methods:
                 continue
-            comparison = compare_methods(rows, "replica_transfer", candidate, reference, scenes)
-            if "scene_deltas" in comparison:
-                comparison["positive_scene_counts"] = {key: sum(row[key] > 1e-12 for row in comparison["scene_deltas"].values()) for key in ("uap", "miou")}
+            comparison = compare_all_metrics(rows, "replica_transfer", candidate, reference, scenes)
             comparisons[candidate + "_vs_" + reference] = comparison
-    complete = not missing and all(value["status"] == "COMPLETE" for value in means.values())
+    complete = not missing and all(complete_metrics(value, scenes) for value in means.values())
     return {"status": "COMPLETE" if complete else "INCOMPLETE", "expected_rows": len(expected),
             "completed_rows": len(rows), "missing": missing, "means": means, "comparisons": comparisons}
 
@@ -100,7 +125,7 @@ def report(config):
             "scenes": source_scenes,
             "means": {m: metric_summary(source_rows, role, m, source_scenes) for m in config["methods"]},
             "paired_changes": {
-                name: compare_methods(source_rows, role, value["candidate"], value["reference"], source_scenes)
+                name: compare_all_metrics(source_rows, role, value["candidate"], value["reference"], source_scenes)
                 for name, value in summary["comparisons"].items()
             },
             "source_rows": [str(p) for p in sorted((SOURCE_ROOT / "rows" / role).glob("*/*.json"))],
@@ -124,6 +149,14 @@ def report(config):
         if value["candidate"] not in ("CP_M2_EQUAL_RAW", "CP_M2_EQUAL_CAL", "CP_M4_GAIN_S2"):
             continue
         lines.append(f'| {name} | {100 * value["mean_deltas"]["uap"]:+.3f} | {100 * value["mean_deltas"]["miou"]:+.3f} | {value["positive_scene_counts"]["uap"]}/8 | {value["positive_scene_counts"]["miou"]}/8 |')
+    lines += ["", "| 对比 N0 | ΔAP25（百分点） | ΔAP50（百分点） | ΔmAcc（百分点） | AP25 / AP50 / mAcc 提升场景数 |", "|---|---:|---:|---:|---|"]
+    for method in config["methods"]:
+        if method == "N0":
+            continue
+        value = summary["comparisons"][method + "_vs_N0"]
+        cells = [f'{100 * value["mean_deltas"][key]:+.3f}' for key in ("ap25", "ap50", "macc")]
+        counts = " / ".join(f'{value["positive_scene_counts"][key]}/8' for key in ("ap25", "ap50", "macc"))
+        lines.append("| " + " | ".join([method, *cells, counts]) + " |")
     lines += ["", "ScanNet 参考结果按原 CAL、回归、确认角色分别保存在 results.json；未运行的方法标为缺失，不补零。跨数据集仅比较各自内部的变化方向，不直接比较绝对分数。",
               "", "逐场景结果、最差场景差值、完整轨迹和成本见 results.json 与 per_scene.csv。公共捕获、静态 S2、Q_GAIN 和 M4 的实际执行费用分别计一次；方法逻辑费用不能相加当作总实际费用。", ""]
     (output / "results.md").write_text("\n".join(lines))

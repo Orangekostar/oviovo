@@ -25,8 +25,20 @@ def test_paired_deltas_include_scene_losses():
     assert delta["mean_deltas"]["uap"] == pytest.approx(0.1)
     assert delta["worst_scene_deltas"]["uap"] == pytest.approx(-0.1)
     assert delta["positive_scene_counts"]["uap"] == 1
+    for key in ("ap25", "ap50", "macc"):
+        assert delta["mean_deltas"][key] == pytest.approx(0.1)
+        assert delta["worst_scene_deltas"][key] == pytest.approx(-0.1)
+        assert delta["positive_scene_counts"][key] == 1
 
 
 def test_duplicate_scene_method_rejected():
     with pytest.raises(ValueError, match="duplicate"):
         summarize([row("room0", "N0", 0.5)] * 2, ["room0"], ["N0"])
+
+
+def test_undefined_secondary_metric_is_not_complete():
+    measured = row("room0", "N0", 0.5)
+    measured["metrics"]["ap25"] = None
+    result = summarize([measured], ["room0"], ["N0"])
+    assert result["status"] == "INCOMPLETE"
+    assert result["means"]["N0"]["means"]["ap25"] is None
