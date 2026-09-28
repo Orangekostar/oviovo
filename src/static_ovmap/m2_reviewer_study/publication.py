@@ -52,6 +52,21 @@ def verify_bundle(destination, rows, *, limit=100 * 1024 * 1024):
     return total
 
 
+def collect_identities(value, external):
+    """Collect only explicit absolute file identities, never guessed paths."""
+    if isinstance(value, dict):
+        if {"path", "bytes", "sha256"} <= value.keys() and Path(value["path"]).is_absolute():
+            row = {key: value[key] for key in ("path", "bytes", "sha256")}
+            if row["path"] in external and external[row["path"]] != row:
+                raise ValueError(f"conflicting consumed dependency identities: {row['path']}")
+            external[row["path"]] = row
+        for item in value.values():
+            collect_identities(item, external)
+    elif isinstance(value, list):
+        for item in value:
+            collect_identities(item, external)
+
+
 def export_artifacts(binding):
     root = Path(binding["output_root"])
     if not (root / "final_report.json").is_file():
@@ -92,7 +107,7 @@ def export_artifacts(binding):
         for pattern in ("*_B*/receipt.json", "*_B*/decisions.json", "locked_B*.json", "probabilities_B*.json.gz"):
             for path in sorted((root / "query_controls" / scene).glob(pattern)):
                 copy(path, compress=path.suffix == ".json" and path.stat().st_size > 256 * 1024)
-    for directory in ("robustness/results", "robustness/text", "fresh", "validation"):
+    for directory in ("robustness/results", "robustness/text", "robustness/aggregates", "fresh", "validation"):
         for path in sorted((root / directory).rglob("*")):
             if path.is_file() and path.suffix in (".json", ".gz"):
                 copy(path, compress=path.suffix == ".json" and path.stat().st_size > 256 * 1024)
@@ -101,14 +116,25 @@ def export_artifacts(binding):
         copy(Path(binding["composition_root"]) / "calibration" / name, Path("original_calibration") / name)
     # Reuse already-attested dependency hashes; do not crawl the old release or
     # repeatedly hash model weights. Newly packaged bytes are checked below.
-    external = {entry["path"]: entry for entry in binding["inputs"] + report["inputs"]}
+    external = {}
+    collect_identities(binding["inputs"] + report["inputs"], external)
+    # Include evaluator contexts and output references actually consumed by
+    # these rows. This is a bounded traversal of this study's matrix, not a scan
+    # of historical artifacts or a reread of large surfaces/model weights.
+    evaluation_paths = set()
+    for path in sorted((root / "rows").rglob("*.json")):
+        evaluation_paths.add(read_json(path)["evaluation_receipt"])
+    for path in sorted(evaluation_paths):
+        receipt = read_json(path)
+        copy(path, Path("evaluation_receipts") / Path(path).parent.name / "receipt.json", compress=True)
+        collect_identities(receipt, external)
+    for directory in ("robustness/aggregates", "robustness/text"):
+        for path in sorted((root / directory).rglob("receipt.json")):
+            collect_identities(read_json(path), external)
     for scene in binding["scenes"]:
         for path in (root / "query_controls" / scene).glob("*_B*/receipt.json"):
             receipt = read_json(path)
-            for entry in receipt["inputs"] + receipt["outputs"]:
-                if entry["path"] in external and external[entry["path"]] != entry:
-                    raise ValueError("conflicting consumed dependency identities")
-                external[entry["path"]] = entry
+            collect_identities(receipt["inputs"] + receipt["outputs"], external)
     write_once(destination / "external_artifacts.json", {"entries": sorted(external.values(), key=lambda r: r["path"]),
                "identity_provenance": "bound inputs and actual execution receipts; not a claim of uploading external bytes",
                "rebuild": f"/home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evaluation/run_ovimap_m2_reviewer_study.py --phase all --output-root {root} --resume"})

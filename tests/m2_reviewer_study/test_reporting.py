@@ -36,6 +36,7 @@ def test_report_gate_rejects_smoke_or_missing_evidence_and_accepts_declared_fres
 
 def test_publication_copy_preserves_bytes_and_rejects_tampering(tmp_path):
     from src.static_ovmap.m2_reviewer_study.publication import (
+        collect_identities,
         copy_artifact,
         verify_bundle,
     )
@@ -53,6 +54,11 @@ def test_publication_copy_preserves_bytes_and_rejects_tampering(tmp_path):
     (destination / row["relative"]).write_bytes(b'{}')
     with pytest.raises(ValueError, match="changed"):
         verify_bundle(destination, [row])
+    identities = {}
+    collect_identities({"context": {"projection": row["source"]}}, identities)
+    assert identities[str(source)] == row["source"]
+    with pytest.raises(ValueError, match="conflicting"):
+        collect_identities({**row["source"], "sha256": "changed"}, identities)
 
 
 def test_workflow_failed_query_does_not_block_independent_diagnostics(tmp_path, monkeypatch):

@@ -255,3 +255,26 @@ Publication/workflow implementation continuation:
 - Still required: completed query matrix and pools, final report/claim review,
   actual bundle size/dependency validation, full specification audit, final
   docs/commit/push and remote SHA verification.
+
+Dependency/review continuation:
+
+- Publication now includes consumed evaluation receipts (with exact projection,
+  annotation and evaluator identities), robustness aggregate receipts, and
+  recursively collected explicit absolute file identities. It does not crawl
+  historical releases or hash large weights again. Real recorded-dependency
+  merge succeeded:21,396 unique identities from342 distinct evaluation receipts
+  plus current query/text/aggregate receipts, with no conflicting identities.
+- Restricted the learned-query B200 claim lookup to B200 even if a future
+  permitted curve exists; B100/B400 cannot overwrite the matched-budget row.
+- Added REQUIREMENT_AUDIT.md mapping prompt sections0–17 to concrete evidence
+  and explicit remaining work. This is an incomplete audit, not a completion
+  certificate. Fresh success remains not tested on real fresh data.
+- All29 tests under tests/m2_reviewer_study passed in0.66s (the prescribed
+  compact fixture groups only). Changed-path lint and diff checks pass.
+- CPU-only evaluation session94272 runs room0 then room1 without image inference.
+  room0 completed30 query rows; room1 in progress. Main71407 remains live on
+  office4 COMBINE; parallel30900 on room2 random41. Latest confirmed acquisitions
+  at least45/50. Do not duplicate these jobs; main controller will reuse room
+  evaluation caches when it reaches them.
+- Final bundle construction/size and actual publication remain pending final
+  query completion, summary and root review. No push has occurred in this step.

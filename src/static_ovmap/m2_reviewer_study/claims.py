@@ -34,7 +34,8 @@ def claim_ledger(report):
         add("Learned query selection outperforms matched alternatives", "NOT_TESTED_PREREQUISITE", "B200 COMBINE and random17/23/41",
             {"CAL_curve_gate": report["curve_gate"], "Replica_status": "PENDING"}, "Replica matched controls are still running.", "WITHHOLD_CLAIM")
     else:
-        selected = {r["policy"]: r["metrics"] for r in query["pooled"] if r["mode"] == "CAL" and r["rank_mode"] == "OFFICIAL_CURRENT_CLASS"}
+        selected = {r["policy"]: r["metrics"] for r in query["pooled"]
+                    if r["mode"] == "CAL" and r["rank_mode"] == "OFFICIAL_CURRENT_CLASS" and "_B200_" in r["method"]}
         random = {key: sum(selected[p][key] for p in ("RV_Q_RANDOM_s17", "RV_Q_RANDOM_s23", "RV_Q_RANDOM_s41")) / 3 for key in ("uap", "miou")}
         comparisons = {name: {key: selected["Q_GAIN"][key] - value[key] for key in ("uap", "miou")}
                        for name, value in (("Q_COMBINE", selected["Q_COMBINE"]), ("RANDOM_SEED_MEAN", random))}
