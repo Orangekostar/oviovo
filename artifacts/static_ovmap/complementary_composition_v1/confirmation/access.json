@@ -1,0 +1,1092 @@
+{
+  "exposure": {
+    "blocked_scenes": [],
+    "inspected_roots": [
+      "/mnt/shared/ww/ovimap-local-ownership-v1",
+      "/mnt/shared/ww/ovimap-module-validation-v1",
+      "/mnt/shared/ww/ovimap-object-semantic-decoupling-v1",
+      "/mnt/shared/ww/ovimap-sf-to-ovi-semantics-v1",
+      "/mnt/shared/ww/ovimap-static-20260913",
+      "/mnt/shared/ww/ovimap-t1-attribution-v1"
+    ],
+    "prepared_scene_paths": [],
+    "scope": "Known project output roots, metadata-only; acquired raw scans excluded; no claim about unrelated external projects",
+    "status": "NO_PRIOR_PREPARED_CONFIRMATION_FOUND"
+  },
+  "inputs": [
+    {
+      "bytes": 1545,
+      "path": "/home/ww/crove/ovimap-complementary-composition/configs/evaluation/ovimap_module_scannet_runtime.json",
+      "sha256": "68b55973d8daccb5a8d3598d70b55a47ade722a38c6f2f187852ffcb06143b09"
+    },
+    {
+      "bytes": 799,
+      "path": "/home/ww/crove/ovimap-complementary-composition/configs/evaluation/ovimap_module_scannet_study.json",
+      "sha256": "cd404320e4fd73a292494ab1866677450324b88bb292a0ac46126cf5d9b58378"
+    },
+    {
+      "bytes": 8023,
+      "path": "/home/ww/crove/ovimap-complementary-composition/docs/paper/static_ovmap/complementary_composition_v1/spec/PROTOCOL_SPEC.json",
+      "sha256": "92460d1e0f1aa371b21a15e7bbc9f6f80e1cfcfcd6c2dd93f7ebd92588245ab2"
+    },
+    {
+      "bytes": 729,
+      "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/rgb_siglip.py",
+      "sha256": "e0a29ca60eeedff7c1662b98d13702728a793ee5227ddd4b47ab5692017010a1"
+    },
+    {
+      "bytes": 49412,
+      "path": "/home/ww/crove/ovimap-complementary-composition/third_party_patches/ovimap/module_validation_v1/ovimap_module_validation_v1.patch",
+      "sha256": "b8ef35aef2490b563d2cca1451baef6f5afad2963e071016bcb837aee3e935b5"
+    },
+    {
+      "bytes": 10653,
+      "path": "/home/ww/crove/ovimap-module-validation-upstream/scripts/eval_sem_seg.py",
+      "sha256": "7583975c38e09dd6d73ba398a1f233df03b2d958cc18401a18ed3214b4342cb7"
+    },
+    {
+      "bytes": 17802,
+      "path": "/home/ww/crove/ovimap-module-validation-upstream/scripts/eval_utils.py",
+      "sha256": "fd90b3987d3e06879784d56bd7f92a25cd4cce17bf3bc9befe15b0d7913ca948"
+    },
+    {
+      "bytes": 21584,
+      "path": "/home/ww/crove/ovimap-module-validation-upstream/scripts/utils/semantic_const.py",
+      "sha256": "476eed29eedbfd387a7727cbfe7d85c081856aa1ec079644eca12f8ab8bc603b"
+    },
+    {
+      "bytes": 4120,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/README.md",
+      "sha256": "771d019af5fc01f21ec91ad7fbc3e2d24d750bb1df3a1e1dd04f060cbd90cd9c"
+    },
+    {
+      "bytes": 554,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/config.json",
+      "sha256": "ddefe38fdfe333d5dbb7d56a247bdc6fe84dbcdb4eafd2f462e05e9b13c532bc"
+    },
+    {
+      "bytes": 2610010520,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/model.safetensors",
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2"
+    },
+    {
+      "bytes": 368,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/preprocessor_config.json",
+      "sha256": "f59da2f87c3cd079bd4f8f3037e81b277c60c498e279a8020331f67a5a3157e8"
+    },
+    {
+      "bytes": 409,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/special_tokens_map.json",
+      "sha256": "2b6a1ff67a27e0df9ac0c7d93250fc0d87431c7b366b3d5669217104f9088a26"
+    },
+    {
+      "bytes": 798330,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/spiece.model",
+      "sha256": "1e5036bed065526c3c212dfbe288752391797c4bb1a284aa18c9a0b23fcaf8ec"
+    },
+    {
+      "bytes": 2399357,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/tokenizer.json",
+      "sha256": "c6e405cb7c670d56636a9402c81023a55bc6c3c53d89cf02b92f5c5005bfe920"
+    },
+    {
+      "bytes": 711,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/tokenizer_config.json",
+      "sha256": "d6423dae508cc3a129d22ea443841c111832a1a73125b8f25ea8736951698bcb"
+    },
+    {
+      "bytes": 23409,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/source_manifest.json",
+      "sha256": "a5f3f3b0793889b63e14a6a236d5f167d0f499ba0fc9cff10d47927728696357"
+    },
+    {
+      "bytes": 71526,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_lock.json",
+      "sha256": "7b8fd52bcb57126e0055228c0ad4dcc34ba338eaa3867de8a2b52646b0c83720"
+    },
+    {
+      "bytes": 15365,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0064_00/scene0064_00.aggregation.json",
+      "sha256": "f08e9ad7f692996de5686627f4a1d5a16940a11d4a2e0e5129615da794b68294"
+    },
+    {
+      "bytes": 400585943,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0064_00/scene0064_00.sens",
+      "sha256": "5ed584da299859915dcab0f9d9b1eaf24ed5c53e1aeb4c08c3afff856eadfecd"
+    },
+    {
+      "bytes": 712,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0064_00/scene0064_00.txt",
+      "sha256": "8b3101abfa355ef18802e5d8ce966d43f0ba6034523e24ad3af000996d0c6b81"
+    },
+    {
+      "bytes": 1495548,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0064_00/scene0064_00_vh_clean_2.0.010000.segs.json",
+      "sha256": "d9ba1814ac80fb0f4b2f23cef6ad68c4e4f375e691d40ffdbdb9748d82c74c22"
+    },
+    {
+      "bytes": 9833245,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0064_00/scene0064_00_vh_clean_2.labels.ply",
+      "sha256": "2e23a81afad82c5da59ab6d988e03905d2b76fa77676cd127808171dcbecdcfb"
+    },
+    {
+      "bytes": 9371881,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0064_00/scene0064_00_vh_clean_2.ply",
+      "sha256": "0308e60840a1b440dad83a5b9f2b35d0b62f636acd3520c544b858676d133775"
+    },
+    {
+      "bytes": 3025,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0553_00/scene0553_00.aggregation.json",
+      "sha256": "3a8d833fb0437038259bc1064607387742bdeb5b42b7820d36c449442dca6284"
+    },
+    {
+      "bytes": 449111723,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0553_00/scene0553_00.sens",
+      "sha256": "5014ff61baaba859c73c9bb6fe4021155c2ab2f5ca73aadd6b7ba110c6d55443"
+    },
+    {
+      "bytes": 523,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0553_00/scene0553_00.txt",
+      "sha256": "87ab6c89c1b20530f71af4ac37f5288d5c74e4d404934689b591b2876ebcbdeb"
+    },
+    {
+      "bytes": 366285,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0553_00/scene0553_00_vh_clean_2.0.010000.segs.json",
+      "sha256": "49f86f19fe92af0862c4806acbb834d73650ef270dca6cbabe480738d89e01ee"
+    },
+    {
+      "bytes": 2720705,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0553_00/scene0553_00_vh_clean_2.labels.ply",
+      "sha256": "80b81a8e6acfe25ed0075834dffec9a84d19f9cb6699ee3a9ee42258fd76eca9"
+    },
+    {
+      "bytes": 2594975,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/scans/scene0553_00/scene0553_00_vh_clean_2.ply",
+      "sha256": "afcfcc12853561deade24263f48b48f8efa491ad60ac47d56f61693f088f1aa4"
+    },
+    {
+      "bytes": 1570,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/.gitattributes",
+      "sha256": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930"
+    },
+    {
+      "bytes": 3378,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/README.md",
+      "sha256": "c3ec8e8a7a4790063972e10721306e0b00523aa739fd55c5b0aa35fa487df03a"
+    },
+    {
+      "bytes": 537,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/config.json",
+      "sha256": "7859ae71a2316c7104f9f64f8cf500ebaa53a7eb315ff28463422e18ce954721"
+    },
+    {
+      "bytes": 3527515080,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/model.safetensors",
+      "sha256": "11bdb3cf00c4dc4f87e437c9c75087ca16fa21aea437b3576c103670ee3c73be"
+    },
+    {
+      "bytes": 394,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/preprocessor_config.json",
+      "sha256": "fb2817d3523ca3b666c859f15320c7138416bc38ffc515e2963f78c868c51c90"
+    },
+    {
+      "bytes": 636,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/special_tokens_map.json",
+      "sha256": "baec30ea10906f16adb8c18af7a34023002c1746542612b8b41c9f09e1351351"
+    },
+    {
+      "bytes": 34363039,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/tokenizer.json",
+      "sha256": "cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322"
+    },
+    {
+      "bytes": 4241003,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/tokenizer.model",
+      "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2"
+    },
+    {
+      "bytes": 47164,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/models/siglip2-large-patch16-384/tokenizer_config.json",
+      "sha256": "14afe629fe4959b9e0d51e1852b8d9f7ad074f90a1a7125a4fcdd17f06e78fc8"
+    },
+    {
+      "bytes": 5209272,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/manifest.json",
+      "sha256": "47467a2a8e963108f36cbf0e7a0a0f55c26e430984350bd4a2b51800de73ef19"
+    },
+    {
+      "bytes": 63006879,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/surface.npz",
+      "sha256": "d8a6dd5b13a6e968f3d551eba2522bb604e5ac3906809262b297afd1c88d2130"
+    },
+    {
+      "bytes": 3786756,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/mapper/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "f7101d004fe0edf57fbfa847a80eb80cb89f980feffc58608eee64e3554be783"
+    },
+    {
+      "bytes": 633530,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/mapping_job/receipt.json",
+      "sha256": "6a2aee5da7b6163dc3b6dbd1b0274554b1d3c4cd75ff4c77d258595fc2436b94"
+    },
+    {
+      "bytes": 3617825,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0445_00/capture/scene0445_00/manifest.json",
+      "sha256": "eeaba28edad900853fb13ef7329dc15888be2c236da1cbb9fd5acb9c47017f7d"
+    },
+    {
+      "bytes": 20103908,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0445_00/capture/scene0445_00/surface.npz",
+      "sha256": "d800096ab91afee08368da9a55a5443c92a8f64fb93aa61d8bb3ac0f5bde6f4a"
+    },
+    {
+      "bytes": 751886,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0445_00/mapper/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "9d3cc3f622041f41eead7f19ad3f6b1b2c05aade2f4088a2587ce64e9d890024"
+    },
+    {
+      "bytes": 632778,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0445_00/mapping_job/receipt.json",
+      "sha256": "3bbe780c1692995b71d18dc150af01a990762b7377afe54bf2c0aeed3177b566"
+    },
+    {
+      "bytes": 4775400,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0534_00/capture/scene0534_00/manifest.json",
+      "sha256": "1e3bd01694aa50c727a463e005950f29767c9f309aac269aeadad7c4ed7d8ec7"
+    },
+    {
+      "bytes": 34795396,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0534_00/capture/scene0534_00/surface.npz",
+      "sha256": "3629db4e0d64b894871b37b81c0c89a23ab93e1d998c2d3a9596855d94d80ec0"
+    },
+    {
+      "bytes": 3342525,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0534_00/mapper/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "7176629e3c8490f552ec2a4109de44fa0110448a6d79cf020454ffc85fb25313"
+    },
+    {
+      "bytes": 633047,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0534_00/mapping_job/receipt.json",
+      "sha256": "38eab86397e99c4cd2b33c3c7383a5efe64aeba9c3ce5363f915b160d81497af"
+    },
+    {
+      "bytes": 4133921,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0626_00/capture/scene0626_00/manifest.json",
+      "sha256": "b18440a51d2e171cdd2f20be98874d82ff4c27790008690e4e2aa46e65518e35"
+    },
+    {
+      "bytes": 24181233,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0626_00/capture/scene0626_00/surface.npz",
+      "sha256": "cf9655cf964480fbecebfcb74247e1784e836e6d5565261be4fb749c7758ad13"
+    },
+    {
+      "bytes": 1224537,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0626_00/mapper/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "8ad8735874b38553d702997e3f0eeb9569ca9dc7a72b8b91c04595313803fbed"
+    },
+    {
+      "bytes": 632903,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0626_00/mapping_job/receipt.json",
+      "sha256": "67adc31614fc6e96b4a7383e3cba9244095de8ea2ba4504e9f9782dbd5afe543"
+    },
+    {
+      "bytes": 3571,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/annotations/scene0056_00/receipt.json",
+      "sha256": "67e4ab3382b69f125afdb474164fb5b441055fc6f01d704ba6a763fa0c3a840f"
+    },
+    {
+      "bytes": 3564,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/annotations/scene0445_00/receipt.json",
+      "sha256": "b1115c18d747510f03b63b2cdb53057fb6fb3b56250611f41bd4933d2dc2c9d9"
+    },
+    {
+      "bytes": 3566,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/annotations/scene0534_00/receipt.json",
+      "sha256": "1897251939e078247af3eff732415e5b91889099dc5d41b04188d8e4855d78b2"
+    },
+    {
+      "bytes": 3565,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/annotations/scene0626_00/receipt.json",
+      "sha256": "15cbbcbfc72c7b64fe2583c4bf9af73dd7d92ea1954ea19607d614a468f294c2"
+    },
+    {
+      "bytes": 1252814,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/query/calibration_receipt.json",
+      "sha256": "d51ef6c0c25abae342d8aaa321b4b79b39942d257eb77afd90af3f167e3ed470"
+    },
+    {
+      "bytes": 26018,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/query/checkpoint.pt",
+      "sha256": "69047c5a8897b179ee48143be85b6bc93f9d16322930a93da0dbce35feacd3c6"
+    },
+    {
+      "bytes": 5195,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/baseline/N0/manifest.json",
+      "sha256": "7ab08b222638b24a786b20b677433f11b2a9d63029a4dbea63746e7cb3b17778"
+    },
+    {
+      "bytes": 454930,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/baseline/N0/prediction.npz",
+      "sha256": "6a74e439feca21cb70b5b216eb97a490a47998f5fa1eea5e97b413fcb89d847e"
+    },
+    {
+      "bytes": 27750,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/baseline/native_readout.json",
+      "sha256": "75222ee666ac9434bf66710d0a245532d3e5da55650fa8aae69504f0300ace96"
+    },
+    {
+      "bytes": 465249,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/baseline/native_readout.npz",
+      "sha256": "6a2d4ab442511ccc3e80a220421f75a83c2e08e8861e5534c7a2fe5387de7961"
+    },
+    {
+      "bytes": 242,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/projection/manifest.json",
+      "sha256": "9a51b1d67f2ab9fa5ed38e70632562486dcee9ee954eea7a3cb21cc58d833146"
+    },
+    {
+      "bytes": 1650275,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/projection/projection.npz",
+      "sha256": "8767a813016f85cafbe6d3bea644f6a956c2531663a988dc68c3f3e245680b06"
+    },
+    {
+      "bytes": 5473,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/query/B200/Q_COMBINE/prediction/manifest.json",
+      "sha256": "28f118862e83a0004540102a64665c2b7cfb561c05ed5054319c3f32c43c6d60"
+    },
+    {
+      "bytes": 485524,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/query/B200/Q_COMBINE/prediction/prediction.npz",
+      "sha256": "62ce1ac599c40b974d1f163911570c2aea68c3374d8273d0babf02b10dca20d5"
+    },
+    {
+      "bytes": 5212,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/semantic/direct/S_SIGLIP2_AREA/manifest.json",
+      "sha256": "5401448e73518fc4c3a1d7f4a9419942dd07cb3d8ff597777a5eaadd8ef5c9a8"
+    },
+    {
+      "bytes": 484614,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/semantic/direct/S_SIGLIP2_AREA/prediction.npz",
+      "sha256": "f538587ccc7516935abc095ca748182acc662f42e3f826ffe952cc4f0fa19951"
+    },
+    {
+      "bytes": 2228,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/baseline/N0/manifest.json",
+      "sha256": "2a2624ee52cfba142e983552ddd555c202c61986798ce57d20aeade3055168b3"
+    },
+    {
+      "bytes": 130283,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/baseline/N0/prediction.npz",
+      "sha256": "8e7debeb485ae5b0c81afb311f8148b8fbd2259553ba88230aebda2bc737a0d3"
+    },
+    {
+      "bytes": 5060,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/baseline/native_readout.json",
+      "sha256": "e9abea5fc6cfd426187e8089a8a75777d042aea7d91b3fb588be9740e014b6a1"
+    },
+    {
+      "bytes": 80465,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/baseline/native_readout.npz",
+      "sha256": "56d21af45f799d20503de9b27902db8ac044a39d58eff533970fe9117f0b37aa"
+    },
+    {
+      "bytes": 240,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/projection/manifest.json",
+      "sha256": "64db0531f2d15e3d1bed5ebb32faa3d26f1914ff1a9574bbe0d4c96de0d75e3b"
+    },
+    {
+      "bytes": 606714,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/projection/projection.npz",
+      "sha256": "6fb4bed97aae755be990cbf1a11dd15e2bbe6c04f167c1f6d6144711bf78b28b"
+    },
+    {
+      "bytes": 2506,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/query/B200/Q_COMBINE/prediction/manifest.json",
+      "sha256": "98999c9b101dcacd96c76546cc6640708b745207a9384da8650e0dd69b05637d"
+    },
+    {
+      "bytes": 128338,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/query/B200/Q_COMBINE/prediction/prediction.npz",
+      "sha256": "9206d24d3e0184284b5a1f321a09c3f681e7820c20bbbdaa4274a17743bc88da"
+    },
+    {
+      "bytes": 2502,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/query/B200/Q_GAIN/prediction/manifest.json",
+      "sha256": "1c63f2713e200e75426efcb13c23264a4c8eb1f0d2db949805fa940178a2f5b3"
+    },
+    {
+      "bytes": 130198,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/query/B200/Q_GAIN/prediction/prediction.npz",
+      "sha256": "b2a3481e8c6f81b43e3b6bedb2179232f627e05dec8f70157f8e584fa298f9b6"
+    },
+    {
+      "bytes": 2243,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/semantic/direct/S_SIGLIP2_AREA/manifest.json",
+      "sha256": "1d85f9eb0090212fceca14774d6f938175d7399370bd907f37f2dc6a811031f6"
+    },
+    {
+      "bytes": 128057,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/semantic/direct/S_SIGLIP2_AREA/prediction.npz",
+      "sha256": "29a70a6bdd1a70e0e051c4fc1f28f0bf4cc4d27c05491bf7b96449f15808b73e"
+    },
+    {
+      "bytes": 5057,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/baseline/N0/manifest.json",
+      "sha256": "6506f504b8e56cbe34032f062020b7e48a3b4a795e627675b48b60e4a9dfc420"
+    },
+    {
+      "bytes": 306600,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/baseline/N0/prediction.npz",
+      "sha256": "04ef9d039c57720ecea1717dc3debadbac8d509afea431f116390707bdd2213f"
+    },
+    {
+      "bytes": 27055,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/baseline/native_readout.json",
+      "sha256": "a378453bc4b455e53d9223aeae9e92d5fc3f2c5dcf76a6e6f08e32d7ffb35c66"
+    },
+    {
+      "bytes": 423343,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/baseline/native_readout.npz",
+      "sha256": "fbc0c27e97bb85918d8a038de5fd2d05176c8577b403bbda9f78fd651f198d04"
+    },
+    {
+      "bytes": 242,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/projection/manifest.json",
+      "sha256": "8e9134688766d06b29bd6a5e22c8dbc1bab544d40e9e9736453e6a91a52257e5"
+    },
+    {
+      "bytes": 1091549,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/projection/projection.npz",
+      "sha256": "39dec3fb9360cf6d324963503dcf5d7811e3b9a1f36a3e669b1672d809622801"
+    },
+    {
+      "bytes": 5336,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/query/B200/Q_COMBINE/prediction/manifest.json",
+      "sha256": "1df9948dce7284cc83620df49964365edc5b3f189754734576cd4da428e7e75f"
+    },
+    {
+      "bytes": 306498,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/query/B200/Q_COMBINE/prediction/prediction.npz",
+      "sha256": "2780b27e77d1cc451ad3f64746fb0571b12dec84b43dea9af38f625df2e38e04"
+    },
+    {
+      "bytes": 5074,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/semantic/direct/S_SIGLIP2_AREA/manifest.json",
+      "sha256": "441bb75d33156528437464ce20b8f62d6615793125675103e66e0affef567965"
+    },
+    {
+      "bytes": 290647,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/semantic/direct/S_SIGLIP2_AREA/prediction.npz",
+      "sha256": "bda5c344defc30c9cddd209522483168f3cbbe2939d13e18d0dc7d1170e08d23"
+    },
+    {
+      "bytes": 2699,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/baseline/N0/manifest.json",
+      "sha256": "922c87fc65976ce3890acaa6266f595bb30fdefec66dc362711b10fb66b9df3b"
+    },
+    {
+      "bytes": 142061,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/baseline/N0/prediction.npz",
+      "sha256": "2e163a5d63dedaae90289c3211daaa42a9b54924d257d4d480316d4fa3722d80"
+    },
+    {
+      "bytes": 8415,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/baseline/native_readout.json",
+      "sha256": "230e28a50032fc092e9ae6c5adbf8b56c20c0c36619317f8fcfd9920b52a657e"
+    },
+    {
+      "bytes": 126299,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/baseline/native_readout.npz",
+      "sha256": "b8f8cc6ee55b01a9e067ae9d0e025ffe0352c23bd3e5399687136225b1430ea8"
+    },
+    {
+      "bytes": 241,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/projection/manifest.json",
+      "sha256": "8f98aeefbcfa48cdc812567501c04d806efaf9c75ae81482b3c45d2e16c99b1f"
+    },
+    {
+      "bytes": 729280,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/projection/projection.npz",
+      "sha256": "e11aced424c823d1b1263dce3bdb1d2750d3c587769c38fd72a842b555852fff"
+    },
+    {
+      "bytes": 2977,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/query/B200/Q_COMBINE/prediction/manifest.json",
+      "sha256": "07410c836125906f686194dfd3726898a9a51f8644290c39291677823b8925df"
+    },
+    {
+      "bytes": 153378,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/query/B200/Q_COMBINE/prediction/prediction.npz",
+      "sha256": "0df46a0c56560a3556ef4a19bede1988dd05e67f5b7632f2b590b96828634213"
+    },
+    {
+      "bytes": 2973,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/query/B200/Q_GAIN/prediction/manifest.json",
+      "sha256": "da65a172b74a6632520fd7eb0acc4eeab7e6ba2aacf7f1a62291568d00d10be3"
+    },
+    {
+      "bytes": 153888,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/query/B200/Q_GAIN/prediction/prediction.npz",
+      "sha256": "8299affd48214207b1995c523f93dbe0f47193c2144b3b2dfa2b8e281b7c881e"
+    },
+    {
+      "bytes": 2713,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/semantic/direct/S_SIGLIP2_AREA/manifest.json",
+      "sha256": "8e70f821aedbbc5ff32a42b4ee4315a0ad5a7e366b8a2cd43a8ef8c014957f87"
+    },
+    {
+      "bytes": 157000,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/semantic/direct/S_SIGLIP2_AREA/prediction.npz",
+      "sha256": "abc54e996b334d5462bb0aba95ac29a2f506dbdd72dc4f24d08ec446a9494c90"
+    },
+    {
+      "bytes": 3279,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/native/receipt.json",
+      "sha256": "6d4fa726247184da4c2ea15556df4692636acc7fe0661ee4585a298bfda530ca"
+    },
+    {
+      "bytes": 778719,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/native/text.npz",
+      "sha256": "891760a9967c3d3cb72ece32f73687492c685c262c996095c097cbf03e1aa539"
+    },
+    {
+      "bytes": 3628,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/siglip2/receipt.json",
+      "sha256": "d5615bd0c3268bc74174a5f2e40a05a560dfbb89117b5a16d9e08ff624d2f639"
+    },
+    {
+      "bytes": 777920,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/siglip2/text.npz",
+      "sha256": "867c917a9f46ea98e2d0ff534bf9cff808b4c959791361d863ae03645a424c2d"
+    },
+    {
+      "bytes": 587512,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-query-v10/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+      "sha256": "4ecf3debd102382c2a2ca489e045be10091b029fb7ed965a4c3c6e2f5dc47f57"
+    },
+    {
+      "bytes": 51767,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/tooling/repairs-20260922/native-query-v10/receipt.json",
+      "sha256": "263c56a3fcffdacbebefd926839515d6cfe9fb6b941bc2efc03114f89ee9afbd"
+    }
+  ],
+  "methods": [
+    "N0",
+    "Q_COMBINE",
+    "Q_GAIN",
+    "S_SIGLIP2_AREA",
+    "CP_M2_EQUAL_RAW"
+  ],
+  "no_new_download": true,
+  "old_study_guards_unchanged": true,
+  "rows": [
+    {
+      "family_id": "scene0553",
+      "files": {
+        ".aggregation.json": {
+          "etag": "\"bd1-605cd433a3dc4\"",
+          "last_modified": "Wed, 20 Sep 2023 16:56:54 GMT",
+          "size_bytes": 3025,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00.aggregation.json"
+        },
+        ".sens": {
+          "etag": "\"1ac4e6ab-6414a42b04794\"",
+          "last_modified": "Thu, 16 Oct 2025 17:51:02 GMT",
+          "size_bytes": 449111723,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0553_00/scene0553_00.sens"
+        },
+        ".txt": {
+          "etag": "\"20b-605cd433a64d4\"",
+          "last_modified": "Wed, 20 Sep 2023 16:56:54 GMT",
+          "size_bytes": 523,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00.txt"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"596cd-605cd438e5133\"",
+          "last_modified": "Wed, 20 Sep 2023 16:57:00 GMT",
+          "size_bytes": 366285,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00_vh_clean_2.0.010000.segs.json"
+        },
+        "_vh_clean_2.labels.ply": {
+          "etag": "\"2983c1-605cd43904d03\"",
+          "last_modified": "Wed, 20 Sep 2023 16:57:00 GMT",
+          "size_bytes": 2720705,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00_vh_clean_2.labels.ply"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"27989f-605cd4391fab3\"",
+          "last_modified": "Wed, 20 Sep 2023 16:57:00 GMT",
+          "size_bytes": 2594975,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0553_00/scene0553_00_vh_clean_2.ply"
+        }
+      },
+      "role": "confirm",
+      "scene_id": "scene0553_00",
+      "schedule": {
+        "end": 1394,
+        "frame_ids": [
+          0,
+          7,
+          14,
+          21,
+          28,
+          35,
+          42,
+          49,
+          56,
+          63,
+          70,
+          77,
+          84,
+          91,
+          98,
+          105,
+          112,
+          119,
+          126,
+          133,
+          140,
+          147,
+          154,
+          161,
+          168,
+          175,
+          182,
+          189,
+          196,
+          203,
+          210,
+          217,
+          224,
+          231,
+          238,
+          245,
+          252,
+          259,
+          266,
+          273,
+          280,
+          287,
+          294,
+          301,
+          308,
+          315,
+          322,
+          329,
+          336,
+          343,
+          350,
+          357,
+          364,
+          371,
+          378,
+          385,
+          392,
+          399,
+          406,
+          413,
+          420,
+          427,
+          434,
+          441,
+          448,
+          455,
+          462,
+          469,
+          476,
+          483,
+          490,
+          497,
+          504,
+          511,
+          518,
+          525,
+          532,
+          539,
+          546,
+          553,
+          560,
+          567,
+          574,
+          581,
+          588,
+          595,
+          602,
+          609,
+          616,
+          623,
+          630,
+          637,
+          644,
+          651,
+          658,
+          665,
+          672,
+          679,
+          686,
+          693,
+          700,
+          707,
+          714,
+          721,
+          728,
+          735,
+          742,
+          749,
+          756,
+          763,
+          770,
+          777,
+          784,
+          791,
+          798,
+          805,
+          812,
+          819,
+          826,
+          833,
+          840,
+          847,
+          854,
+          861,
+          868,
+          875,
+          882,
+          889,
+          896,
+          903,
+          910,
+          917,
+          924,
+          931,
+          938,
+          945,
+          952,
+          959,
+          966,
+          973,
+          980,
+          987,
+          994,
+          1001,
+          1008,
+          1015,
+          1022,
+          1029,
+          1036,
+          1043,
+          1050,
+          1057,
+          1064,
+          1071,
+          1078,
+          1085,
+          1092,
+          1099,
+          1106,
+          1113,
+          1120,
+          1127,
+          1134,
+          1141,
+          1148,
+          1155,
+          1162,
+          1169,
+          1176,
+          1183,
+          1190,
+          1197,
+          1204,
+          1211,
+          1218,
+          1225,
+          1232,
+          1239,
+          1246,
+          1253,
+          1260,
+          1267,
+          1274,
+          1281,
+          1288,
+          1295,
+          1302,
+          1309,
+          1316,
+          1323,
+          1330,
+          1337,
+          1344,
+          1351,
+          1358,
+          1365,
+          1372,
+          1379,
+          1386,
+          1393
+        ],
+        "source_end": 1501,
+        "source_step": -1,
+        "start": 0,
+        "step": 7
+      },
+      "source_split": "validation"
+    },
+    {
+      "family_id": "scene0064",
+      "files": {
+        ".aggregation.json": {
+          "etag": "\"3c05-605ca660663d5\"",
+          "last_modified": "Wed, 20 Sep 2023 13:31:53 GMT",
+          "size_bytes": 15365,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00.aggregation.json"
+        },
+        ".sens": {
+          "etag": "\"17e074d7-6414677842eee\"",
+          "last_modified": "Thu, 16 Oct 2025 13:19:28 GMT",
+          "size_bytes": 400585943,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0064_00/scene0064_00.sens"
+        },
+        ".txt": {
+          "etag": "\"2c8-605ca66068ae5\"",
+          "last_modified": "Wed, 20 Sep 2023 13:31:53 GMT",
+          "size_bytes": 712,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00.txt"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"16d1fc-605ca672a7171\"",
+          "last_modified": "Wed, 20 Sep 2023 13:32:12 GMT",
+          "size_bytes": 1495548,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00_vh_clean_2.0.010000.segs.json"
+        },
+        "_vh_clean_2.labels.ply": {
+          "etag": "\"960b1d-605ca673287c0\"",
+          "last_modified": "Wed, 20 Sep 2023 13:32:13 GMT",
+          "size_bytes": 9833245,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00_vh_clean_2.labels.ply"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"8f00e9-605ca67387b30\"",
+          "last_modified": "Wed, 20 Sep 2023 13:32:13 GMT",
+          "size_bytes": 9371881,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0064_00/scene0064_00_vh_clean_2.ply"
+        }
+      },
+      "role": "confirm",
+      "scene_id": "scene0064_00",
+      "schedule": {
+        "end": 1195,
+        "frame_ids": [
+          0,
+          6,
+          12,
+          18,
+          24,
+          30,
+          36,
+          42,
+          48,
+          54,
+          60,
+          66,
+          72,
+          78,
+          84,
+          90,
+          96,
+          102,
+          108,
+          114,
+          120,
+          126,
+          132,
+          138,
+          144,
+          150,
+          156,
+          162,
+          168,
+          174,
+          180,
+          186,
+          192,
+          198,
+          204,
+          210,
+          216,
+          222,
+          228,
+          234,
+          240,
+          246,
+          252,
+          258,
+          264,
+          270,
+          276,
+          282,
+          288,
+          294,
+          300,
+          306,
+          312,
+          318,
+          324,
+          330,
+          336,
+          342,
+          348,
+          354,
+          360,
+          366,
+          372,
+          378,
+          384,
+          390,
+          396,
+          402,
+          408,
+          414,
+          420,
+          426,
+          432,
+          438,
+          444,
+          450,
+          456,
+          462,
+          468,
+          474,
+          480,
+          486,
+          492,
+          498,
+          504,
+          510,
+          516,
+          522,
+          528,
+          534,
+          540,
+          546,
+          552,
+          558,
+          564,
+          570,
+          576,
+          582,
+          588,
+          594,
+          600,
+          606,
+          612,
+          618,
+          624,
+          630,
+          636,
+          642,
+          648,
+          654,
+          660,
+          666,
+          672,
+          678,
+          684,
+          690,
+          696,
+          702,
+          708,
+          714,
+          720,
+          726,
+          732,
+          738,
+          744,
+          750,
+          756,
+          762,
+          768,
+          774,
+          780,
+          786,
+          792,
+          798,
+          804,
+          810,
+          816,
+          822,
+          828,
+          834,
+          840,
+          846,
+          852,
+          858,
+          864,
+          870,
+          876,
+          882,
+          888,
+          894,
+          900,
+          906,
+          912,
+          918,
+          924,
+          930,
+          936,
+          942,
+          948,
+          954,
+          960,
+          966,
+          972,
+          978,
+          984,
+          990,
+          996,
+          1002,
+          1008,
+          1014,
+          1020,
+          1026,
+          1032,
+          1038,
+          1044,
+          1050,
+          1056,
+          1062,
+          1068,
+          1074,
+          1080,
+          1086,
+          1092,
+          1098,
+          1104,
+          1110,
+          1116,
+          1122,
+          1128,
+          1134,
+          1140,
+          1146,
+          1152,
+          1158,
+          1164,
+          1170,
+          1176,
+          1182,
+          1188,
+          1194
+        ],
+        "source_end": 1205,
+        "source_step": -1,
+        "start": 0,
+        "step": 6
+      },
+      "source_split": "validation"
+    }
+  ],
+  "selection_identity": "9bd0a1dde588d47a5ea54fbd361bedf94f4e0f6bdc5c7940e6c9907c52a88cf5",
+  "status": "AUTHORIZED_FROZEN_COMPOSITION"
+}

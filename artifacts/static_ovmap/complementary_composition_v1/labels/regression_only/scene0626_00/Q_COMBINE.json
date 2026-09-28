@@ -1,0 +1,64 @@
+{
+  "branch": "Q",
+  "labels": {
+    "1": 9,
+    "11": 79,
+    "12": 4,
+    "15": 0,
+    "16": 0,
+    "19": 9,
+    "2": 79,
+    "20": 118,
+    "21": 2,
+    "22": 19,
+    "24": 1,
+    "25": 0,
+    "28": 2,
+    "29": 0,
+    "3": 9,
+    "37": 0,
+    "4": 52,
+    "40": 6,
+    "5": 9,
+    "52": 3,
+    "55": 105,
+    "6": 0,
+    "61": 79,
+    "62": 63,
+    "67": 9,
+    "68": 52,
+    "7": 2,
+    "8": 0,
+    "9": 0
+  },
+  "logical_cost": {
+    "allowance": 200,
+    "attempts": 198,
+    "crop_inputs": 1188,
+    "failures": 0,
+    "query_seconds": 109.69026010698872,
+    "successes": 198
+  },
+  "metadata": {
+    "budget": 200,
+    "causal_capture": {
+      "bytes": 4133921,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0626_00/capture/scene0626_00/manifest.json",
+      "sha256": "b18440a51d2e171cdd2f20be98874d82ff4c27790008690e4e2aa46e65518e35"
+    },
+    "final_registry_read_after_last_barrier": true,
+    "masks_without_observations": 8,
+    "native_record_key": "03228e8e435e1b0954dc30ad3f444e2d2a25b06e02a0f99b2e710c55bf21150d",
+    "schedule": "PER_FRAME_RESULT_BARRIER",
+    "unobserved_class": 0
+  },
+  "method_id": "Q_COMBINE",
+  "native_manifest": {
+    "bytes": 2699,
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/baseline/N0/manifest.json",
+    "sha256": "922c87fc65976ce3890acaa6266f595bb30fdefec66dc362711b10fb66b9df3b"
+  },
+  "prediction_key": "8d4007dee949a84fa4e638ece9cde1567b6246c42880f138e4ad257b4722de6f",
+  "record_key": "b5dbe43ec6f5902935ad0d9fd89050d3e83c847d732769c5b94e162a8f932b54",
+  "scene_id": "scene0626_00"
+}

@@ -1,0 +1,61 @@
+{
+  "changed_owners": 7,
+  "evaluation_identity": "f8b4fc7cca5f08ab10392855027a49c457a78c8efe7cb5a9518966a519c47206",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/f8b4fc7cca5f08ab10392855027a49c457a78c8efe7cb5a9518966a519c47206/receipt.json",
+  "evaluator_prediction_count": 15,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 211,
+    "crop_inputs": 2400,
+    "native_requests": 200,
+    "siglip2_requests": 200
+  },
+  "logical_requests": 400,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/f8b4fc7cca5f08ab10392855027a49c457a78c8efe7cb5a9518966a519c47206/released/scene0445_00/e82d28de5bba42480347167a047090fa8c6baa5c695257bebe7ec5d09748f691/0069dc3188afa6b05339a0e8d57e8c9e08af626f76b7bdec2dc11631c5b00206/released/released_matches.json.gz",
+  "method_id": "CP_M4_GAIN_S2",
+  "metrics": {
+    "ap25": 0.52,
+    "ap50": 0.5,
+    "canonical_ap50": 0.39591836734693875,
+    "canonical_ap75": 0.17857142857142858,
+    "classes_observed": 16,
+    "macc": 0.5285857520813089,
+    "masks_observed": 16,
+    "miou": 0.5090676979557845,
+    "trace_parity": true,
+    "uap": 0.3888888888888889
+  },
+  "owners": 16,
+  "physical": {
+    "controller": {
+      "cache_hits": 200,
+      "crop_inputs": 0,
+      "inference_seconds": 0.0,
+      "model_forwards": 0,
+      "model_load_seconds": 0.0,
+      "model_loads": 0,
+      "tiles": 0
+    },
+    "reader": {
+      "cache_hits": 60,
+      "crop_inputs": 840,
+      "inference_seconds": 30.679402786074206,
+      "model_forwards": 140,
+      "model_load_seconds": 21.386539375060238,
+      "model_loads": 1,
+      "tiles": 0
+    },
+    "shared_dependency_count_once_globally": true
+  },
+  "positive_owners": 16,
+  "prediction_key": "e82d28de5bba42480347167a047090fa8c6baa5c695257bebe7ec5d09748f691",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0445_00/CP_M4_GAIN_S2/prediction/manifest.json",
+  "record_key": "ce34a1ca71d8c18746000a861b4b05e08c4348562a0b18c857bc762e04625b92",
+  "role": "regression_only",
+  "scene_id": "scene0445_00",
+  "shared_evaluation_first_method": "CP_M4_GAIN_S2",
+  "source_reuse": "FORCED_TRAJECTORY",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/f8b4fc7cca5f08ab10392855027a49c457a78c8efe7cb5a9518966a519c47206/released/scene0445_00/e82d28de5bba42480347167a047090fa8c6baa5c695257bebe7ec5d09748f691/0069dc3188afa6b05339a0e8d57e8c9e08af626f76b7bdec2dc11631c5b00206/released/released_trace.json.gz",
+  "unknown_owners": 0
+}

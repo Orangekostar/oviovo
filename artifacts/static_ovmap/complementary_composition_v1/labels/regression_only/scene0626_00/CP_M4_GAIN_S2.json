@@ -1,0 +1,56 @@
+{
+  "branch": "Q",
+  "labels": {
+    "1": 3,
+    "11": 79,
+    "12": 4,
+    "15": 408,
+    "16": 79,
+    "19": 9,
+    "2": 24,
+    "20": 67,
+    "21": 2,
+    "22": 19,
+    "24": 3,
+    "25": 1172,
+    "28": 2,
+    "29": 105,
+    "3": 4,
+    "37": 26,
+    "4": 52,
+    "40": 6,
+    "5": 4,
+    "52": 3,
+    "55": 408,
+    "6": 2,
+    "61": 38,
+    "62": 125,
+    "67": 64,
+    "68": 79,
+    "7": 2,
+    "8": 63,
+    "9": 0
+  },
+  "logical_cost": {
+    "crop_inputs": 2400,
+    "native_requests": 200,
+    "siglip2_requests": 200
+  },
+  "metadata": {
+    "budget": 200,
+    "controller": "Q_GAIN",
+    "final_reconciliation": true,
+    "frame_barrier": true,
+    "native_record_key": "03228e8e435e1b0954dc30ad3f444e2d2a25b06e02a0f99b2e710c55bf21150d",
+    "reader": "siglip2"
+  },
+  "method_id": "CP_M4_GAIN_S2",
+  "native_manifest": {
+    "bytes": 2699,
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0626_00/baseline/N0/manifest.json",
+    "sha256": "922c87fc65976ce3890acaa6266f595bb30fdefec66dc362711b10fb66b9df3b"
+  },
+  "prediction_key": "068085d632894e2b47fe638acdab681e0f920cffa12d6d8da156e902c105fbb5",
+  "record_key": "214a12b78c35cf5e4d1facd1d09dc782911e97f0a330516730b8fc00be999ed3",
+  "scene_id": "scene0626_00"
+}

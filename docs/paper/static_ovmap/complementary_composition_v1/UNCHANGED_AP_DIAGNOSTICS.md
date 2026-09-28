@@ -18,3 +18,16 @@ Comparing every class/threshold AP state shows exactly one changed entry: radiat
 The radiator AP25 change is a ranking-list change, not a new GT match: owner 134 matches GT 96000 at IoU 0.32116596638655465 with confidence 1.0 in both variants. RAW also has owner 146 as an unmatched FP with the same confidence 1.0 (`y_true=[1,0]`, `y_score=[1,1]`); CAL moves that FP to the vent class, leaving radiator `y_true=[1]`, `y_score=[1]`. The released PR states yield 0.75 and 1.0 respectively. There is no radiator duplicate-match event at this threshold. This is why an unchanged match count can still change AP25.
 
 Reproduction uses the two immutable row records, `load_prediction` plus `owner_labels` to find pairwise label differences, the saved `prediction/owner_XXXXXX.npy` masks for projected sizes, and the actual released traces' `events` and `states` keyed by `(class_label, overlap_threshold)`. No evaluator rerun or new model inference is needed.
+
+## Additional actual unchanged-uAP contrasts
+
+These checks use the corresponding `rows/<role>/<scene>/<method>.json` trace and match references with the same reconstruction/trace procedure.
+
+| Scene / comparison | Pairwise changed owners | Actual explanation |
+|---|---:|---|
+| scene0445_00, N0 → Q_COMBINE | 5: 4, 13, 18, 37, 40 | Every class/threshold AP entry is unchanged. At IoU 0.5 the changed predictions move from 4 counted FP + 1 ignored to 3 counted FP + 1 ignored; owner 40 has 128 projected vertices but exits evaluation because its new label is 0, not because of the small-region filter. No changed-owner first match or duplicate event is emitted at this threshold. |
+| scene0445_00, Q_GAIN → M4 | 4: 18, 20, 26, 40 | All four remain eligible. Both variants have 3 counted FP + 1 ignored among these owners at IoU 0.5. Every class/threshold AP entry is unchanged, despite class reassignment. |
+| scene0445_00, Q_GAIN → M5 | 2: 3, 40 | Both remain eligible and counted FP at IoU 0.5. Only wall AP25 changes, from 0.2 to 0; every uAP-threshold AP entry is unchanged. |
+| scene0534_00, M3 → M4 | 53 | Changed-owner eligibility rises from 13 to 42. At IoU 0.5 the changed-owner events move from 9 counted FP + 4 ignored to 31 counted FP + 10 ignored + 1 first match. The remaining 11 excluded M4 owners each have fewer than 100 projected vertices. Equal uAP here reflects cancellation of class AP changes, not unchanged AP entries. |
+
+For the last contrast, shelf AP decreases from 1/3 to 1/4 at each of IoU 0.50, 0.55, 0.60, 0.65 and 0.70; recycling-bin AP decreases from 1 to 3/4 at 0.50; water-cooler AP increases from 0 to 2/3 at 0.50. These are all changed AP entries in the uAP threshold range, and their sum is exactly `5*(-1/12) - 1/4 + 2/3 = 0`. Additional AP25 changes occur for shelf, backpack, recycling bin, bulletin board and water cooler. These observations come from released per-class PR/AP states; they must not be interpreted as additive object gains or generalization evidence.

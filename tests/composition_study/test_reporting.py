@@ -53,3 +53,27 @@ def test_scene_tradeoff_is_separate_from_mean_gain():
     assert result["status"] == "MEAN_GAIN_WITH_SCENE_TRADEOFF"
     assert not result["every_scene_nonnegative"]
     assert abs(result["worst_scene_deltas"]["uap"] + 0.05) < 1e-10
+
+
+def test_native_worker_costs_require_unambiguous_successful_shutdown():
+    from src.static_ovmap.composition_study.reporting import native_worker_costs
+
+    result = native_worker_costs(
+        "VL model loaded in 1.8 seconds\n"
+        "Received shutdown signal. Processed 359 requests (0 errors).\n"
+    )
+    assert result["model_loads"] == 1
+    assert result["model_forwards"] == 359
+    assert result["crop_inputs"] == 2154
+    failed = native_worker_costs("Processed 359 requests (2 errors).")
+    assert failed["successful_request_forwards"] == 359
+    assert failed["failed_requests"] == 2
+    assert failed["model_forwards"] is None
+    assert failed["crop_inputs"] is None
+    assert native_worker_costs("")["status"] == "UNRECORDED_SHUTDOWN"
+    assert (
+        native_worker_costs(
+            "Processed 1 requests (0 errors).\nProcessed 2 requests (0 errors)."
+        )["status"]
+        == "AMBIGUOUS_MULTIPLE_SHUTDOWNS"
+    )

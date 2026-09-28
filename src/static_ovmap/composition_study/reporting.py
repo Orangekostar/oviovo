@@ -3,6 +3,7 @@
 import gzip
 import json
 import math
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -400,6 +401,30 @@ def released_transitions(rows):
     return output
 
 
+def native_worker_costs(log):
+    summaries = re.findall(r"Processed (\d+) requests \((\d+) errors\)\.", log)
+    if len(summaries) != 1:
+        return {
+            "status": "UNRECORDED_SHUTDOWN"
+            if not summaries
+            else "AMBIGUOUS_MULTIPLE_SHUTDOWNS",
+            "model_forwards": None,
+            "crop_inputs": None,
+        }
+    successful, failed = map(int, summaries[0])
+    return {
+        "status": "EXACT_ZERO_ERROR_WORKER_COUNTS"
+        if not failed
+        else "FAILED_REQUEST_WORK_UNRESOLVED",
+        "model_loads": len(re.findall(r"VL model loaded in", log)) or None,
+        "successful_request_forwards": successful,
+        "failed_requests": failed,
+        "model_forwards": successful if not failed else None,
+        "crop_inputs": 6 * successful if not failed else None,
+        "accounting": "receipt-bound native worker makes one six-crop SigLIP forward per successful request; failed request forwards are not inferred",
+    }
+
+
 def physical_work(config):
     root = Path(config["attempt_root"])
     receipts = list((root / "query").glob("*/*/receipt.json"))
@@ -425,7 +450,22 @@ def physical_work(config):
                 "physical": physical,
             }
         )
-    static, captures = [], []
+    static, captures, frontends = [], [], []
+    for path in sorted(
+        (root / "confirmation").glob("*/native/*/frontend_job/receipt.json")
+    ):
+        row = read_json(path)
+        frontends.append(
+            {
+                "receipt": str(path),
+                "scene_id": path.parent.parent.name,
+                "status": row["status"],
+                "processed_frames": sum(
+                    Path(output["path"]).suffix == ".png" for output in row["outputs"]
+                ),
+                "elapsed_seconds": row["elapsed_seconds"],
+            }
+        )
     for path in sorted(
         (root / "confirmation").glob(
             "*/study/scenes/*/semantic_models/siglip2/receipt.json"
@@ -445,6 +485,20 @@ def physical_work(config):
         (root / "confirmation").glob("*/native/*/mapping_job/receipt.json")
     ):
         row = read_json(path)
+        worker_log = path.with_name("runtime.log")
+        worker = native_worker_costs(worker_log.read_text())
+        capture = read_json(row["capture_manifest"])
+        selected = sum(
+            len(frame["native_selected_request_ids"]) for frame in capture["frames"]
+        )
+        if (
+            "successful_request_forwards" in worker
+            and selected
+            != worker["successful_request_forwards"] + worker["failed_requests"]
+        ):
+            raise ValueError(
+                "native capture requests differ from worker shutdown counts"
+            )
         captures.append(
             {
                 "receipt": str(path),
@@ -452,12 +506,16 @@ def physical_work(config):
                 "scheduled_count": row["scheduled_count"],
                 "completed_count": row["completed_count"],
                 "elapsed_seconds": row["elapsed_seconds"],
+                "selected_visual_requests": selected,
+                "perception_worker": worker,
+                "perception_log": str(worker_log),
             }
         )
     return {
         "query_totals": dict(totals),
         "query_jobs": query,
         "new_static_jobs": static,
+        "new_frontend_jobs": frontends,
         "new_capture_jobs": captures,
         "historical_static_reused_requests": sum(
             verified_receipt(path)["physical"].get("reused_static_siglip2_requests", 0)
@@ -545,15 +603,33 @@ def report(config):
         if row["status"] == "COMPLETE"
     }
     missing = sorted(expected - present)
+    confirmation_expected = (
+        {
+            ("confirmation", scene, method)
+            for scene in config["spec"]["data"]["confirmation"]
+            for method in selection["nomination"]["confirmation_methods"]
+        }
+        if selection is not None
+        else set()
+    )
+    missing_confirmation = sorted(confirmation_expected - present)
     confirmation = (
         read_json(root / "confirmation/receipt.json")
         if (root / "confirmation/receipt.json").is_file()
         else None
     )
-    confirmation_status = "NOT_RUN" if confirmation is None else confirmation["status"]
+    if confirmation is not None:
+        confirmation_status = confirmation["status"]
+    elif (root / "confirmation/access.json").is_file():
+        confirmation_status = "AUTHORIZED_INCOMPLETE"
+    elif (root / "confirmation/exposure_block.json").is_file():
+        confirmation_status = "BLOCKED_CONFIRMATION_EXPOSURE"
+    else:
+        confirmation_status = "NOT_RUN"
     status = (
         "COMPLETE"
         if not missing
+        and not missing_confirmation
         and selection is not None
         and confirmation_status
         in {"COMPLETE", "NOT_REQUIRED_NO_EFFECTIVE_INTERVENTION"}
@@ -633,6 +709,7 @@ def report(config):
         else "PARTIAL_MISSING_MANDATORY_ROWS",
         "confirmation_status": confirmation_status,
         "missing_rows": missing,
+        "missing_confirmation_rows": missing_confirmation,
         "rows": rows,
         "means": means,
         "m6_gate": gate,
@@ -656,6 +733,7 @@ def report(config):
         "## Table A — available measured performance",
         "",
         "Metrics are percentages. Logical N/S2 counts are conservative required source operations; the common native map is listed separately in each numerical row. Physical shared work is counted once in Table D.",
+        "Physical cells describe query/readout work. Confirmation source rows reuse N0/S2 generated earlier in the same authorized attempt; their zero additional readout forwards do not make the new capture or static S2 free. New frontend, mapping and static S2 jobs are listed separately in Table D's numerical ledger.",
         "",
         "| Role | Scene | Method | uAP | AP50 | AP25 | mIoU | mAcc | Changed/all owners | Positive/evaluated | Logical N/S2/crops | Physical work / shared dependencies | Source reuse | Evaluation first method |",
         "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|",
@@ -683,6 +761,7 @@ def report(config):
     lines += [
         "",
         f"Missing required control/composition records: {len(missing)}. Missing rows are not zero-valued measurements.",
+        f"Missing frozen confirmation records: {len(missing_confirmation)}. Confirmation coverage is checked separately from the development experiment.",
         "",
         "## Table B — complementarity and routing",
         "",
@@ -717,6 +796,8 @@ def report(config):
         f"Nominee: **{selection['nomination']['nominee'] if selection else 'NOT_FROZEN'}**.",
         f"Experiment commit A: `{selection['experiment_commit_A'] if selection else 'NOT_FROZEN'}`.",
         f"Query physical totals: `{work['query_totals']}`; new native captures: {len(work['new_capture_jobs'])}.",
+        f"Completed new frontend jobs: {len(work['new_frontend_jobs'])}; processed frames: {sum(job['processed_frames'] for job in work['new_frontend_jobs'])}. Frontend and mapping elapsed times remain separate in the numerical ledger.",
+        "Native capture SigLIP forwards/crops are recorded separately per capture from the worker shutdown log and checked against captured requests; they are additional to query totals. Failed or missing worker counts are not estimated.",
         f"Historical static S2 reused requests: {work['historical_static_reused_requests']}. CPU calibration: {work['cpu_calibration']['completed_scalar_fits']} completed scalar fits, {work['cpu_calibration']['recorded_optimizer_evaluations']} recorded optimizer evaluations; initial NLL evaluations are listed separately in the numerical ledger. Calibration elapsed time was not instrumented.",
         "",
         "| Role | Nominee versus | Status | Worst ΔuAP / ΔmIoU (pp) | Every scene nonnegative |",

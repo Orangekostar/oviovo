@@ -1,0 +1,46 @@
+{
+  "changed_owners": 18,
+  "evaluation_identity": "811555482525a8ee128019215591c10c920b36ea2487d68e72b37dd70c8c778f",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0553_00/evaluation_cache/811555482525a8ee128019215591c10c920b36ea2487d68e72b37dd70c8c778f/receipt.json",
+  "evaluator_prediction_count": 22,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 359,
+    "crop_inputs": 2676,
+    "native_requests": 359,
+    "siglip2_requests": 87
+  },
+  "logical_requests": 446,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0553_00/evaluation_cache/811555482525a8ee128019215591c10c920b36ea2487d68e72b37dd70c8c778f/released/scene0553_00/eca4c1bb3711c4e7e06a86a5eda4b56a1cd34f9bb8972c3272e96de7b667c17c/593a206e698240e50c8f49bf4ad3419767bab59c24e5eb434d04ec1db0ebf6d5/released/released_matches.json.gz",
+  "method_id": "S_SIGLIP2_AREA",
+  "metrics": {
+    "ap25": 0.3125,
+    "ap50": 0.25,
+    "canonical_ap50": 0.20472233214615485,
+    "canonical_ap75": 0.11812425801345468,
+    "classes_observed": 17,
+    "macc": 0.32343547242852694,
+    "masks_observed": 30,
+    "miou": 0.3149127744872136,
+    "trace_parity": true,
+    "uap": 0.17592592592592593
+  },
+  "owners": 30,
+  "physical": {
+    "crop_inputs": 0,
+    "model_forwards": 0,
+    "model_loads": 0,
+    "reused_source": true
+  },
+  "positive_owners": 30,
+  "prediction_key": "eca4c1bb3711c4e7e06a86a5eda4b56a1cd34f9bb8972c3272e96de7b667c17c",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0553_00/study/scenes/scene0553_00/semantic/direct/S_SIGLIP2_AREA/manifest.json",
+  "record_key": "ff465218c7ba457c6b91f76109ed33f49474313584f7312acb58b2937ea55449",
+  "role": "confirmation",
+  "scene_id": "scene0553_00",
+  "shared_evaluation_first_method": "S_SIGLIP2_AREA",
+  "source_reuse": "EXACT_FROZEN_SOURCE_PREDICTION",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0553_00/evaluation_cache/811555482525a8ee128019215591c10c920b36ea2487d68e72b37dd70c8c778f/released/scene0553_00/eca4c1bb3711c4e7e06a86a5eda4b56a1cd34f9bb8972c3272e96de7b667c17c/593a206e698240e50c8f49bf4ad3419767bab59c24e5eb434d04ec1db0ebf6d5/released/released_trace.json.gz",
+  "unknown_owners": 0
+}

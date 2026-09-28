@@ -1,0 +1,46 @@
+{
+  "changed_owners": 7,
+  "evaluation_identity": "16c7e0cad42343b2c808c00294ddc659c265deaefd648e163d840dcf8d208fd0",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/16c7e0cad42343b2c808c00294ddc659c265deaefd648e163d840dcf8d208fd0/receipt.json",
+  "evaluator_prediction_count": 15,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 211,
+    "crop_inputs": 1506,
+    "native_requests": 211,
+    "siglip2_requests": 40
+  },
+  "logical_requests": 251,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/16c7e0cad42343b2c808c00294ddc659c265deaefd648e163d840dcf8d208fd0/released/scene0445_00/4434cd71afdff60f7f60b750a6d1b061df4dc29d25d03ff1e214ccdaffa3260c/37a4eb44f2a17c16e19aad9cfbd7fb28e87a847b0bf314d64cc0f14084d053ab/released/released_matches.json.gz",
+  "method_id": "S_SIGLIP2_AREA",
+  "metrics": {
+    "ap25": 0.575,
+    "ap50": 0.575,
+    "canonical_ap50": 0.39591836734693875,
+    "canonical_ap75": 0.17857142857142858,
+    "classes_observed": 15,
+    "macc": 0.5355335698077316,
+    "masks_observed": 16,
+    "miou": 0.47017123108496933,
+    "trace_parity": true,
+    "uap": 0.3888888888888889
+  },
+  "owners": 16,
+  "physical": {
+    "crop_inputs": 0,
+    "model_forwards": 0,
+    "model_loads": 0,
+    "reused_source": true
+  },
+  "positive_owners": 16,
+  "prediction_key": "4434cd71afdff60f7f60b750a6d1b061df4dc29d25d03ff1e214ccdaffa3260c",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/semantic/direct/S_SIGLIP2_AREA/manifest.json",
+  "record_key": "07973900e2aea271af9cef68ec1beaa2668a23b10bb4ddc690dadd6be754a6ab",
+  "role": "regression_only",
+  "scene_id": "scene0445_00",
+  "shared_evaluation_first_method": "S_SIGLIP2_AREA",
+  "source_reuse": "EXACT_FROZEN_SOURCE_PREDICTION",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/16c7e0cad42343b2c808c00294ddc659c265deaefd648e163d840dcf8d208fd0/released/scene0445_00/4434cd71afdff60f7f60b750a6d1b061df4dc29d25d03ff1e214ccdaffa3260c/37a4eb44f2a17c16e19aad9cfbd7fb28e87a847b0bf314d64cc0f14084d053ab/released/released_trace.json.gz",
+  "unknown_owners": 0
+}

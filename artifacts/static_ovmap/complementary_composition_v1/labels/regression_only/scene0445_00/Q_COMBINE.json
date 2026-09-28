@@ -1,0 +1,51 @@
+{
+  "branch": "Q",
+  "labels": {
+    "1": 36,
+    "11": 105,
+    "12": 56,
+    "13": 276,
+    "15": 66,
+    "16": 9,
+    "18": 1,
+    "2": 11,
+    "20": 125,
+    "26": 105,
+    "3": 6,
+    "37": 58,
+    "4": 9,
+    "40": 0,
+    "7": 8,
+    "8": 21
+  },
+  "logical_cost": {
+    "allowance": 200,
+    "attempts": 199,
+    "crop_inputs": 1194,
+    "failures": 0,
+    "query_seconds": 119.15297034499235,
+    "successes": 199
+  },
+  "metadata": {
+    "budget": 200,
+    "causal_capture": {
+      "bytes": 3617825,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0445_00/capture/scene0445_00/manifest.json",
+      "sha256": "eeaba28edad900853fb13ef7329dc15888be2c236da1cbb9fd5acb9c47017f7d"
+    },
+    "final_registry_read_after_last_barrier": true,
+    "masks_without_observations": 1,
+    "native_record_key": "c122402fdb508934fe084f5be5483c4b1be838958809d8e105b1eef37aed734d",
+    "schedule": "PER_FRAME_RESULT_BARRIER",
+    "unobserved_class": 0
+  },
+  "method_id": "Q_COMBINE",
+  "native_manifest": {
+    "bytes": 2228,
+    "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0445_00/baseline/N0/manifest.json",
+    "sha256": "2a2624ee52cfba142e983552ddd555c202c61986798ce57d20aeade3055168b3"
+  },
+  "prediction_key": "f308e901e3f7cd0c3118673b14bed2a17f3f3a518ad05c753e2ef3ae1566fdea",
+  "record_key": "8d4340b0312d5a8b75029d8fbbdbf52ef11e361614e6a264ab627ac2527ee2e6",
+  "scene_id": "scene0445_00"
+}

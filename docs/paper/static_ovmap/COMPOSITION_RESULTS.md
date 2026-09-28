@@ -1,12 +1,13 @@
 # Complementary composition results
 
-Status: **PARTIAL**. Confirmation: **NOT_RUN**.
+Status: **PARTIAL**. Confirmation: **AUTHORIZED_INCOMPLETE**.
 
 Historical CAL and regression scenes are previously exposed; Q_GAIN checkpoint selection already used historical CAL. Cross-fitted temperatures do not create a fresh holdout. Two confirmation scenes cannot establish generalization. No deployment was changed.
 
 ## Table A — available measured performance
 
 Metrics are percentages. Logical N/S2 counts are conservative required source operations; the common native map is listed separately in each numerical row. Physical shared work is counted once in Table D.
+Physical cells describe query/readout work. Confirmation source rows reuse N0/S2 generated earlier in the same authorized attempt; their zero additional readout forwards do not make the new capture or static S2 free. New frontend, mapping and static S2 jobs are listed separately in Table D's numerical ledger.
 
 | Role | Scene | Method | uAP | AP50 | AP25 | mIoU | mAcc | Changed/all owners | Positive/evaluated | Logical N/S2/crops | Physical work / shared dependencies | Source reuse | Evaluation first method |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
@@ -30,6 +31,31 @@ Metrics are percentages. Logical N/S2 counts are conservative required source op
 | compose_cal | scene0534_00 | Q_COMBINE | 4.483431 | 12.280702 | 25.877193 | 23.389570 | 29.420872 | 61/93 | 46/41 | 200/0/1200 | `{"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}` | FORCED_TRAJECTORY | Q_COMBINE |
 | compose_cal | scene0534_00 | Q_GAIN | 4.824561 | 17.105263 | 23.391813 | 21.429484 | 26.859862 | 42/93 | 83/70 | 200/0/1200 | `{"cache_hits": 125, "crop_inputs": 450, "inference_seconds": 15.578504843171686, "model_forwards": 75, "model_load_seconds": 2.5346053789835423, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | Q_GAIN |
 | compose_cal | scene0534_00 | S_SIGLIP2_AREA | 5.896686 | 19.736842 | 26.864035 | 27.521707 | 38.932137 | 45/93 | 93/78 | 902/264/6996 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
+| confirmation | scene0553_00 | CP_M2_EQUAL_RAW | 25.000000 | 33.333333 | 33.333333 | 30.714752 | 31.025902 | 12/30 | 30/22 | 559/87/3876 | `{"Q_GAIN": {"cache_hits": 58, "crop_inputs": 852, "inference_seconds": 30.556340308277868, "model_forwards": 142, "model_load_seconds": 2.4230722869979218, "model_loads": 1, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M2_EQUAL_RAW |
+| confirmation | scene0553_00 | N0 | 19.444444 | 25.000000 | 25.000000 | 23.743545 | 24.003368 | 0/30 | 30/22 | 359/0/2154 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | N0 |
+| confirmation | scene0553_00 | Q_COMBINE | 19.444444 | 25.000000 | 25.000000 | 23.743545 | 24.003368 | 11/30 | 26/22 | 200/0/1200 | `{"cache_hits": 0, "crop_inputs": 1200, "inference_seconds": 42.4114926608745, "model_forwards": 200, "model_load_seconds": 1.8474325330462307, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | Q_COMBINE |
+| confirmation | scene0553_00 | Q_GAIN | 19.444444 | 25.000000 | 25.000000 | 21.696035 | 21.955075 | 9/30 | 30/22 | 200/0/1200 | `{"cache_hits": 58, "crop_inputs": 852, "inference_seconds": 30.556340308277868, "model_forwards": 142, "model_load_seconds": 2.4230722869979218, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | Q_GAIN |
+| confirmation | scene0553_00 | S_SIGLIP2_AREA | 17.592593 | 25.000000 | 31.250000 | 31.491277 | 32.343547 | 18/30 | 30/22 | 359/87/2676 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
+| regression_only | scene0445_00 | CP_M1_AGREE_KEEP | 42.222222 | 60.000000 | 60.000000 | 51.705610 | 53.403678 | 0/16 | 16/15 | 411/40/2706 | `{"Q_GAIN": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | N0 |
+| regression_only | scene0445_00 | CP_M2_EQUAL_CAL | 46.666667 | 60.000000 | 62.000000 | 58.617111 | 60.753663 | 5/16 | 16/15 | 411/40/2706 | `{"Q_GAIN": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M2_EQUAL_CAL |
+| regression_only | scene0445_00 | CP_M2_EQUAL_RAW | 38.888889 | 50.000000 | 50.000000 | 46.004286 | 47.662628 | 2/16 | 16/15 | 411/40/2706 | `{"Q_GAIN": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M2_EQUAL_RAW |
+| regression_only | scene0445_00 | CP_M3_COMBINE_S2 | 28.888889 | 40.000000 | 40.000000 | 37.549641 | 39.172769 | 9/16 | 15/14 | 199/199/2388 | `{"controller": {"cache_hits": 199, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "reader": {"cache_hits": 9, "crop_inputs": 1140, "inference_seconds": 40.439086253754795, "model_forwards": 190, "model_load_seconds": 21.6342200540239, "model_loads": 1, "tiles": 0}, "shared_dependency_count_once_globally": true}` | FORCED_TRAJECTORY | CP_M3_COMBINE_S2 |
+| regression_only | scene0445_00 | CP_M4_GAIN_S2 | 38.888889 | 50.000000 | 52.000000 | 50.906770 | 52.858575 | 7/16 | 16/15 | 200/200/2400 | `{"controller": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "reader": {"cache_hits": 60, "crop_inputs": 840, "inference_seconds": 30.679402786074206, "model_forwards": 140, "model_load_seconds": 21.386539375060238, "model_loads": 1, "tiles": 0}, "shared_dependency_count_once_globally": true}` | FORCED_TRAJECTORY | CP_M4_GAIN_S2 |
+| regression_only | scene0445_00 | CP_M5_MIX50_NATIVE | 38.888889 | 50.000000 | 50.000000 | 46.004286 | 47.662628 | 3/16 | 16/15 | 200/0/1200 | `{"cache_hits": 176, "crop_inputs": 144, "inference_seconds": 5.060971725964919, "model_forwards": 24, "model_load_seconds": 1.861219516955316, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | CP_M5_MIX50_NATIVE |
+| regression_only | scene0445_00 | N0 | 42.222222 | 60.000000 | 60.000000 | 51.705610 | 53.403678 | 0/16 | 16/15 | 211/0/1266 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | N0 |
+| regression_only | scene0445_00 | Q_COMBINE | 42.222222 | 60.000000 | 60.000000 | 37.611862 | 44.877657 | 5/16 | 15/14 | 199/0/1194 | `{"cache_hits": 199, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}` | FORCED_TRAJECTORY | Q_COMBINE |
+| regression_only | scene0445_00 | Q_GAIN | 38.888889 | 50.000000 | 52.000000 | 50.906770 | 52.858575 | 4/16 | 16/15 | 200/0/1200 | `{"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}` | FORCED_TRAJECTORY | Q_GAIN |
+| regression_only | scene0445_00 | S_SIGLIP2_AREA | 38.888889 | 57.500000 | 57.500000 | 47.017123 | 53.553357 | 7/16 | 16/15 | 211/40/1506 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
+| regression_only | scene0626_00 | CP_M1_AGREE_KEEP | 16.077441 | 29.545455 | 43.181818 | 27.948487 | 38.284255 | 2/29 | 29/21 | 562/84/3876 | `{"Q_GAIN": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M1_AGREE_KEEP |
+| regression_only | scene0626_00 | CP_M2_EQUAL_CAL | 25.168350 | 38.636364 | 50.000000 | 36.333988 | 45.483721 | 10/29 | 29/21 | 562/84/3876 | `{"Q_GAIN": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M2_EQUAL_CAL |
+| regression_only | scene0626_00 | CP_M2_EQUAL_RAW | 18.350168 | 31.818182 | 45.454545 | 35.951993 | 47.313855 | 9/29 | 29/21 | 562/84/3876 | `{"Q_GAIN": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M2_EQUAL_RAW |
+| regression_only | scene0626_00 | CP_M3_COMBINE_S2 | 14.393939 | 26.515152 | 35.606061 | 28.271473 | 40.990773 | 19/29 | 21/18 | 198/198/2376 | `{"controller": {"cache_hits": 198, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "reader": {"cache_hits": 14, "crop_inputs": 1104, "inference_seconds": 40.79048930981662, "model_forwards": 184, "model_load_seconds": 21.19097989902366, "model_loads": 1, "tiles": 0}, "shared_dependency_count_once_globally": true}` | FORCED_TRAJECTORY | CP_M3_COMBINE_S2 |
+| regression_only | scene0626_00 | CP_M4_GAIN_S2 | 25.168350 | 38.636364 | 47.727273 | 39.099217 | 50.082677 | 18/29 | 28/21 | 200/200/2400 | `{"controller": {"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}, "reader": {"cache_hits": 53, "crop_inputs": 882, "inference_seconds": 31.875438970630057, "model_forwards": 147, "model_load_seconds": 10.961402582004666, "model_loads": 1, "tiles": 0}, "shared_dependency_count_once_globally": true}` | FORCED_TRAJECTORY | CP_M4_GAIN_S2 |
+| regression_only | scene0626_00 | CP_M5_MIX50_NATIVE | 16.077441 | 29.545455 | 40.909091 | 26.126778 | 36.658763 | 8/29 | 27/21 | 200/0/1200 | `{"cache_hits": 151, "crop_inputs": 294, "inference_seconds": 10.262783821905032, "model_forwards": 49, "model_load_seconds": 1.7885622319299728, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | CP_M5_MIX50_NATIVE |
+| regression_only | scene0626_00 | N0 | 9.259259 | 22.727273 | 25.000000 | 18.963276 | 33.405230 | 0/29 | 29/21 | 362/0/2172 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | N0 |
+| regression_only | scene0626_00 | Q_COMBINE | 13.131313 | 24.242424 | 35.606061 | 23.726057 | 32.452698 | 16/29 | 21/18 | 198/0/1188 | `{"cache_hits": 198, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}` | FORCED_TRAJECTORY | Q_COMBINE |
+| regression_only | scene0626_00 | Q_GAIN | 25.168350 | 38.636364 | 50.000000 | 36.335854 | 45.481273 | 11/29 | 28/21 | 200/0/1200 | `{"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}` | FORCED_TRAJECTORY | Q_GAIN |
+| regression_only | scene0626_00 | S_SIGLIP2_AREA | 16.077441 | 29.545455 | 43.181818 | 25.828997 | 37.122139 | 16/29 | 29/21 | 362/84/2676 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
 
 | Role | Method | Mean uAP (defined/total) | Mean mIoU (defined/total) | Status |
 |---|---|---:|---:|---|
@@ -43,15 +69,34 @@ Metrics are percentages. Logical N/S2 counts are conservative required source op
 | compose_cal | CP_M3_COMBINE_S2 | 3.096780 (2/2) | 19.032149 (2/2) | COMPLETE |
 | compose_cal | CP_M4_GAIN_S2 | 3.129711 (2/2) | 22.461084 (2/2) | COMPLETE |
 | compose_cal | CP_M5_MIX50_NATIVE | 3.136698 (2/2) | 20.137497 (2/2) | COMPLETE |
+| regression_only | N0 | 25.740741 (2/2) | 35.334443 (2/2) | COMPLETE |
+| regression_only | Q_COMBINE | 27.676768 (2/2) | 30.668959 (2/2) | COMPLETE |
+| regression_only | Q_GAIN | 32.028620 (2/2) | 43.621312 (2/2) | COMPLETE |
+| regression_only | S_SIGLIP2_AREA | 27.483165 (2/2) | 36.423060 (2/2) | COMPLETE |
+| regression_only | CP_M1_AGREE_KEEP | 29.149832 (2/2) | 39.827049 (2/2) | COMPLETE |
+| regression_only | CP_M2_EQUAL_RAW | 28.619529 (2/2) | 40.978139 (2/2) | COMPLETE |
+| regression_only | CP_M2_EQUAL_CAL | 35.917508 (2/2) | 47.475550 (2/2) | COMPLETE |
+| regression_only | CP_M3_COMBINE_S2 | 21.641414 (2/2) | 32.910557 (2/2) | COMPLETE |
+| regression_only | CP_M4_GAIN_S2 | 32.028620 (2/2) | 45.002994 (2/2) | COMPLETE |
+| regression_only | CP_M5_MIX50_NATIVE | 27.483165 (2/2) | 36.065532 (2/2) | COMPLETE |
+| confirmation | N0 | 19.444444 (1/2) | 23.743545 (1/2) | MISSING_ROWS |
+| confirmation | Q_COMBINE | 19.444444 (1/2) | 23.743545 (1/2) | MISSING_ROWS |
+| confirmation | Q_GAIN | 19.444444 (1/2) | 21.696035 (1/2) | MISSING_ROWS |
+| confirmation | S_SIGLIP2_AREA | 17.592593 (1/2) | 31.491277 (1/2) | MISSING_ROWS |
+| confirmation | CP_M2_EQUAL_RAW | 25.000000 (1/2) | 30.714752 (1/2) | MISSING_ROWS |
 
-Missing required control/composition records: 20. Missing rows are not zero-valued measurements.
+Missing required control/composition records: 0. Missing rows are not zero-valued measurements.
+Missing frozen confirmation records: 5. Confirmation coverage is checked separately from the development experiment.
 
 ## Table B — complementarity and routing
 
 | Scene | Status | Owners | Correctness categories | Source unavailable counts |
 |---|---|---:|---|---|
 | scene0056_00 | COMPLETE | 99 | {'SHAPE_UNMATCHED': 86, 'Q_ONLY_CORRECT': 1, 'ALL_CORRECT': 7, 'ALL_WRONG': 4, 'N0_Q_CORRECT': 1} | {'N0': 0, 'S_SIGLIP2_AREA': 2, 'Q_GAIN': 3} |
+| scene0445_00 | COMPLETE | 16 | {'ALL_CORRECT': 4, 'SOURCE_UNAVAILABLE': 1, 'SHAPE_UNMATCHED': 9, 'N0_Q_CORRECT': 1, 'S2_ONLY_CORRECT': 1} | {'N0': 0, 'S_SIGLIP2_AREA': 2, 'Q_GAIN': 0} |
 | scene0534_00 | COMPLETE | 93 | {'SHAPE_UNMATCHED': 84, 'ALL_WRONG': 4, 'ALL_CORRECT': 4, 'S2_ONLY_CORRECT': 1} | {'N0': 0, 'S_SIGLIP2_AREA': 2, 'Q_GAIN': 10} |
+| scene0553_00 | COMPLETE | 30 | {'SHAPE_UNMATCHED': 23, 'N0_Q_CORRECT': 1, 'ALL_WRONG': 3, 'S2_ONLY_CORRECT': 1, 'ALL_CORRECT': 2} | {'N0': 0, 'S_SIGLIP2_AREA': 1, 'Q_GAIN': 0} |
+| scene0626_00 | COMPLETE | 29 | {'SHAPE_UNMATCHED': 20, 'Q_ONLY_CORRECT': 1, 'ALL_CORRECT': 6, 'ALL_WRONG': 2} | {'N0': 0, 'S_SIGLIP2_AREA': 1, 'Q_GAIN': 1} |
 
 For scenes with complete source evidence, the numerical tables preserve all-owner correctness, source GT-class ranks, unavailable/unmatched/ambiguous categories and available M1/M2 routing counts. SOURCE_EVIDENCE_INCOMPLETE means those analyses remain pending. Oracle-correctable object counts are diagnostic, not an AP upper bound.
 
@@ -66,6 +111,13 @@ For scenes with complete source evidence, the numerical tables preserve all-owne
 | compose_cal | CP_M5_MIX50_NATIVE − Q_COMBINE | -0.164005 | -0.990562 |
 | compose_cal | CP_M5_MIX50_NATIVE − Q_GAIN | -0.183452 | 1.114222 |
 | compose_cal | 2x2_INTERACTION − (M4-Q_GAIN)-(M3-Q_COMBINE) | 0.013485 | 5.533720 |
+| regression_only | CP_M3_COMBINE_S2 − Q_COMBINE | -6.035354 | 2.241598 |
+| regression_only | CP_M4_GAIN_S2 − Q_GAIN | 0.000000 | 1.381682 |
+| regression_only | CP_M4_GAIN_S2 − CP_M3_COMBINE_S2 | 10.387205 | 12.092437 |
+| regression_only | CP_M2_EQUAL_CAL − CP_M2_EQUAL_RAW | 7.297980 | 6.497411 |
+| regression_only | CP_M5_MIX50_NATIVE − Q_COMBINE | -0.193603 | 5.396572 |
+| regression_only | CP_M5_MIX50_NATIVE − Q_GAIN | -4.545455 | -7.555780 |
+| regression_only | 2x2_INTERACTION − (M4-Q_GAIN)-(M3-Q_COMBINE) | 6.035354 | -0.859916 |
 
 Lane preference/winner/fallback counts, request Jaccards, per-owner paid budgets and retained/dropped evidence are in `trajectory_diagnostics`. A changed trajectory alone is not a gain.
 
@@ -73,20 +125,22 @@ Lane preference/winner/fallback counts, request Jaccards, per-owner paid budgets
 
 Nominee: **CP_M2_EQUAL_RAW**.
 Experiment commit A: `7a9bd5a212e1f85619235c15a06b405eece2be39`.
-Query physical totals: `{'model_loads': 8, 'model_forwards': 874, 'crop_inputs': 5244, 'cache_hits': 1325, 'inference_seconds': 183.83051462110598}`; new native captures: 0.
-Historical static S2 reused requests: 584. CPU calibration: 9 completed scalar fits, 168 recorded optimizer evaluations; initial NLL evaluations are listed separately in the numerical ledger. Calibration elapsed time was not instrumented.
+Query physical totals: `{'model_loads': 16, 'model_forwards': 1950, 'crop_inputs': 11700, 'cache_hits': 2444, 'inference_seconds': 415.906520458404, 'static_siglip2_forwards': 87, 'static_siglip2_crops': 522}`; new native captures: 1.
+Completed new frontend jobs: 2; processed frames: 400. Frontend and mapping elapsed times remain separate in the numerical ledger.
+Native capture SigLIP forwards/crops are recorded separately per capture from the worker shutdown log and checked against captured requests; they are additional to query totals. Failed or missing worker counts are not estimated.
+Historical static S2 reused requests: 668. CPU calibration: 9 completed scalar fits, 168 recorded optimizer evaluations; initial NLL evaluations are listed separately in the numerical ledger. Calibration elapsed time was not instrumented.
 
 | Role | Nominee versus | Status | Worst ΔuAP / ΔmIoU (pp) | Every scene nonnegative |
 |---|---|---|---:|---|
 | compose_cal | N0 | MEAN_GAIN_WITH_SCENE_TRADEOFF | -0.190584 / 2.065517 | False |
 | compose_cal | S_SIGLIP2_AREA | NO_MEAN_GAIN | -0.194932 / 0.480804 | False |
-| regression_only | N0 | INCONCLUSIVE_INCOMPLETE_ROWS | — / — | — |
-| regression_only | S_SIGLIP2_AREA | INCONCLUSIVE_INCOMPLETE_ROWS | — / — | — |
+| regression_only | N0 | MEAN_GAIN_WITH_SCENE_TRADEOFF | -3.333333 / -5.701325 | False |
+| regression_only | S_SIGLIP2_AREA | MEAN_GAIN_WITH_SCENE_TRADEOFF | 0.000000 / -1.012838 | False |
 | confirmation | N0 | INCONCLUSIVE_INCOMPLETE_ROWS | — / — | — |
 | confirmation | S_SIGLIP2_AREA | INCONCLUSIVE_INCOMPLETE_ROWS | — / — | — |
 
 Actual released TP/FN gains/losses and FP events at 0.5/0.75 are linked in `released_transitions`, separately from geometric class correctness. AP increments are not added across objects.
 The observed M2_RAW/M2_CAL equal-uAP case is examined in [UNCHANGED_AP_DIAGNOSTICS.md](complementary_composition_v1/UNCHANGED_AP_DIAGNOSTICS.md), including actual eligibility, ignored predictions, class AP states and the tied-score FP responsible for its AP25 change.
 
-Complete numerical tables: `/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/reports/a522b8e0584e5ac73094ae2785f63304756a18f38a56783dfbaec0190e881d34/tables.json`.
+Complete numerical tables: `/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/reports/2922a16aa6186e1622faf35b91ba10b330f46b11d2d9dbddf3badaef3e72253a/tables.json`.
 Publication receipt (written only after verified ordinary push): `/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/publication_receipt.json`.
