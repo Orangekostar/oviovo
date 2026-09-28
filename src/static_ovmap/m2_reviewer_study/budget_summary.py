@@ -56,3 +56,18 @@ def summarize_queries(binding, dataset):
               "random_seed_spread": spread, "scene_rows": len(rows), "CAL_independent_benchmark": False}
     write_once(root / "query_controls" / (dataset + "_summary.json"), result)
     return result
+
+
+def finish_query_stage(binding):
+    from .cost_ledger import build_cost_ledger
+
+    summaries = {dataset: summarize_queries(binding, dataset) for dataset in ("ScanNet", "Replica")}
+    costs, output = build_cost_ledger(binding)
+    if costs["completed_B200_jobs"] != 50:
+        raise ValueError("query stage requires all50 B200 acquisition jobs")
+    result = {"status": "COMPLETE", "binding": binding["identity"],
+              "scene_rows": sum(value["scene_rows"] for value in summaries.values()),
+              "pooled_rows": sum(len(value["pooled"]) for value in summaries.values()),
+              "cost_ledger": str(output / "ledger.json")}
+    write_once(Path(binding["output_root"]) / "query_controls/stage_complete.json", result)
+    return result

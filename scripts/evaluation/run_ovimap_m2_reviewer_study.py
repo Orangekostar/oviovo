@@ -18,13 +18,14 @@ def main():
     parser.add_argument("--spec", type=Path, default=ROOT / "docs/paper/static_ovmap/m2_reviewer_study_v1/PROTOCOL_SPEC.json")
     parser.add_argument("--source-transfer", type=Path, default=Path("/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/transfer.json"))
     parser.add_argument("--output-root", type=Path, default=Path("/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001"))
-    parser.add_argument("--phase", required=True, choices=("bind", "core", "query-controls", "diagnostics", "robustness", "fresh"))
+    parser.add_argument("--phase", required=True, choices=("bind", "core", "query-controls", "diagnostics", "robustness", "fresh", "report"))
     parser.add_argument("--scene")
     parser.add_argument("--gpu", default="1")
     parser.add_argument("--query-policy", choices=("Q_GAIN", "Q_COMBINE", "RV_Q_RANDOM"))
     parser.add_argument("--budget", type=int, default=200)
     parser.add_argument("--seed", type=int)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--allow-partial", action="store_true", help="write clearly marked draft reports only")
     args = parser.parse_args()
     for key in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
         os.environ[key] = "8"
@@ -36,6 +37,26 @@ def main():
     if args.phase == "bind":
         result = bind(args.spec, args.source_transfer, args.output_root)
         print(json.dumps({"status": result["status"], "scenes": len(result["scenes"])}), flush=True)
+    elif args.phase == "report":
+        from src.static_ovmap.composition_study.io import write_once
+        from src.static_ovmap.m2_reviewer_study.reporting import (
+            write_documents,
+            write_report_tables,
+        )
+
+        binding = read_json(args.output_root / "source_binding.json")
+        if (args.output_root / "query_controls/scene_stage.json").exists() and not (args.output_root / "query_controls/stage_complete.json").exists():
+            from src.static_ovmap.m2_reviewer_study.budget_summary import (
+                finish_query_stage,
+            )
+
+            finish_query_stage(binding)
+        result, destination = write_report_tables(binding, allow_partial=args.allow_partial)
+        write_documents(binding, result, destination)
+        if result["status"] == "FINAL_EVIDENCE_READY":
+            write_once(args.output_root / "final_report.json", {"status": result["status"], "identity": result["identity"],
+                                                               "path": str(destination), "binding": binding["identity"]})
+        print(json.dumps({"status": result["status"], "path": str(destination)}), flush=True)
     elif args.phase == "fresh":
         from src.static_ovmap.m2_reviewer_study.fresh_execution import run_fresh
 
@@ -96,6 +117,11 @@ def main():
             if args.query_policy or args.seed is not None or args.budget != 200:
                 parser.error("policy/seed/budget overrides require a leaf --scene")
             result = run_query_controls(binding, gpu=args.gpu)
+            from src.static_ovmap.m2_reviewer_study.budget_summary import (
+                finish_query_stage,
+            )
+
+            result = finish_query_stage(binding)
             print(json.dumps(result), flush=True)
             return
         policies = [(args.query_policy, args.seed)] if args.query_policy else [

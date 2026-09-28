@@ -179,3 +179,31 @@ Cost/core orchestration continuation:
 - Still outstanding: full Replica query completion and pools, final cost
   snapshot, report/publish/all phases and full dependency-resume audit, tablesA–F,
   final docs/bundle/remote SHA and requirement-by-requirement completion review.
+
+Report continuation:
+
+- Added reporting.py and claims.py. Evidence-derived tablesA–F, scene/pool/macro
+  CSVs, calibration CSV, cost CSV, merged object ledger, paired comparisons,
+  three MD document drafts and11 separate contribution decisions are generated.
+  Report readiness rejects missing/smoke stages; fresh insufficient-local-data
+  is an explicitly allowed prerequisite outcome, never a performance failure.
+- Real report CLI completed with PARTIAL, not final. Latest draft snapshot:
+  reports/eaa388e9f100c945eb001ad7a16433cc78bcbd49ef8eb99d85ec2bb5f16a38b1/.
+  Earlier draft8f5f3e... is preserved. Reports remain external until final review.
+- Official-current-class Replica pooled M2_CAL has uAP8.910%, AP5020.175%,
+  mIoU26.792%; N0 has8.685%,21.477%,27.261%. This is a metric tradeoff.
+  Fixed157-object probability pool: RAW→CAL NLL3.32554→1.74688,
+  Brier.94642→.66166; constant.01 NLL1.74291/Brier.66077. No need for
+  source-specific fitting is established by these controls. Claims remain
+  provisional while Replica matched-query results are incomplete.
+- Added finish_query_stage() to collect both dataset query pools/seed spreads
+  and cost completion. The report phase invokes it once scene_stage.json exists.
+  This is needed because currently live controller10450 imported an earlier
+  runner and will finish scene rows without invoking the later pool-finalizer.
+- GPU1 session10450 remains live on office3. GPU2 session30900 completed all
+  room0 acquisitions and is on room1. New CLI leaves take per-job locks. Avoid
+  restarting either controller or changing query_jobs.py/calibration inputs.
+- One report-state fixture and two probability/bootstrap fixtures pass; changed
+  paths Ruff and diff checks pass. Still required: remaining queries, final
+  summaries, publish/all phases, dependency-resume and final artifact audit,
+  final docs/bundle, normal push and full remote SHA match.
