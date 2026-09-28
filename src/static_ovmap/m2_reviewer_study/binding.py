@@ -31,6 +31,17 @@ class InputIndex:
     def entries(self):
         return sorted(self.cache.values(), key=lambda row: row["path"])
 
+    def expected_output(self, path, receipt):
+        path = Path(path).resolve()
+        expected = next((row for row in receipt["outputs"]
+                         if Path(row["path"]).resolve() == path), None)
+        if expected is None:
+            raise ValueError(f"output missing from source receipt: {path}")
+        return self.identity(path, expected)
+
+    def manifest(self):
+        return {"entries": self.entries()}
+
 
 def bind(spec_path, transfer_path, output):
     index = InputIndex()
