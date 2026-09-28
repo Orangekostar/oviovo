@@ -123,3 +123,30 @@ Robustness continuation:
 - Query controller session10450 remains live in Replica office0; inspect before
   resuming. Fresh success path/exposure audit, cost reporting, full runner/resume,
   final reports, publication and exact requirement audit remain outstanding.
+
+Fresh continuation:
+
+- Added fresh.py metadata-only audit across known repository/runtime roots:
+  522 historical references/directories; 14 locally authorized raw scenes,
+  all explicitly excluded physical families; zero eligible.31 oversized metadata
+  files are recorded as uninspected; unresolved families cannot become eligible.
+  Sensor headers confirm the original native200-slot schedule without RGB export.
+- Real fresh phase and resume return FRESH_BLOCKED_INSUFFICIENT_LOCAL_UNEXPOSED_FAMILIES;
+  authoritative receipt is fresh/status.json, linked to immutable fresh/audits/.
+  The early fresh_inventory.json is retained as historical preliminary evidence.
+- Added fresh_execution.py with a new own-plan authorization contract, local raw
+  byte verification, real sensor export/native capture, S2 semantic worker, causal
+  frozen GAIN worker, source formation, all-four-scene prediction lock, both
+  rank evaluations and released pools. No old authorization guard was changed.
+  Visual leaves use fresh processes; S2/Q allocator peaks and sampled locked
+  native/frontend GPU-device peaks have explicit distinct measurement scopes.
+- Fresh execution success path has NOT been run on real fresh data (none exists).
+  Two fixtures verify literal-NUL family selection, duplicate-family exclusion,
+  unknown/incomplete exclusion, four-scene contract and audit-tamper rejection.
+  CLI import/help, real blocked execution/resume and changed-file Ruff pass.
+- Query orchestrator session10450 remains live; latest observed sceneoffice1
+  random17 complete, all completed jobs200successes. Inspect before any restart.
+- Remaining major work: query completion/pools/cost accounting, complete core
+  setup/all/report/publish orchestration and dependency-resume audit, tablesA–F,
+  three final documents, artifact bundle, branch push/full remote SHA, full-spec
+  completion audit. Fresh missing data must remain clearly not-tested.
