@@ -97,3 +97,29 @@ Diagnostics continuation:
 - Remaining: query stage completion/pools/cost report, robust text tests, full
   fresh success path and exposure audit, complete phase/resume implementation,
   scientific reports and artifact publication/full requirement audit.
+
+Robustness continuation:
+
+- CAL curve_gate.json is now FROZEN and NOT_TRIGGERED before new Replica
+  query evaluation: GAIN uAP=.03665012765302552, mIoU=.23444966273475054;
+  COMBINE .03241838889551922/.23865477941591023; random seed mean
+  .03906695475461139/.24129766047893245. No B100/B400 should run.
+- Recovered all ten scenes' exact frozen aggregates; native readout is unchanged,
+  Q/S2 original full-score reconstruction error <6e-17 with exact top1 parity.
+  Recovery session13627 exited0. No image inference or controller replay.
+- CPU text encoding completed in original isolated environments for Replica:
+  native session70994 and S2 session19239 both exited0, 118 new texts each.
+  Original vectors and canonical references are reused exactly; extension
+  preserves original columns and encodes only the fixed distractors.
+- All eight Replica scenes completed 6 methods ×4 vocabularies, paired+union
+  object evaluations, raw scores/probabilities and text/model identities.
+  Robustness evaluation session95330 exited0. Results under robustness/results/.
+- On the same157 paired identifiable objects, M2_CAL accuracy: original50.318%,
+  photo55.414%, closeup46.497%, expanded50.318%; expanded distractor win0%.
+  These are descriptive object-weighted figures, not official AP or a prompt
+  selection. No method, temperature, prompt or comparator was changed.
+- Added callable robustness phase; three robustness/diagnostic fixtures pass,
+  including distractor winners counted as errors, and changed-file Ruff passes.
+- Query controller session10450 remains live in Replica office0; inspect before
+  resuming. Fresh success path/exposure audit, cost reporting, full runner/resume,
+  final reports, publication and exact requirement audit remain outstanding.

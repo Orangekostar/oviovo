@@ -17,7 +17,7 @@ def main():
     parser.add_argument("--spec", type=Path, default=ROOT / "docs/paper/static_ovmap/m2_reviewer_study_v1/PROTOCOL_SPEC.json")
     parser.add_argument("--source-transfer", type=Path, default=Path("/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/transfer.json"))
     parser.add_argument("--output-root", type=Path, default=Path("/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001"))
-    parser.add_argument("--phase", required=True, choices=("bind", "core", "query-controls", "diagnostics"))
+    parser.add_argument("--phase", required=True, choices=("bind", "core", "query-controls", "diagnostics", "robustness"))
     parser.add_argument("--scene")
     parser.add_argument("--gpu", default="1")
     parser.add_argument("--query-policy", choices=("Q_GAIN", "Q_COMBINE", "RV_Q_RANDOM"))
@@ -35,6 +35,25 @@ def main():
     if args.phase == "bind":
         result = bind(args.spec, args.source_transfer, args.output_root)
         print(json.dumps({"status": result["status"], "scenes": len(result["scenes"])}), flush=True)
+    elif args.phase == "robustness":
+        from src.static_ovmap.m2_reviewer_study.aggregates import recover_aggregates
+        from src.static_ovmap.m2_reviewer_study.robustness import (
+            evaluate_robustness_scene,
+        )
+
+        binding = read_json(args.output_root / "source_binding.json")
+        scenes = [args.scene] if args.scene else [s for s, r in binding["scenes"].items() if r["dataset"] == "Replica"]
+        if any(s not in binding["scenes"] or binding["scenes"][s]["dataset"] != "Replica" for s in scenes):
+            raise ValueError("robustness accepts bound Replica scenes only")
+        config = read_json(binding["scenes"][scenes[0]]["config"])
+        for model, python in (("native", config["runtime"]["mapping_python"]), ("siglip2", config["runtime"]["semantic_python"])):
+            subprocess.run([python, "-m", "src.static_ovmap.m2_reviewer_study.text_spaces",
+                            "--binding", str(args.output_root / "source_binding.json"), "--dataset", "Replica", "--model", model],
+                           cwd=ROOT, check=True)
+        for scene in scenes:
+            recover_aggregates(binding, scene)
+            result = evaluate_robustness_scene(binding, scene)
+            print(json.dumps({"status": result["status"], "scene": scene, "methods": result["methods"]}), flush=True)
     elif args.phase == "diagnostics":
         from src.static_ovmap.m2_reviewer_study.attribution import attribute_scene
         from src.static_ovmap.m2_reviewer_study.diagnostics import (
