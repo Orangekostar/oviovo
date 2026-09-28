@@ -232,3 +232,26 @@ Measured-matrix audit continuation:
   reports/7cd6ee9cbbee546f1127acd85322fcc29e822e03273af47319eeb194ad927929/.
   This is still PARTIAL. Publication/all, remaining query results and final
   requirement-by-requirement review remain outstanding; no completion claim.
+
+Publication/workflow implementation continuation:
+
+- Added callable publish/all CLI phases. publication.py packages this study's
+  report tables, byte-exact principal metrics/nomination, scalar fits, configs,
+  locked predictions, source audits, compressed diagnostics/query receipts and
+  external consumed-file identities. It requires a final report and exact
+  matrix audit, checks the100MiB ceiling, scopes staged paths, performs a normal
+  task-branch push and writes an external full-SHA equality receipt.
+- workflow.py runs real phase subprocesses with dependency statuses. A failed
+  query stage blocks report/publication but not diagnostics, robustness or
+  freshness. Status is persisted after every stage. This workflow was not
+  launched against the live experiment to avoid duplicating its controller.
+- Four focused reporting/publication/dependency tests pass; changed-path Ruff
+  and diff checks pass. Actual CLI --help lists all nine phases. Actual publish
+  invocation correctly stopped at missing final_report.json before copying,
+  committing or pushing. Full real bundle construction remains unverified until
+  final query evidence exists; it is not claimed published.
+- Sessions71407 and30900 remain live. GPU1 resumed the office3 seed41 leaf;
+  GPU2 completed room2 COMBINE and random17 and continues the remaining seeds.
+- Still required: completed query matrix and pools, final report/claim review,
+  actual bundle size/dependency validation, full specification audit, final
+  docs/commit/push and remote SHA verification.

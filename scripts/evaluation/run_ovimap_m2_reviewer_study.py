@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--spec", type=Path, default=ROOT / "docs/paper/static_ovmap/m2_reviewer_study_v1/PROTOCOL_SPEC.json")
     parser.add_argument("--source-transfer", type=Path, default=Path("/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/transfer.json"))
     parser.add_argument("--output-root", type=Path, default=Path("/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001"))
-    parser.add_argument("--phase", required=True, choices=("bind", "core", "query-controls", "diagnostics", "robustness", "fresh", "report"))
+    parser.add_argument("--phase", required=True, choices=("bind", "core", "query-controls", "diagnostics", "robustness", "fresh", "report", "publish", "all"))
     parser.add_argument("--scene")
     parser.add_argument("--gpu", default="1")
     parser.add_argument("--query-policy", choices=("Q_GAIN", "Q_COMBINE", "RV_Q_RANDOM"))
@@ -34,7 +34,18 @@ def main():
     from src.static_ovmap.composition_study.io import read_json
     from src.static_ovmap.m2_reviewer_study.binding import bind
 
-    if args.phase == "bind":
+    if args.phase in ("all", "publish") and (args.scene or args.query_policy or args.seed is not None or args.allow_partial):
+        parser.error("all/publish require the complete prescribed study without leaf or draft overrides")
+    if args.phase == "all":
+        from src.static_ovmap.m2_reviewer_study.workflow import run_all
+
+        print(json.dumps(run_all(spec=args.spec, source_transfer=args.source_transfer,
+                                 output_root=args.output_root, gpu=args.gpu)), flush=True)
+    elif args.phase == "publish":
+        from src.static_ovmap.m2_reviewer_study.publication import publish
+
+        print(json.dumps(publish(read_json(args.output_root / "source_binding.json"))), flush=True)
+    elif args.phase == "bind":
         result = bind(args.spec, args.source_transfer, args.output_root)
         print(json.dumps({"status": result["status"], "scenes": len(result["scenes"])}), flush=True)
     elif args.phase == "report":
