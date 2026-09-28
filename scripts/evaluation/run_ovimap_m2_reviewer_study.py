@@ -2,6 +2,7 @@
 """Execute the source-bound M2 reviewer evidence study."""
 
 import argparse
+import fcntl
 import json
 import os
 import subprocess
@@ -81,7 +82,10 @@ def main():
         if not args.scene:
             core_macro_bootstrap(binding)
     elif args.phase == "query-controls":
-        from src.static_ovmap.m2_reviewer_study.query_jobs import run_query_job
+        from src.static_ovmap.m2_reviewer_study.query_jobs import (
+            authorize_query,
+            run_query_job,
+        )
 
         binding = read_json(args.output_root / "source_binding.json")
         if not args.scene:
@@ -106,13 +110,22 @@ def main():
                     command += ["--seed", str(seed)]
                 subprocess.run(command, check=True)
                 continue
-            receipt = run_query_job(binding, args.scene, policy, budget=args.budget, seed=seed, gpu=args.gpu)
+            method = authorize_query(binding, args.scene, policy, args.budget, seed)
+            lock_root = args.output_root / "query_job_locks"
+            lock_root.mkdir(parents=True, exist_ok=True)
+            with (lock_root / f"{args.scene}_{method}.lock").open("a") as handle:
+                fcntl.flock(handle, fcntl.LOCK_EX)
+                receipt = run_query_job(binding, args.scene, policy, budget=args.budget, seed=seed, gpu=args.gpu)
             print(json.dumps({"status": "QUERY_ACQUISITION_COMPLETE", "scene": args.scene,
                               "method": receipt["method_id"], "logical": receipt["logical"]}), flush=True)
     else:
         from src.static_ovmap.m2_reviewer_study.core import evaluate_core_scene
+        from src.static_ovmap.m2_reviewer_study.core_pipeline import run_core
 
         binding = read_json(args.output_root / "source_binding.json")
+        if not args.scene:
+            print(json.dumps(run_core(binding)), flush=True)
+            return
         scenes = [args.scene] if args.scene else list(binding["scenes"])
         for scene in scenes:
             if scene not in binding["scenes"]:

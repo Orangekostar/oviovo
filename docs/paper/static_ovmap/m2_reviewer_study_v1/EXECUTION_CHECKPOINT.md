@@ -150,3 +150,32 @@ Fresh continuation:
   setup/all/report/publish orchestration and dependency-resume audit, tablesA–F,
   three final documents, artifact bundle, branch push/full remote SHA, full-spec
   completion audit. Fresh missing data must remain clearly not-tested.
+
+Cost/core orchestration continuation:
+
+- Added core_pipeline.py: callable original-example-preserving cosine/shared
+  CAL folds, CAL-first prediction/evaluation, nomination, final fits, Replica
+  core, official export and both datasets' released pools. The existing22 cosine
+  example records match reconstructed resume inputs exactly (session40396 exit0).
+  Original ad-hoc four-fold-fit timing remains missing; it is not invented as0.
+- Strengthened read_scene checks against source_binding config/source hashes
+  and the native feature hash attested by the N0 source. Real office0 parity
+  passes; existing output/audit schemas and prediction semantics are unchanged.
+- Added cost_ledger.py: shared historical frontend/mapping, historical Q/S2,
+  per-source logical counts, exact required operation unions including N0 map,
+  actual study physical jobs, evaluator jobs, CPU text jobs and scalar-fit costs.
+  Snapshots have content-keyed directories under costs/. Partial job coverage is
+  explicit; failed initial work and missing historical memory/timings remain
+  declared missing, not free. These are not online end-to-end latency claims.
+- Added budget_summary.py. Real CAL summary completed (session29991 exit0):
+  60 scene rows,30 released pools,12 seed-spread summaries. No random ensemble.
+- GPU1 controller session10450 / PID819399 continues office2 onward.
+  Added independent GPU2 acquisition driver session30900 for room0,room1,room2.
+  CLI per-scene/policy/budget locks now prevent duplicate leaves if controllers
+  meet; identical completed jobs resume regardless of the requested GPU.
+  The ongoing original room0 leaf started before this CLI lock was added; it
+  should finish before GPU1 reaches room0. Inspect actual processes before reuse.
+- Eight changed query/selection fixtures pass; Ruff and diff checks pass.
+- Still outstanding: full Replica query completion and pools, final cost
+  snapshot, report/publish/all phases and full dependency-resume audit, tablesA–F,
+  final docs/bundle/remote SHA and requirement-by-requirement completion review.

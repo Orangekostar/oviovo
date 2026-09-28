@@ -39,6 +39,11 @@ def read_scene(binding, scene, index=None):
 
     index = index or InputIndex()
     bound = binding["scenes"][scene]
+    verification = InputIndex()
+    expected_inputs = {r["path"]: r for r in binding.get("inputs", [])}
+    for path in (bound["config"], *bound["sources"].values()):
+        if path in expected_inputs:
+            verification.identity(path, expected_inputs[path])
     config = read_json(bound["config"])
     data = config["scenes"][scene]
     native = load_prediction(data["native_prediction"])
@@ -58,6 +63,10 @@ def read_scene(binding, scene, index=None):
             elif row["scores"] is not None:
                 raise ValueError("unavailable source contains fabricated evidence")
     feature_path = data["native_features"]
+    expected_feature = next((r for r in sources["N0"]["source_receipts"] if r["path"] == feature_path), None)
+    if expected_feature is None:
+        raise ValueError("native features have no source-bound identity")
+    verification.identity(feature_path, expected_feature)
     index.identity(feature_path)
     with open(feature_path, "rb") as handle:
         saved = pickle.load(handle)
