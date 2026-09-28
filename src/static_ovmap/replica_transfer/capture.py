@@ -164,7 +164,7 @@ def capture_one(config: dict, row: dict, native_root: Path, output: Path) -> dic
             raise ValueError(
                 f"changed completed frontend requires a new output root: {scene}"
             )
-        require_idle_gpu(str(config["cuda_device"]), output)
+        require_idle_gpu(str(config["cuda_device"]), base if config.get("ipc_prefix") else output)
         print(f"{scene}: CropFormer {len(images)} scheduled valid frames", flush=True)
         elapsed = _execute(
             front_command, front_root, front_env, front_receipt.parent, front_identity
@@ -235,6 +235,10 @@ def capture_one(config: dict, row: dict, native_root: Path, output: Path) -> dic
         "--perception_worker",
         str(wrapper),
     ]
+    if config.get("ipc_prefix"):
+        launcher = ROOT / "scripts/evaluation/replica_isolated_mapper.py"
+        map_inputs.append(file_identity(launcher))
+        command = [command[0], str(launcher), config["ipc_prefix"] + "_" + scene, *command[1:]]
     identity = canonical_digest(
         {
             "command": command,
@@ -251,7 +255,7 @@ def capture_one(config: dict, row: dict, native_root: Path, output: Path) -> dic
             raise ValueError(
                 f"changed completed native capture requires a new output root: {scene}"
             )
-        require_idle_gpu(str(config["cuda_device"]), output)
+        require_idle_gpu(str(config["cuda_device"]), base if config.get("ipc_prefix") else output)
         preserve_interrupted_replay(base, identity)
         print(f"{scene}: native mapping, 200 scheduled slots, FP32 SigLIP", flush=True)
         elapsed = _execute(command, upstream, map_env, receipt_path.parent, identity)

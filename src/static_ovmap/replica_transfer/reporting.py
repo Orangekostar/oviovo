@@ -116,6 +116,15 @@ def report(config):
         name: verified_receipt(root / "text" / name / "receipt.json")
         for name in ("native", "siglip2")
     }
+    parallel_plan = root / "parallel/execution_plan.json"
+    if parallel_plan.exists():
+        result["parallel_execution"] = read_json(parallel_plan)
+        index.identity(parallel_plan)
+        for gpu in sorted(set(result["parallel_execution"]["assignments"].values())):
+            index.identity(root / "parallel" / f"gpu{gpu}.json")
+        for scene in result["parallel_execution"]["assignments"]:
+            index.identity(root / "parallel" / f"{scene}.json")
+        result["source_manifest"] = index.manifest()
     source_config = read_json(SOURCE_ROOT / "resolved_config.json")
     result["scannet_reference_by_original_role"] = {}
     for role in ("compose_cal", "regression_only", "confirmation"):

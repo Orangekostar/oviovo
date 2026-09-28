@@ -27,7 +27,12 @@ def main():
     path = args.config or bind(args.output_root)
     config = require_transfer(path, args.scene, args.method)
     os.environ.update(CUDA_VISIBLE_DEVICES=str(config["runtime"]["cuda_device"]), HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", HF_MODULES_CACHE=config["runtime"]["hf_modules_cache"])
-    if args.phase == "bind":
+    from src.static_ovmap.replica_transfer.parallel import delegated_scene
+
+    delegated = delegated_scene(config, path, args.scene, args.phase)
+    if delegated is not None:
+        result = delegated
+    elif args.phase == "bind":
         result = {"status": "COMPLETE", "config": str(path)}
     elif args.phase == "capture":
         import fcntl
