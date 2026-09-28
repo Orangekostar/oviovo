@@ -1,0 +1,46 @@
+{
+  "changed_owners": 30,
+  "evaluation_identity": "b34ce08bc3740caa6df2c4504d92aa31f0eecb6ce30cb96d37b1ed2da37f684c",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0064_00/evaluation_cache/b34ce08bc3740caa6df2c4504d92aa31f0eecb6ce30cb96d37b1ed2da37f684c/receipt.json",
+  "evaluator_prediction_count": 48,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 743,
+    "crop_inputs": 5532,
+    "native_requests": 743,
+    "siglip2_requests": 179
+  },
+  "logical_requests": 922,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0064_00/evaluation_cache/b34ce08bc3740caa6df2c4504d92aa31f0eecb6ce30cb96d37b1ed2da37f684c/released/scene0064_00/418351d0cde91402c6668230113e19a10f384ee9f52fd5111c641aa0d95da50a/15b62f836b7f214c4267b8c4e1e38a02909d49c038a3d7e464e43ed4ae8974ee/released/released_matches.json.gz",
+  "method_id": "S_SIGLIP2_AREA",
+  "metrics": {
+    "ap25": 0.31776094276094274,
+    "ap50": 0.19907407407407407,
+    "canonical_ap50": 0.11367694805194806,
+    "canonical_ap75": 0.026443504230960674,
+    "classes_observed": 21,
+    "macc": 0.26666569444101434,
+    "masks_observed": 63,
+    "miou": 0.1695082265742215,
+    "trace_parity": true,
+    "uap": 0.04989711934156379
+  },
+  "owners": 63,
+  "physical": {
+    "crop_inputs": 0,
+    "model_forwards": 0,
+    "model_loads": 0,
+    "reused_source": true
+  },
+  "positive_owners": 63,
+  "prediction_key": "418351d0cde91402c6668230113e19a10f384ee9f52fd5111c641aa0d95da50a",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0064_00/study/scenes/scene0064_00/semantic/direct/S_SIGLIP2_AREA/manifest.json",
+  "record_key": "e88f770d327ccb551be0b21939468497826bf4a96ad827faf4c67c860197ead0",
+  "role": "confirmation",
+  "scene_id": "scene0064_00",
+  "shared_evaluation_first_method": "S_SIGLIP2_AREA",
+  "source_reuse": "EXACT_FROZEN_SOURCE_PREDICTION",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/confirmation/scene0064_00/evaluation_cache/b34ce08bc3740caa6df2c4504d92aa31f0eecb6ce30cb96d37b1ed2da37f684c/released/scene0064_00/418351d0cde91402c6668230113e19a10f384ee9f52fd5111c641aa0d95da50a/15b62f836b7f214c4267b8c4e1e38a02909d49c038a3d7e464e43ed4ae8974ee/released/released_trace.json.gz",
+  "unknown_owners": 0
+}

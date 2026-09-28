@@ -1,6 +1,6 @@
 # Complementary composition handoff
 
-Current result: PARTIAL; confirmation: AUTHORIZED_INCOMPLETE. Missing required rows: 0.
+Current result: COMPLETE; confirmation: COMPLETE. Missing development rows: 0; missing frozen confirmation rows: 0.
 
 Resolved config: `/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/resolved_config.json`.
 

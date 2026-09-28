@@ -1,6 +1,6 @@
 # Complementary composition results
 
-Status: **PARTIAL**. Confirmation: **AUTHORIZED_INCOMPLETE**.
+Status: **COMPLETE**. Confirmation: **COMPLETE**.
 
 Historical CAL and regression scenes are previously exposed; Q_GAIN checkpoint selection already used historical CAL. Cross-fitted temperatures do not create a fresh holdout. Two confirmation scenes cannot establish generalization. No deployment was changed.
 
@@ -31,6 +31,11 @@ Physical cells describe query/readout work. Confirmation source rows reuse N0/S2
 | compose_cal | scene0534_00 | Q_COMBINE | 4.483431 | 12.280702 | 25.877193 | 23.389570 | 29.420872 | 61/93 | 46/41 | 200/0/1200 | `{"cache_hits": 200, "crop_inputs": 0, "inference_seconds": 0.0, "model_forwards": 0, "model_load_seconds": 0.0, "model_loads": 0, "tiles": 0}` | FORCED_TRAJECTORY | Q_COMBINE |
 | compose_cal | scene0534_00 | Q_GAIN | 4.824561 | 17.105263 | 23.391813 | 21.429484 | 26.859862 | 42/93 | 83/70 | 200/0/1200 | `{"cache_hits": 125, "crop_inputs": 450, "inference_seconds": 15.578504843171686, "model_forwards": 75, "model_load_seconds": 2.5346053789835423, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | Q_GAIN |
 | compose_cal | scene0534_00 | S_SIGLIP2_AREA | 5.896686 | 19.736842 | 26.864035 | 27.521707 | 38.932137 | 45/93 | 93/78 | 902/264/6996 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
+| confirmation | scene0064_00 | CP_M2_EQUAL_RAW | 7.916667 | 19.166667 | 36.085859 | 19.524671 | 25.715520 | 22/63 | 63/48 | 943/179/6732 | `{"Q_GAIN": {"cache_hits": 31, "crop_inputs": 1014, "inference_seconds": 35.84443709149491, "model_forwards": 169, "model_load_seconds": 2.448856968083419, "model_loads": 1, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M2_EQUAL_RAW |
+| confirmation | scene0064_00 | N0 | 2.361111 | 8.055556 | 24.974747 | 11.278576 | 17.412030 | 0/63 | 63/48 | 743/0/4458 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | N0 |
+| confirmation | scene0064_00 | Q_COMBINE | 5.967078 | 13.148148 | 29.814815 | 14.461502 | 20.422631 | 43/63 | 31/26 | 200/0/1200 | `{"cache_hits": 0, "crop_inputs": 1200, "inference_seconds": 43.30909981718287, "model_forwards": 200, "model_load_seconds": 1.8742711500963196, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | Q_COMBINE |
+| confirmation | scene0064_00 | Q_GAIN | 7.752792 | 18.386243 | 35.305435 | 18.187115 | 24.184154 | 25/63 | 59/46 | 200/0/1200 | `{"cache_hits": 31, "crop_inputs": 1014, "inference_seconds": 35.84443709149491, "model_forwards": 169, "model_load_seconds": 2.448856968083419, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | Q_GAIN |
+| confirmation | scene0064_00 | S_SIGLIP2_AREA | 4.989712 | 19.907407 | 31.776094 | 16.950823 | 26.666569 | 30/63 | 63/48 | 743/179/5532 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | S_SIGLIP2_AREA |
 | confirmation | scene0553_00 | CP_M2_EQUAL_RAW | 25.000000 | 33.333333 | 33.333333 | 30.714752 | 31.025902 | 12/30 | 30/22 | 559/87/3876 | `{"Q_GAIN": {"cache_hits": 58, "crop_inputs": 852, "inference_seconds": 30.556340308277868, "model_forwards": 142, "model_load_seconds": 2.4230722869979218, "model_loads": 1, "tiles": 0}, "fusion_model_forwards": 0, "shared_dependency_count_once_globally": true, "static_sources_reused": true}` | NEW_STATIC_LABEL_FUSION | CP_M2_EQUAL_RAW |
 | confirmation | scene0553_00 | N0 | 19.444444 | 25.000000 | 25.000000 | 23.743545 | 24.003368 | 0/30 | 30/22 | 359/0/2154 | `{"crop_inputs": 0, "model_forwards": 0, "model_loads": 0, "reused_source": true}` | EXACT_FROZEN_SOURCE_PREDICTION | N0 |
 | confirmation | scene0553_00 | Q_COMBINE | 19.444444 | 25.000000 | 25.000000 | 23.743545 | 24.003368 | 11/30 | 26/22 | 200/0/1200 | `{"cache_hits": 0, "crop_inputs": 1200, "inference_seconds": 42.4114926608745, "model_forwards": 200, "model_load_seconds": 1.8474325330462307, "model_loads": 1, "tiles": 0}` | NEW_CAUSAL_CONTROLLER | Q_COMBINE |
@@ -79,20 +84,21 @@ Physical cells describe query/readout work. Confirmation source rows reuse N0/S2
 | regression_only | CP_M3_COMBINE_S2 | 21.641414 (2/2) | 32.910557 (2/2) | COMPLETE |
 | regression_only | CP_M4_GAIN_S2 | 32.028620 (2/2) | 45.002994 (2/2) | COMPLETE |
 | regression_only | CP_M5_MIX50_NATIVE | 27.483165 (2/2) | 36.065532 (2/2) | COMPLETE |
-| confirmation | N0 | 19.444444 (1/2) | 23.743545 (1/2) | MISSING_ROWS |
-| confirmation | Q_COMBINE | 19.444444 (1/2) | 23.743545 (1/2) | MISSING_ROWS |
-| confirmation | Q_GAIN | 19.444444 (1/2) | 21.696035 (1/2) | MISSING_ROWS |
-| confirmation | S_SIGLIP2_AREA | 17.592593 (1/2) | 31.491277 (1/2) | MISSING_ROWS |
-| confirmation | CP_M2_EQUAL_RAW | 25.000000 (1/2) | 30.714752 (1/2) | MISSING_ROWS |
+| confirmation | N0 | 10.902778 (2/2) | 17.511061 (2/2) | COMPLETE |
+| confirmation | Q_COMBINE | 12.705761 (2/2) | 19.102524 (2/2) | COMPLETE |
+| confirmation | Q_GAIN | 13.598618 (2/2) | 19.941575 (2/2) | COMPLETE |
+| confirmation | S_SIGLIP2_AREA | 11.291152 (2/2) | 24.221050 (2/2) | COMPLETE |
+| confirmation | CP_M2_EQUAL_RAW | 16.458333 (2/2) | 25.119712 (2/2) | COMPLETE |
 
 Missing required control/composition records: 0. Missing rows are not zero-valued measurements.
-Missing frozen confirmation records: 5. Confirmation coverage is checked separately from the development experiment.
+Missing frozen confirmation records: 0. Confirmation coverage is checked separately from the development experiment.
 
 ## Table B — complementarity and routing
 
 | Scene | Status | Owners | Correctness categories | Source unavailable counts |
 |---|---|---:|---|---|
 | scene0056_00 | COMPLETE | 99 | {'SHAPE_UNMATCHED': 86, 'Q_ONLY_CORRECT': 1, 'ALL_CORRECT': 7, 'ALL_WRONG': 4, 'N0_Q_CORRECT': 1} | {'N0': 0, 'S_SIGLIP2_AREA': 2, 'Q_GAIN': 3} |
+| scene0064_00 | COMPLETE | 63 | {'ALL_WRONG': 6, 'SHAPE_UNMATCHED': 51, 'ALL_CORRECT': 3, 'Q_ONLY_CORRECT': 2, 'S2_ONLY_CORRECT': 1} | {'N0': 0, 'S_SIGLIP2_AREA': 1, 'Q_GAIN': 4} |
 | scene0445_00 | COMPLETE | 16 | {'ALL_CORRECT': 4, 'SOURCE_UNAVAILABLE': 1, 'SHAPE_UNMATCHED': 9, 'N0_Q_CORRECT': 1, 'S2_ONLY_CORRECT': 1} | {'N0': 0, 'S_SIGLIP2_AREA': 2, 'Q_GAIN': 0} |
 | scene0534_00 | COMPLETE | 93 | {'SHAPE_UNMATCHED': 84, 'ALL_WRONG': 4, 'ALL_CORRECT': 4, 'S2_ONLY_CORRECT': 1} | {'N0': 0, 'S_SIGLIP2_AREA': 2, 'Q_GAIN': 10} |
 | scene0553_00 | COMPLETE | 30 | {'SHAPE_UNMATCHED': 23, 'N0_Q_CORRECT': 1, 'ALL_WRONG': 3, 'S2_ONLY_CORRECT': 1, 'ALL_CORRECT': 2} | {'N0': 0, 'S_SIGLIP2_AREA': 1, 'Q_GAIN': 0} |
@@ -124,8 +130,10 @@ Lane preference/winner/fallback counts, request Jaccards, per-owner paid budgets
 ## Table D — frozen nomination, confirmation and operations
 
 Nominee: **CP_M2_EQUAL_RAW**.
+Frozen best single: **S_SIGLIP2_AREA**.
+M6 CAL gate: `NOT_REQUIRED_BY_COMPOSITION_CAL_GATE`; checks: `{'M3_vs_COMBINE': False, 'M4_vs_GAIN': False, 'M5_vs_COMBINE': False}`. Exact finite CAL inputs and tolerance are preserved in `m6_gate`.
 Experiment commit A: `7a9bd5a212e1f85619235c15a06b405eece2be39`.
-Query physical totals: `{'model_loads': 16, 'model_forwards': 1950, 'crop_inputs': 11700, 'cache_hits': 2444, 'inference_seconds': 415.906520458404, 'static_siglip2_forwards': 87, 'static_siglip2_crops': 522}`; new native captures: 1.
+Query physical totals: `{'model_loads': 18, 'model_forwards': 2319, 'crop_inputs': 13914, 'cache_hits': 2475, 'inference_seconds': 495.06005736708175, 'static_siglip2_forwards': 266, 'static_siglip2_crops': 1596}`; new native captures: 2.
 Completed new frontend jobs: 2; processed frames: 400. Frontend and mapping elapsed times remain separate in the numerical ledger.
 Native capture SigLIP forwards/crops are recorded separately per capture from the worker shutdown log and checked against captured requests; they are additional to query totals. Failed or missing worker counts are not estimated.
 Historical static S2 reused requests: 668. CPU calibration: 9 completed scalar fits, 168 recorded optimizer evaluations; initial NLL evaluations are listed separately in the numerical ledger. Calibration elapsed time was not instrumented.
@@ -136,11 +144,22 @@ Historical static S2 reused requests: 668. CPU calibration: 9 completed scalar f
 | compose_cal | S_SIGLIP2_AREA | NO_MEAN_GAIN | -0.194932 / 0.480804 | False |
 | regression_only | N0 | MEAN_GAIN_WITH_SCENE_TRADEOFF | -3.333333 / -5.701325 | False |
 | regression_only | S_SIGLIP2_AREA | MEAN_GAIN_WITH_SCENE_TRADEOFF | 0.000000 / -1.012838 | False |
-| confirmation | N0 | INCONCLUSIVE_INCOMPLETE_ROWS | — / — | — |
-| confirmation | S_SIGLIP2_AREA | INCONCLUSIVE_INCOMPLETE_ROWS | — / — | — |
+| confirmation | N0 | MEAN_GAIN_NO_OBSERVED_SCENE_LOSS | 5.555556 / 6.971207 | True |
+| confirmation | S_SIGLIP2_AREA | MEAN_GAIN_WITH_SCENE_TRADEOFF | 2.926955 / -0.776525 | False |
+
+Nominee versus N0: actual released matching changes at IoU 0.5. GT IDs identify instances; event counts are not additive AP contributions.
+
+| Role | Scene | Newly matched GT IDs | Lost matched GT IDs | FP events N0 → nominee |
+|---|---|---|---|---:|
+| compose_cal | scene0056_00 | 2007 | — | 43 → 42 |
+| compose_cal | scene0534_00 | 7000 | — | 57 → 56 |
+| confirmation | scene0064_00 | 1000, 24001 | — | 31 → 29 |
+| confirmation | scene0553_00 | 48000 | — | 13 → 12 |
+| regression_only | scene0445_00 | — | 11000 | 7 → 8 |
+| regression_only | scene0626_00 | 24000 | — | 14 → 13 |
 
 Actual released TP/FN gains/losses and FP events at 0.5/0.75 are linked in `released_transitions`, separately from geometric class correctness. AP increments are not added across objects.
 The observed M2_RAW/M2_CAL equal-uAP case is examined in [UNCHANGED_AP_DIAGNOSTICS.md](complementary_composition_v1/UNCHANGED_AP_DIAGNOSTICS.md), including actual eligibility, ignored predictions, class AP states and the tied-score FP responsible for its AP25 change.
 
-Complete numerical tables: `/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/reports/2922a16aa6186e1622faf35b91ba10b330f46b11d2d9dbddf3badaef3e72253a/tables.json`.
+Complete numerical tables: `/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/reports/b9d08fc432947f1ccc721a11ebd7c34829b89c7fd442ca42566a7af8dd97f0d2/tables.json`.
 Publication receipt (written only after verified ordinary push): `/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/publication_receipt.json`.

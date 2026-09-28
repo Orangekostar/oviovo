@@ -794,6 +794,8 @@ def report(config):
     ]
     lines += [
         f"Nominee: **{selection['nomination']['nominee'] if selection else 'NOT_FROZEN'}**.",
+        f"Frozen best single: **{selection['nomination']['best_single_CAL'] if selection else 'NOT_FROZEN'}**.",
+        f"M6 CAL gate: `{gate['status'] if gate else 'PENDING'}`; checks: `{gate['checks'] if gate else {}}`. Exact finite CAL inputs and tolerance are preserved in `m6_gate`.",
         f"Experiment commit A: `{selection['experiment_commit_A'] if selection else 'NOT_FROZEN'}`.",
         f"Query physical totals: `{work['query_totals']}`; new native captures: {len(work['new_capture_jobs'])}.",
         f"Completed new frontend jobs: {len(work['new_frontend_jobs'])}; processed frames: {sum(job['processed_frames'] for job in work['new_frontend_jobs'])}. Frontend and mapping elapsed times remain separate in the numerical ledger.",
@@ -808,6 +810,25 @@ def report(config):
         lines.append(
             f"| {row['role']} | {row['reference']} | {row['status']} | {_display(worst.get('uap'))} / {_display(worst.get('miou'))} | {row.get('every_scene_nonnegative', '—')} |"
         )
+    if selection is not None and selection["nomination"]["nominee"]:
+        roles = {row["scene_id"]: row["role"] for row in rows}
+        lines += [
+            "",
+            "Nominee versus N0: actual released matching changes at IoU 0.5. GT IDs identify instances; event counts are not additive AP contributions.",
+            "",
+            "| Role | Scene | Newly matched GT IDs | Lost matched GT IDs | FP events N0 → nominee |",
+            "|---|---|---|---|---:|",
+        ]
+        for row in transitions:
+            if (
+                row["method_id"] == selection["nomination"]["nominee"]
+                and row["threshold"] == 0.5
+            ):
+                gained = ", ".join(row["gained_released_gt_ids"]) or "—"
+                lost = ", ".join(row["lost_released_gt_ids"]) or "—"
+                lines.append(
+                    f"| {roles[row['scene_id']]} | {row['scene_id']} | {gained} | {lost} | {row['native_fp_events']} → {row['method_fp_events']} |"
+                )
     lines += [
         "",
         "Actual released TP/FN gains/losses and FP events at 0.5/0.75 are linked in `released_transitions`, separately from geometric class correctness. AP increments are not added across objects.",
@@ -823,7 +844,7 @@ def report(config):
     tracked.write_text(text)
     handoff = (
         "# Complementary composition handoff\n\n"
-        f"Current result: {status}; confirmation: {confirmation_status}. Missing required rows: {len(missing)}.\n\n"
+        f"Current result: {status}; confirmation: {confirmation_status}. Missing development rows: {len(missing)}; missing frozen confirmation rows: {len(missing_confirmation)}.\n\n"
         f"Resolved config: `{root / 'resolved_config.json'}`.\n\n"
         "Resume the actual ordered jobs (unchanged completed content is reused):\n\n```bash\n"
         f"{config['runtime']['native_perception_python']} scripts/evaluation/run_ovimap_composition_study.py --resolved-config {root / 'resolved_config.json'} --phase all\n```\n\n"
@@ -838,6 +859,7 @@ def report(config):
             "tables": str(destination / "tables.json"),
             "rows": len(rows),
             "missing_rows": missing,
+            "missing_confirmation_rows": missing_confirmation,
             "results": str(tracked),
             "handoff": str(ROOT / "docs/paper/static_ovmap/COMPOSITION_HANDOFF.md"),
         },
@@ -846,6 +868,7 @@ def report(config):
         "status": status,
         "rows": len(rows),
         "missing_rows": len(missing),
+        "missing_confirmation_rows": len(missing_confirmation),
         "tables": str(destination / "tables.json"),
         "results": str(tracked),
         "confirmation_status": confirmation_status,
