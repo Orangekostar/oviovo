@@ -1,5 +1,6 @@
 """Complete-case per-scene frozen transfer measurements, never imputed results."""
 
+import copy
 import csv
 import io
 from pathlib import Path
@@ -14,6 +15,49 @@ from src.static_ovmap.composition_study.reporting import (
 from src.static_ovmap.composition_study.selection import TOLERANCE
 
 from .protocol import SOURCE_ROOT
+
+
+def export_apall(root):
+    """Expose the released all_ap alias without changing frozen evaluation rows."""
+    root = Path(root)
+    source = root / "report/results.json"
+    result = copy.deepcopy(read_json(source))
+    if result["status"] != "COMPLETE":
+        raise ValueError("APall export requires a complete report")
+    # The adapter maps released all_ap directly to uap. Keep that original key.
+    def add_alias(value):
+        if isinstance(value, dict):
+            if "uap" in value:
+                value["apall"] = copy.deepcopy(value["uap"])
+            for child in list(value.values()):
+                add_alias(child)
+        elif isinstance(value, list):
+            for child in value:
+                add_alias(child)
+
+    add_alias(result)
+    result["metric_aliases"] = {"apall": "uap"}
+    result["apall_definition"] = "Released all_ap; IoU thresholds 0.50:0.05:0.90, excluding AP25; same value as uap. Equal scene mean."
+    index = SourceIndex()
+    result["original_report"] = index.identity(source)
+    output = root / "report_apall"
+    write_once(output / "results.json", result)
+    keys = ("apall", "uap", "ap25", "ap50", "miou", "macc")
+    stream = io.StringIO()
+    writer = csv.writer(stream)
+    writer.writerow(["scene", "method", *keys])
+    for row in result["rows"]:
+        writer.writerow([row["scene_id"], row["method_id"], *[row["metrics"][key] for key in keys]])
+    (output / "per_scene.csv").write_text(stream.getvalue())
+    lines = ["# Replica：含 APall 的完整结果", "",
+             "APall 与原 uAP 为同一指标，均来自发布版评估器 all_ap。实际 IoU 阈值为 0.50、0.55、…、0.90，不包含 AP25；不另计为独立指标。",
+             "数值为百分数，8 个场景等权平均。", "",
+             "| 方法 | APall | uAP（同值） | AP25 | AP50 | mIoU | mAcc |",
+             "|---|---:|---:|---:|---:|---:|---:|"]
+    for method, summary in result["means"].items():
+        lines.append("| " + " | ".join([method, *[f'{100 * summary["means"][key]:.3f}' for key in keys]]) + " |")
+    (output / "results.md").write_text("\n".join(lines) + "\n")
+    return output
 
 
 def complete_metrics(summary, scenes):
