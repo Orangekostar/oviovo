@@ -1,0 +1,338 @@
+{
+  "fits": {
+    "N0": {
+      "bound_hit": "LOWER",
+      "classes": 13,
+      "evaluations": 24,
+      "example_ids": [
+        [
+          "scene0056_00",
+          12
+        ],
+        [
+          "scene0056_00",
+          22
+        ],
+        [
+          "scene0056_00",
+          33
+        ],
+        [
+          "scene0056_00",
+          39
+        ],
+        [
+          "scene0056_00",
+          61
+        ],
+        [
+          "scene0056_00",
+          73
+        ],
+        [
+          "scene0056_00",
+          78
+        ],
+        [
+          "scene0056_00",
+          85
+        ],
+        [
+          "scene0056_00",
+          110
+        ],
+        [
+          "scene0056_00",
+          119
+        ],
+        [
+          "scene0056_00",
+          128
+        ],
+        [
+          "scene0056_00",
+          137
+        ],
+        [
+          "scene0056_00",
+          145
+        ],
+        [
+          "scene0534_00",
+          16
+        ],
+        [
+          "scene0534_00",
+          63
+        ],
+        [
+          "scene0534_00",
+          78
+        ],
+        [
+          "scene0534_00",
+          93
+        ],
+        [
+          "scene0534_00",
+          95
+        ],
+        [
+          "scene0534_00",
+          100
+        ],
+        [
+          "scene0534_00",
+          107
+        ],
+        [
+          "scene0534_00",
+          119
+        ],
+        [
+          "scene0534_00",
+          135
+        ]
+      ],
+      "nll_after": 3.380792731883528,
+      "nll_before": 4.994471379721167,
+      "objects": 22,
+      "objects_per_scene": {
+        "scene0056_00": 13,
+        "scene0534_00": 9
+      },
+      "reason": null,
+      "status": "FITTED",
+      "temperature": 0.010000492837221748,
+      "training_scenes": [
+        "scene0056_00",
+        "scene0534_00"
+      ]
+    },
+    "Q_GAIN": {
+      "bound_hit": "LOWER",
+      "classes": 13,
+      "evaluations": 24,
+      "example_ids": [
+        [
+          "scene0056_00",
+          12
+        ],
+        [
+          "scene0056_00",
+          22
+        ],
+        [
+          "scene0056_00",
+          33
+        ],
+        [
+          "scene0056_00",
+          39
+        ],
+        [
+          "scene0056_00",
+          61
+        ],
+        [
+          "scene0056_00",
+          73
+        ],
+        [
+          "scene0056_00",
+          78
+        ],
+        [
+          "scene0056_00",
+          85
+        ],
+        [
+          "scene0056_00",
+          110
+        ],
+        [
+          "scene0056_00",
+          119
+        ],
+        [
+          "scene0056_00",
+          128
+        ],
+        [
+          "scene0056_00",
+          137
+        ],
+        [
+          "scene0056_00",
+          145
+        ],
+        [
+          "scene0534_00",
+          16
+        ],
+        [
+          "scene0534_00",
+          63
+        ],
+        [
+          "scene0534_00",
+          78
+        ],
+        [
+          "scene0534_00",
+          93
+        ],
+        [
+          "scene0534_00",
+          95
+        ],
+        [
+          "scene0534_00",
+          100
+        ],
+        [
+          "scene0534_00",
+          107
+        ],
+        [
+          "scene0534_00",
+          119
+        ],
+        [
+          "scene0534_00",
+          135
+        ]
+      ],
+      "nll_after": 1.3841177154709357,
+      "nll_before": 4.155713043808044,
+      "objects": 22,
+      "objects_per_scene": {
+        "scene0056_00": 13,
+        "scene0534_00": 9
+      },
+      "reason": null,
+      "status": "FITTED",
+      "temperature": 0.010000492837221748,
+      "training_scenes": [
+        "scene0056_00",
+        "scene0534_00"
+      ]
+    },
+    "S_SIGLIP2_AREA": {
+      "bound_hit": null,
+      "classes": 13,
+      "evaluations": 12,
+      "example_ids": [
+        [
+          "scene0056_00",
+          12
+        ],
+        [
+          "scene0056_00",
+          22
+        ],
+        [
+          "scene0056_00",
+          33
+        ],
+        [
+          "scene0056_00",
+          39
+        ],
+        [
+          "scene0056_00",
+          61
+        ],
+        [
+          "scene0056_00",
+          73
+        ],
+        [
+          "scene0056_00",
+          78
+        ],
+        [
+          "scene0056_00",
+          85
+        ],
+        [
+          "scene0056_00",
+          110
+        ],
+        [
+          "scene0056_00",
+          119
+        ],
+        [
+          "scene0056_00",
+          128
+        ],
+        [
+          "scene0056_00",
+          137
+        ],
+        [
+          "scene0056_00",
+          145
+        ],
+        [
+          "scene0534_00",
+          16
+        ],
+        [
+          "scene0534_00",
+          63
+        ],
+        [
+          "scene0534_00",
+          78
+        ],
+        [
+          "scene0534_00",
+          93
+        ],
+        [
+          "scene0534_00",
+          95
+        ],
+        [
+          "scene0534_00",
+          100
+        ],
+        [
+          "scene0534_00",
+          107
+        ],
+        [
+          "scene0534_00",
+          119
+        ],
+        [
+          "scene0534_00",
+          135
+        ]
+      ],
+      "nll_after": 1.7728538065872632,
+      "nll_before": 4.222585427907092,
+      "objects": 22,
+      "objects_per_scene": {
+        "scene0056_00": 13,
+        "scene0534_00": 9
+      },
+      "reason": null,
+      "status": "FITTED",
+      "temperature": 0.010859841285139529,
+      "training_scenes": [
+        "scene0056_00",
+        "scene0534_00"
+      ]
+    }
+  },
+  "input_identity": "9d23723d21d4c9f470815a698cb45cf78d3c05e9939aded4a8584474697d06c2",
+  "selection_predictions_remain_cross_fitted": true,
+  "temperatures": {
+    "N0": 0.010000492837221748,
+    "Q_GAIN": 0.010000492837221748,
+    "S_SIGLIP2_AREA": 0.010859841285139529
+  }
+}

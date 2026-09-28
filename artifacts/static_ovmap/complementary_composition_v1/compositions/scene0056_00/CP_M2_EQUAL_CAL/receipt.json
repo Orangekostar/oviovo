@@ -1,0 +1,60 @@
+{
+  "input_identity": "8e26c7898092cbfdc49cd0b85f9f57313ddf341305341b189b2fa9c54af64c80",
+  "inputs": [
+    {
+      "bytes": 714605,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0056_00/N0.json",
+      "sha256": "36855b2e8f529e85f74f3751341edac1b7c6a2347441ca882680a668bad9a907"
+    },
+    {
+      "bytes": 659375,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0056_00/S_SIGLIP2_AREA.json",
+      "sha256": "d41387062843cbe1dc4d105f18981591e46226cc48483b5b2d18f50c26f1d66c"
+    },
+    {
+      "bytes": 628772,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0056_00/Q_GAIN/source_evidence.json",
+      "sha256": "167b11fe6d58173518021214155398ca4108989afbbc82661cc7683beea12530"
+    }
+  ],
+  "method_id": "CP_M2_EQUAL_CAL",
+  "outputs": [
+    {
+      "bytes": 5401,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/compositions/scene0056_00/CP_M2_EQUAL_CAL/prediction/manifest.json",
+      "sha256": "1072595505a158b53e29f591d974c5fdd250610c599538656cb4322b8bedb763"
+    },
+    {
+      "bytes": 475190,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/compositions/scene0056_00/CP_M2_EQUAL_CAL/prediction/prediction.npz",
+      "sha256": "08dbf934c067e7feec3593254f847a24cb0cfcb6a3d0ded3cd47d07be20cda22"
+    },
+    {
+      "bytes": 655383,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/compositions/scene0056_00/CP_M2_EQUAL_CAL/decisions.json",
+      "sha256": "9a9e8954fd872ae676573ff8bf7a281cb1c7b4b2bef2914ff5000d06e05f09d7"
+    }
+  ],
+  "physical": {
+    "Q_GAIN": {
+      "cache_hits": 109,
+      "crop_inputs": 546,
+      "inference_seconds": 18.731678278069012,
+      "model_forwards": 91,
+      "model_load_seconds": 2.5390652009518817,
+      "model_loads": 1,
+      "tiles": 0
+    },
+    "fusion_model_forwards": 0,
+    "shared_dependency_count_once_globally": true,
+    "static_sources_reused": true
+  },
+  "prediction_manifest": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/compositions/scene0056_00/CP_M2_EQUAL_CAL/prediction/manifest.json",
+  "required_logical": {
+    "crop_inputs": 9354,
+    "native_requests": 1279,
+    "siglip2_requests": 280
+  },
+  "scene_id": "scene0056_00",
+  "status": "COMPLETE"
+}

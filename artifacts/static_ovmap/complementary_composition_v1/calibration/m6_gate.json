@@ -1,0 +1,123 @@
+{
+  "checks": {
+    "M3_vs_COMBINE": false,
+    "M4_vs_GAIN": false,
+    "M5_vs_COMBINE": false
+  },
+  "enabled": false,
+  "inputs": {
+    "CP_M1_AGREE_KEEP": {
+      "changed_owners": 16,
+      "complete": true,
+      "mean_logical_requests": 1462.5,
+      "metrics": {
+        "miou": 0.2035069167438207,
+        "uap": 0.03437099789308436
+      },
+      "scene_count": 2
+    },
+    "CP_M2_EQUAL_CAL": {
+      "changed_owners": 66,
+      "complete": true,
+      "mean_logical_requests": 1462.5,
+      "metrics": {
+        "miou": 0.23444966273475054,
+        "uap": 0.03665012765302552
+      },
+      "scene_count": 2
+    },
+    "CP_M2_EQUAL_RAW": {
+      "changed_owners": 65,
+      "complete": true,
+      "mean_logical_requests": 1462.5,
+      "metrics": {
+        "miou": 0.23452605121363185,
+        "uap": 0.03665012765302552
+      },
+      "scene_count": 2
+    },
+    "CP_M3_COMBINE_S2": {
+      "changed_owners": 146,
+      "complete": true,
+      "mean_logical_requests": 400.0,
+      "metrics": {
+        "miou": 0.1903214852779863,
+        "uap": 0.030967796475315272
+      },
+      "scene_count": 2
+    },
+    "CP_M4_GAIN_S2": {
+      "changed_owners": 109,
+      "complete": true,
+      "mean_logical_requests": 400.0,
+      "metrics": {
+        "miou": 0.22461084446071367,
+        "uap": 0.031297106440041904
+      },
+      "scene_count": 2
+    },
+    "CP_M5_MIX50_NATIVE": {
+      "changed_owners": 85,
+      "complete": true,
+      "mean_logical_requests": 200.0,
+      "metrics": {
+        "miou": 0.20137496799388338,
+        "uap": 0.03136698392807415
+      },
+      "scene_count": 2
+    },
+    "CP_M6_MIX50_S2": {
+      "changed_owners": 0,
+      "complete": false,
+      "mean_logical_requests": null,
+      "metrics": {
+        "miou": null,
+        "uap": null
+      },
+      "scene_count": 0
+    },
+    "N0": {
+      "changed_owners": 0,
+      "complete": true,
+      "mean_logical_requests": 990.5,
+      "metrics": {
+        "miou": 0.20656820912285878,
+        "uap": 0.03443540383546649
+      },
+      "scene_count": 2
+    },
+    "Q_COMBINE": {
+      "changed_owners": 129,
+      "complete": true,
+      "mean_logical_requests": 200.0,
+      "metrics": {
+        "miou": 0.2112805888345021,
+        "uap": 0.033007038097890226
+      },
+      "scene_count": 2
+    },
+    "Q_GAIN": {
+      "changed_owners": 75,
+      "complete": true,
+      "mean_logical_requests": 200.0,
+      "metrics": {
+        "miou": 0.19023274918430963,
+        "uap": 0.03320150022322119
+      },
+      "scene_count": 2
+    },
+    "S_SIGLIP2_AREA": {
+      "changed_owners": 88,
+      "complete": true,
+      "mean_logical_requests": 1262.5,
+      "metrics": {
+        "miou": 0.22198393910377862,
+        "uap": 0.03731758297861054
+      },
+      "scene_count": 2
+    }
+  },
+  "metric_tolerance": 1e-10,
+  "role": "compose_cal",
+  "status": "NOT_REQUIRED_BY_COMPOSITION_CAL_GATE"
+}

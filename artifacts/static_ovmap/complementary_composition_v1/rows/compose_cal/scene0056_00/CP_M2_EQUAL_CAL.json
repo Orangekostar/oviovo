@@ -1,0 +1,54 @@
+{
+  "changed_owners": 28,
+  "evaluation_identity": "923e909e01c5d23e0b3e162edcc7f5cb5195e0bba9aba77c81c2d94eafefd4a1",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/923e909e01c5d23e0b3e162edcc7f5cb5195e0bba9aba77c81c2d94eafefd4a1/receipt.json",
+  "evaluator_prediction_count": 61,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 1079,
+    "crop_inputs": 9354,
+    "native_requests": 1279,
+    "siglip2_requests": 280
+  },
+  "logical_requests": 1559,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/923e909e01c5d23e0b3e162edcc7f5cb5195e0bba9aba77c81c2d94eafefd4a1/released/scene0056_00/debdeb1c425556f5cf010bedb788d7aada9c105b51615cff2f204e51b6d22314/f7a4b6db74ae66ef94332c6ff3c22c37da19331202f8dfcbf422f84f95b763d1/released/released_matches.json.gz",
+  "method_id": "CP_M2_EQUAL_CAL",
+  "metrics": {
+    "ap25": 0.28359710725782156,
+    "ap50": 0.08265605921855922,
+    "canonical_ap50": 0.08131868131868132,
+    "canonical_ap75": 0.004195804195804196,
+    "classes_observed": 24,
+    "macc": 0.21898429847374473,
+    "masks_observed": 99,
+    "miou": 0.1920717032609879,
+    "trace_parity": true,
+    "uap": 0.016282711446401924
+  },
+  "owners": 99,
+  "physical": {
+    "Q_GAIN": {
+      "cache_hits": 109,
+      "crop_inputs": 546,
+      "inference_seconds": 18.731678278069012,
+      "model_forwards": 91,
+      "model_load_seconds": 2.5390652009518817,
+      "model_loads": 1,
+      "tiles": 0
+    },
+    "fusion_model_forwards": 0,
+    "shared_dependency_count_once_globally": true,
+    "static_sources_reused": true
+  },
+  "positive_owners": 99,
+  "prediction_key": "debdeb1c425556f5cf010bedb788d7aada9c105b51615cff2f204e51b6d22314",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/compositions/scene0056_00/CP_M2_EQUAL_CAL/prediction/manifest.json",
+  "record_key": "255aa310157959c99c1d9f87ddf2baf4e8fc5fe0d6997de670a2edbc30773255",
+  "role": "compose_cal",
+  "scene_id": "scene0056_00",
+  "shared_evaluation_first_method": "CP_M2_EQUAL_CAL",
+  "source_reuse": "NEW_STATIC_LABEL_FUSION",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/923e909e01c5d23e0b3e162edcc7f5cb5195e0bba9aba77c81c2d94eafefd4a1/released/scene0056_00/debdeb1c425556f5cf010bedb788d7aada9c105b51615cff2f204e51b6d22314/f7a4b6db74ae66ef94332c6ff3c22c37da19331202f8dfcbf422f84f95b763d1/released/released_trace.json.gz",
+  "unknown_owners": 0
+}

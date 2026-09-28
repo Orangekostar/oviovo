@@ -459,7 +459,47 @@ def physical_work(config):
         "query_jobs": query,
         "new_static_jobs": static,
         "new_capture_jobs": captures,
+        "historical_static_reused_requests": sum(
+            verified_receipt(path)["physical"].get("reused_static_siglip2_requests", 0)
+            for path in sorted((root / "sources").glob("*/static_source_receipt.json"))
+        ),
+        "cpu_calibration": calibration_work(root),
         "shared_dependencies_counted_once": True,
+    }
+
+
+def calibration_work(root):
+    jobs = []
+    for filename in ("folds.json", "final_temperatures.json"):
+        path = root / "calibration" / filename
+        if not path.is_file():
+            continue
+        record = read_json(path)
+        groups = (
+            record["folds"] if filename == "folds.json" else {"final": record["fits"]}
+        )
+        for split, fits in groups.items():
+            for source, fit in fits.items():
+                jobs.append(
+                    {
+                        "receipt": str(path),
+                        "split": split,
+                        "source": source,
+                        "status": fit["status"],
+                        "objects": fit["objects"],
+                        "optimizer_evaluations": fit.get("evaluations"),
+                        "initial_nll_evaluations": int(fit["objects"] > 0),
+                    }
+                )
+    return {
+        "jobs": jobs,
+        "completed_scalar_fits": sum(job["status"] == "FITTED" for job in jobs),
+        "recorded_optimizer_evaluations": sum(
+            job["optimizer_evaluations"] or 0 for job in jobs
+        ),
+        "elapsed_seconds": None,
+        "elapsed_status": "NOT_INSTRUMENTED",
+        "accounting": "completed persisted fits, counted once; optimizer evaluations exclude initial NLL evaluations; unrecorded failed-optimizer work is not estimated",
     }
 
 
@@ -677,6 +717,7 @@ def report(config):
         f"Nominee: **{selection['nomination']['nominee'] if selection else 'NOT_FROZEN'}**.",
         f"Experiment commit A: `{selection['experiment_commit_A'] if selection else 'NOT_FROZEN'}`.",
         f"Query physical totals: `{work['query_totals']}`; new native captures: {len(work['new_capture_jobs'])}.",
+        f"Historical static S2 reused requests: {work['historical_static_reused_requests']}. CPU calibration: {work['cpu_calibration']['completed_scalar_fits']} completed scalar fits, {work['cpu_calibration']['recorded_optimizer_evaluations']} recorded optimizer evaluations; initial NLL evaluations are listed separately in the numerical ledger. Calibration elapsed time was not instrumented.",
         "",
         "| Role | Nominee versus | Status | Worst ΔuAP / ΔmIoU (pp) | Every scene nonnegative |",
         "|---|---|---|---:|---|",
@@ -689,6 +730,7 @@ def report(config):
     lines += [
         "",
         "Actual released TP/FN gains/losses and FP events at 0.5/0.75 are linked in `released_transitions`, separately from geometric class correctness. AP increments are not added across objects.",
+        "The observed M2_RAW/M2_CAL equal-uAP case is examined in [UNCHANGED_AP_DIAGNOSTICS.md](complementary_composition_v1/UNCHANGED_AP_DIAGNOSTICS.md), including actual eligibility, ignored predictions, class AP states and the tied-score FP responsible for its AP25 change.",
         "",
         f"Complete numerical tables: `{destination / 'tables.json'}`.",
         f"Publication receipt (written only after verified ordinary push): `{root / 'publication_receipt.json'}`.",

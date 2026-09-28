@@ -1,0 +1,49 @@
+{
+  "changed_owners": 38,
+  "evaluation_identity": "2e9beecf76d75ab6a58bfb79117f64415c9f0f82f42bf6f8c04a888b1a766f7c",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/2e9beecf76d75ab6a58bfb79117f64415c9f0f82f42bf6f8c04a888b1a766f7c/receipt.json",
+  "evaluator_prediction_count": 57,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 1079,
+    "crop_inputs": 1200,
+    "native_requests": 200,
+    "siglip2_requests": 0
+  },
+  "logical_requests": 200,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/2e9beecf76d75ab6a58bfb79117f64415c9f0f82f42bf6f8c04a888b1a766f7c/released/scene0056_00/a7412b20f03fd1f58243801edeee51fd3be042ceb98675fed7a7ce02a08adee5/36c82ad5dfb27cb8639dc37cca822b55c57bcdb43e8d16a1e914c7993535c97c/released/released_matches.json.gz",
+  "method_id": "CP_M5_MIX50_NATIVE",
+  "metrics": {
+    "ap25": 0.22303197794269222,
+    "ap50": 0.09991496598639456,
+    "canonical_ap50": 0.08131868131868132,
+    "canonical_ap75": 0.004195804195804196,
+    "classes_observed": 25,
+    "macc": 0.18303755885626552,
+    "masks_observed": 99,
+    "miou": 0.16108331062886702,
+    "trace_parity": true,
+    "uap": 0.017899659863945577
+  },
+  "owners": 99,
+  "physical": {
+    "cache_hits": 159,
+    "crop_inputs": 246,
+    "inference_seconds": 8.467599669238552,
+    "model_forwards": 41,
+    "model_load_seconds": 1.8454811939736828,
+    "model_loads": 1,
+    "tiles": 0
+  },
+  "positive_owners": 84,
+  "prediction_key": "a7412b20f03fd1f58243801edeee51fd3be042ceb98675fed7a7ce02a08adee5",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0056_00/CP_M5_MIX50_NATIVE/prediction/manifest.json",
+  "record_key": "b1f51ebc764144e3290ca466e0649d974284d9e5ab4cfa1e089a69c0e537098a",
+  "role": "compose_cal",
+  "scene_id": "scene0056_00",
+  "shared_evaluation_first_method": "CP_M5_MIX50_NATIVE",
+  "source_reuse": "NEW_CAUSAL_CONTROLLER",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/2e9beecf76d75ab6a58bfb79117f64415c9f0f82f42bf6f8c04a888b1a766f7c/released/scene0056_00/a7412b20f03fd1f58243801edeee51fd3be042ceb98675fed7a7ce02a08adee5/36c82ad5dfb27cb8639dc37cca822b55c57bcdb43e8d16a1e914c7993535c97c/released/released_trace.json.gz",
+  "unknown_owners": 15
+}

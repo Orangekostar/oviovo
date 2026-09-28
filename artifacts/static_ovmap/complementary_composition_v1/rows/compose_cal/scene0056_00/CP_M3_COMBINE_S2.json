@@ -1,0 +1,62 @@
+{
+  "changed_owners": 76,
+  "evaluation_identity": "ef29c848e7f850a3ecb94d722a95d0c2bfecd94e50e14de34c777a0c8af2e1fe",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/ef29c848e7f850a3ecb94d722a95d0c2bfecd94e50e14de34c777a0c8af2e1fe/receipt.json",
+  "evaluator_prediction_count": 33,
+  "logical": {
+    "accounting": "CONSERVATIVE_ADDITIVE_SOURCE_REQUESTS",
+    "common_native_map_requests": 1079,
+    "crop_inputs": 2400,
+    "native_requests": 200,
+    "siglip2_requests": 200
+  },
+  "logical_requests": 400,
+  "matches_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/ef29c848e7f850a3ecb94d722a95d0c2bfecd94e50e14de34c777a0c8af2e1fe/released/scene0056_00/43f18877e2866015c5219c81072531fdc5e8f8b448ccf19334c9ae8085d6b976/ce88fcbae80c2561f2beaaf9fd4dfa8d8a8d9a515ce4831e6d8c11165274f567/released/released_matches.json.gz",
+  "method_id": "CP_M3_COMBINE_S2",
+  "metrics": {
+    "ap25": 0.2050878684807256,
+    "ap50": 0.09506802721088435,
+    "canonical_ap50": 0.08131868131868132,
+    "canonical_ap75": 0.004195804195804196,
+    "classes_observed": 19,
+    "macc": 0.17188144748410641,
+    "masks_observed": 99,
+    "miou": 0.16205522732194516,
+    "trace_parity": true,
+    "uap": 0.017101284958427814
+  },
+  "owners": 99,
+  "physical": {
+    "controller": {
+      "cache_hits": 200,
+      "charged_once": true,
+      "crop_inputs": 0,
+      "inference_seconds": 0.0,
+      "model_forwards": 0,
+      "model_loads": 0,
+      "reused_integration_check": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/technical/native_parity/scene0056_00/receipt.json",
+      "tiles": 0
+    },
+    "reader": {
+      "cache_hits": 29,
+      "crop_inputs": 1026,
+      "inference_seconds": 36.24356622714549,
+      "model_forwards": 171,
+      "model_load_seconds": 11.818606934975833,
+      "model_loads": 1,
+      "tiles": 0
+    },
+    "shared_dependency_count_once_globally": true
+  },
+  "positive_owners": 43,
+  "prediction_key": "43f18877e2866015c5219c81072531fdc5e8f8b448ccf19334c9ae8085d6b976",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0056_00/CP_M3_COMBINE_S2/prediction/manifest.json",
+  "record_key": "57a115725b2c8e4769d5a2f1ef33e87def803910fa30496682836f38d63ae8e5",
+  "role": "compose_cal",
+  "scene_id": "scene0056_00",
+  "shared_evaluation_first_method": "CP_M3_COMBINE_S2",
+  "source_reuse": "FORCED_TRAJECTORY",
+  "status": "COMPLETE",
+  "trace_path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/evaluation_cache/ef29c848e7f850a3ecb94d722a95d0c2bfecd94e50e14de34c777a0c8af2e1fe/released/scene0056_00/43f18877e2866015c5219c81072531fdc5e8f8b448ccf19334c9ae8085d6b976/ce88fcbae80c2561f2beaaf9fd4dfa8d8a8d9a515ce4831e6d8c11165274f567/released/released_trace.json.gz",
+  "unknown_owners": 56
+}
