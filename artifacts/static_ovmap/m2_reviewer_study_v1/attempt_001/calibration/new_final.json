@@ -1,0 +1,447 @@
+{
+  "cosine_N0": {
+    "bound_hit": null,
+    "evaluations": 13,
+    "nll_after": 1.4938771170625267,
+    "nll_before": 4.139140983795539,
+    "objective": "equal_mean_of_each_source_scene_balanced_NLL",
+    "optimizer_message": "Solution found.",
+    "reason": null,
+    "source_nll_after": {
+      "N0": 1.4938771170625267
+    },
+    "source_nll_before": {
+      "N0": 4.139140983795539
+    },
+    "sources": {
+      "N0": {
+        "classes": 13,
+        "example_ids": [
+          [
+            "scene0056_00",
+            12
+          ],
+          [
+            "scene0056_00",
+            22
+          ],
+          [
+            "scene0056_00",
+            33
+          ],
+          [
+            "scene0056_00",
+            39
+          ],
+          [
+            "scene0056_00",
+            61
+          ],
+          [
+            "scene0056_00",
+            73
+          ],
+          [
+            "scene0056_00",
+            78
+          ],
+          [
+            "scene0056_00",
+            85
+          ],
+          [
+            "scene0056_00",
+            110
+          ],
+          [
+            "scene0056_00",
+            119
+          ],
+          [
+            "scene0056_00",
+            128
+          ],
+          [
+            "scene0056_00",
+            137
+          ],
+          [
+            "scene0056_00",
+            145
+          ],
+          [
+            "scene0534_00",
+            16
+          ],
+          [
+            "scene0534_00",
+            63
+          ],
+          [
+            "scene0534_00",
+            78
+          ],
+          [
+            "scene0534_00",
+            93
+          ],
+          [
+            "scene0534_00",
+            95
+          ],
+          [
+            "scene0534_00",
+            100
+          ],
+          [
+            "scene0534_00",
+            107
+          ],
+          [
+            "scene0534_00",
+            119
+          ],
+          [
+            "scene0534_00",
+            135
+          ]
+        ],
+        "objects": 22,
+        "objects_per_scene": {
+          "scene0056_00": 13,
+          "scene0534_00": 9
+        }
+      }
+    },
+    "status": "FITTED",
+    "temperature": 0.010357429721631367,
+    "training_scenes": [
+      "scene0056_00",
+      "scene0534_00"
+    ]
+  },
+  "elapsed_seconds": 0.028095742920413613,
+  "nomination": "RV_A2_NS2",
+  "original_M2_temperatures_unchanged": true,
+  "shared": {
+    "bound_hit": "LOWER",
+    "evaluations": 24,
+    "nll_after": 2.1825142542736398,
+    "nll_before": 4.457589950478767,
+    "objective": "equal_mean_of_each_source_scene_balanced_NLL",
+    "optimizer_message": "Solution found.",
+    "reason": null,
+    "source_nll_after": {
+      "N0": 3.380792731883528,
+      "Q_GAIN": 1.3841177154709357,
+      "S_SIGLIP2_AREA": 1.7826323154664565
+    },
+    "source_nll_before": {
+      "N0": 4.994471379721167,
+      "Q_GAIN": 4.155713043808044,
+      "S_SIGLIP2_AREA": 4.222585427907092
+    },
+    "sources": {
+      "N0": {
+        "classes": 13,
+        "example_ids": [
+          [
+            "scene0056_00",
+            12
+          ],
+          [
+            "scene0056_00",
+            22
+          ],
+          [
+            "scene0056_00",
+            33
+          ],
+          [
+            "scene0056_00",
+            39
+          ],
+          [
+            "scene0056_00",
+            61
+          ],
+          [
+            "scene0056_00",
+            73
+          ],
+          [
+            "scene0056_00",
+            78
+          ],
+          [
+            "scene0056_00",
+            85
+          ],
+          [
+            "scene0056_00",
+            110
+          ],
+          [
+            "scene0056_00",
+            119
+          ],
+          [
+            "scene0056_00",
+            128
+          ],
+          [
+            "scene0056_00",
+            137
+          ],
+          [
+            "scene0056_00",
+            145
+          ],
+          [
+            "scene0534_00",
+            16
+          ],
+          [
+            "scene0534_00",
+            63
+          ],
+          [
+            "scene0534_00",
+            78
+          ],
+          [
+            "scene0534_00",
+            93
+          ],
+          [
+            "scene0534_00",
+            95
+          ],
+          [
+            "scene0534_00",
+            100
+          ],
+          [
+            "scene0534_00",
+            107
+          ],
+          [
+            "scene0534_00",
+            119
+          ],
+          [
+            "scene0534_00",
+            135
+          ]
+        ],
+        "objects": 22,
+        "objects_per_scene": {
+          "scene0056_00": 13,
+          "scene0534_00": 9
+        }
+      },
+      "Q_GAIN": {
+        "classes": 13,
+        "example_ids": [
+          [
+            "scene0056_00",
+            12
+          ],
+          [
+            "scene0056_00",
+            22
+          ],
+          [
+            "scene0056_00",
+            33
+          ],
+          [
+            "scene0056_00",
+            39
+          ],
+          [
+            "scene0056_00",
+            61
+          ],
+          [
+            "scene0056_00",
+            73
+          ],
+          [
+            "scene0056_00",
+            78
+          ],
+          [
+            "scene0056_00",
+            85
+          ],
+          [
+            "scene0056_00",
+            110
+          ],
+          [
+            "scene0056_00",
+            119
+          ],
+          [
+            "scene0056_00",
+            128
+          ],
+          [
+            "scene0056_00",
+            137
+          ],
+          [
+            "scene0056_00",
+            145
+          ],
+          [
+            "scene0534_00",
+            16
+          ],
+          [
+            "scene0534_00",
+            63
+          ],
+          [
+            "scene0534_00",
+            78
+          ],
+          [
+            "scene0534_00",
+            93
+          ],
+          [
+            "scene0534_00",
+            95
+          ],
+          [
+            "scene0534_00",
+            100
+          ],
+          [
+            "scene0534_00",
+            107
+          ],
+          [
+            "scene0534_00",
+            119
+          ],
+          [
+            "scene0534_00",
+            135
+          ]
+        ],
+        "objects": 22,
+        "objects_per_scene": {
+          "scene0056_00": 13,
+          "scene0534_00": 9
+        }
+      },
+      "S_SIGLIP2_AREA": {
+        "classes": 13,
+        "example_ids": [
+          [
+            "scene0056_00",
+            12
+          ],
+          [
+            "scene0056_00",
+            22
+          ],
+          [
+            "scene0056_00",
+            33
+          ],
+          [
+            "scene0056_00",
+            39
+          ],
+          [
+            "scene0056_00",
+            61
+          ],
+          [
+            "scene0056_00",
+            73
+          ],
+          [
+            "scene0056_00",
+            78
+          ],
+          [
+            "scene0056_00",
+            85
+          ],
+          [
+            "scene0056_00",
+            110
+          ],
+          [
+            "scene0056_00",
+            119
+          ],
+          [
+            "scene0056_00",
+            128
+          ],
+          [
+            "scene0056_00",
+            137
+          ],
+          [
+            "scene0056_00",
+            145
+          ],
+          [
+            "scene0534_00",
+            16
+          ],
+          [
+            "scene0534_00",
+            63
+          ],
+          [
+            "scene0534_00",
+            78
+          ],
+          [
+            "scene0534_00",
+            93
+          ],
+          [
+            "scene0534_00",
+            95
+          ],
+          [
+            "scene0534_00",
+            100
+          ],
+          [
+            "scene0534_00",
+            107
+          ],
+          [
+            "scene0534_00",
+            119
+          ],
+          [
+            "scene0534_00",
+            135
+          ]
+        ],
+        "objects": 22,
+        "objects_per_scene": {
+          "scene0056_00": 13,
+          "scene0534_00": 9
+        }
+      }
+    },
+    "status": "FITTED",
+    "temperature": 0.010000492837221748,
+    "training_scenes": [
+      "scene0056_00",
+      "scene0534_00"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "available": {
+    "N0": 99,
+    "Q_GAIN": 96,
+    "S_SIGLIP2_AREA": 97
+  },
+  "cosine_top1_disagreements": [],
+  "dataset": "ScanNet",
+  "inputs": [
+    {
+      "bytes": 3786756,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/mapper/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "f7101d004fe0edf57fbfa847a80eb80cb89f980feffc58608eee64e3554be783"
+    },
+    {
+      "bytes": 778719,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/native/text.npz",
+      "sha256": "891760a9967c3d3cb72ece32f73687492c685c262c996095c097cbf03e1aa539"
+    }
+  ],
+  "native_reconstructed_aggregates": 99,
+  "owners": 99,
+  "physical_image_forwards": 0,
+  "scene": "scene0056_00",
+  "sources": {
+    "N0": "45cbff5af5b17d53671f98e38199f3eb1fb95b12f8405985682577601c651f23",
+    "Q_GAIN": "536571ad59d7367231e17e72d40bc832abb5abf5a1e32960edc9007d8f4f4fd8",
+    "S_SIGLIP2_AREA": "b923c5119f94d5dcfc3d31ef532204e2bff4a33375d843f75d972805396fa5d2"
+  },
+  "status": "COMPLETE"
+}

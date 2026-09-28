@@ -1,0 +1,210 @@
+{
+  "aggregation": "RELEASED_DATASET_POOL",
+  "claims": [
+    {
+      "claim": "N0 score source is necessary",
+      "decision": "SIMPLIFY_NECESSITY_CLAIM",
+      "evidence": {
+        "ap25": 0.001700744373955787,
+        "ap50": 0.0011488301917989552,
+        "macc": 0.0023548640489673422,
+        "miou": 0.0027604550871035416,
+        "uap": 0.0006982220936214006
+      },
+      "limitation": "Small pooled difference; native mapping/owner/rank cost remains mandatory even when N0 scores are deleted. Eight exposed scenes do not establish necessity.",
+      "matched_control": "M2_CAL versus A3_QS2",
+      "status": "MIXED"
+    },
+    {
+      "claim": "Query observations add useful evidence",
+      "decision": "RETAIN_BOUNDED_SOURCE_ABLATION",
+      "evidence": {
+        "ap25": 0.02955498740196466,
+        "ap50": 0.03513588267529916,
+        "macc": 0.032671986926048335,
+        "miou": 0.045622374543172306,
+        "uap": 0.014504066016452766
+      },
+      "limitation": "Supports this source inclusion comparison, not superiority of learned selection; query observations add compute.",
+      "matched_control": "M2_CAL versus CAL-selected A2_NS2",
+      "status": "SUPPORTED_IN_THIS_STUDY"
+    },
+    {
+      "claim": "Static S2 contributes beyond N0+Q",
+      "decision": "RETAIN_WITH_COST_AND_VARIABILITY",
+      "evidence": {
+        "ap25": 0.038349876756932855,
+        "ap50": 0.007143446759707489,
+        "macc": 0.03442940386913784,
+        "miou": 0.019505316676235923,
+        "uap": 0.0037936539520233153
+      },
+      "limitation": "Measured gains are conditional on the same fixed maps and extra frozen S2 model; no universal three-source necessity.",
+      "matched_control": "M2_CAL versus A1_NQ",
+      "status": "MIXED"
+    },
+    {
+      "claim": "Soft distributions outperform hard voting",
+      "decision": "RETAIN_FIXED_VOCABULARY_COMPARISON",
+      "evidence": {
+        "ap25": 0.0063986796705018945,
+        "ap50": 0.007936161175868539,
+        "macc": 0.017008321996299314,
+        "miou": 0.0029620565715854363,
+        "uap": 0.0061676526392733105
+      },
+      "limitation": "Hard votes use declared normalized counts; this does not make either distribution universally calibrated.",
+      "matched_control": "M2_CAL versus A4_HARD",
+      "status": "SUPPORTED_IN_THIS_STUDY"
+    },
+    {
+      "claim": "Source-specific fitting is required beyond sharpening",
+      "decision": "SIMPLIFY_TO_SHARPENING_EXPLANATION",
+      "evidence": {
+        "RV_A5_T001": {
+          "ap25": -0.00015110747789603973,
+          "ap50": 0.0011488301917989552,
+          "macc": 0.002512385087741986,
+          "miou": 0.0032814123746557344,
+          "uap": 0.0006982220936214006
+        },
+        "RV_A6_SHARED_T": {
+          "ap25": -0.00015110747789603973,
+          "ap50": 0.0011488301917989552,
+          "macc": 0.002512385087741986,
+          "miou": 0.0032814123746557344,
+          "uap": 0.0006982220936214006
+        }
+      },
+      "limitation": "Small label/metric differences; common sharpening closely matches performance and has slightly better paired transfer NLL/Brier. Additional CAL supervision is disclosed.",
+      "matched_control": "M2_CAL versus A5_T001 and A6_SHARED_T",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "claim": "Native score representation affects hidden weighting",
+      "decision": "RETAIN_REPRESENTATION_CAVEAT",
+      "evidence": {
+        "RV_A7_COS_FIXED": {
+          "ap25": 0.014865126546429352,
+          "ap50": 0.009031193421694395,
+          "macc": 0.0008199742078418559,
+          "miou": 0.011071913373267961,
+          "uap": 0.0027685537306486457
+        },
+        "RV_A7_COS_REFIT": {
+          "ap25": 0.011711781875227534,
+          "ap50": 0.010608887800727995,
+          "macc": -0.0007681489533870045,
+          "miou": 0.009286286175307579,
+          "uap": 0.003078997530675767
+        }
+      },
+      "limitation": "Same native aggregate and source temperatures for fixed probe. This is a representation mechanism probe, not a newly selected deployment method.",
+      "matched_control": "A7_COS_FIXED/REFIT versus unchanged M2_CAL",
+      "status": "SUPPORTED_IN_THIS_STUDY"
+    },
+    {
+      "claim": "Learned query selection outperforms matched alternatives",
+      "decision": "NO_BROAD_LEARNED_SELECTION_SUPERIORITY",
+      "evidence": {
+        "Q_COMBINE": {
+          "miou": 0.01867804337608306,
+          "uap": 0.005315909678961228
+        },
+        "RANDOM_SEED_MEAN": {
+          "miou": 0.023941931749785705,
+          "uap": 0.0032953666199015685
+        }
+      },
+      "limitation": "CAL gate did not show dominance; Replica was historically exposed. Seeds are separate replicates, never an ensemble or post-hoc seed choice.",
+      "matched_control": "B200 COMBINE and random17/23/41",
+      "status": "MIXED"
+    },
+    {
+      "claim": "Gains survive official reranking and pooling",
+      "decision": "REPORT_METRIC_TRADEOFF",
+      "evidence": {
+        "delta_vs_N0": {
+          "ap25": -0.005554745954798712,
+          "ap50": -0.013017234386902027,
+          "macc": 0.011921229037963,
+          "miou": -0.004698704477875459,
+          "uap": 0.002247352581820461
+        },
+        "primary": {
+          "ap25": 0.3402990434139303,
+          "ap50": 0.20175139917353527,
+          "apall": 0.08910006891454107,
+          "defined_classes": 51,
+          "macc": 0.3388738769781762,
+          "miou": 0.2679159191077403,
+          "uap": 0.08910006891454107
+        }
+      },
+      "limitation": "APall improves modestly while AP50 and mIoU decrease. Macro-bootstrap intervals are not pooled intervals.",
+      "matched_control": "M2_CAL versus N0; official-current-class released dataset pool",
+      "status": "MIXED"
+    },
+    {
+      "claim": "Temperature calibration improves transfer probabilities",
+      "decision": "RETAIN_CONDITIONAL_PROBABILITY_RESULT",
+      "evidence": {
+        "CP_M2_EQUAL_CAL": {
+          "accuracy": 0.5031847133757962,
+          "brier": 0.6616572667248006,
+          "ece15": 0.1433671517931989,
+          "nll": 1.7468794231945783,
+          "objects": 157
+        },
+        "CP_M2_EQUAL_RAW": {
+          "accuracy": 0.4840764331210191,
+          "brier": 0.946422590310873,
+          "ece15": 0.44332745313153976,
+          "nll": 3.325537585105534,
+          "objects": 157
+        },
+        "RV_A5_T001": {
+          "accuracy": 0.4968152866242038,
+          "brier": 0.660774077888888,
+          "ece15": 0.15852894806357126,
+          "nll": 1.742911215836538,
+          "objects": 157
+        }
+      },
+      "limitation": "Conditional on identifiable objects with all three actual sources; not calibration of every false positive. Common sharpening explains much of the improvement.",
+      "matched_control": "M2_CAL versus M2_RAW on the same paired population",
+      "status": "SUPPORTED_IN_THIS_STUDY"
+    },
+    {
+      "claim": "Current formula supports arbitrary single-text retrieval",
+      "decision": "RESTRICT_TO_FIXED_VOCABULARY_RECOGNITION",
+      "evidence": {
+        "image_inference_in_text_test": 0,
+        "softmax_one_text": 1
+      },
+      "limitation": "Prompt and fixed-distractor tests are vocabulary stress tests. They do not validate arbitrary-text retrieval or certify distractors absent in every region.",
+      "matched_control": "Singleton softmax degeneracy fixture",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "claim": "Independent fresh scenes justify broad generalization",
+      "decision": "WITHHOLD_GENERALIZATION_CLAIM",
+      "evidence": {
+        "actual_fresh_scenes_evaluated": 0,
+        "audit_identity": "30ba97348dbe528be365ad29ecd2184db53232d337f2ca86238590fe1618b8f7",
+        "eligible_families": 0,
+        "no_new_download": true,
+        "required_families": 4,
+        "status": "FRESH_BLOCKED_INSUFFICIENT_LOCAL_UNEXPOSED_FAMILIES",
+        "success_path": "fresh_execution.run_fresh: export/capture/S2/GAIN/locked-fusion/dual-rank/pool"
+      },
+      "limitation": "No eligible local family; old confirmation and Replica cannot be relabelled fresh.",
+      "matched_control": "Four genuinely unexposed local families",
+      "status": "NOT_TESTED_PREREQUISITE"
+    }
+  ],
+  "deployment": "N0_UNCHANGED",
+  "rank_mode": "OFFICIAL_CURRENT_CLASS",
+  "scientific_recommendation": "SIMPLIFY: fixed-vocabulary score sharpening and complementary evidence with representation sensitivity; no blanket necessity or online/retrieval claim",
+  "status": "FINAL"
+}

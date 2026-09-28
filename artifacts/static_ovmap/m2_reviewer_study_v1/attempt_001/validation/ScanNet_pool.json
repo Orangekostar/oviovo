@@ -1,0 +1,17 @@
+{
+  "dataset": "ScanNet",
+  "method": "N0",
+  "original_evaluate_vs_combined_released_matches": "EXACT",
+  "pool_identity": "626aa59eb91a5eff23464eca534c6d492c63926aa177195a8fe63d5bd0d72cde",
+  "rank_mode": "OFFICIAL_CURRENT_CLASS",
+  "scenes": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "status": "COMPLETE",
+  "trace_parity": {
+    "ap_exact": true,
+    "pr_and_fn_exact": true,
+    "reference": "unchanged evaluator: unobserved AP and separate terminal-only PR/FN observer"
+  }
+}

@@ -1,0 +1,4808 @@
+{
+  "AP_attribution": "SEPARATE_RELEASED_TRACE_REQUIRED",
+  "correspondence_counts": {
+    "unique": 21,
+    "unmatched": 26
+  },
+  "dataset": "Replica",
+  "identifiable": 21,
+  "outcomes": {
+    "CP_M2_EQUAL_CAL": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 2,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 11,
+      "UNUSED_CORRECT_SOURCE": 3
+    },
+    "CP_M2_EQUAL_RAW": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 2,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 11,
+      "UNUSED_CORRECT_SOURCE": 3
+    },
+    "N0": {
+      "AVAILABLE_SOURCES_3": 21,
+      "PRESERVED_CORRECT": 8,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 13,
+      "UNUSED_CORRECT_SOURCE": 4
+    },
+    "N0_T007": {
+      "AVAILABLE_SOURCES_3": 21,
+      "PRESERVED_CORRECT": 8,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 13,
+      "UNUSED_CORRECT_SOURCE": 4
+    },
+    "Q_GAIN": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 1,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 12,
+      "UNUSED_CORRECT_SOURCE": 4
+    },
+    "Q_GAIN_T007": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 1,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 12,
+      "UNUSED_CORRECT_SOURCE": 4
+    },
+    "RV_A1_NQ": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 1,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 12,
+      "UNUSED_CORRECT_SOURCE": 4
+    },
+    "RV_A2_NS2": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 2,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 11,
+      "UNUSED_CORRECT_SOURCE": 3
+    },
+    "RV_A3_QS2": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 2,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 11,
+      "UNUSED_CORRECT_SOURCE": 3
+    },
+    "RV_A4_HARD": {
+      "AVAILABLE_SOURCES_3": 21,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 13,
+      "UNUSED_CORRECT_SOURCE": 5
+    },
+    "RV_A5_T001": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 2,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 11,
+      "UNUSED_CORRECT_SOURCE": 3
+    },
+    "RV_A6_SHARED_T": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 2,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 11,
+      "UNUSED_CORRECT_SOURCE": 3
+    },
+    "RV_A7_COS_FIXED": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 1,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 12,
+      "UNUSED_CORRECT_SOURCE": 4
+    },
+    "RV_A7_COS_REFIT": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 1,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 12,
+      "UNUSED_CORRECT_SOURCE": 4
+    },
+    "S_SIGLIP2_AREA": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 3,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 10,
+      "UNUSED_CORRECT_SOURCE": 2
+    },
+    "S_SIGLIP2_AREA_T007": {
+      "AVAILABLE_SOURCES_3": 21,
+      "CORRECTED": 3,
+      "HARMED": 1,
+      "PRESERVED_CORRECT": 7,
+      "SOFT_RESCUE": 0,
+      "SOURCE_TOP1_HEADROOM_DENOMINATOR": 21,
+      "STILL_WRONG": 10,
+      "UNUSED_CORRECT_SOURCE": 2
+    }
+  },
+  "owners": 47,
+  "paired_owner_ids": [
+    3,
+    5,
+    6,
+    7,
+    8,
+    12,
+    20,
+    32,
+    37,
+    40,
+    42,
+    45,
+    47,
+    51,
+    53,
+    57,
+    59,
+    60,
+    63,
+    64,
+    67
+  ],
+  "probability": {
+    "CP_M2_EQUAL_CAL": {
+      "paired": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.131246270245644,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.25,
+            "confidence": 0.30032387615035244,
+            "count": 4,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.36575663421815535,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.25,
+            "confidence": 0.42925952938843887,
+            "count": 4,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.6,
+            "confidence": 0.5074248439554889,
+            "count": 5,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.555486009987955,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6053413307443375,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6882665515136915,
+            "count": 1,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6779736424708644,
+        "coverage": 1.0,
+        "ece15": 0.1155757006188434,
+        "identifiable_denominator": 21,
+        "nll": 1.8039556072698366,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.131246270245644,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.25,
+            "confidence": 0.30032387615035244,
+            "count": 4,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.36575663421815535,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.25,
+            "confidence": 0.42925952938843887,
+            "count": 4,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.6,
+            "confidence": 0.5074248439554889,
+            "count": 5,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.555486009987955,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6053413307443375,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6882665515136915,
+            "count": 1,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6779736424708644,
+        "coverage": 1.0,
+        "ece15": 0.1155757006188434,
+        "identifiable_denominator": 21,
+        "nll": 1.8039556072698366,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "CP_M2_EQUAL_RAW": {
+      "paired": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": 0.42857142857142855,
+            "confidence": 0.042473344990547605,
+            "count": 21,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9460323707857871,
+        "coverage": 1.0,
+        "ece15": 0.38609808358088094,
+        "identifiable_denominator": 21,
+        "nll": 3.3163102620765765,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": 0.42857142857142855,
+            "confidence": 0.042473344990547605,
+            "count": 21,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9460323707857871,
+        "coverage": 1.0,
+        "ece15": 0.38609808358088094,
+        "identifiable_denominator": 21,
+        "nll": 3.3163102620765765,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "N0": {
+      "paired": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": 0.0,
+            "confidence": 0.05160471575528639,
+            "count": 2,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.09697673734927582,
+            "count": 15,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.15560426329253607,
+            "count": 4,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.8780262683788896,
+        "coverage": 1.0,
+        "ece15": 0.28695911038577576,
+        "identifiable_denominator": 21,
+        "nll": 2.741765866718035,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": 0.0,
+            "confidence": 0.05160471575528639,
+            "count": 2,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.09697673734927582,
+            "count": 15,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.15560426329253607,
+            "count": 4,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.8780262683788896,
+        "coverage": 1.0,
+        "ece15": 0.28695911038577576,
+        "identifiable_denominator": 21,
+        "nll": 2.741765866718035,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "N0_T007": {
+      "paired": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": 0.38095238095238093,
+            "confidence": 0.02544562890789916,
+            "count": 21,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9716924808375658,
+        "coverage": 1.0,
+        "ece15": 0.3555067520444818,
+        "identifiable_denominator": 21,
+        "nll": 3.733579820151804,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": 0.38095238095238093,
+            "confidence": 0.02544562890789916,
+            "count": 21,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9716924808375658,
+        "coverage": 1.0,
+        "ece15": 0.3555067520444818,
+        "identifiable_denominator": 21,
+        "nll": 3.733579820151804,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "Q_GAIN": {
+      "paired": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.11141824499522943,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.2524108228068048,
+            "count": 1,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.4256192786312939,
+            "count": 2,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.47534873536832084,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.564918607357805,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6133369755143778,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.6742504066244939,
+            "count": 3,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7817568394188938,
+            "count": 2,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.8482717061385759,
+            "count": 1,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.9060259689475605,
+            "count": 3,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.9613051660353176,
+            "count": 2,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.8144979017202171,
+        "coverage": 1.0,
+        "ece15": 0.3453435288106642,
+        "identifiable_denominator": 21,
+        "nll": 2.102401042847448,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.11141824499522943,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.2524108228068048,
+            "count": 1,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.4256192786312939,
+            "count": 2,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.47534873536832084,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.564918607357805,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6133369755143778,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.6742504066244939,
+            "count": 3,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7817568394188938,
+            "count": 2,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.8482717061385759,
+            "count": 1,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.9060259689475605,
+            "count": 3,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.9613051660353176,
+            "count": 2,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.8144979017202171,
+        "coverage": 1.0,
+        "ece15": 0.3453435288106642,
+        "identifiable_denominator": 21,
+        "nll": 2.102401042847448,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "Q_GAIN_T007": {
+      "paired": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": 0.35,
+            "confidence": 0.05061427838314871,
+            "count": 20,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.07938476841424517,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9358635706484733,
+        "coverage": 1.0,
+        "ece15": 0.3289680792344181,
+        "identifiable_denominator": 21,
+        "nll": 3.2050732340213375,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": 0.35,
+            "confidence": 0.05061427838314871,
+            "count": 20,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.07938476841424517,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9358635706484733,
+        "coverage": 1.0,
+        "ece15": 0.3289680792344181,
+        "identifiable_denominator": 21,
+        "nll": 3.2050732340213375,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A1_NQ": {
+      "paired": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.07579959710953971,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.22841201213467013,
+            "count": 3,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.2976364672067652,
+            "count": 5,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.38126611442345704,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.42977026462281726,
+            "count": 3,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.49702722395366694,
+            "count": 4,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.5620647253515358,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.7540879418115265,
+        "coverage": 1.0,
+        "ece15": 0.18425019052522276,
+        "identifiable_denominator": 21,
+        "nll": 2.1368223509514315,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.07579959710953971,
+            "count": 1,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.22841201213467013,
+            "count": 3,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.2976364672067652,
+            "count": 5,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.38126611442345704,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.42977026462281726,
+            "count": 3,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.49702722395366694,
+            "count": 4,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.5620647253515358,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.7540879418115265,
+        "coverage": 1.0,
+        "ece15": 0.18425019052522276,
+        "identifiable_denominator": 21,
+        "nll": 2.1368223509514315,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A2_NS2": {
+      "paired": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.1661301849758851,
+            "count": 2,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.24441461904628636,
+            "count": 3,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.2,
+            "confidence": 0.2993637904109837,
+            "count": 5,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.3696177072353739,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.4415647517750673,
+            "count": 4,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.4830754099183971,
+            "count": 2,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.538205722483132,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6753130688477691,
+        "coverage": 1.0,
+        "ece15": 0.23154071566420673,
+        "identifiable_denominator": 21,
+        "nll": 1.8933808614118193,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.1661301849758851,
+            "count": 2,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.24441461904628636,
+            "count": 3,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.2,
+            "confidence": 0.2993637904109837,
+            "count": 5,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.3696177072353739,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.4415647517750673,
+            "count": 4,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.4830754099183971,
+            "count": 2,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.538205722483132,
+            "count": 2,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6753130688477691,
+        "coverage": 1.0,
+        "ece15": 0.23154071566420673,
+        "identifiable_denominator": 21,
+        "nll": 1.8933808614118193,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A3_QS2": {
+      "paired": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.1772271412648773,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3862552480933855,
+            "count": 2,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.444314974885944,
+            "count": 3,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5038030224120091,
+            "count": 1,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.579742759825517,
+            "count": 4,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6102706222757174,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7076299540355642,
+            "count": 6,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8381377097818792,
+            "count": 2,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9390568938876744,
+            "count": 1,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6797467837612646,
+        "coverage": 1.0,
+        "ece15": 0.2069606979457727,
+        "identifiable_denominator": 21,
+        "nll": 1.6093796384706214,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.1772271412648773,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3862552480933855,
+            "count": 2,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.444314974885944,
+            "count": 3,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5038030224120091,
+            "count": 1,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.579742759825517,
+            "count": 4,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6102706222757174,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7076299540355642,
+            "count": 6,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8381377097818792,
+            "count": 2,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9390568938876744,
+            "count": 1,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6797467837612646,
+        "coverage": 1.0,
+        "ece15": 0.2069606979457727,
+        "identifiable_denominator": 21,
+        "nll": 1.6093796384706214,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A4_HARD": {
+      "paired": {
+        "accuracy": 0.3333333333333333,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3333333333333333,
+            "count": 1,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6666666666666666,
+            "count": 6,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 1.0,
+            "count": 14,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 1.0158730158730158,
+        "coverage": 1.0,
+        "ece15": 0.5396825396825397,
+        "identifiable_denominator": 21,
+        "nll": 12.103440546985594,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.3333333333333333,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3333333333333333,
+            "count": 1,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6666666666666666,
+            "count": 6,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 1.0,
+            "count": 14,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 1.0158730158730158,
+        "coverage": 1.0,
+        "ece15": 0.5396825396825397,
+        "identifiable_denominator": 21,
+        "nll": 12.103440546985594,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A5_T001": {
+      "paired": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.140076567682777,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.30395961291621276,
+            "count": 3,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3544604688775162,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.4,
+            "confidence": 0.4310968337129344,
+            "count": 5,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.5113575251743404,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.5528402533952965,
+            "count": 4,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6186044010492032,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.698344102941068,
+            "count": 1,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.677236673337803,
+        "coverage": 1.0,
+        "ece15": 0.16442030295632964,
+        "identifiable_denominator": 21,
+        "nll": 1.8040087203935826,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.140076567682777,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.30395961291621276,
+            "count": 3,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3544604688775162,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.4,
+            "confidence": 0.4310968337129344,
+            "count": 5,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.5113575251743404,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.5528402533952965,
+            "count": 4,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6186044010492032,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.698344102941068,
+            "count": 1,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.677236673337803,
+        "coverage": 1.0,
+        "ece15": 0.16442030295632964,
+        "identifiable_denominator": 21,
+        "nll": 1.8040087203935826,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A6_SHARED_T": {
+      "paired": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.14006964367853458,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.3039475074912959,
+            "count": 3,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.35444491974692305,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.4,
+            "confidence": 0.4310836026175061,
+            "count": 5,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.5113399922375854,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.5528222784385283,
+            "count": 4,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6185897467348893,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6983318097533739,
+            "count": 1,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6772359052456307,
+        "coverage": 1.0,
+        "ece15": 0.16441853333349174,
+        "identifiable_denominator": 21,
+        "nll": 1.8040124767833463,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.42857142857142855,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.14006964367853458,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.3039475074912959,
+            "count": 3,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.35444491974692305,
+            "count": 3,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.4,
+            "confidence": 0.4310836026175061,
+            "count": 5,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.5113399922375854,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.75,
+            "confidence": 0.5528222784385283,
+            "count": 4,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6185897467348893,
+            "count": 1,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.6983318097533739,
+            "count": 1,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6772359052456307,
+        "coverage": 1.0,
+        "ece15": 0.16441853333349174,
+        "identifiable_denominator": 21,
+        "nll": 1.8040124767833463,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A7_COS_FIXED": {
+      "paired": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.15489375266553726,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3884524270745047,
+            "count": 1,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.4226888971942212,
+            "count": 2,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5142238347065637,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5825756176367817,
+            "count": 3,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.6342079260869807,
+            "count": 3,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.7079748163071621,
+            "count": 3,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7863886457872598,
+            "count": 2,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8205379630719938,
+            "count": 2,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9552718090982361,
+            "count": 1,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.7177676486413006,
+        "coverage": 1.0,
+        "ece15": 0.28530212028077906,
+        "identifiable_denominator": 21,
+        "nll": 1.6795321884036878,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.15489375266553726,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3884524270745047,
+            "count": 1,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.4226888971942212,
+            "count": 2,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5142238347065637,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5825756176367817,
+            "count": 3,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.6342079260869807,
+            "count": 3,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.7079748163071621,
+            "count": 3,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7863886457872598,
+            "count": 2,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8205379630719938,
+            "count": 2,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9552718090982361,
+            "count": 1,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.7177676486413006,
+        "coverage": 1.0,
+        "ece15": 0.28530212028077906,
+        "identifiable_denominator": 21,
+        "nll": 1.6795321884036878,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "RV_A7_COS_REFIT": {
+      "paired": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.15396271969436026,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3824400125169419,
+            "count": 1,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.4217492906944308,
+            "count": 2,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5071299398489995,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5753455212492603,
+            "count": 3,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.6305338186940217,
+            "count": 3,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.7034490151522764,
+            "count": 3,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.7870662199011486,
+            "count": 3,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8268800807793965,
+            "count": 1,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9541746837270008,
+            "count": 1,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.7142349321715917,
+        "coverage": 1.0,
+        "ece15": 0.2629725205168173,
+        "identifiable_denominator": 21,
+        "nll": 1.6756586766347126,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.38095238095238093,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.15396271969436026,
+            "count": 1,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.3824400125169419,
+            "count": 1,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.4217492906944308,
+            "count": 2,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5071299398489995,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.5753455212492603,
+            "count": 3,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.6305338186940217,
+            "count": 3,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.7034490151522764,
+            "count": 3,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "confidence": 0.7870662199011486,
+            "count": 3,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8268800807793965,
+            "count": 1,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9541746837270008,
+            "count": 1,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.7142349321715917,
+        "coverage": 1.0,
+        "ece15": 0.2629725205168173,
+        "identifiable_denominator": 21,
+        "nll": 1.6756586766347126,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "S_SIGLIP2_AREA": {
+      "paired": {
+        "accuracy": 0.47619047619047616,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.257851641820611,
+            "count": 1,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.30806777407027464,
+            "count": 1,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.39414227204131647,
+            "count": 2,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.447600442847688,
+            "count": 3,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.5247589171679808,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6530747705509327,
+            "count": 2,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.7012360760205593,
+            "count": 2,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7601691230519779,
+            "count": 2,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8336800571709769,
+            "count": 2,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9164091950834222,
+            "count": 3,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6423042253453539,
+        "coverage": 1.0,
+        "ece15": 0.2513671416949051,
+        "identifiable_denominator": 21,
+        "nll": 1.5950303368575771,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.47619047619047616,
+        "bins": [
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.257851641820611,
+            "count": 1,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.30806777407027464,
+            "count": 1,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.39414227204131647,
+            "count": 2,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.447600442847688,
+            "count": 3,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "confidence": 0.5247589171679808,
+            "count": 3,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": 0.0,
+            "confidence": 0.6530747705509327,
+            "count": 2,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.7012360760205593,
+            "count": 2,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": 0.5,
+            "confidence": 0.7601691230519779,
+            "count": 2,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.8336800571709769,
+            "count": 2,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.9164091950834222,
+            "count": 3,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.6423042253453539,
+        "coverage": 1.0,
+        "ece15": 0.2513671416949051,
+        "identifiable_denominator": 21,
+        "nll": 1.5950303368575771,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    },
+    "S_SIGLIP2_AREA_T007": {
+      "paired": {
+        "accuracy": 0.47619047619047616,
+        "bins": [
+          {
+            "accuracy": 0.42105263157894735,
+            "confidence": 0.04989711564910389,
+            "count": 19,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.06725936737430209,
+            "count": 2,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9323378158645558,
+        "coverage": 1.0,
+        "ece15": 0.4246398127580201,
+        "identifiable_denominator": 21,
+        "nll": 3.144760386552209,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      },
+      "union": {
+        "accuracy": 0.47619047619047616,
+        "bins": [
+          {
+            "accuracy": 0.42105263157894735,
+            "confidence": 0.04989711564910389,
+            "count": 19,
+            "lower": 0.0,
+            "upper": 0.06666666666666667
+          },
+          {
+            "accuracy": 1.0,
+            "confidence": 0.06725936737430209,
+            "count": 2,
+            "lower": 0.06666666666666667,
+            "upper": 0.13333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.13333333333333333,
+            "upper": 0.2
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.2,
+            "upper": 0.26666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.26666666666666666,
+            "upper": 0.3333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.3333333333333333,
+            "upper": 0.4
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4,
+            "upper": 0.4666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.4666666666666667,
+            "upper": 0.5333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.5333333333333333,
+            "upper": 0.6
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6,
+            "upper": 0.6666666666666666
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.6666666666666666,
+            "upper": 0.7333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.7333333333333333,
+            "upper": 0.8
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8,
+            "upper": 0.8666666666666667
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.8666666666666667,
+            "upper": 0.9333333333333333
+          },
+          {
+            "accuracy": null,
+            "confidence": null,
+            "count": 0,
+            "lower": 0.9333333333333333,
+            "upper": 1.0
+          }
+        ],
+        "brier": 0.9323378158645558,
+        "coverage": 1.0,
+        "ece15": 0.4246398127580201,
+        "identifiable_denominator": 21,
+        "nll": 3.144760386552209,
+        "objects": 21,
+        "owner_ids": [
+          3,
+          5,
+          6,
+          7,
+          8,
+          12,
+          20,
+          32,
+          37,
+          40,
+          42,
+          45,
+          47,
+          51,
+          53,
+          57,
+          59,
+          60,
+          63,
+          64,
+          67
+        ]
+      }
+    }
+  },
+  "probability_scope": "conditional identifiable objects; not all false positives",
+  "qualitative_first_sorted_owners": {
+    "CP_M2_EQUAL_CAL": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "CP_M2_EQUAL_RAW": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "N0": {
+      "corrected": [],
+      "harmed": []
+    },
+    "N0_T007": {
+      "corrected": [],
+      "harmed": []
+    },
+    "Q_GAIN": {
+      "corrected": [
+        3
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "Q_GAIN_T007": {
+      "corrected": [
+        3
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A1_NQ": {
+      "corrected": [
+        3
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A2_NS2": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A3_QS2": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A4_HARD": {
+      "corrected": [],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A5_T001": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A6_SHARED_T": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A7_COS_FIXED": {
+      "corrected": [
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "RV_A7_COS_REFIT": {
+      "corrected": [
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "S_SIGLIP2_AREA": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    },
+    "S_SIGLIP2_AREA_T007": {
+      "corrected": [
+        7,
+        20
+      ],
+      "harmed": [
+        51
+      ]
+    }
+  },
+  "scene": "room1",
+  "status": "OBJECT_AND_PROBABILITY_COMPLETE",
+  "temperatures": {
+    "N0": 0.010000492837221748,
+    "Q_GAIN": 0.010000492837221748,
+    "S_SIGLIP2_AREA": 0.010859841285139529
+  }
+}

@@ -305,3 +305,21 @@ Query/report closeout continuation:
   succeeded at reports/a5b18b1f4a5334ba45dca9228670e5434829bdb46ccd15d03b7dbcc0cf9d13bc/.
   Four reporting tests and changed-path lint/diff checks passed. No final
   report/package/remote publication is claimed yet.
+
+Final measured execution and pre-push review:
+
+- Main controller71407 exited0. All50 B200 jobs,300 query scene rows and60
+  query pools are complete;9,993 logical attempts. CAL gate remains false.
+- Final report4357cf36788db730187506848266122131aad3b51dd643e43dc2dbc9b96e55ea
+  passed exact core/query matrix checks. Root reviewed tables/three documents,
+  all11 claim decisions and prompt sections0–17. See REQUIREMENT_AUDIT.md.
+- Real compact export succeeded:1,387 manifested files,90.008811MiB total,
+  byte-preserved560 principal scene metric JSONs,24,352 external file identities.
+  Full per-threshold large released matching ledgers stay external with hashes;
+  compact AP25/AP50 events and compressed owner ledgers are uploaded.
+- Whole changed study package Ruff passed. Earlier29 focused tests passed;
+  changed reporting fixtures and real final report CLI also passed. All seven
+  supplied specification SHA entries match. Historical source modules unchanged.
+- Final push must be ordinary, on the prescribed branch. Its authoritative
+  completion evidence will be output-root/publication_receipt.json containing
+  PUSH_VERIFIED and equal full local/remote SHAs; never a recursive tracked SHA.

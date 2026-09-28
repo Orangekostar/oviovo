@@ -1,0 +1,90 @@
+{
+  "controls": {
+    "CP_M2_EQUAL_CAL": {
+      "historical_metrics_reference": {
+        "ap25": 0.260233918128655,
+        "ap50": 0.19736842105263158,
+        "canonical_ap50": 0.12794612794612795,
+        "canonical_ap75": 0.0202020202020202,
+        "classes_observed": 37,
+        "macc": 0.358999538435444,
+        "masks_observed": 93,
+        "miou": 0.2768276222085132,
+        "trace_parity": true,
+        "uap": 0.05701754385964912
+      },
+      "metrics_recomputed": false,
+      "prediction_key": "018d9a0a28e44e620059e6b1ba2d9c2bded29aab1a37a21f26518c2827ea1559",
+      "status": "EXACT_LABEL_OWNER_RANK_PARITY"
+    },
+    "CP_M2_EQUAL_RAW": {
+      "historical_metrics_reference": {
+        "ap25": 0.2733918128654971,
+        "ap50": 0.19736842105263158,
+        "canonical_ap50": 0.12794612794612795,
+        "canonical_ap75": 0.0202020202020202,
+        "classes_observed": 37,
+        "macc": 0.36283478156501425,
+        "masks_observed": 93,
+        "miou": 0.2800251152420442,
+        "trace_parity": true,
+        "uap": 0.05701754385964912
+      },
+      "metrics_recomputed": false,
+      "prediction_key": "677cf5875d199eaf896d43e6c1292b293e90758ef53576fc039aafd1d2bff560",
+      "status": "EXACT_LABEL_OWNER_RANK_PARITY"
+    },
+    "N0": {
+      "historical_metrics_reference": {
+        "ap25": 0.35619095816464236,
+        "ap50": 0.17543859649122806,
+        "canonical_ap50": 0.12794612794612795,
+        "canonical_ap75": 0.0202020202020202,
+        "classes_observed": 28,
+        "macc": 0.3566857930771714,
+        "masks_observed": 93,
+        "miou": 0.2593699500745409,
+        "trace_parity": true,
+        "uap": 0.050682261208576995
+      },
+      "metrics_recomputed": false,
+      "prediction_key": "3d684dcab73402669cd04b2753858c3ee4a71e9eec9858a21df5368659e76628",
+      "status": "EXACT_LABEL_OWNER_RANK_PARITY"
+    },
+    "Q_GAIN": {
+      "historical_metrics_reference": {
+        "ap25": 0.23391812865497078,
+        "ap50": 0.17105263157894737,
+        "canonical_ap50": 0.12794612794612795,
+        "canonical_ap75": 0.0202020202020202,
+        "classes_observed": 34,
+        "macc": 0.2685986200104876,
+        "masks_observed": 93,
+        "miou": 0.21429483664147067,
+        "trace_parity": true,
+        "uap": 0.04824561403508772
+      },
+      "metrics_recomputed": false,
+      "prediction_key": "c3edf2bb9d8a0ba7ad3aa1a0373e743b39217df23bdc0d51f26e8b76cbfd10a9",
+      "status": "EXACT_LABEL_OWNER_RANK_PARITY"
+    },
+    "S_SIGLIP2_AREA": {
+      "historical_metrics_reference": {
+        "ap25": 0.26864035087719296,
+        "ap50": 0.19736842105263155,
+        "canonical_ap50": 0.12794612794612795,
+        "canonical_ap75": 0.0202020202020202,
+        "classes_observed": 34,
+        "macc": 0.3893213744766191,
+        "masks_observed": 93,
+        "miou": 0.27521707371492876,
+        "trace_parity": true,
+        "uap": 0.058966861598440536
+      },
+      "metrics_recomputed": false,
+      "prediction_key": "56aa2db7097d63ea89ae506b5c7fdf9b3b7404eeeceb24d6508f85221836cac1",
+      "status": "EXACT_LABEL_OWNER_RANK_PARITY"
+    }
+  },
+  "scene": "scene0534_00"
+}

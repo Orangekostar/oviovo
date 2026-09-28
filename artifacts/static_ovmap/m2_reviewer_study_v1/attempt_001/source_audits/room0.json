@@ -1,0 +1,31 @@
+{
+  "available": {
+    "N0": 54,
+    "Q_GAIN": 54,
+    "S_SIGLIP2_AREA": 53
+  },
+  "cosine_top1_disagreements": [],
+  "dataset": "Replica",
+  "inputs": [
+    {
+      "bytes": 2040249,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/room0/mapper/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "d299905caa10b9e84c6f8f5a1522dc413c6d185347a968514063cd3c2aa0a3c5"
+    },
+    {
+      "bytes": 210828,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/text/native/text.npz",
+      "sha256": "fa31583646d3ae7fc53c5a4378d54cf0ea3ba5b1bb8970a10b42121b073417f8"
+    }
+  ],
+  "native_reconstructed_aggregates": 54,
+  "owners": 54,
+  "physical_image_forwards": 0,
+  "scene": "room0",
+  "sources": {
+    "N0": "b200f00b6e00e9bf0a9faa08a33575146f61766fe2667759a0e804d03bda7a49",
+    "Q_GAIN": "9b981dea1cf9488b73130d7b2dd2bb394e0aec6025bbf7ac647efc86eeb0efbc",
+    "S_SIGLIP2_AREA": "2af3715853b0b7db3afd421da980bb6b791aba0c8eaa6e24beca2518072dcb0f"
+  },
+  "status": "COMPLETE"
+}

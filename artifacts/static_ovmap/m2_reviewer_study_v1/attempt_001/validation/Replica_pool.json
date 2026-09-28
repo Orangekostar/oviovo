@@ -1,0 +1,23 @@
+{
+  "dataset": "Replica",
+  "method": "N0",
+  "original_evaluate_vs_combined_released_matches": "EXACT",
+  "pool_identity": "5791b9809704103327ecd38dacac8f87974cb31e5c02c77b6d30d941a434bb6e",
+  "rank_mode": "OFFICIAL_CURRENT_CLASS",
+  "scenes": [
+    "office0",
+    "office1",
+    "office2",
+    "office3",
+    "office4",
+    "room0",
+    "room1",
+    "room2"
+  ],
+  "status": "COMPLETE",
+  "trace_parity": {
+    "ap_exact": true,
+    "pr_and_fn_exact": true,
+    "reference": "unchanged evaluator: unobserved AP and separate terminal-only PR/FN observer"
+  }
+}

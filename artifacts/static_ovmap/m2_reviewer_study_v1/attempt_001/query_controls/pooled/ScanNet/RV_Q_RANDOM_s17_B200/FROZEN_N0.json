@@ -1,0 +1,28 @@
+{
+  "aggregation": "RELEASED_DATASET_POOL",
+  "dataset": "ScanNet",
+  "elapsed_seconds": 0.2756181519944221,
+  "identity": "cbc3fc9c8f51a0c4010134bfb39067ab4d2abcade0d3fb3cc0726a4388fc9459",
+  "method": "RV_Q_RANDOM_s17_B200",
+  "metrics": {
+    "ap25": 0.23301977514940478,
+    "ap50": 0.11942974720752499,
+    "apall": 0.04323110588542687,
+    "defined_classes": 28,
+    "macc": 0.25888562613123584,
+    "miou": 0.20258576241742862,
+    "uap": 0.04323110588542687
+  },
+  "mode": "STANDALONE",
+  "ordered_inputs": [
+    "ac913d72865d4464d6881278f36f345bef18b83d1671add14a7ef9cbae33c24d",
+    "ffe03e9e8f7518b1b51ba354c6ca11eb961c012ee217b29d47bba38a80bed464"
+  ],
+  "policy": "RV_Q_RANDOM_s17",
+  "rank_mode": "FROZEN_N0",
+  "scene_order": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "status": "COMPLETE"
+}

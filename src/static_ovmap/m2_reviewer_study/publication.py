@@ -80,7 +80,7 @@ def export_artifacts(binding):
     if set(report.get("matrix_audit", {})) != {"core", "query_ScanNet", "query_Replica"}:
         raise ValueError("publication requires exact measured-matrix audit")
     destination = ROOT / "artifacts/static_ovmap/m2_reviewer_study_v1" / root.name
-    index, rows = InputIndex(), []
+    index, rows, large_ledgers = InputIndex(), [], []
 
     def copy(path, relative=None, compress=False):
         rows.append(copy_artifact(path, destination, relative or Path(path).relative_to(root),
@@ -102,6 +102,12 @@ def export_artifacts(binding):
         copy(root / "predictions" / scene / "locked.json")
         copy(binding["scenes"][scene]["config"], Path("configs") / scene / "resolved_config.json")
         for path in sorted((root / "diagnostics" / scene).iterdir()):
+            if path.name == "released_attribution.json.gz":
+                # Full per-threshold matching traces exceed the compact release
+                # budget. Keep exact external identities; owner ledgers and
+                # compact AP25/AP50 event summaries are still uploaded.
+                large_ledgers.append(index.identity(path))
+                continue
             if path.suffix in (".json", ".gz"):
                 copy(path, compress=path.suffix == ".json" and path.stat().st_size > 256 * 1024)
         for pattern in ("*_B*/receipt.json", "*_B*/decisions.json", "locked_B*.json", "probabilities_B*.json.gz"):
@@ -117,7 +123,7 @@ def export_artifacts(binding):
     # Reuse already-attested dependency hashes; do not crawl the old release or
     # repeatedly hash model weights. Newly packaged bytes are checked below.
     external = {}
-    collect_identities(binding["inputs"] + report["inputs"], external)
+    collect_identities(binding["inputs"] + report["inputs"] + large_ledgers, external)
     # Include evaluator contexts and output references actually consumed by
     # these rows. This is a bounded traversal of this study's matrix, not a scan
     # of historical artifacts or a reread of large surfaces/model weights.
@@ -166,7 +172,9 @@ def publish(binding):
            for p in git("diff", "--cached", "--name-only").splitlines()):
         raise ValueError("unrelated staged files must not enter the publication commit")
     git("add", "--", *allowed)
-    git("diff", "--cached", "--check")
+    # csv.writer uses valid RFC-style CRLF endings. Recognize that convention
+    # during whitespace validation without rewriting attested artifact bytes.
+    git("-c", "core.whitespace=trailing-space,space-before-tab,cr-at-eol", "diff", "--cached", "--check")
     if git("diff", "--cached", "--name-only"):
         git("commit", "-m", "Publish measured M2 reviewer evidence and reproducible workflow")
     head, remote = git("rev-parse", "HEAD"), git("remote", "get-url", "origin")

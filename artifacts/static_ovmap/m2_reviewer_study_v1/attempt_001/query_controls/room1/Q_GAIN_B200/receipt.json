@@ -1,0 +1,227 @@
+{
+  "code": {
+    "digest": "9b644d0646ed872c6d7fa322efd4a76f57b87f5541df21d4937ebd61775d706b",
+    "files": [
+      {
+        "bytes": 17291,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/composition_study/execution.py",
+        "sha256": "4cdd3e7a0bf4aa3105bb78e169ddfae134eeb39f63ffd2c3da8d9cd583caba65"
+      },
+      {
+        "bytes": 12314,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/composition_study/object_evidence.py",
+        "sha256": "3a0a63ca2845ba2c5db6c080d6c212ba9d80ff433ac58ea7b74ce1acafe39061"
+      },
+      {
+        "bytes": 3622,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/composition_study/trajectory_reread.py",
+        "sha256": "4fa9beae5b3e81ad770d0b9d5d05db89726e69732437c1ac60168a5e1915e7a5"
+      },
+      {
+        "bytes": 6059,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/composition_study/mixed_query.py",
+        "sha256": "8b6996fd1c76fd0d3153a4c0dc5bf04cc2ad201ab5ffe3e4f53c24a699abfef6"
+      },
+      {
+        "bytes": 14744,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/composition_study/visual_requests.py",
+        "sha256": "1e7c2ae8d73e804ad12c72541f8d759cf307fdf4b323d7940da53d3ecc83d5d8"
+      },
+      {
+        "bytes": 8477,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/query_study.py",
+        "sha256": "d1c14f260c6664c3d1feb3ada501cc6852b2d3f36b2d352cd959fde43a129d41"
+      },
+      {
+        "bytes": 30793,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/query_state.py",
+        "sha256": "0c38507bbebd99609ac2b122e36025007d132185abbd96e5c37b8359b31dce01"
+      },
+      {
+        "bytes": 6937,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/query_lineage.py",
+        "sha256": "9ba99bc94df7194ba7120b5b3aaf31f13c8f88d3348c9436bffd86f289b30a27"
+      },
+      {
+        "bytes": 29051,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/query_gain_policy.py",
+        "sha256": "ad639b2c235ee87206f22803592a8d7df18cc58a3853bdcd1cf896f5bdb4667f"
+      },
+      {
+        "bytes": 18380,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/query_pipeline.py",
+        "sha256": "956a5838656b5f2bfb02c9957fcbffb9c2c6f1c89382146423367fcebb25b33f"
+      },
+      {
+        "bytes": 55053,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/native_capture.py",
+        "sha256": "7b574a386afe0cde0462eaacaa4781b1ef9eae431ec31b7e78df35c1b3c7b228"
+      },
+      {
+        "bytes": 33016,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/region_evidence.py",
+        "sha256": "ed6a7992dcdbffe92b5a5ead9573e1109d85bece4440f00826dccaee308d126a"
+      },
+      {
+        "bytes": 729,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/rgb_siglip.py",
+        "sha256": "e0a29ca60eeedff7c1662b98d13702728a793ee5227ddd4b47ab5692017010a1"
+      },
+      {
+        "bytes": 18427,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/module_validation/scannet_study.py",
+        "sha256": "a7df7cfdbc680a414842bb9f8b25736a7a5253b44b3fcecc2f402ca3674498e2"
+      },
+      {
+        "bytes": 7708,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/replica_transfer/protocol.py",
+        "sha256": "68148d888e96e19b2abc90ed056c5266892f69f241f27cae4e4b24f50c2bcb7c"
+      },
+      {
+        "bytes": 11574,
+        "path": "/home/ww/crove/ovimap-complementary-composition/src/static_ovmap/replica_transfer/query.py",
+        "sha256": "33b796fce5b792fa160dbf94e945a09a8fa16b50f68a28f067858a10e47ff3a0"
+      }
+    ]
+  },
+  "controller_receipt": null,
+  "decisions_path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/decisions.json",
+  "elapsed_seconds": 0.010265317047014832,
+  "evidence_path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/source_evidence.json",
+  "execution_mode": "REUSE_FROZEN_GAIN_B200",
+  "historical_physical": {
+    "cache_hits": 0,
+    "crop_inputs": 1200,
+    "inference_seconds": 42.742517770733684,
+    "model_forwards": 200,
+    "model_load_seconds": 2.5462138860020787,
+    "model_loads": 1,
+    "tiles": 0
+  },
+  "historical_receipt": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/receipt.json",
+  "input_identity": "e20de93a8508e3c79e29ce1937bcd79f71be2dd95ee61178261ff041ee120f54",
+  "inputs": [
+    {
+      "bytes": 11009,
+      "path": "/home/ww/crove/ovimap-m2-reviewer-evidence/src/static_ovmap/m2_reviewer_study/query_jobs.py",
+      "sha256": "659fcdf1960e7c256214b1d58940a010f43d0d7858388de374010f3cd5f4fb98"
+    },
+    {
+      "bytes": 4745,
+      "path": "/home/ww/crove/ovimap-m2-reviewer-evidence/src/static_ovmap/m2_reviewer_study/query_replay.py",
+      "sha256": "8e8f229a517d0b197eccea685d4e0cb7d305f5bc992798632a045af605b0b13e"
+    },
+    {
+      "bytes": 26018,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/query/checkpoint.pt",
+      "sha256": "69047c5a8897b179ee48143be85b6bc93f9d16322930a93da0dbce35feacd3c6"
+    },
+    {
+      "bytes": 5206836,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/room1/capture/room1/manifest.json",
+      "sha256": "0ee0fc53b65876e202a8a754cb0658e170506b603f987e3c577c6168338f7a1c"
+    },
+    {
+      "bytes": 50411794,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/room1/capture/room1/surface.npz",
+      "sha256": "926f6fecd06670e081003693fec4b3e33b8a4f61f53c69890e8b252f858c282d"
+    },
+    {
+      "bytes": 20,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/cache_imports.json",
+      "sha256": "36956f4604636f29c51849c22dd98570e0558e665488a640050c7656975f8dce"
+    },
+    {
+      "bytes": 585526,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/decisions.json",
+      "sha256": "141f1c6afbebe9939902fb598fd8602ffabdaaf2f16a985a8156468dae8c02b3"
+    },
+    {
+      "bytes": 3245,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/prediction/manifest.json",
+      "sha256": "9c434b493fc20ebe01c4cf918713e0d84ff21dc98fcf1977f40f85e4e90ceca9"
+    },
+    {
+      "bytes": 317115,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/prediction/prediction.npz",
+      "sha256": "20e128f8c3f2582afe5c5cfa35017a1a5b6b27e0d017890d69af5fe0d0581e9f"
+    },
+    {
+      "bytes": 205425,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/receipt.json",
+      "sha256": "1bf7ca4459463c21a33ad6a58f7894e1f55b3d13e41cd509a662562a3e13e5ed"
+    },
+    {
+      "bytes": 101346,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/source_evidence.json",
+      "sha256": "dda42dc05fdeb6f34d1a7a4a1759609d8bc10f5c9ad462a9af0e0e21a39185a3"
+    },
+    {
+      "bytes": 16471,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/resolved_config.json",
+      "sha256": "1af2df41b97ca233028c7bc0c1d3539f48c4e98fbcb11c9f5957e6e8a57ca020"
+    },
+    {
+      "bytes": 3352,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/study/scenes/room1/baseline/N0/manifest.json",
+      "sha256": "80eb32f53036d35a36ad6ac0bd4a25f392988e1d3163d936392f2c0e2698ff2f"
+    },
+    {
+      "bytes": 210828,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/text/native/text.npz",
+      "sha256": "fa31583646d3ae7fc53c5a4378d54cf0ea3ba5b1bb8970a10b42121b073417f8"
+    }
+  ],
+  "logical": {
+    "attempts": 200,
+    "crop_inputs": 1200,
+    "failures": 0,
+    "successes": 200
+  },
+  "method_id": "Q_GAIN_B200",
+  "model": "native",
+  "model_identity": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760",
+  "outputs": [
+    {
+      "bytes": 101346,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/source_evidence.json",
+      "sha256": "dda42dc05fdeb6f34d1a7a4a1759609d8bc10f5c9ad462a9af0e0e21a39185a3"
+    },
+    {
+      "bytes": 585526,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/decisions.json",
+      "sha256": "141f1c6afbebe9939902fb598fd8602ffabdaaf2f16a985a8156468dae8c02b3"
+    },
+    {
+      "bytes": 20,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/cache_imports.json",
+      "sha256": "36956f4604636f29c51849c22dd98570e0558e665488a640050c7656975f8dce"
+    },
+    {
+      "bytes": 3245,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/prediction/manifest.json",
+      "sha256": "9c434b493fc20ebe01c4cf918713e0d84ff21dc98fcf1977f40f85e4e90ceca9"
+    },
+    {
+      "bytes": 317115,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/prediction/prediction.npz",
+      "sha256": "20e128f8c3f2582afe5c5cfa35017a1a5b6b27e0d017890d69af5fe0d0581e9f"
+    }
+  ],
+  "physical": {
+    "crop_inputs": 0,
+    "model_forwards": 0,
+    "model_loads": 0,
+    "peak_gpu_allocated_bytes": null,
+    "peak_memory_status": "NO_NEW_INFERENCE"
+  },
+  "prediction_manifest": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/prediction/manifest.json",
+  "required_logical": {
+    "crop_inputs": 1200,
+    "native_requests": 200,
+    "siglip2_requests": 0
+  },
+  "role": "replica_transfer",
+  "scene_id": "room1",
+  "status": "COMPLETE"
+}

@@ -1,0 +1,510 @@
+{
+  "composition_root": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001",
+  "deployment": "N0_UNCHANGED",
+  "fresh_inventory_status": "PENDING_EXPOSURE_AUDIT",
+  "identity": "f797e21f68b4e25efb6667a17829d28eacc968b3bdae256edc9485dfd632d2ef",
+  "inputs": [
+    {
+      "bytes": 12336,
+      "path": "/home/ww/crove/ovimap-m2-reviewer-evidence/docs/paper/static_ovmap/m2_reviewer_study_v1/PROTOCOL_SPEC.json",
+      "sha256": "da74a16b600a332424edb751f5395a04f52d84bea0b2502ea9d7efd9e4018e1e"
+    },
+    {
+      "bytes": 499291,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/calibration/examples.json",
+      "sha256": "816d4f14eae08e7f76bd0dc9238806b94aec839cc63cac72f8521f7439705551"
+    },
+    {
+      "bytes": 5759,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/calibration/final_temperatures.json",
+      "sha256": "9ca9021104379b5196c9d585023b03df8cbaed63b6d9f0194ac8b99d974eeef6"
+    },
+    {
+      "bytes": 7621,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/calibration/folds.json",
+      "sha256": "ad6382849ef7ade1290fed0efad0cd2d1cb7d1402e16522863e4011c5244e202"
+    },
+    {
+      "bytes": 628772,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0056_00/Q_GAIN/source_evidence.json",
+      "sha256": "167b11fe6d58173518021214155398ca4108989afbbc82661cc7683beea12530"
+    },
+    {
+      "bytes": 548115,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0534_00/Q_GAIN/source_evidence.json",
+      "sha256": "68a20a7e1ed4319cfd484bca5700396426acef45583cf1c1dcc1bdace18df5fb"
+    },
+    {
+      "bytes": 62021,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/resolved_config.json",
+      "sha256": "4de425b5ae9a1c6ba67100fe98e465b7cb06c0525f00bc8171dc01c4b99192cc"
+    },
+    {
+      "bytes": 134406,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/selection.json",
+      "sha256": "98b178130ea8b7a2aaec2afe37add2a4f174ef04c2dd58aaa0f7d9d8d6785560"
+    },
+    {
+      "bytes": 714605,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0056_00/N0.json",
+      "sha256": "36855b2e8f529e85f74f3751341edac1b7c6a2347441ca882680a668bad9a907"
+    },
+    {
+      "bytes": 659375,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0056_00/S_SIGLIP2_AREA.json",
+      "sha256": "d41387062843cbe1dc4d105f18981591e46226cc48483b5b2d18f50c26f1d66c"
+    },
+    {
+      "bytes": 665999,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0534_00/N0.json",
+      "sha256": "12e94f7f5841c6a7e935adb8a0499bb9619c9810ade6b309f18f1fb316c2080a"
+    },
+    {
+      "bytes": 618530,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0534_00/S_SIGLIP2_AREA.json",
+      "sha256": "4af610cd398e454be4feb23cbd31fba59f017050701763ccdf45045d94d0c0de"
+    },
+    {
+      "bytes": 5195,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/baseline/N0/manifest.json",
+      "sha256": "7ab08b222638b24a786b20b677433f11b2a9d63029a4dbea63746e7cb3b17778"
+    },
+    {
+      "bytes": 454930,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0056_00/baseline/N0/prediction.npz",
+      "sha256": "6a74e439feca21cb70b5b216eb97a490a47998f5fa1eea5e97b413fcb89d847e"
+    },
+    {
+      "bytes": 5057,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/baseline/N0/manifest.json",
+      "sha256": "6506f504b8e56cbe34032f062020b7e48a3b4a795e627675b48b60e4a9dfc420"
+    },
+    {
+      "bytes": 306600,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/scenes/scene0534_00/baseline/N0/prediction.npz",
+      "sha256": "04ef9d039c57720ecea1717dc3debadbac8d509afea431f116390707bdd2213f"
+    },
+    {
+      "bytes": 778719,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/native/text.npz",
+      "sha256": "891760a9967c3d3cb72ece32f73687492c685c262c996095c097cbf03e1aa539"
+    },
+    {
+      "bytes": 777920,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/text/siglip2/text.npz",
+      "sha256": "867c917a9f46ea98e2d0ff534bf9cff808b4c959791361d863ae03645a424c2d"
+    },
+    {
+      "bytes": 6313,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/report_apall/per_scene.csv",
+      "sha256": "09dea3abe3923041d34732dea7dd31fc0ba8950951326bc07eb090bb465f60b5"
+    },
+    {
+      "bytes": 99329,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/query/office0/Q_GAIN/source_evidence.json",
+      "sha256": "ed060c48d7c11d29d076f9e2d9a099639745f3b1cbac63fc4c3e739f415cfe20"
+    },
+    {
+      "bytes": 16560,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/resolved_config.json",
+      "sha256": "b803754cca53812b5897bd0747fdf6910af08c337067e11945caac74b56df797"
+    },
+    {
+      "bytes": 136870,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/sources/office0/N0.json",
+      "sha256": "26e20059dbbe90330eb1606d7282e8292fd7f3536706fff7ee8b67aa92a6483c"
+    },
+    {
+      "bytes": 111115,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/sources/office0/S_SIGLIP2_AREA.json",
+      "sha256": "8876cb22b9df3afcc1a3843ee2efb9b8a397f5db3544730edf70eafedd03a82e"
+    },
+    {
+      "bytes": 3282,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/study/scenes/office0/baseline/N0/manifest.json",
+      "sha256": "74c6730a841cc0641e17db09a16acc09478a6dd722a274db0991ca40099e40ff"
+    },
+    {
+      "bytes": 249882,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/study/scenes/office0/baseline/N0/prediction.npz",
+      "sha256": "ebb65ae5ae51fd8d9304efaad0c1f583c82aba4e1bf521fee297b962ee990bd7"
+    },
+    {
+      "bytes": 78883,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/query/office1/Q_GAIN/source_evidence.json",
+      "sha256": "976287340947bc77b96d257ac3f1dda3cc6e65ea27cb187c3a7618af03fd8e3e"
+    },
+    {
+      "bytes": 16560,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/resolved_config.json",
+      "sha256": "b5f9ae0bad0af3941f17ef5db4db24a812d2ea409df4679b920237195656f188"
+    },
+    {
+      "bytes": 107126,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/sources/office1/N0.json",
+      "sha256": "8fc4de7a5ddec1f7f0be38c81ff57e9bb70f1548f405e390086948bfa725d1a4"
+    },
+    {
+      "bytes": 84177,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/sources/office1/S_SIGLIP2_AREA.json",
+      "sha256": "dbe20658a1d8c85f7ebcbb9456b12d17955b9761797dfd461c78f0c926e46233"
+    },
+    {
+      "bytes": 2925,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/study/scenes/office1/baseline/N0/manifest.json",
+      "sha256": "8baa495b403060aab420f8db47ba755e7f79c3ae424052f6c480cc8a1104ba35"
+    },
+    {
+      "bytes": 170685,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/study/scenes/office1/baseline/N0/prediction.npz",
+      "sha256": "fdb80f7bf078efca78c7531751af69939ab516ba523c3e21152c076051d2d221"
+    },
+    {
+      "bytes": 113097,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/query/office2/Q_GAIN/source_evidence.json",
+      "sha256": "80f1650a941660eb9eb1d3600257e18965465a71f17cdaad2aba46d2477c1ff8"
+    },
+    {
+      "bytes": 16560,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/resolved_config.json",
+      "sha256": "63fb8270918609538c1640c83ec6f5c6ff144ccf00a8770cdae97bdf42b32404"
+    },
+    {
+      "bytes": 155187,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/sources/office2/N0.json",
+      "sha256": "5387aa1e82ccabc21354e1d01b383a80ba1e7c46f965b7a500456e49d1212768"
+    },
+    {
+      "bytes": 119037,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/sources/office2/S_SIGLIP2_AREA.json",
+      "sha256": "0c5c5ed046367aacda417c66ca560f865b0c3efc7f5683b15cd85b2a5567a7c4"
+    },
+    {
+      "bytes": 3497,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/study/scenes/office2/baseline/N0/manifest.json",
+      "sha256": "3887807c2b43576386553ff7d74988011e65f9ccdba440795b796b1907bdc94e"
+    },
+    {
+      "bytes": 351796,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/study/scenes/office2/baseline/N0/prediction.npz",
+      "sha256": "5e041a4fd8311f3f14a04e1812caf533852afd069a25359e6a4f3c9f7faf1cdd"
+    },
+    {
+      "bytes": 113315,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/query/office3/Q_GAIN/source_evidence.json",
+      "sha256": "209a9c27f6785f6137ab1424802224766bd513d900aea9c730ea7cdc7232896b"
+    },
+    {
+      "bytes": 16561,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/resolved_config.json",
+      "sha256": "b49fb72fd4bf2eb5596f654b1398aeb9431efc3cd7a528037efe9a05085b3102"
+    },
+    {
+      "bytes": 157595,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/sources/office3/N0.json",
+      "sha256": "565cad926e7dca864c834f8c2c88827ef1b6c129e35b699fa96ef01cff87a6b7"
+    },
+    {
+      "bytes": 115630,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/sources/office3/S_SIGLIP2_AREA.json",
+      "sha256": "f5ed0062e7aa1d08627159ce94b4390291d3d4277ee7eb19c71060feec23162b"
+    },
+    {
+      "bytes": 3519,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/study/scenes/office3/baseline/N0/manifest.json",
+      "sha256": "62420f3e8b59ac7c404bd2c90f54539d92774af1153ce3c0969bebbbf9ccf062"
+    },
+    {
+      "bytes": 475552,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/study/scenes/office3/baseline/N0/prediction.npz",
+      "sha256": "e496ed3d0419a56c374a09c300d445bd166f478f234188365de9b1016dc3dc1d"
+    },
+    {
+      "bytes": 98899,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/query/office4/Q_GAIN/source_evidence.json",
+      "sha256": "9266f923898872ec573ff1199fae854a9f73b1effa68218bee1d9bae20f5e7d7"
+    },
+    {
+      "bytes": 16560,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/resolved_config.json",
+      "sha256": "94c568fe518063af49d36598487d3d3f3c487c56c4dccc98c651920ce3acc6cf"
+    },
+    {
+      "bytes": 132933,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/sources/office4/N0.json",
+      "sha256": "2c0f5e50ff20ed3b998f56ecd1bd910407115ec44c5f5430c86aaeb0c2bc607c"
+    },
+    {
+      "bytes": 103565,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/sources/office4/S_SIGLIP2_AREA.json",
+      "sha256": "d9dbc0ba3faad36a5b11f18d23c785a8a3dec0702bb196f71f1eb0e9950b08fb"
+    },
+    {
+      "bytes": 3217,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/study/scenes/office4/baseline/N0/manifest.json",
+      "sha256": "3d3e8f27634d8f0852217fb32a47c6a801bdc9ce39458d99d6f318380748bcfa"
+    },
+    {
+      "bytes": 390730,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/study/scenes/office4/baseline/N0/prediction.npz",
+      "sha256": "0786280b78a9e74dd20324cd15c1ba575b1f64838dd275466b4c12ec1d83fedf"
+    },
+    {
+      "bytes": 120308,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/query/room0/Q_GAIN/source_evidence.json",
+      "sha256": "3ae1c8cc60b0ae30ee4b0c55826417b27c5ede2f518f2c1ef7c759159b8e097c"
+    },
+    {
+      "bytes": 16471,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/resolved_config.json",
+      "sha256": "46e8c48ca8603fe74585468894d0115bb6f74c1442d3848f67f65b049bc4a44e"
+    },
+    {
+      "bytes": 164283,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/sources/room0/N0.json",
+      "sha256": "35058194508b7aa4fe67253a229754b44f7b3cff14d7525e63710c15fe6d9826"
+    },
+    {
+      "bytes": 129623,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/sources/room0/S_SIGLIP2_AREA.json",
+      "sha256": "53540000743abf6f25920b08d1be1f2c8dc26c9c115a296096f20164806b30b8"
+    },
+    {
+      "bytes": 3616,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/study/scenes/room0/baseline/N0/manifest.json",
+      "sha256": "e161f4672e8caed20a97044c2b0365dbbff6ef5c49c8c1c738f2a8a80be2377b"
+    },
+    {
+      "bytes": 430468,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/study/scenes/room0/baseline/N0/prediction.npz",
+      "sha256": "d53ebcf425343e38ff9ddfdf45eff6cd663a26044d2eab8a4a1c1445977347b9"
+    },
+    {
+      "bytes": 101346,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/source_evidence.json",
+      "sha256": "dda42dc05fdeb6f34d1a7a4a1759609d8bc10f5c9ad462a9af0e0e21a39185a3"
+    },
+    {
+      "bytes": 16471,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/resolved_config.json",
+      "sha256": "1af2df41b97ca233028c7bc0c1d3539f48c4e98fbcb11c9f5957e6e8a57ca020"
+    },
+    {
+      "bytes": 142060,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/sources/room1/N0.json",
+      "sha256": "d01f2f90ade309053ea094e594bb9150ba4b5a9c964b77a09b008db502c2d11c"
+    },
+    {
+      "bytes": 115185,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/sources/room1/S_SIGLIP2_AREA.json",
+      "sha256": "9a9c064de8703ab74f66215e4c2a232dbfbccdbca790733dc2dbd91c3ea6265d"
+    },
+    {
+      "bytes": 3352,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/study/scenes/room1/baseline/N0/manifest.json",
+      "sha256": "80eb32f53036d35a36ad6ac0bd4a25f392988e1d3163d936392f2c0e2698ff2f"
+    },
+    {
+      "bytes": 314208,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/study/scenes/room1/baseline/N0/prediction.npz",
+      "sha256": "79b7a6b837e5d1edcc3682aed8b0a0cc6caa2b4bb7d0ddb4ea398bc697860d77"
+    },
+    {
+      "bytes": 103086,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/query/room2/Q_GAIN/source_evidence.json",
+      "sha256": "82cbda7ad1bdcb53d740a633cefc8bc2ae0d0c312b855268848477b27dcddc40"
+    },
+    {
+      "bytes": 16471,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/resolved_config.json",
+      "sha256": "4ae21fe416e904d7d16f24b2101a86c46b6ddfb93b44c50473121afbb4d38024"
+    },
+    {
+      "bytes": 146537,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/sources/room2/N0.json",
+      "sha256": "2bda4fb1a1ca5c9010fc7cb8a142ed978e4b9e30322f51cf9e90805189c783ec"
+    },
+    {
+      "bytes": 113947,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/sources/room2/S_SIGLIP2_AREA.json",
+      "sha256": "b7cf918e08f4c0f2954c520208418acc0b23dec49bb2b1c3f2d83c659f407173"
+    },
+    {
+      "bytes": 3425,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/study/scenes/room2/baseline/N0/manifest.json",
+      "sha256": "3e780388b22062fe6915f162a001162ccb193f55dacbd23e8e18b5abf5514b83"
+    },
+    {
+      "bytes": 318564,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/study/scenes/room2/baseline/N0/prediction.npz",
+      "sha256": "4131b089126352f972460432185ee159fd2247b0d57061d490427a7bee42ff13"
+    },
+    {
+      "bytes": 210828,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/text/native/text.npz",
+      "sha256": "fa31583646d3ae7fc53c5a4378d54cf0ea3ba5b1bb8970a10b42121b073417f8"
+    },
+    {
+      "bytes": 210560,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/text/siglip2/text.npz",
+      "sha256": "e92cf783dae985d666a40871d280fef25236272811c5ead1c429841b07c38dad"
+    },
+    {
+      "bytes": 25442,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/transfer.json",
+      "sha256": "12a9a55ce06cd7ed8da4a6d7d83d8a23320fa3f5b573e7d6930ad931e48df924"
+    }
+  ],
+  "methods": [
+    "N0",
+    "Q_GAIN",
+    "S_SIGLIP2_AREA",
+    "CP_M2_EQUAL_RAW",
+    "CP_M2_EQUAL_CAL",
+    "RV_A1_NQ",
+    "RV_A2_NS2",
+    "RV_A3_QS2",
+    "RV_A4_HARD",
+    "RV_A5_T001",
+    "RV_A6_SHARED_T",
+    "RV_A7_COS_FIXED",
+    "RV_A7_COS_REFIT"
+  ],
+  "output_root": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001",
+  "scenes": {
+    "office0": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/rows/replica_transfer/office0",
+      "native_prediction_key": "c89b3197f3d5546b0e987d17a3f4bd0aba390219a537f521465c42c5aba0d236",
+      "native_record_key": "f8088bea90fe91f5655a226ff010bebff8b7ce618f61efc25e24dfe9e0a78028",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/sources/office0/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/query/office0/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office0/sources/office0/S_SIGLIP2_AREA.json"
+      }
+    },
+    "office1": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/rows/replica_transfer/office1",
+      "native_prediction_key": "01671fe1d3c06354778a91a1712506c61e3ff9704bf78b745f4994c64675fd43",
+      "native_record_key": "a201ebd0c8aa74e5525d8a39bc91b3c2e950a4d08a10df96f49cbd746933a8fd",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/sources/office1/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/query/office1/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/sources/office1/S_SIGLIP2_AREA.json"
+      }
+    },
+    "office2": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/rows/replica_transfer/office2",
+      "native_prediction_key": "eae780b4a49bfd7002d632f8f960b57a07d2d123f71a8dd31797b1b4b97948b8",
+      "native_record_key": "99201c60eff68cb4970ba7e3b6d18c162db975ad20a94a1a563d08cecec227d4",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/sources/office2/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/query/office2/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office2/sources/office2/S_SIGLIP2_AREA.json"
+      }
+    },
+    "office3": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/rows/replica_transfer/office3",
+      "native_prediction_key": "cf2b4193d63c8845bde822c4321d9b621c9a7251e6169e974e2618b6ec6e3a95",
+      "native_record_key": "186d90dd93d2e5122d99b462e0ea13c41d5981a0ca597a3c2c7a02918b570944",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/sources/office3/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/query/office3/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office3/sources/office3/S_SIGLIP2_AREA.json"
+      }
+    },
+    "office4": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/rows/replica_transfer/office4",
+      "native_prediction_key": "cd4fb77b8932273def57c4c4f67e8107bd8ce9695b6c68eabe5d9dc8549e60e9",
+      "native_record_key": "8365769f344309347cdb744110b924b03a1ffabd7903f2cddcdd8b0c1fa6048e",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/sources/office4/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/query/office4/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office4/sources/office4/S_SIGLIP2_AREA.json"
+      }
+    },
+    "room0": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/rows/replica_transfer/room0",
+      "native_prediction_key": "241a5ffae72a535259f4fe6b3263780de74b2511c18acc6a809f99d5948605de",
+      "native_record_key": "4dfc6654a19911f9cce2dd727c209722fccae6654547ee9677353d016bb52dfc",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/sources/room0/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/query/room0/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room0/sources/room0/S_SIGLIP2_AREA.json"
+      }
+    },
+    "room1": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/rows/replica_transfer/room1",
+      "native_prediction_key": "5eb0d915b56572f3c6b727b55ebf35bff89444f970a769127a699a35969adb9f",
+      "native_record_key": "fce66920661e585bd4d2b3fd5165ebcdbb76a2b4d7213b59eda73e446eed6f8f",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/sources/room1/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/query/room1/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room1/sources/room1/S_SIGLIP2_AREA.json"
+      }
+    },
+    "room2": {
+      "config": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/resolved_config.json",
+      "dataset": "Replica",
+      "legacy_rows": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/rows/replica_transfer/room2",
+      "native_prediction_key": "7f31d3d88586d9277cf95b8a57d1e8cc86ce4ed99b3be670a598f8a3ccc5823e",
+      "native_record_key": "11c951681b336a41e80cc957fa33ce8b51249f22a4a31d37dfa840a9bf68a16d",
+      "role": "HISTORICAL_TRANSFER",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/sources/room2/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/query/room2/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/sources/room2/S_SIGLIP2_AREA.json"
+      }
+    },
+    "scene0056_00": {
+      "config": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/resolved_config.json",
+      "dataset": "ScanNet",
+      "legacy_rows": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/rows/compose_cal/scene0056_00",
+      "native_prediction_key": "8d55af7a4d53b393809d69a9831ca3c8c20b51ec3338058e10f2de2b1037092f",
+      "native_record_key": "23520ee5bf51a56d942ecbfc6748bc589bb24e86a08c10ef2ebdf08fedb67b56",
+      "role": "CAL",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0056_00/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0056_00/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0056_00/S_SIGLIP2_AREA.json"
+      }
+    },
+    "scene0534_00": {
+      "config": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/resolved_config.json",
+      "dataset": "ScanNet",
+      "legacy_rows": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/rows/compose_cal/scene0534_00",
+      "native_prediction_key": "3d684dcab73402669cd04b2753858c3ee4a71e9eec9858a21df5368659e76628",
+      "native_record_key": "bbd1fa985c3bf3f6894fb4010cf0cd15a1969d5065e8e1f2cb84b6544c40fd59",
+      "role": "CAL",
+      "sources": {
+        "N0": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0534_00/N0.json",
+        "Q_GAIN": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0534_00/Q_GAIN/source_evidence.json",
+        "S_SIGLIP2_AREA": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0534_00/S_SIGLIP2_AREA.json"
+      }
+    }
+  },
+  "schema": 1,
+  "spec": "/home/ww/crove/ovimap-m2-reviewer-evidence/docs/paper/static_ovmap/m2_reviewer_study_v1/PROTOCOL_SPEC.json",
+  "status": "SOURCES_BOUND",
+  "transfer": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/transfer.json"
+}

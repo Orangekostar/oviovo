@@ -1,0 +1,3092 @@
+{
+  "budget": 200,
+  "decisions_path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/decisions.json",
+  "elapsed_seconds": 144.34910727699753,
+  "evidence_path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/source_evidence.json",
+  "execution_mode": "NEW_CAUSAL_CONTROLLER",
+  "input_identity": "d321708be1c45f7722b6207a0659a07ca91642b1ff112aa8f1942e764f7256a2",
+  "inputs": [
+    {
+      "bytes": 11009,
+      "path": "/home/ww/crove/ovimap-m2-reviewer-evidence/src/static_ovmap/m2_reviewer_study/query_jobs.py",
+      "sha256": "659fcdf1960e7c256214b1d58940a010f43d0d7858388de374010f3cd5f4fb98"
+    },
+    {
+      "bytes": 4745,
+      "path": "/home/ww/crove/ovimap-m2-reviewer-evidence/src/static_ovmap/m2_reviewer_study/query_replay.py",
+      "sha256": "8e8f229a517d0b197eccea685d4e0cb7d305f5bc992798632a045af605b0b13e"
+    },
+    {
+      "bytes": 4120,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/README.md",
+      "sha256": "771d019af5fc01f21ec91ad7fbc3e2d24d750bb1df3a1e1dd04f060cbd90cd9c"
+    },
+    {
+      "bytes": 554,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/config.json",
+      "sha256": "ddefe38fdfe333d5dbb7d56a247bdc6fe84dbcdb4eafd2f462e05e9b13c532bc"
+    },
+    {
+      "bytes": 2610010520,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/model.safetensors",
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2"
+    },
+    {
+      "bytes": 368,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/preprocessor_config.json",
+      "sha256": "f59da2f87c3cd079bd4f8f3037e81b277c60c498e279a8020331f67a5a3157e8"
+    },
+    {
+      "bytes": 409,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/special_tokens_map.json",
+      "sha256": "2b6a1ff67a27e0df9ac0c7d93250fc0d87431c7b366b3d5669217104f9088a26"
+    },
+    {
+      "bytes": 798330,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/spiece.model",
+      "sha256": "1e5036bed065526c3c212dfbe288752391797c4bb1a284aa18c9a0b23fcaf8ec"
+    },
+    {
+      "bytes": 2399357,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/tokenizer.json",
+      "sha256": "c6e405cb7c670d56636a9402c81023a55bc6c3c53d89cf02b92f5c5005bfe920"
+    },
+    {
+      "bytes": 711,
+      "path": "/home/ww/vv/paper2/model_cache/google_siglip-large-patch16-384/tokenizer_config.json",
+      "sha256": "d6423dae508cc3a129d22ea443841c111832a1a73125b8f25ea8736951698bcb"
+    },
+    {
+      "bytes": 1981,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/021cf2d10905b4d26be81d98664e7403c99e1bae410df86001b84708c4e22a28.json",
+      "sha256": "93b87ba84d83bf79d6239609e2f6ac0c8ad04972ae2e3aeca9cc6127a740b222"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/021cf2d10905b4d26be81d98664e7403c99e1bae410df86001b84708c4e22a28.npz",
+      "sha256": "f62e3dc516e505835cbb98accb725055a21516fda558fa09f72cc8352c30c47e"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/03a8d9f2be7290f685596f3d82bfe253b08492094aed2fae5b098f2f3862bd79.json",
+      "sha256": "2377bac978fa576f3a5a89145aab800b45b08c2eb7c698cb22f09dc623054256"
+    },
+    {
+      "bytes": 55391,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/03a8d9f2be7290f685596f3d82bfe253b08492094aed2fae5b098f2f3862bd79.npz",
+      "sha256": "ebb8c7b0662b1c6490a1fd7aa273e0b2c8af8b10c32a2774d4e6e48bdf674b32"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/050891dafe68a2967c9d1d0d67cd6e5f2002480a11b3f131b983f24816c47de3.json",
+      "sha256": "3d52dc98b5a1f1a82b3f5aa1fa991137717315b84029ecc3f710636d073395bf"
+    },
+    {
+      "bytes": 39891,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/050891dafe68a2967c9d1d0d67cd6e5f2002480a11b3f131b983f24816c47de3.npz",
+      "sha256": "747325725ae9b3048730932b41bae2382091df175c107c6a5369bae11dddeb06"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0584e081001f0ac5e28c68e8640f250d0c7f02597a316a9384673f2738eabfc0.json",
+      "sha256": "9df5ac3f2c3ba683bb6ff4ecef3a27c5a149a343d0d3d85187e2c372c98355fa"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0584e081001f0ac5e28c68e8640f250d0c7f02597a316a9384673f2738eabfc0.npz",
+      "sha256": "b5925f70be7c27f4372fcd3650b10e3abb2fda6b993890011982e8b3f581eb28"
+    },
+    {
+      "bytes": 1846,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/05e3cbd375bb3988be883d6972a034895af154767522cef88b15d6bb6dc4e7f8.json",
+      "sha256": "a0e7af0283e97bc6f6c615a14a03934398455fc1cd9622420176f0d15e4fa8ba"
+    },
+    {
+      "bytes": 55400,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/05e3cbd375bb3988be883d6972a034895af154767522cef88b15d6bb6dc4e7f8.npz",
+      "sha256": "af7374323ef19d68061e97de7d5d329d983d8d89bd76e1127c027efc09bbbbcc"
+    },
+    {
+      "bytes": 1848,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0684a844ac0f28fecbea9fa1f758f416042154945a6721d90633fd87da34ebf0.json",
+      "sha256": "0a0c9b65e265f9c50a2d3cec662363a5d7daefee33e8326b8ed21ccb1f308857"
+    },
+    {
+      "bytes": 55387,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0684a844ac0f28fecbea9fa1f758f416042154945a6721d90633fd87da34ebf0.npz",
+      "sha256": "98916ac148c1d994f7c0f197dcb7833391ad568f088308a8c76eda50fc16d8a9"
+    },
+    {
+      "bytes": 2362,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/06f297ab71f31ebe09a810fba0888d0db8a146fad2acbed83d528f1caa405771.json",
+      "sha256": "3a8f48705cca5a437deed9928be6cb1d331799eee3a128e5706abbd11f99333d"
+    },
+    {
+      "bytes": 24285,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/06f297ab71f31ebe09a810fba0888d0db8a146fad2acbed83d528f1caa405771.npz",
+      "sha256": "e77a344c1e9a0fda9c736edd74f0bb1d91963819aad8f485c69c6ac0c5ae96bc"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/09dbaf2036b0e9e7917e68ec4f0d8ee8f1963b4372e4d576be1f8f5a6f106a39.json",
+      "sha256": "4aaa0d540a160cd6a381a3bec167ff7fbf459e6134ef2a1bb1eb1b88891330d0"
+    },
+    {
+      "bytes": 55392,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/09dbaf2036b0e9e7917e68ec4f0d8ee8f1963b4372e4d576be1f8f5a6f106a39.npz",
+      "sha256": "9a990ca9c742f29fc57b31e1078072f16e8bc63977dd0e5e0c7f36435c829a6f"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0b5feb8d161f3947ef19ccc9f2bdb7a0458b5d734de802b25a4b227a32f3513d.json",
+      "sha256": "5f065fa10be5736e9780b11d49458d1796c0f16d3f875615a49980f2d7fa6a9f"
+    },
+    {
+      "bytes": 55390,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0b5feb8d161f3947ef19ccc9f2bdb7a0458b5d734de802b25a4b227a32f3513d.npz",
+      "sha256": "63be321f0e114eff1b7d1844d7b36d179d135071092d23923eeaf96d7dfeeeb2"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0b7b2056e78b3c54cf580bd3c80d19a5f6194eb78c7b795bf5cb7dbd18e2c00a.json",
+      "sha256": "71f1b9188e9326e7b3e1ea32bf71431dda41383d5a5beefdb13a377c12c7b4e4"
+    },
+    {
+      "bytes": 55396,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0b7b2056e78b3c54cf580bd3c80d19a5f6194eb78c7b795bf5cb7dbd18e2c00a.npz",
+      "sha256": "066550a256d4bd15e32324930338829c89fa6e6ef10649114d533c3c5324f397"
+    },
+    {
+      "bytes": 2363,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0bb71aabe4ca95a5b6db632aacc0324beae19926f5f672050fc5b3f083fc9ebe.json",
+      "sha256": "8ec551bb387846b2fdc97263ba745da4c988dc209d0b12a8a2ecc69bf4c8a575"
+    },
+    {
+      "bytes": 2573,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0bdcb0d86be76cdda8205b7e2bb4c607a1ed2c0788beda8ac39a879fa4ff9f9e.json",
+      "sha256": "2e04df40c24745263ba6db783871bbc41bf784593a97120e9e29f41c8147eeca"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0c0d5d02961575de42f92ec8acd6536ea73d563041ebdf0111ac18a40ae74003.json",
+      "sha256": "edca19ed82d047554f872836e849dc2433db21d33b5b200e81fa0a7e722a5d01"
+    },
+    {
+      "bytes": 55392,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0c0d5d02961575de42f92ec8acd6536ea73d563041ebdf0111ac18a40ae74003.npz",
+      "sha256": "843be21300b41a7c20c8e61f853830a1ab0ad4444c4a16049918edfabf9bc728"
+    },
+    {
+      "bytes": 2206,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0d72d860c2fa958bd106085eb764a2b6d3fb18018843ce3f6f6017d9002837c6.json",
+      "sha256": "1dae017246cdb50f8ea0e06b72240299e29e3ac2378993769bb995be0b531b52"
+    },
+    {
+      "bytes": 1920,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0e3b2c630e9af11b26a89ac7d5401d870bbb24c3047b829f1a17a7eb4da16469.json",
+      "sha256": "1170e9d9a6ea68f4af07ddca9579c4cab733adafaf8bd88d113fe96038be9289"
+    },
+    {
+      "bytes": 39882,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0e3b2c630e9af11b26a89ac7d5401d870bbb24c3047b829f1a17a7eb4da16469.npz",
+      "sha256": "9f5faedf96f4c4803a57f46f2cbd99eae45772ff13ac1f50f93b79f3fba53f1d"
+    },
+    {
+      "bytes": 1845,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0e993f9b317db01c917b90c0edd2e33c4d0e6fbccf64dbf70c0e7c9f06165b6a.json",
+      "sha256": "14ad62292c06b090979892f2132d561b4c715a3d66cb22453047449aa277a51a"
+    },
+    {
+      "bytes": 55419,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0e993f9b317db01c917b90c0edd2e33c4d0e6fbccf64dbf70c0e7c9f06165b6a.npz",
+      "sha256": "b6fbf04955dbbeeef8c9ae02e77b747afb510a82c4535ea281888193951a7dd2"
+    },
+    {
+      "bytes": 2203,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/152edc1afbb418a0c709ffd1aac8341cb841447362e5988e4c5d52db25e26717.json",
+      "sha256": "d54ceeb5f0018242b919fcc028fb744ae47bb95b96139d616b27e653f406c466"
+    },
+    {
+      "bytes": 1900,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/17eb198b71f8868642faf0b43170f8de4036b61b63703a957a0bc84fd56ed1d4.json",
+      "sha256": "480ec632b20814d1329d025f91bbc71f2e1f558f424691553a4a4bf4b117c148"
+    },
+    {
+      "bytes": 24287,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/17eb198b71f8868642faf0b43170f8de4036b61b63703a957a0bc84fd56ed1d4.npz",
+      "sha256": "28539d7ea4dd9d11b9ce7519e228ba8369a3951e967facc8f945daeaec958125"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/17ec65c6a95ae2ca51d12ef854d3655a9a5e00471edfc4d4b5e5cc84efced569.json",
+      "sha256": "c123806d80fd0f8221f5bee45dbc7e7a5f6e12b3cbebac0f8f6108ce3ebb83e7"
+    },
+    {
+      "bytes": 55376,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/17ec65c6a95ae2ca51d12ef854d3655a9a5e00471edfc4d4b5e5cc84efced569.npz",
+      "sha256": "2d162448bdd48c203b41afcf58640c0689c22f3c2ddb01a3a90978c1f9a8b205"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1acec8f138347c2d71b1cf0c7021e1f769321d437cfdc727a57fac663faeca9c.json",
+      "sha256": "f0923e506d50666516f5912eab23a57db630d4cb74d73e8877efafe6d6a4c01a"
+    },
+    {
+      "bytes": 55371,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1acec8f138347c2d71b1cf0c7021e1f769321d437cfdc727a57fac663faeca9c.npz",
+      "sha256": "967280da37b434e1ba01353a37645240bb2ee154de2de47ccfeaeae5cfe1617f"
+    },
+    {
+      "bytes": 1797,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1c543791c712d0e9f32a382078c10ee1dbf3d6e8f35c1520337414acaaab1b8d.json",
+      "sha256": "998fbbf13aa59911c5e1e7dd7167620ec4600e8265dfa3206d78d1dc66355968"
+    },
+    {
+      "bytes": 55407,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1c543791c712d0e9f32a382078c10ee1dbf3d6e8f35c1520337414acaaab1b8d.npz",
+      "sha256": "0658087f9baa8d5f152d3d87e729862eb032ee8234428a8b60648713cddf775d"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1c5c9aac382ddb11741a81fab41c91e128e9402656d6a942b427519046ac5d30.json",
+      "sha256": "f3a12282b5e035144ced70b7b11045bd66d241cb231006d3769f0738eb99e111"
+    },
+    {
+      "bytes": 55402,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1c5c9aac382ddb11741a81fab41c91e128e9402656d6a942b427519046ac5d30.npz",
+      "sha256": "ebf90c1be26c374d53ef4d01b809e42214a681cc2f61d2c528b50368b6266426"
+    },
+    {
+      "bytes": 1822,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1e564e67dd74cd16fbb6eb68597c355243305f308b077dfe8e1c671b156293c5.json",
+      "sha256": "e9ce4b3af1575e229c2d6fb5f1aa047c374f9a86817826408542a062b0e49f58"
+    },
+    {
+      "bytes": 55410,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1e564e67dd74cd16fbb6eb68597c355243305f308b077dfe8e1c671b156293c5.npz",
+      "sha256": "60a4206148b290fe7f9c508f83606ff53d5c11d8b2f6c894532fa90163d590bc"
+    },
+    {
+      "bytes": 1801,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1f9c581eab6c76b70911d7034048f7da3dd66b6f579b4d0aeb87baa07b0fb4c9.json",
+      "sha256": "27a0026296e841048e3ac11a1b5b16eec87a7a6ab8a310c6daab334862177170"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/1f9c581eab6c76b70911d7034048f7da3dd66b6f579b4d0aeb87baa07b0fb4c9.npz",
+      "sha256": "3f9cf6116e0d20eaf7fdb1c97aec444a6546db6df382f517b5d02c40ee877e3b"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2132ace874e7f87327b7c32d78e38e4c723b49f5b856b65725f9bc7be1fd5f46.json",
+      "sha256": "e4de5fbcde8774e2d60abe4c317452ee972c0486f0f9ad38d25592136246fa4b"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2132ace874e7f87327b7c32d78e38e4c723b49f5b856b65725f9bc7be1fd5f46.npz",
+      "sha256": "2a5ad75e44899372bc3381a98a0f278c3817eddddfc60b25381f0a4e94e1f78b"
+    },
+    {
+      "bytes": 1912,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/218c963babde055f29936051088f9901d419de50a3a7f7466e22dba2b11957e7.json",
+      "sha256": "ab0de90259f6063e9d49fe1bab68376194fbfccebd3353c3a6b6dfcc4bd1dc4e"
+    },
+    {
+      "bytes": 55382,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/218c963babde055f29936051088f9901d419de50a3a7f7466e22dba2b11957e7.npz",
+      "sha256": "53d2609568bc5a7ec926cf2a1e032766a4552f4efc784a3387a0620278c7e8de"
+    },
+    {
+      "bytes": 2200,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/22181801eaaa5e4fd53da519f27b547d4aa3248d19201a6d8d8c60546fa0aed4.json",
+      "sha256": "690d9b36429c6cfd5d1e1ebb50ced6ebb244a465575f19b69632f93acc3ed4e2"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/27d28cf9bc92adea625d813a466de2fa79bf906a2abe5e74ed8afb2627131f7d.json",
+      "sha256": "18e5dff1cf725315c880d5eca2208977711b584d361c569b88c625c70b802629"
+    },
+    {
+      "bytes": 32168,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/27d28cf9bc92adea625d813a466de2fa79bf906a2abe5e74ed8afb2627131f7d.npz",
+      "sha256": "029ec519a78b781273b642f7145ccbd28ffb091a210b837dc8eb22720288c98a"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/27dd4cb2ae7a44c32e7d378a2d23bab61ca535c7950e766041fedd204511b362.json",
+      "sha256": "d977bc4d779be3c799488125becc8178f980d0382fca812c0785535ba605789d"
+    },
+    {
+      "bytes": 55368,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/27dd4cb2ae7a44c32e7d378a2d23bab61ca535c7950e766041fedd204511b362.npz",
+      "sha256": "4f5706f1fc1127498cf4bc2c8fc2bd113e5fbd8e2e83766d555253004218e2d0"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/285755b5b0ba299068c63dd317f2e22c32c11d0addd47f4eaf863d8794f89ff5.json",
+      "sha256": "2b85f81b19022db81e372253470b599b2485f5fac97c41aea90f53550a883351"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/285755b5b0ba299068c63dd317f2e22c32c11d0addd47f4eaf863d8794f89ff5.npz",
+      "sha256": "77bae6d86b9e1f5ef89ee8c6bc313cc10dbb19b50d61420d6fca49ec7b35f282"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/28f0e3d42b7baf8b38a30ca4786e66abcf7b9f9c0976f033f9a25e2c085e28c6.json",
+      "sha256": "b8e5596785d926d74b1eda754fd0492784350670ef7829192abd9e5d752c7f35"
+    },
+    {
+      "bytes": 55421,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/28f0e3d42b7baf8b38a30ca4786e66abcf7b9f9c0976f033f9a25e2c085e28c6.npz",
+      "sha256": "2ccd75ec714e1965362714b9ff2bb3d71b1c492090b8ebb1f8564235d81c1949"
+    },
+    {
+      "bytes": 1851,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/294abea3176be13447fb92d40cdba92f76f6941a426ce04a197ff680580da909.json",
+      "sha256": "2ef4cf837327ec79ccca6324076fb743ca230e0af0a99511cb39014b2d70ce7f"
+    },
+    {
+      "bytes": 55404,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/294abea3176be13447fb92d40cdba92f76f6941a426ce04a197ff680580da909.npz",
+      "sha256": "884009a1a471ce30d9955474a31ce6dc0a158011acf6029b0f5d31e90c1c8d17"
+    },
+    {
+      "bytes": 1867,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2ac42ae16ef013f94f0ffab57bf0463d7a880c07191cf1bd70f9f0bb344cce24.json",
+      "sha256": "7724fc39d3a49d30e807b9c4018d36e8c4da4ca5c52f7c8b9771f754ffe23e0e"
+    },
+    {
+      "bytes": 55426,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2ac42ae16ef013f94f0ffab57bf0463d7a880c07191cf1bd70f9f0bb344cce24.npz",
+      "sha256": "f0a21f8b3685f1b9898782baac6016f347eb3229c4dbb0c2850dc49de4065f35"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2ad10f82df637356ae109ec9d34d872c1e43271b7fc0de89935466bc32f2c2be.json",
+      "sha256": "2b8aff4a6a499b5f918504d1cd177a070501f38d7378c24a51a2686ccfaa89a0"
+    },
+    {
+      "bytes": 55390,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2ad10f82df637356ae109ec9d34d872c1e43271b7fc0de89935466bc32f2c2be.npz",
+      "sha256": "3ddc11da7533488be89762f010d0c6e75159b0c9fa3af3c234c316bf1b920610"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2c224586e5843f9e9ad582c2e5d91561de88809723f156361b2967de2108d8a6.json",
+      "sha256": "cdbb793f66bcf4bc99ac0fc6718610de31adc61aefd8e730c60066f367dba9a1"
+    },
+    {
+      "bytes": 55385,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2c224586e5843f9e9ad582c2e5d91561de88809723f156361b2967de2108d8a6.npz",
+      "sha256": "807c2f5f15a6510d404735ca04f85007f635dc29828ccef67503cedf5f71b129"
+    },
+    {
+      "bytes": 2205,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2d34122434091a056324746bf909a6adc06fede8a0b1a0be3fdfe39f87b19ee6.json",
+      "sha256": "d4bf5068228cffc894d51d04d28b110d7a62a701c6b31683fa2cd4b8d96c02c6"
+    },
+    {
+      "bytes": 1838,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2d673a98a00a9808977a9fb97eca9de76b3a9a3b849b6759d819e8d0c4b7c148.json",
+      "sha256": "b33ce84057667b86e4395a0d5191ccbae8a61968b85b9557132066d3b3d6fc67"
+    },
+    {
+      "bytes": 55410,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2d673a98a00a9808977a9fb97eca9de76b3a9a3b849b6759d819e8d0c4b7c148.npz",
+      "sha256": "1d52d86bcdeaa94383da6891dfd8ed7be6aa24f0605d8d60bca4bb56b393a3d1"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2e36fcaa5bdd547a8356dee3423dd49eca4c81131592150eb6ef525adf89cba6.json",
+      "sha256": "187f0a844bf89519ef542b8b2f4c0abab8da16dc3f18b14867d7b870fe62a933"
+    },
+    {
+      "bytes": 55413,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2e36fcaa5bdd547a8356dee3423dd49eca4c81131592150eb6ef525adf89cba6.npz",
+      "sha256": "f4ec4ecea8ecb5b67062dd87207689d71933804a71a369a2f1f3798f13b659ba"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/31b6b6fd379275a7189818992df1425f0e6e9227e808984574fee0df68791f89.json",
+      "sha256": "1c395c78d83bc6a69ca506730a14b15f9d310ef0369ebd71542f8dc69df37985"
+    },
+    {
+      "bytes": 55391,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/31b6b6fd379275a7189818992df1425f0e6e9227e808984574fee0df68791f89.npz",
+      "sha256": "0b4c398aba90d0075dda582b8610d9bf29edb628f4298e77c0a7ffa9a4521a55"
+    },
+    {
+      "bytes": 2043,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/324356f9a717a2bdcac237a001cc4af369f1c1fdad5b432084401f2239ac7869.json",
+      "sha256": "358936d974afcae536a9fc3bd83336d85552bca25f101482df5c946d17bbc33a"
+    },
+    {
+      "bytes": 55388,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/324356f9a717a2bdcac237a001cc4af369f1c1fdad5b432084401f2239ac7869.npz",
+      "sha256": "54ec75d8f280fa31ff69fddd1ec2782ec4b0796883319c42e64bfcf8cc3bb7ce"
+    },
+    {
+      "bytes": 2383,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/341db62c1634e47bb72cc680fbb4d8a38bcf527833b6800ace10fcdd71d56309.json",
+      "sha256": "b00fab02ce70c73499f86e78f21d6d7ab5d6a0fff131278b90b0c75fa06e15a7"
+    },
+    {
+      "bytes": 24302,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/341db62c1634e47bb72cc680fbb4d8a38bcf527833b6800ace10fcdd71d56309.npz",
+      "sha256": "1021353396015a49c0646d10a41d054a4617d41cd72241cf50cedfdf0da294e9"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/34efe79ab93d6b396a5fafd0c1d0927e58fe6a00c2951d206fe1f33141253955.json",
+      "sha256": "f9bd6da2d934d4f63a0aa1bf9933e183e3b329ab2c06f4a74656842dd474d70d"
+    },
+    {
+      "bytes": 55405,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/34efe79ab93d6b396a5fafd0c1d0927e58fe6a00c2951d206fe1f33141253955.npz",
+      "sha256": "d5ac718e151248433530882c8528f606bcf319667cf50a0de3e8ca2f3d5c5271"
+    },
+    {
+      "bytes": 2552,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3522f404407193c303c323cff1135bdaec4e7e66ac20832e843013d70f9c0afb.json",
+      "sha256": "83d7e23b2818de7f39d2b9729c2b9f9fb098caff8e6b01f45dbda19352818621"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/383e1f8a0a976e364fabde02a12e5da78017c48b98f430bdcca207b35e4bd16e.json",
+      "sha256": "6100c4a59d14abdb0a3a8b21d3ac3ee58d10bf864608781a3cd0239d257f44b1"
+    },
+    {
+      "bytes": 55377,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/383e1f8a0a976e364fabde02a12e5da78017c48b98f430bdcca207b35e4bd16e.npz",
+      "sha256": "f3845da822c90c33edcfff9cc556496942104beb8c39a9de611cde7ab7999a86"
+    },
+    {
+      "bytes": 1843,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/38e62400460a3fc26ef7071ae9574d508fdce2e86571bccef1441edd468f06b3.json",
+      "sha256": "d1245b7aaa79de9d0df8edeb183e3346da6711c1a0f55d1872361e969ec6cadf"
+    },
+    {
+      "bytes": 55422,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/38e62400460a3fc26ef7071ae9574d508fdce2e86571bccef1441edd468f06b3.npz",
+      "sha256": "9acab307fe210a453bc56cbfaccea43a179c66db3f53dd18c15e18b3fa4f7ba8"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3a99cfe0617899ac75b7615519102a276d4606c36535e3a4dd9466125ec43027.json",
+      "sha256": "c834a73ef716878659a27e178c59e2352bacaabb38b18e2a1148b40d428a036d"
+    },
+    {
+      "bytes": 55377,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3a99cfe0617899ac75b7615519102a276d4606c36535e3a4dd9466125ec43027.npz",
+      "sha256": "b002c0287c45d054fb2018dd143fcaca82eed659a3e0da4bfb08d78c61c12116"
+    },
+    {
+      "bytes": 1847,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3ab2b9d9370e272a342005b2807b27d70e5c0f7378f4cd771d56096b82479599.json",
+      "sha256": "51152194c6c6a37ecdce6eb3b3999ebaeb6cd36d53f7ead852d17743cf71d097"
+    },
+    {
+      "bytes": 55368,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3ab2b9d9370e272a342005b2807b27d70e5c0f7378f4cd771d56096b82479599.npz",
+      "sha256": "6b65e798b2b8378b2bc296a3ab1db6abd00ea1b5ab5200286edaf8e6e18551d4"
+    },
+    {
+      "bytes": 1828,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3e137bd18f46f6916aa0fbb8a51ffe1f53e00fb2571cb84e0281f2e813a1270e.json",
+      "sha256": "86cc0211296319f7258752237a845d4394efa1ec64adea5bb28b574991e57467"
+    },
+    {
+      "bytes": 55379,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3e137bd18f46f6916aa0fbb8a51ffe1f53e00fb2571cb84e0281f2e813a1270e.npz",
+      "sha256": "1d97cba7f53564492f85a931f6c617e99e105d4c77405e4334a5752b1bf67ef7"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/431cb0150c23ca2a6fb59673a9e89457c3e50aaab11df41a0c06eabcfce5ef9a.json",
+      "sha256": "a4cc4af69eeea39507f7901ae04b6871aa851c420ace4f9c6a554aca8b04e1ea"
+    },
+    {
+      "bytes": 55410,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/431cb0150c23ca2a6fb59673a9e89457c3e50aaab11df41a0c06eabcfce5ef9a.npz",
+      "sha256": "a7c04cc1466f5ac1903fdd2468d8bf84b182f936f8b5908f758d8cfed078a741"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4443d2958dbab9279a4e7c447ee2a050326ddfb860861b62a6ba0d656c50f202.json",
+      "sha256": "a1ca1c13fbed29145ba8bf4b6f4d6b1a7f24e5aeb46b81331ee6d85232e57c10"
+    },
+    {
+      "bytes": 55408,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4443d2958dbab9279a4e7c447ee2a050326ddfb860861b62a6ba0d656c50f202.npz",
+      "sha256": "f0f238ded744691e7e86915be218dbe74f86080f3ae6343db990d02442571360"
+    },
+    {
+      "bytes": 1865,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/46d90959f69bd58881842e7b88c6278b9227b35689c5db774a393c8c02d8aeab.json",
+      "sha256": "fffe961abbd5bd586bc4ca845e9833763f15bc248e881d42a34681a5f01a9015"
+    },
+    {
+      "bytes": 55407,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/46d90959f69bd58881842e7b88c6278b9227b35689c5db774a393c8c02d8aeab.npz",
+      "sha256": "20e768de441aa4b42cded264642a012653da995e85849c3d930724e098b8b84f"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4a6dfe4a9c484c2e4534e2be2f94f331edb77c09349bb9c60442c39608285da4.json",
+      "sha256": "6eaff35614f91abad96378255323f678a78419a7ee3706ac7ba502cf8352dc14"
+    },
+    {
+      "bytes": 55407,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4a6dfe4a9c484c2e4534e2be2f94f331edb77c09349bb9c60442c39608285da4.npz",
+      "sha256": "3f343dc6f38fb1b910df678492b72110c95801a7fe654553f61d04f3db36c53c"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4a9e89ee43e65f6c06ca4a855e00cfbe48d231597bb266a8c35504ee8b54a763.json",
+      "sha256": "87285be48ba4b561bd101466297ce981f75a818f4bf44ecf38ec0adb40c56706"
+    },
+    {
+      "bytes": 55377,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4a9e89ee43e65f6c06ca4a855e00cfbe48d231597bb266a8c35504ee8b54a763.npz",
+      "sha256": "1eb9a4f56249a7ded80531e8dfa539540f0f14f1325279ec04227462cc52aa4d"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4b7a09f026da18386da528731cb6599b03b25b94495fb5ff1449ff34ea88711e.json",
+      "sha256": "42378e5163375c628d0c1ff36bfd4696b793337065ed68cefc17f0eddec1ac36"
+    },
+    {
+      "bytes": 55402,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4b7a09f026da18386da528731cb6599b03b25b94495fb5ff1449ff34ea88711e.npz",
+      "sha256": "849c0db2955fc2dfb229001491cbd2298169932fbe946c8175fc0c39e3b9306e"
+    },
+    {
+      "bytes": 1849,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4c8ea436de76896e5bea73d096f11ffb08e257df91acda72219e1e6d3a44eebf.json",
+      "sha256": "3d2edc05f4d40827034fab1d362629898ef0f89a70eeb9c541a7c209b843da77"
+    },
+    {
+      "bytes": 55413,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4c8ea436de76896e5bea73d096f11ffb08e257df91acda72219e1e6d3a44eebf.npz",
+      "sha256": "6f5be4d0545371953937c9f78b8fdcaed35e28a8b710d835c568b9de127597a1"
+    },
+    {
+      "bytes": 2023,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4cc9e1f71838141c81ae6c1e89d96c6cf9b4435495307aae60c0bf0e20e9c19c.json",
+      "sha256": "3eddf768d3b5d19c9deedd0edfa2b9aeeb1e78315e08937df8b409d68af9ba2d"
+    },
+    {
+      "bytes": 55412,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4cc9e1f71838141c81ae6c1e89d96c6cf9b4435495307aae60c0bf0e20e9c19c.npz",
+      "sha256": "5f0c43dbc07b445dba587d6b397844128371742f1cdd43abe44b541817d69214"
+    },
+    {
+      "bytes": 1910,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4d460e0c3dac316105e021fe4f716253bc4ebd76afcc618cd9bd9ece96e45da2.json",
+      "sha256": "bea92de65c2c64ad5e31ecb276756532579a27a075e45fdd59b8df70d3e4c68f"
+    },
+    {
+      "bytes": 55419,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/4d460e0c3dac316105e021fe4f716253bc4ebd76afcc618cd9bd9ece96e45da2.npz",
+      "sha256": "15ffd403335842a24efd0e30b1c2ea9e146e1099eb00d3d5b230d1d956ce5798"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/50ea3e151bd25a457091127b71a49b68e585d2debb25f62d7559d0c498e68ed5.json",
+      "sha256": "8fd62f0b8370d48fc826c28aa4e22215c2da5f3e5851e77367ac2829af93c972"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/50ea3e151bd25a457091127b71a49b68e585d2debb25f62d7559d0c498e68ed5.npz",
+      "sha256": "8a58c39ece0d66640e51e0756e0e60ce3a123e6b2bf723b08ae278b422a29603"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/539bab43a2a1a28b40d55c44974ac101205bc12140369636a0d27c053d8ebb4e.json",
+      "sha256": "23bd210cb191f765ecf2957c77d69eb7fe9043fabc50368c15bde8da9fea8d8b"
+    },
+    {
+      "bytes": 55392,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/539bab43a2a1a28b40d55c44974ac101205bc12140369636a0d27c053d8ebb4e.npz",
+      "sha256": "42ae90634eabf079f866d830fb44c96ae859139c15bd4b38f61fc73c5d7bc7cc"
+    },
+    {
+      "bytes": 2699,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/54195f7eeb47cbd2a33e18af12bc2e4c136826ecbd11c7dfcdb46ee140e88b7c.json",
+      "sha256": "240c1abe9a9cf4c528d73e21d88c0dc16270c7b8d03d39082db52b38e616699e"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/54514985f92fa57b6554a96d05fce91da985c6e0df89f1c9ef448d75d1426625.json",
+      "sha256": "bb315a43b7c690c353e6378e31286de28f6a3322c7b7a58748bf92c946644d25"
+    },
+    {
+      "bytes": 55411,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/54514985f92fa57b6554a96d05fce91da985c6e0df89f1c9ef448d75d1426625.npz",
+      "sha256": "f9291ffe3495895ffd984199a69bbcedc0cf3984106a0773377f75d1e465d328"
+    },
+    {
+      "bytes": 2205,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/572a534a256c1a2ed634b3b130dcd18bdd18e0f17626bbc8622eef207c94a296.json",
+      "sha256": "e11aca5f7ed49a88f2e596e3459fed94429d505942be24013aa62b5c919185f8"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/5ce137dc238602b33657d9b6153c2f135cea4efe2c9fa48393014941389bdfc5.json",
+      "sha256": "0b8b2aaefd41ff28d023a863743e503a9b5094b476a11becc5611af3011676d5"
+    },
+    {
+      "bytes": 39898,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/5ce137dc238602b33657d9b6153c2f135cea4efe2c9fa48393014941389bdfc5.npz",
+      "sha256": "c266dee9753a1590791672fc026c24dcecf8dfa5ebb71c469a29e1784d80b0a0"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/5ebc5156ca2b07d3d7176097f2daf9af5243331095c07a80b6807f7ea1958717.json",
+      "sha256": "31063e54e540ebfed2dfa2ab480cd4840ce57af801f6f66fd737b6a148bed5aa"
+    },
+    {
+      "bytes": 55396,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/5ebc5156ca2b07d3d7176097f2daf9af5243331095c07a80b6807f7ea1958717.npz",
+      "sha256": "1a13c1c0e1ccf5529e73c647467fc1fabd3b38e0f4b452c4655a8c0854bef260"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/61e98aaa23f22701d11260fecc620a8767d69c69593ff79e3db29c78762c68ce.json",
+      "sha256": "d891e647cb07d0a4106bb02e5433ca66c7216d96612ff04865b69540a9ddafbf"
+    },
+    {
+      "bytes": 55421,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/61e98aaa23f22701d11260fecc620a8767d69c69593ff79e3db29c78762c68ce.npz",
+      "sha256": "899577cef6ab4d1ba99c7c8bed84122e5386386bae52db853ac61891a14c28ff"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/635a2f7e3805da43ce9f821c07c0c1b9ae0b7a7d865ee1bf19835c410ffe6ddd.json",
+      "sha256": "2b0a5c6677d8ee2d7f62e718802df33b370a166cd20b6aca61a7e7453475c331"
+    },
+    {
+      "bytes": 55413,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/635a2f7e3805da43ce9f821c07c0c1b9ae0b7a7d865ee1bf19835c410ffe6ddd.npz",
+      "sha256": "9c21de023486dba42659aed9db3eb9d6abc3684cb91254b7d30da4bb93f80468"
+    },
+    {
+      "bytes": 2205,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6400cadb512658a500b53b7ea975f28c9108e3ac07426602ba56f2ef8f169d03.json",
+      "sha256": "4b55c2f22ce2ef65150f7faf9c01244157536b2e02ebf0039e1dc4f126b21130"
+    },
+    {
+      "bytes": 1805,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/64b1d9376247e6c00cf9fafaa0b862445b4032131a8370fb5fad9639eaa83c9a.json",
+      "sha256": "5452df248bcc671bcfb0c1e2b0ab77f2370a50f430a5eecb3cc428ddc734e0fa"
+    },
+    {
+      "bytes": 55388,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/64b1d9376247e6c00cf9fafaa0b862445b4032131a8370fb5fad9639eaa83c9a.npz",
+      "sha256": "acec4988379610c84a335bd496e45a61ad5082bc48dfd425239715509c7e841c"
+    },
+    {
+      "bytes": 2407,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/66799dbbcf67289a1061f2b8dbd5653e6a557418585ca41eb757fc79e34d795e.json",
+      "sha256": "3d82e2ba2478b8424bfdbe46dbdc386c21ebafccccae3ca926b1e4ea32f866fd"
+    },
+    {
+      "bytes": 55389,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/66799dbbcf67289a1061f2b8dbd5653e6a557418585ca41eb757fc79e34d795e.npz",
+      "sha256": "1e974aa55acf10f4b49332cab2e91b834d21c55b2ed7d4a068d3b96f6c7c990e"
+    },
+    {
+      "bytes": 1823,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6763a8b3bb1731da3081354a17a30305d353c7a139d32db00776d1ece2e6b3c4.json",
+      "sha256": "885789aef7bcca2376a30385ba9b1a53764fee0a65257dad320470a5b35c82c2"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6763a8b3bb1731da3081354a17a30305d353c7a139d32db00776d1ece2e6b3c4.npz",
+      "sha256": "fe34b65d57cc2c265ca3c75e48fcf915d79a6b112598dfcaab7d1a093b97332a"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6ad0ebf67e2b75e663592400c6532141abaa222b19a77e867849fbec05642fdd.json",
+      "sha256": "6dcd5e90c756bcae37f38403966a22669ca4291c4d1f6728184f43eaf9f270cc"
+    },
+    {
+      "bytes": 55387,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6ad0ebf67e2b75e663592400c6532141abaa222b19a77e867849fbec05642fdd.npz",
+      "sha256": "e132f6f47dabbc93b29e680d47e2116bbf99fa6ed98c7494753c9ed75efef8e4"
+    },
+    {
+      "bytes": 1822,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6aea616db6730562ecb6734fd5ee3974972bd72d8162201c44b029cddf8cad87.json",
+      "sha256": "7523103a92450c2e6819bf4b6c8f008f8fccf15805aaa6b02510ddd496a2988e"
+    },
+    {
+      "bytes": 55392,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6aea616db6730562ecb6734fd5ee3974972bd72d8162201c44b029cddf8cad87.npz",
+      "sha256": "243a7511802c9a027d84512be29d38b64dd087c1a6a6a54f2362528511f832a7"
+    },
+    {
+      "bytes": 2223,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6b9b4c6d994d26a7a3366ab0f234e01cd0b3d7cc66168d6f18796e665f3b69c9.json",
+      "sha256": "e9e73329c466eb749e7a045e8cab8dc0919bfce68ed9255266591c7a196cae85"
+    },
+    {
+      "bytes": 1800,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6ba0ebbda915f3226c981ab00b6fac8d6c6e03b1b51336869d6a22f01bf62477.json",
+      "sha256": "56f5e9cb02609b0faa5714ab9f61e34b76f3b1829c51e3a218773e3943054743"
+    },
+    {
+      "bytes": 55394,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6ba0ebbda915f3226c981ab00b6fac8d6c6e03b1b51336869d6a22f01bf62477.npz",
+      "sha256": "86ea199a5bdb5a1b3f46da8e05e6e8876bb7336d792bb157f6d6f7bc4b44119f"
+    },
+    {
+      "bytes": 1869,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6c75b3b6a12e6d18b63d0760fbe45290c126c6e421f04e9f79b7207df8e956f8.json",
+      "sha256": "8fed0469c042690b00b51a75d7a8905c50d8941385af91eeed81d17c4ebc943d"
+    },
+    {
+      "bytes": 55383,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6c75b3b6a12e6d18b63d0760fbe45290c126c6e421f04e9f79b7207df8e956f8.npz",
+      "sha256": "1b3320aaacbf49fc74bf11566e19b2f53fbf795981c60972bb77cdd79e54811c"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6deee7d43f5f995f24e3ac336f2a404417cf4e6adc00694b66a0404c01df812d.json",
+      "sha256": "2af8ae677905cfb518fcc77b1a7c1137b0ddce64a0534117d050cff37ba4d151"
+    },
+    {
+      "bytes": 55380,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6deee7d43f5f995f24e3ac336f2a404417cf4e6adc00694b66a0404c01df812d.npz",
+      "sha256": "17c56c47220bee5b00060ccd06cf9bff1138dac4e14e6dbd5e0bc34ebda05eea"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6df8fb64b4fc65a27657ccf43fb97b24649b21462f2124157a35b819fbcdba2f.json",
+      "sha256": "8e47035bfcf63b4beb978c02d7e2a638d50303055a775e2631fcbf152d399d3f"
+    },
+    {
+      "bytes": 55379,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6df8fb64b4fc65a27657ccf43fb97b24649b21462f2124157a35b819fbcdba2f.npz",
+      "sha256": "19a8f91e4eae6c1b59ff7030496cab6b67f2eb3de4cbdd710c31e2c77324ebf5"
+    },
+    {
+      "bytes": 1961,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6e05c7cd975241511ddbc51031e03e7f42b5b9e1d06dd3d09ecb069c11a905d0.json",
+      "sha256": "2d4c6942bf9af6ca324761660b532e9c16e94dfa9cf5f53ba3a5d875e5fd9c78"
+    },
+    {
+      "bytes": 24300,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6e05c7cd975241511ddbc51031e03e7f42b5b9e1d06dd3d09ecb069c11a905d0.npz",
+      "sha256": "bd624f19283e1cd11badec6d62656d80d965c3d580121a3f65b5048f9c90e446"
+    },
+    {
+      "bytes": 2222,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6ecbb33d21b051651495f5416fd4fb1685d06444ed10fbfd2564a611cb03c80c.json",
+      "sha256": "2c862974b4aaac8876c51baf0d3d55aa9d49887b9d8b57bbc278dd0c23714b26"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6faba6f0ad18661163f961604b9cb81d0bf114856e552beab0d9146b75501baa.json",
+      "sha256": "f287890493bd090c7b33bcec289a68a21e37212c8bf2066147c696f2f20f9b24"
+    },
+    {
+      "bytes": 55401,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6faba6f0ad18661163f961604b9cb81d0bf114856e552beab0d9146b75501baa.npz",
+      "sha256": "45afafe631c1dfaeb36411c13803c62589429853c6a0ffca9fad5293220fd7fc"
+    },
+    {
+      "bytes": 1819,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/719c86c92e28f46fc8b93c4a84b863092ccd654b734e3a53891d4cab0f323c06.json",
+      "sha256": "f123c8f3c963dfaef73fd1807518d180d28ecff75d4ab824d3d2e8afdf00f708"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/719c86c92e28f46fc8b93c4a84b863092ccd654b734e3a53891d4cab0f323c06.npz",
+      "sha256": "6d66ad40fcef4345a08e9b203f7e7392e2e593c2946e257cbe923a3107aaea61"
+    },
+    {
+      "bytes": 1821,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/730ab783b03401072511cae8ddee38b539ecb514a57bca4ecfc3170c3127122d.json",
+      "sha256": "062eb6760ed50e0a0f07db37548e0677198d2861d9ec9a591e43847dc3f113bf"
+    },
+    {
+      "bytes": 55376,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/730ab783b03401072511cae8ddee38b539ecb514a57bca4ecfc3170c3127122d.npz",
+      "sha256": "9aabe5c897f681a4c1ab7b85ea9f47289173623e31a816eaa550cbcbf0821080"
+    },
+    {
+      "bytes": 1825,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/73edba789efdb2f587459274367f64c24d6190fa0632403221ce9c6757d72dfb.json",
+      "sha256": "b22c2259ab1e9ff199bd44f2968521105c328606a9f052c00c66c5856f1814d5"
+    },
+    {
+      "bytes": 55393,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/73edba789efdb2f587459274367f64c24d6190fa0632403221ce9c6757d72dfb.npz",
+      "sha256": "1df21326a9b4b88858e867fae6952f877fd8baafeb568dcf718ac0e830d44da4"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/75c2bc652ef9f394a5a91336968d35af4338dc485ef13f83a2a6a2bb10b329cd.json",
+      "sha256": "d168819fcddee62eabb2f3b7e3d42fe45831b554689f9f8190cf882fe8b11436"
+    },
+    {
+      "bytes": 55403,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/75c2bc652ef9f394a5a91336968d35af4338dc485ef13f83a2a6a2bb10b329cd.npz",
+      "sha256": "4dcbf7454eb6e61b7f1f6dfabcd0eb8ac6839478db1539f7be513cb2193b578b"
+    },
+    {
+      "bytes": 2363,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/765c1dec716f1403ab7f72ef3a032485882898edeb14c1812b33cc6399f0722d.json",
+      "sha256": "626b49f2642543cdef87391db79acec76dd15a2aed7e7b856adaf5b7d3bc0556"
+    },
+    {
+      "bytes": 24314,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/765c1dec716f1403ab7f72ef3a032485882898edeb14c1812b33cc6399f0722d.npz",
+      "sha256": "24819b1409e0215a991dc25ab6a1b2629a95ca9b11c67958d2888ba33d9357bc"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7673ea608722506a5691226a8eb8387ba965676e07c70ac2b271cecc5aedd903.json",
+      "sha256": "0518ab2df4e2427683a8cfe9ffbcb8bc48eb91a808ee8f274f5f4f2668445299"
+    },
+    {
+      "bytes": 55422,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7673ea608722506a5691226a8eb8387ba965676e07c70ac2b271cecc5aedd903.npz",
+      "sha256": "17b43bf6cdb6d0aa01607e547ab2cc5e8c88d2380554cd5cc900022294c0c396"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/76f8412a1a9f572e372a953c546fe4910620de6f069106eee51acf4818547fb3.json",
+      "sha256": "07c770c29b810d857512ecaadd57f07728676fa69adbbc6a458767847232bb30"
+    },
+    {
+      "bytes": 55394,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/76f8412a1a9f572e372a953c546fe4910620de6f069106eee51acf4818547fb3.npz",
+      "sha256": "28ffa2beab90241f3aed629fdce2f79c0c5a34914c20f2a9d046e3e7b3e7d0d2"
+    },
+    {
+      "bytes": 1848,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/773e9024cef48c41c5c54f656b64180f7309c49aef5ae8874d65d1b506cdbbde.json",
+      "sha256": "7746cd12ab78a327d8b2c51ea477746237f8fd3bfc8a035b4d4104c2e21ee5c9"
+    },
+    {
+      "bytes": 55411,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/773e9024cef48c41c5c54f656b64180f7309c49aef5ae8874d65d1b506cdbbde.npz",
+      "sha256": "c4c55830e71710ee35d0f1e2f670d9c25add376ac919fb4bd7aea92b75b3af24"
+    },
+    {
+      "bytes": 1823,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7811712c3d74f0a2fe841cae3c2a991cd61555bbbd0df78a65ce67ee6b1af27f.json",
+      "sha256": "d062337839c105f3f0dbeee2a8911767be7eda4472ed104ad3afff915a6e1921"
+    },
+    {
+      "bytes": 55383,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7811712c3d74f0a2fe841cae3c2a991cd61555bbbd0df78a65ce67ee6b1af27f.npz",
+      "sha256": "d14c987ea1e28da8c43325f501dac0aea51fbcf1ff32903f0467fcad24e0627d"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7828bde1bb3f57c87d7e66b43d724273264fd9566ca16084d4bb8ed9be40529a.json",
+      "sha256": "3a22312745c2a639eb4b8d976884e0b796c7553586bd7ea80e5d689cccf811e7"
+    },
+    {
+      "bytes": 55416,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7828bde1bb3f57c87d7e66b43d724273264fd9566ca16084d4bb8ed9be40529a.npz",
+      "sha256": "87c4534384d597c88e2b0e1421ea9b97d5a5b71c054a96d51377c3826b32d4b0"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7a927b4b374c24718bdb8faddea4516ba064073dd159f7780bf003dcd2d7fe94.json",
+      "sha256": "8e1c949c9817ad5a0bfd8bd6326536f8ae656286e726d52791b0bc12a61619b7"
+    },
+    {
+      "bytes": 55399,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7a927b4b374c24718bdb8faddea4516ba064073dd159f7780bf003dcd2d7fe94.npz",
+      "sha256": "4a0cf5d257b7ac9b1623e2a6825286c3288a526516fd8b27da94b70de12d2ae6"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7c952b71ead219bae3878a1207dc127d2305eb17dc7b64ac67f0e699fd67f326.json",
+      "sha256": "f65f306fbe309a5467177e666a0eff7085e40164b5ca49a6e5d541fa9595c497"
+    },
+    {
+      "bytes": 55382,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7c952b71ead219bae3878a1207dc127d2305eb17dc7b64ac67f0e699fd67f326.npz",
+      "sha256": "8d94b3f01b62b6c4bb0f0ef8d45670dee406aec5e8486e178122141ec0b8784d"
+    },
+    {
+      "bytes": 1822,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7ca98d5e2f7ce18d25fa8afe82084b8a8ef076d676c9350402c88621b78cb988.json",
+      "sha256": "6478e4b5e57d502a0a1d8507ff93f3e74dedebf5ae9217f88efa4c35e4836294"
+    },
+    {
+      "bytes": 55425,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7ca98d5e2f7ce18d25fa8afe82084b8a8ef076d676c9350402c88621b78cb988.npz",
+      "sha256": "b841317cb1aae22ccc87a64ba826fd2d1639e0359c26c47aa2a60a9685b1ebc5"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7d4d2aa579579d07ecb20f33181396b5e1eae0e7b22ce606c434645408b2c37a.json",
+      "sha256": "b3e67a9c64a646924f18c38fe87c4c66f5cc56e7d19a0b35ba9f8be701938f87"
+    },
+    {
+      "bytes": 55383,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/7d4d2aa579579d07ecb20f33181396b5e1eae0e7b22ce606c434645408b2c37a.npz",
+      "sha256": "d702c77bd53768168b89bacc4fac3ea7e78be719370dca4e60433cfc58fe7cbf"
+    },
+    {
+      "bytes": 1825,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8016b67802d7176080bf6f8425bc606f29860dab1d2b5675674a7e054c22b610.json",
+      "sha256": "db754aa1759f0c3daf2d9f61ad58d13bef511f74eb45725f30ab19a234fe12ca"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8016b67802d7176080bf6f8425bc606f29860dab1d2b5675674a7e054c22b610.npz",
+      "sha256": "da70383b9a98ba38d5b4bbebed6c8e01cdfc7964057baf3947e95af6b3747eb4"
+    },
+    {
+      "bytes": 1829,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/80a0018a8779138bb1fd6890f372c939681eac599201cd504d2e5e0df0b01aa5.json",
+      "sha256": "88b853709244786ad0e5425829e2b391f8682ce59816d70aa12c8e6bb1cda021"
+    },
+    {
+      "bytes": 55405,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/80a0018a8779138bb1fd6890f372c939681eac599201cd504d2e5e0df0b01aa5.npz",
+      "sha256": "09b0cadcada5e700d794fd2ef913ab6bb7944a959bb1c47afa5a7685f08ac736"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8108c95e84f72e6921eaf83fd2f7f52cce74e661093d260bfcf73a2ee47cc3ac.json",
+      "sha256": "cdfd772da404cf94ecf54602710c4f99caff3db693b2946be76c6af683ca7300"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8108c95e84f72e6921eaf83fd2f7f52cce74e661093d260bfcf73a2ee47cc3ac.npz",
+      "sha256": "d044c64fca1ea1fc891e3cefbaead50b5524bce639418ed6c01717a04e3c382a"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/820fc8eed5d2b5a395260e9a55500438c8c9bc23d0890958ec001249dc1ed40d.json",
+      "sha256": "a4ab9711bc63dd35457717d1cc88799fec9aaeea5065664b36260d4995c70599"
+    },
+    {
+      "bytes": 55389,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/820fc8eed5d2b5a395260e9a55500438c8c9bc23d0890958ec001249dc1ed40d.npz",
+      "sha256": "359bf412474220f5cbe6a787a68ee5f7c4eb209fb99f58bf25ea0aa22cfddf3b"
+    },
+    {
+      "bytes": 1825,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8367934359940bdbe1ebada39d0a5e2ca736f7826bafca7d5532f55b3e3514cf.json",
+      "sha256": "ecb92a874a032834ea2611d5548e58b2b4d428c50d378f80b4eacf0fe6d7d22e"
+    },
+    {
+      "bytes": 55409,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8367934359940bdbe1ebada39d0a5e2ca736f7826bafca7d5532f55b3e3514cf.npz",
+      "sha256": "4da8ccfc5f097878fc01763cf7f03419df80833d049ace8a072f562d5df14e82"
+    },
+    {
+      "bytes": 1844,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8467c09260a0a72e241c6046be6ec4891a588a4276b7668a9553fc074b7f230a.json",
+      "sha256": "94fb4ab5fb0d8cc9d0688115fdd1a73eb5761bf6b46e9273fdf2130c3a13b416"
+    },
+    {
+      "bytes": 55405,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8467c09260a0a72e241c6046be6ec4891a588a4276b7668a9553fc074b7f230a.npz",
+      "sha256": "84ebfd37f1f981396a7e409517947624d9b89916edf0103722d33e74c52d8ba5"
+    },
+    {
+      "bytes": 1807,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8674bde43380d9de94f2e7fc45d1fa26d9165290b0bd3c6d530677067bd70358.json",
+      "sha256": "ed6ea6a5c0f1e95df1c1165a14e1112fbaa33adf7bb96223541bc848f32f1d5c"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8674bde43380d9de94f2e7fc45d1fa26d9165290b0bd3c6d530677067bd70358.npz",
+      "sha256": "7b65e25d373c879e713f4245432a24d6db83ac3f2a2a0af65d10ff48891c906d"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/867649618601820b523ea15b9eded7dd40e1406a0d656d82de11d22a2cd6ce63.json",
+      "sha256": "78efa725cf605f822b91e75d7590ec1d17766077104246f514a55ec210efc902"
+    },
+    {
+      "bytes": 55388,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/867649618601820b523ea15b9eded7dd40e1406a0d656d82de11d22a2cd6ce63.npz",
+      "sha256": "d3c43fae6468149d0a04dd99841a644bb87fb978d6ff1a966cf122c360c4b246"
+    },
+    {
+      "bytes": 1825,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8729ef304efc7af5981c70ada3f311cf7297347169a0db486529767101a3e612.json",
+      "sha256": "417ee496dfc6dda97b46e90379c4997921863f46db320d78ea3cedf209893d85"
+    },
+    {
+      "bytes": 55396,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8729ef304efc7af5981c70ada3f311cf7297347169a0db486529767101a3e612.npz",
+      "sha256": "9634d972bdeee43e7b440f3bd4038d6629ed558a948a0b9195c7e7f09205eb01"
+    },
+    {
+      "bytes": 1844,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/87e9a97a5ca7afebdad9928773af4a456fd7435f4a2f73c9f87b83ff66e4b8e8.json",
+      "sha256": "5ba3750a9b8b0908e771836dabdb67cdb3c601b7fb83b1d213b8d35d35111274"
+    },
+    {
+      "bytes": 55401,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/87e9a97a5ca7afebdad9928773af4a456fd7435f4a2f73c9f87b83ff66e4b8e8.npz",
+      "sha256": "5726600936d391ab3774cc9d88bd7cf06dce297422173d3801e4f6a9ec512891"
+    },
+    {
+      "bytes": 1823,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8915be606e387cec7b07341186e70e426c5f22717287499e75fc6d7327455791.json",
+      "sha256": "282f8396c963b5f506b588b80f6cb8b1aaab6f796f5a3688247ff65ff88a52a1"
+    },
+    {
+      "bytes": 55393,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8915be606e387cec7b07341186e70e426c5f22717287499e75fc6d7327455791.npz",
+      "sha256": "55617e8f23c3a2916cdb37dff016d308cc956af1af0fc13b2bf823cb39fdc92a"
+    },
+    {
+      "bytes": 2203,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/893990360ccbfb60677851276a566a4144af82e9e7284c98a98923bec548d98d.json",
+      "sha256": "55e5d55ee4a50549f842e11e81090b3cb8de90d3b7af079e11f942352f6fad39"
+    },
+    {
+      "bytes": 1835,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/89afda433a7b4efa6322efeefd89e4d90d5d2032ec6ebb00a186728756bcd5c9.json",
+      "sha256": "b75f7621f7f4d1b994b47209df74463b49545e7fe615e1af9dede0f8a949b631"
+    },
+    {
+      "bytes": 55395,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/89afda433a7b4efa6322efeefd89e4d90d5d2032ec6ebb00a186728756bcd5c9.npz",
+      "sha256": "e3c695afaea461aef1f2557467cad1f839a76800b51157fee452162a6a5ae25d"
+    },
+    {
+      "bytes": 1822,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8a8492a162e402a686b0b963c193e79dd6950ff2b8c461f931521dd72afffac4.json",
+      "sha256": "66527f71e10e6ff52144f1beda477ebeeb1f5dcb7e16c40e435a92ed25a2e3fd"
+    },
+    {
+      "bytes": 55409,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8a8492a162e402a686b0b963c193e79dd6950ff2b8c461f931521dd72afffac4.npz",
+      "sha256": "0bb70d58a5caa26bbaab4483461a7890d99b61bf322930025bfc2a810e2adf8a"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8cbc57ac6be08a3b67ddb769efebffe1d07b690c0553e461917c398f198d0f13.json",
+      "sha256": "6d1a231528b2a13d6db89d8585261dc92a5c84ade383af7def0e8a9baf06095f"
+    },
+    {
+      "bytes": 32149,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8cbc57ac6be08a3b67ddb769efebffe1d07b690c0553e461917c398f198d0f13.npz",
+      "sha256": "a129640f42f6f655a1ac597f0054910bcc186f9d63d0098603641be8e2140de6"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8d81de9de889ea32f26b28fd25ee2445225925cec45949dff41670ae4897d7c2.json",
+      "sha256": "aefbe2849c645bb84785ce40fed83f0fb6baa5d5651bea23eed76a4af28e819a"
+    },
+    {
+      "bytes": 55380,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8d81de9de889ea32f26b28fd25ee2445225925cec45949dff41670ae4897d7c2.npz",
+      "sha256": "53ceb8060f7b02e00980c2c3d15bb0b93d65bd4cb7b193e2b90268795a12ac96"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8fd07c90ed90e479e010ceecc21d246394623d283f5717c235e7d0754bb8af66.json",
+      "sha256": "132c0449408f1c73fd1cbc0012523b7145e82a2d9a775f79f0d0d76834b43fd3"
+    },
+    {
+      "bytes": 55394,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8fd07c90ed90e479e010ceecc21d246394623d283f5717c235e7d0754bb8af66.npz",
+      "sha256": "bd7825076f5cca13445507843c1e5652d8843e8316c8eb25c42f978074af28a4"
+    },
+    {
+      "bytes": 1851,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8fe5ff38ecafe46082a34092abdd8f89d46d3482f459631a4eb1e21055c592bc.json",
+      "sha256": "24eaa6f8a5c24af25f0b3f315799bf919996c8741e03ac77bd8104819cccd7ab"
+    },
+    {
+      "bytes": 55377,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/8fe5ff38ecafe46082a34092abdd8f89d46d3482f459631a4eb1e21055c592bc.npz",
+      "sha256": "242901b31ac9f3706d2c0b2b095db539027b03b7af6b61094b98ab5c362a4edc"
+    },
+    {
+      "bytes": 2256,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/90fb2ef655b18bc6a2f8705907f63a4106be9c297bf956d1fe0ca14e48a2515b.json",
+      "sha256": "dfb9aa1ee1c837a052770697cbb4d9327389cbac7a3cc53dad945b07ef9e55a5"
+    },
+    {
+      "bytes": 24302,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/90fb2ef655b18bc6a2f8705907f63a4106be9c297bf956d1fe0ca14e48a2515b.npz",
+      "sha256": "6e950833790bbf81923beaffffa6090a0ba5d42a1e8bedb1f31c6aec3ce1505f"
+    },
+    {
+      "bytes": 1825,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9177d8bd716365cc9a5844636d2b13e07a065f7d13fcc75f1dd1618e89b3711e.json",
+      "sha256": "adc93d03398496e98bb2cda059d505152054962cd2e41869e628e4df97ce3e06"
+    },
+    {
+      "bytes": 55390,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9177d8bd716365cc9a5844636d2b13e07a065f7d13fcc75f1dd1618e89b3711e.npz",
+      "sha256": "6b0808614390859acf22521700d393392bb107fff38ab4543d410aea8bd17ca3"
+    },
+    {
+      "bytes": 1798,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/93003c4cbd77818c330f3545e4ff858bf04e98e20a3c04c7881674f8b179c326.json",
+      "sha256": "44850c72ba790f03c628c2a5e86883156f13ba5c0fedeca3325077c8a09d7e68"
+    },
+    {
+      "bytes": 55407,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/93003c4cbd77818c330f3545e4ff858bf04e98e20a3c04c7881674f8b179c326.npz",
+      "sha256": "857e65c088d65c4d8c3c2a54923c70a7b88e49de3e5ccf5c7e351d614001642b"
+    },
+    {
+      "bytes": 2383,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/957910d8ae399a01ae22d30fe2daf05c7cbcbf76cbefaceb2215e3307dd114f6.json",
+      "sha256": "1f14f544a146756dedc802b3ae50723c3a9851639feb02c31dd502e0f2772819"
+    },
+    {
+      "bytes": 24296,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/957910d8ae399a01ae22d30fe2daf05c7cbcbf76cbefaceb2215e3307dd114f6.npz",
+      "sha256": "c208b455c2f883b6bdbb05ff6435d1436cd63e5b67b4729b1abeb0cc2e4aa977"
+    },
+    {
+      "bytes": 2787,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/98f84ca69949bcb8e33f9d17abc91b07d1f4cad92356a3fe5f80301b00e9ce4a.json",
+      "sha256": "82774153523efda0aa35e8d318bfd9e43b8c31c287fb71c842c7079ae38fb892"
+    },
+    {
+      "bytes": 1868,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/999bebbcb5c51cb255640d7cff3feec2e9d13354d3b942368719819f3fb983f6.json",
+      "sha256": "677286f0edf195fdfe8655f95daded12d53b4f3230d60b3567769c206adf5528"
+    },
+    {
+      "bytes": 55414,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/999bebbcb5c51cb255640d7cff3feec2e9d13354d3b942368719819f3fb983f6.npz",
+      "sha256": "713fd42c5e0b2452920ee4a02c00035132fa886b9782c737445324a303ff2ed5"
+    },
+    {
+      "bytes": 1923,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9b6f8784909e199b7c9b4291863ae8c99ca37633fa538e24577100ccff97b869.json",
+      "sha256": "b8bb8c2c532625e68b26705673efd44af1f948725400a867990a213cf1ebd439"
+    },
+    {
+      "bytes": 55406,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9b6f8784909e199b7c9b4291863ae8c99ca37633fa538e24577100ccff97b869.npz",
+      "sha256": "469d155b63cf1946ff5b6903867d1ea94176593cb273295f3828129742a691eb"
+    },
+    {
+      "bytes": 1849,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9b78b9f9bd38e9a783425c79911bd6d175c782d950e500648ee068ba00af2f02.json",
+      "sha256": "78e567a7729532810f4f986e0b80044dbc4a3f2a807eab63f5c2dfb0007e0648"
+    },
+    {
+      "bytes": 55371,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9b78b9f9bd38e9a783425c79911bd6d175c782d950e500648ee068ba00af2f02.npz",
+      "sha256": "e8f3133da7155812fbd70852f6c8ec9eed976c6de99e0ae8e596e534d97e61fd"
+    },
+    {
+      "bytes": 1838,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9c25dc5828a47ec409f3d373e020cf931e9df086d4e41bb8e971ce7b54ecabe5.json",
+      "sha256": "06b4d60ac8053d5ff24bed5bff0d07a32109084a84c8073b5246895eec1bbef6"
+    },
+    {
+      "bytes": 24265,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9c25dc5828a47ec409f3d373e020cf931e9df086d4e41bb8e971ce7b54ecabe5.npz",
+      "sha256": "c994a7bba31924b81db582c7fbb2f4f01a3a4296a8a2624a130a8ada07a28886"
+    },
+    {
+      "bytes": 1868,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9fb352af175d01fb28398767c777dca550900f7efb0097b6c247d382a1739e09.json",
+      "sha256": "200318452a3a5c60c678eaa4dd3a8d560a1b088dab9162177b5c10255c7e6866"
+    },
+    {
+      "bytes": 55381,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/9fb352af175d01fb28398767c777dca550900f7efb0097b6c247d382a1739e09.npz",
+      "sha256": "3140c65a2f719e3ec7fdc8980eb3b569f7e74a78e40a2ceac1667471c1d34d05"
+    },
+    {
+      "bytes": 2203,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a042534495cd17e8b1441365405e3a9ad5c2150bca84f8d93ad4be6fae9dfbef.json",
+      "sha256": "fad7bb4a03d3210c69dcd89de87ecd8409c70027fbfce136d2a69e4eadfbc300"
+    },
+    {
+      "bytes": 2340,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a0fbe9eb5df119cc9eb5fd8451e5e18ea5a2d5cb94de2e3f576a4cfe5a742158.json",
+      "sha256": "49b8cec47475c0834bd3fa9bd9d49f1fde80cddd21c027e5f4054d092ccd92e2"
+    },
+    {
+      "bytes": 24286,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a0fbe9eb5df119cc9eb5fd8451e5e18ea5a2d5cb94de2e3f576a4cfe5a742158.npz",
+      "sha256": "7c2c965b3efa03dc1f87c6f5c78d38d9446d43f9aeb740f2461ef06516895c63"
+    },
+    {
+      "bytes": 2224,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a1869ac2f2e8bd1f31f7f2bcc086e808977771d827f7fa4f451f917e54de123c.json",
+      "sha256": "568f5bab702ca65840499f2faa01d7f92bdc183ddcb6600bea9030871518578e"
+    },
+    {
+      "bytes": 1868,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a254875ec841ef4d83b6b0a6cc2ea4921ac3ecd9c3c564b20f70b4cdf0e87e80.json",
+      "sha256": "4a28f66bbd8690e53bf7cb902e6982dbe0955f80d732caa7a63752dbd62ab34b"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a254875ec841ef4d83b6b0a6cc2ea4921ac3ecd9c3c564b20f70b4cdf0e87e80.npz",
+      "sha256": "a67370979d58ea1f5a3b52b400223a380ee0b91e7d9eb0ca496ebadf68c4d2e1"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a2687b4ab1f58f4837dc33ca3203211cf98fd43f73618d3203746a3d7b363e36.json",
+      "sha256": "4aebac1e1b95f8c55e279ae7756eba8f538c0c4f499ad93938091ac34771ee74"
+    },
+    {
+      "bytes": 55423,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a2687b4ab1f58f4837dc33ca3203211cf98fd43f73618d3203746a3d7b363e36.npz",
+      "sha256": "4bfbfa87eeb5bbf4efa50084285d5545159230ba26651c9d2303f628fd5618b2"
+    },
+    {
+      "bytes": 1846,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a297f77bec3797f1ff864668fad37aeb0d4e38e0754d2ad15d700d889d322bdd.json",
+      "sha256": "c4b18cfc2b33a0c394c8fb9c5a25dd95d660c65c48a350e411cf2a14ea25d72d"
+    },
+    {
+      "bytes": 55411,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a297f77bec3797f1ff864668fad37aeb0d4e38e0754d2ad15d700d889d322bdd.npz",
+      "sha256": "adbad06d27ba9cb9f1def4f2a9274da5de36c415067ec22b582267df3e57856a"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a7c81bb482843f518de9b397397a83d8399a8a693a813088e221dfcb31b539a9.json",
+      "sha256": "1ec59568838eb6bc9a4b8d889542d72f1b92f981acdbe7771a0c3945582a4ccf"
+    },
+    {
+      "bytes": 55425,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a7c81bb482843f518de9b397397a83d8399a8a693a813088e221dfcb31b539a9.npz",
+      "sha256": "35701f3abb62b0298fd94c3c28a162b267fc92808480a2984f18775ae6c9b2f1"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a8fd2b8544926eb5b094fcc67701a405ed655a5a8338ff3503366131a19e50a0.json",
+      "sha256": "db2345e9cbca1cb455f0efed42d28bb96095a5aa360d454d22afea6fb0deff15"
+    },
+    {
+      "bytes": 55412,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a8fd2b8544926eb5b094fcc67701a405ed655a5a8338ff3503366131a19e50a0.npz",
+      "sha256": "ec21b2945a8ed4b1dad8a80888b3886a78b085459adf5a535f229df26f52e760"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a902224eafe5b1a5fec2887ec6a0a5414e77efe56431d36cd6a1db6cd72d3759.json",
+      "sha256": "b3f9a1b4c377796652a90cba8b56f2cc0ad58e987b43f883af8351ef40fec436"
+    },
+    {
+      "bytes": 55415,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a902224eafe5b1a5fec2887ec6a0a5414e77efe56431d36cd6a1db6cd72d3759.npz",
+      "sha256": "4c2e63e2a4c2e3f0c31524e9a2ce9ac6eec798542d7cf4ce110862029a1aba5d"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/aa79e1dbcd0a3758c24dcd29d316326064eaeaa5803390cab4620c0fb1232fdf.json",
+      "sha256": "187977b612b1b53853e303c93194116efea22d1a5c43fcf2a130f31a21fa17d9"
+    },
+    {
+      "bytes": 55388,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/aa79e1dbcd0a3758c24dcd29d316326064eaeaa5803390cab4620c0fb1232fdf.npz",
+      "sha256": "0f115c7bac89c2912a796565f697c5e038f68902de64fc671988b457ce3889cb"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ab47f76583512dff0072dee2cf7ec393290c65bc9b5456e33594939ca34a2daa.json",
+      "sha256": "3dd8e3c4ef16b8189c51474900fd425df2766870d1a3971536bec0ca06ad6f59"
+    },
+    {
+      "bytes": 55390,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ab47f76583512dff0072dee2cf7ec393290c65bc9b5456e33594939ca34a2daa.npz",
+      "sha256": "3d0ec839f123634c3043300c03e4efdd88760f2b276c9474039e73b28970b73a"
+    },
+    {
+      "bytes": 1817,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ab839dff9f61acf7c84caf716f65cd4b2b512840c18a1e715ba4fd86bc737928.json",
+      "sha256": "2af0ec3b97251bec209b61c1d8afe1938fd867bf8c8cdfd518f401d588fb4862"
+    },
+    {
+      "bytes": 55399,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ab839dff9f61acf7c84caf716f65cd4b2b512840c18a1e715ba4fd86bc737928.npz",
+      "sha256": "b684a24abf81441b68dd0c4a9c163d872dadf41382387c13db6992d49d9f98fd"
+    },
+    {
+      "bytes": 1800,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/aca306cc73dbb3bd8cc9dc00d99c5a66720242efd4803bc72066e1862756c8c1.json",
+      "sha256": "8c1596ce763b18e7cc89a524d230c04e6628ca3c9cc3a2dd1502798ac976d271"
+    },
+    {
+      "bytes": 55401,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/aca306cc73dbb3bd8cc9dc00d99c5a66720242efd4803bc72066e1862756c8c1.npz",
+      "sha256": "945c85c8a45647d2b75fb7aef4ae00b47b148e14cdd15231761b699a3dc78e13"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ade4b64359208d2754e661febc451d7ce752e2674847612ef4a206ef9f4c31a7.json",
+      "sha256": "7cc3b24156ecc1b7298af0e0e1156546da106acefd8bf7d413e1afd6e2d709ea"
+    },
+    {
+      "bytes": 55408,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ade4b64359208d2754e661febc451d7ce752e2674847612ef4a206ef9f4c31a7.npz",
+      "sha256": "0aa6485d0314a4417859c8a8d513cf0679075da9735a08064ff2decb19524b22"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/aed8b5d9a5acbe13516ded30f7c957d7d552346f769bbfb9982d0c993964580e.json",
+      "sha256": "4adf80576a4cdfa5becfd14f51b7aa204b21ded0ef91a2cedd76fd61b1d17635"
+    },
+    {
+      "bytes": 55392,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/aed8b5d9a5acbe13516ded30f7c957d7d552346f769bbfb9982d0c993964580e.npz",
+      "sha256": "2226ec804c456dfc9fc5227b4822e6538258a56df5553caaa7b3529102cad528"
+    },
+    {
+      "bytes": 1903,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/af073804c66aa5298eed85a5f4af2baa522365634d0483e46e4058c0e5f58161.json",
+      "sha256": "bf42a13fd6ebc4e6d197f6d5370b21c2cf2edfbf60be68532fd5eb26f8004342"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/af073804c66aa5298eed85a5f4af2baa522365634d0483e46e4058c0e5f58161.npz",
+      "sha256": "35ac60cd8787ecc71e878abb3a0de1f40ab4777a327078562ff8e3ef1869c12b"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b0fc4382bc78422e4aadc013214a577e452a84e1e286abacd817e3a24d4cecd2.json",
+      "sha256": "8a9eb901e031b491ba00671da2757acb582af7d4009f878ae98bf171eac565ac"
+    },
+    {
+      "bytes": 55378,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b0fc4382bc78422e4aadc013214a577e452a84e1e286abacd817e3a24d4cecd2.npz",
+      "sha256": "d4a4ea23e41f309818936c556f3d36b89ad3a0ce4e58e0c0d1e077860ea60be6"
+    },
+    {
+      "bytes": 1822,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b1623a81f8c4e1fc97a1a8f4bd8bc2339e54c1469632474474f6532766eed17a.json",
+      "sha256": "e52537243570bbc870df086ac27222a3307accd82b0c10738e8ba88c2afa74a9"
+    },
+    {
+      "bytes": 55375,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b1623a81f8c4e1fc97a1a8f4bd8bc2339e54c1469632474474f6532766eed17a.npz",
+      "sha256": "8088a701fe1d3f3573bb88a97bd12a865fc3a702294ebcfebeebb3d18feeebd1"
+    },
+    {
+      "bytes": 2785,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b44009b15059fb7142dca3cd68f61782f95ac776af36146c904400ae69719ca8.json",
+      "sha256": "fe537eec8c38160cfbeedabf00b3c20c8a719f2cba8a459e590f2b6a6382759f"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b4a930be2974ccdbd3e2b8202ee367a7b3f59b58bee0bf770206b6421a2fa017.json",
+      "sha256": "934f16f06ca380e6389e2acc52dacb2755b07ab0e969027f59ae0e352ddaed58"
+    },
+    {
+      "bytes": 55402,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b4a930be2974ccdbd3e2b8202ee367a7b3f59b58bee0bf770206b6421a2fa017.npz",
+      "sha256": "935874c5a956a95e6717544f8446e0a4e441e858a2bd396035fd9adf20be9c89"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b609af69294ed25769b1b61d911cf9bc4629f042445b17f83ded307dac59dc2f.json",
+      "sha256": "c6d679fcfa1ae9c02ec794a425d7ef74de12fcf8ffcea9a47d857d004e7624db"
+    },
+    {
+      "bytes": 55402,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b609af69294ed25769b1b61d911cf9bc4629f042445b17f83ded307dac59dc2f.npz",
+      "sha256": "0e8ab1c7f25d6b3cec8864e68758c432131217718b0a4c3966bb2ee8225b2042"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/bd204948a9ac2a3e9609b4b872e2ad707fa53ebafc34a18fb5e10b331ab08152.json",
+      "sha256": "bbef422b4fc4642649c5f0c249761c054e51412d75d3e2908a54102490ad3e11"
+    },
+    {
+      "bytes": 55378,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/bd204948a9ac2a3e9609b4b872e2ad707fa53ebafc34a18fb5e10b331ab08152.npz",
+      "sha256": "8499f578d92da1e71f02d2078663800646dcb717eb6c7248cc02e99b955107a6"
+    },
+    {
+      "bytes": 1847,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/bfb53f06fea141bb39843b0496aecfb529ed66aea9f35ed5bae2c56f040b5bef.json",
+      "sha256": "73943d33fbc2039734712acb6301d8ec29501dc0f6912649b0076429d329a066"
+    },
+    {
+      "bytes": 55391,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/bfb53f06fea141bb39843b0496aecfb529ed66aea9f35ed5bae2c56f040b5bef.npz",
+      "sha256": "fc86d42e2be0778f998136b3e3fe7f11633e97672a3cf5d229fc93036d9ccef8"
+    },
+    {
+      "bytes": 1823,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c1818648c9a7f52aed7bc8b1590231180de6bcdfa826c035ff499d212dd54dfc.json",
+      "sha256": "b4d760751bf2c98316537a831dc2e2265f5c785d32781e45443f5216c30c2336"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c1818648c9a7f52aed7bc8b1590231180de6bcdfa826c035ff499d212dd54dfc.npz",
+      "sha256": "bcbbec1751a4f2ec8502258db379854ee4e9cc42d4a0c0ee9fa2b54e9d5b9edf"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c1eb374ecb821bf0d2d75f9272f3016a7f4491287bab533f24f6d4bc5bc7a539.json",
+      "sha256": "c0d7ae9b8b8684b2422f9f02e500bbc33761623706b1544fa94e9595b5512cd8"
+    },
+    {
+      "bytes": 55401,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c1eb374ecb821bf0d2d75f9272f3016a7f4491287bab533f24f6d4bc5bc7a539.npz",
+      "sha256": "6725c5773ee93d4c2b087450e1f71fa161abf1b4c8275171e0fc0d7dd3f1c459"
+    },
+    {
+      "bytes": 2024,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c3783b21b4b8b0d79a03f2f8268cc40679ac82c3d5583910f9c8cccf3a570245.json",
+      "sha256": "c7fb81d13304a38f9afe24d84e46a7f1962b8dcec93ee3504d395d49d68729bb"
+    },
+    {
+      "bytes": 24279,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c3783b21b4b8b0d79a03f2f8268cc40679ac82c3d5583910f9c8cccf3a570245.npz",
+      "sha256": "5b66ce993d7112eaebd723d2f522b52907bb62c27bb9ddc67da615e2331e8ebc"
+    },
+    {
+      "bytes": 2573,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c37a5a75e0638913a741ec16fb4711e09f462ea83c774a84eb0c903d14b2bfeb.json",
+      "sha256": "3ca96a92f81173f671413eb89fd224c680fe5f305ef925f74035a6e4896f02b6"
+    },
+    {
+      "bytes": 1961,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c58343f79c1898d4ecd5310379b8fe4cbf5bc6a7fe349391de1c6f771b9fdc53.json",
+      "sha256": "3557ed67702bcd9f8c95668210ca559609fc9b34fcd5e21fa8a5ae90f5e9d1fe"
+    },
+    {
+      "bytes": 55388,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c58343f79c1898d4ecd5310379b8fe4cbf5bc6a7fe349391de1c6f771b9fdc53.npz",
+      "sha256": "14d0714352c89a74faa4cbc9ca8dcd1bd450428af6e22b239e392594df11436c"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c87dbf41eb065dadde5c80d4e10189561010ebe9317f7eb1578d34b0c414bb00.json",
+      "sha256": "1406aad17f4f1b2313c00267fcdb910ea10cecdd3d5e187fe3b0289eb2e76260"
+    },
+    {
+      "bytes": 55381,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c87dbf41eb065dadde5c80d4e10189561010ebe9317f7eb1578d34b0c414bb00.npz",
+      "sha256": "6c03eb4592903d63e8568c6c65efb77838b6abc268d48212c07daa93e01df591"
+    },
+    {
+      "bytes": 2204,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/cc9dc3f17af7b6008878423d94a0661a1a2f517397b78fe692af258f84146620.json",
+      "sha256": "bacf077527be8d8bf4d7f462b115f837e9fcc8d569ef991c4d2091a1b96b6160"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/cd39d448032153e73675cc090a0175e975300b565764dd5194e22801a4a079d6.json",
+      "sha256": "64fe39b33d08e2a84b99f4277dedc888ea571cdd7e3b837307f721acf7ae2bf1"
+    },
+    {
+      "bytes": 55385,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/cd39d448032153e73675cc090a0175e975300b565764dd5194e22801a4a079d6.npz",
+      "sha256": "24119d60eeedfbcc5faaa332bc05edcbb726a5444f1f4fd87886a3b7b40e78c3"
+    },
+    {
+      "bytes": 1851,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/cda0ae2f60375a949abc929e31f6f8b4278daf808e51f6db669408f231d77516.json",
+      "sha256": "2663cc4b4d731537dd7f2974b461c4092337f404f9ba50155b7dc9b5d637ea85"
+    },
+    {
+      "bytes": 55386,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/cda0ae2f60375a949abc929e31f6f8b4278daf808e51f6db669408f231d77516.npz",
+      "sha256": "231f571e7335e70dd5dc604f824cd1bbfaaf49b5063ea1d5c8cb4150048c26e8"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ce083a0621d6115ce64851dd53ae6571fd17b7aeec47a4042374b39daeda9bd6.json",
+      "sha256": "2216f321ca428bec30a378b26381bef281b899e7200711e2cebd3b0ca9886365"
+    },
+    {
+      "bytes": 55396,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ce083a0621d6115ce64851dd53ae6571fd17b7aeec47a4042374b39daeda9bd6.npz",
+      "sha256": "96aa86df99633308fa53ec9129d0a50ec36dfee27dd51e96e8f00cd53b41ba77"
+    },
+    {
+      "bytes": 1868,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ce6f0ac88c406bf5fc33a8fd0d27176cedb297572ae2c5da04be15cecde22185.json",
+      "sha256": "f7f100ad255dc8e2acaa55e29d913b890a82942bf7207143860b4bb1c2eaae18"
+    },
+    {
+      "bytes": 55405,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ce6f0ac88c406bf5fc33a8fd0d27176cedb297572ae2c5da04be15cecde22185.npz",
+      "sha256": "0cf0a469c80200d5c9541b80daed288af41476cc80711a9ceadc8ef5fcc041d8"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d1ca134d814a22ce0b97fd360f6762e7e3be70cd86e573b7b0bc42038fd40ac7.json",
+      "sha256": "8ec2b416b0ff9dce1145ef6b042070f8374e084511e41a0723cee475e1d425d8"
+    },
+    {
+      "bytes": 55384,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d1ca134d814a22ce0b97fd360f6762e7e3be70cd86e573b7b0bc42038fd40ac7.npz",
+      "sha256": "43b9f8438afd31bcc7fe90d798c9048b236dbb439a31865562d88727ddf18733"
+    },
+    {
+      "bytes": 1825,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d32f25d0cef56b9ef86368d62e7e7a67acfef5fcd59b194ed757b888843b7ddc.json",
+      "sha256": "34a93e809162745ea06db4a8ba94bb2c55651b4da68f4fbe03b9acf9cf8720bf"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d32f25d0cef56b9ef86368d62e7e7a67acfef5fcd59b194ed757b888843b7ddc.npz",
+      "sha256": "36092664ff949879e5bd655c05c8ca8546d5077fe17527b349f1927b3b9ae876"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d52b4098b5877d0d668744c76ae6e19948e84c753ff74f047dd98f83761d617e.json",
+      "sha256": "500e597c2837558d75a7baac184ef2073beca730f01676367f8022a8666d5eb7"
+    },
+    {
+      "bytes": 55388,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d52b4098b5877d0d668744c76ae6e19948e84c753ff74f047dd98f83761d617e.npz",
+      "sha256": "c39b121979b450d431c2bc50774209427649738848224313f8225352654e75f3"
+    },
+    {
+      "bytes": 1846,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d5e8160232ec462e230d1e00b0a71c827546ea7bd1a086f64fc003eb10243bf0.json",
+      "sha256": "81504500884faf2873ff056064baaf511f21816b6592dd2be1a08e551f6c6d8f"
+    },
+    {
+      "bytes": 55385,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d5e8160232ec462e230d1e00b0a71c827546ea7bd1a086f64fc003eb10243bf0.npz",
+      "sha256": "b6e3e682ede6d0baf55f61e63218e265cb14fecd0f8b078fc0a518b3c9e04f11"
+    },
+    {
+      "bytes": 1804,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d633925a2736d7fb31121733c390ef85c28707b8b006341984b66fa36d7a62c4.json",
+      "sha256": "8e72cb1b858b986ae9a97a58122edbf08b20f736cc4151d0d126b48aec14c2b3"
+    },
+    {
+      "bytes": 55393,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d633925a2736d7fb31121733c390ef85c28707b8b006341984b66fa36d7a62c4.npz",
+      "sha256": "ba3d219bfa987601897a9d5fc5853e7742cb0707fc6bfd35b7bad168fd455505"
+    },
+    {
+      "bytes": 1820,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d65660040ed9945d24f80738b6d98bb00a33cdd99db2829548325bf962c524aa.json",
+      "sha256": "8a1b0a2abef1bd5e360bb1680f0f75b6085224c59ff3ae3ddcb1e91d2a261c60"
+    },
+    {
+      "bytes": 55403,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d65660040ed9945d24f80738b6d98bb00a33cdd99db2829548325bf962c524aa.npz",
+      "sha256": "36bf7ef687b8e3a33552cd3d742f7dae547fc7a3d4eebd473b76cac5680e89be"
+    },
+    {
+      "bytes": 1848,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d6bfdc13cb340f544ffc2a9d5521ee8d1038624ba6f26ee5add804e107f21ef5.json",
+      "sha256": "a55a58701c4d98d8ba65a025ea2967e726e10ed1a52e17f5de625ebd96978c7d"
+    },
+    {
+      "bytes": 55408,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d6bfdc13cb340f544ffc2a9d5521ee8d1038624ba6f26ee5add804e107f21ef5.npz",
+      "sha256": "9a4d3826007b1612ce4477d2cc473e920e66e1546b19cd9dced7f0aa21337577"
+    },
+    {
+      "bytes": 1868,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d70f74403fdd5a3d691238bb6ecdc7361e575da3ab127736be612f7017ded2e8.json",
+      "sha256": "3600bfe2c1248e21a2df1e8f67544583e1dfbf65d156afa4191e63c032affcf0"
+    },
+    {
+      "bytes": 55392,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d70f74403fdd5a3d691238bb6ecdc7361e575da3ab127736be612f7017ded2e8.npz",
+      "sha256": "d5dfb86cb0812a0a4485ae8ee72902340ba33df70ba30ff9b89751fed43350de"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d8135ec7b555507c99adfbc209ed27767674d915473beee83741c51b85a95d88.json",
+      "sha256": "d6688ef3f2f94fcf8623a8e4ae4bb9947a08b407234e138cb3e99b64c087d862"
+    },
+    {
+      "bytes": 55387,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d8135ec7b555507c99adfbc209ed27767674d915473beee83741c51b85a95d88.npz",
+      "sha256": "978bb3a3bb2a1229c669aa1324e356a6afc33667a93f511b71181f113fd12604"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d82d6208b0af736c54af12a5c1f44bf6c8e0811f7f041c3d8197e55c82ec49d4.json",
+      "sha256": "df153457e20f69b092fa9f23733f2a42195abba6895c0ba6f82c367ab271518a"
+    },
+    {
+      "bytes": 55404,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/d82d6208b0af736c54af12a5c1f44bf6c8e0811f7f041c3d8197e55c82ec49d4.npz",
+      "sha256": "172cf55a9b793cef925f4ebff5668e0efdb1ef74515f0e53a85235a448d26f50"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/da3b75b6a1133745e1a00997c6ae7d64bd66394446cc480beadcc096b84a694b.json",
+      "sha256": "0da43c0abb13c9d9693ac1a0bf7c75a5405ada59567bbb5b3d587e422da21f78"
+    },
+    {
+      "bytes": 55410,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/da3b75b6a1133745e1a00997c6ae7d64bd66394446cc480beadcc096b84a694b.npz",
+      "sha256": "77f836d8959db4073e43bf8ab902752e6da9d471f06af4b00b1fbde33b6a66a2"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/dacfdad7185d020bbc56d74b1a9b1ec2eb601d709c0b64e4bc2a903b33eac711.json",
+      "sha256": "cd07f40d7e734114f15922d5863eb160b8040ff269fe52b676b0ef24d7999e42"
+    },
+    {
+      "bytes": 55391,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/dacfdad7185d020bbc56d74b1a9b1ec2eb601d709c0b64e4bc2a903b33eac711.npz",
+      "sha256": "d9654176c50f4187acf8a03c94e6cedcc5872567b9f4b63055838e73eb01d48e"
+    },
+    {
+      "bytes": 2277,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/db90666eaeb5a8b0f199fede46fa3df3bcc071245386a17f1a521b2658140886.json",
+      "sha256": "3fcd5fa99ebdc001f4f47c5012f8632445dbf10622a60fa91aaeb78562c2ae3e"
+    },
+    {
+      "bytes": 24292,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/db90666eaeb5a8b0f199fede46fa3df3bcc071245386a17f1a521b2658140886.npz",
+      "sha256": "5c19c61f7db39859d6d7b1d1afcfee76a4d10b31fb35849830ae22267de76a3a"
+    },
+    {
+      "bytes": 2223,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/dc6489e75bb7406b125f4d7f7077d6d3509ed4b5db14214401691e93ecbba865.json",
+      "sha256": "44075a3738c7111521b4c068f0a947dff1277ee22a9525f6303680690a1b056a"
+    },
+    {
+      "bytes": 1799,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ddecb761c7ead39e746493abc4ffcb2a10893816696694fa955e36d83b932ba1.json",
+      "sha256": "9eb3abe5a1892b45d8dd37b86d784eb7ea720c80d73885682523aac6e3a6c271"
+    },
+    {
+      "bytes": 55408,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ddecb761c7ead39e746493abc4ffcb2a10893816696694fa955e36d83b932ba1.npz",
+      "sha256": "30c0d300bc66c3ae29729cd40999ba9b9eb774ad8589c0b1b2d32126d9499e04"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ddf46c9384340dadd12a20f5d7c34af8b77a5efc246ad0f2038be36e2ca5a6b6.json",
+      "sha256": "b3012a89885022b33ab3b3f3b0fc3ff4b6e2f95199445723f13817f3ff3a31f3"
+    },
+    {
+      "bytes": 55390,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ddf46c9384340dadd12a20f5d7c34af8b77a5efc246ad0f2038be36e2ca5a6b6.npz",
+      "sha256": "a4895d9b09720bd7dd264828eba3a69b40f98d39bdd2ee69b331e86c9a80c9f0"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/de7f3e6f361bfe22a0daff4f22122710f5eba765793af174a7fe72dbd8c1b2ee.json",
+      "sha256": "768ee0158342121e4f4d3fdf56408b41ea88a3db7e50a8d4080f9de2e419f74e"
+    },
+    {
+      "bytes": 55401,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/de7f3e6f361bfe22a0daff4f22122710f5eba765793af174a7fe72dbd8c1b2ee.npz",
+      "sha256": "7dc79476dc3a888c5ad85c44957e57345a6ac3cf2a551a662bb26d324a2e078c"
+    },
+    {
+      "bytes": 1827,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e1091697981b549b4d4a633634448f36c45379850f30a5f337d85675ee73cdb1.json",
+      "sha256": "09e7dccfd48fbc861ab4f2008308c80bb8de5f573483b0d677043f2bfadf3c18"
+    },
+    {
+      "bytes": 55404,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e1091697981b549b4d4a633634448f36c45379850f30a5f337d85675ee73cdb1.npz",
+      "sha256": "240cc16c3226eb2ed8a41a9af1967f75392573f69ef16691297f2e1e94714ea1"
+    },
+    {
+      "bytes": 1819,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e19519aa80ee607e4b7a0b7b95715f34c51fa061697afab78020e2a85c31f403.json",
+      "sha256": "30cc811e5b5029c9bcb84fb5421e4681bc2c551f0664574b6afb07ddea0c9e49"
+    },
+    {
+      "bytes": 55396,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e19519aa80ee607e4b7a0b7b95715f34c51fa061697afab78020e2a85c31f403.npz",
+      "sha256": "f6668ef56c4cc41ab8ce2ef1e2e0b324cc154d38fb22178dda9f50d2ef90b29c"
+    },
+    {
+      "bytes": 1824,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e29c9e179178a55e78b4ac889233d2153ec5d445feb406aa066d1dba56cddc53.json",
+      "sha256": "38b61500154d812b83ce9812d9c7bb37a05bce9412d73edd906335c2166cf39d"
+    },
+    {
+      "bytes": 55423,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e29c9e179178a55e78b4ac889233d2153ec5d445feb406aa066d1dba56cddc53.npz",
+      "sha256": "abd53adacc0052efff973649c4defa7838de78404d007d9f30d2c84bab5cc683"
+    },
+    {
+      "bytes": 1902,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e33795ef66c3bb38aaebc536708474bbad698e847127c8195ec2bcb8a6a5219b.json",
+      "sha256": "545aee6f6d11424a56411454be1769c6a94fe163f48085c3d44bff16707055c4"
+    },
+    {
+      "bytes": 32143,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e33795ef66c3bb38aaebc536708474bbad698e847127c8195ec2bcb8a6a5219b.npz",
+      "sha256": "87ca96165d121c73ddf0d60a6c5afb7fb631cb5eda92a05fc8f30af41c8501dd"
+    },
+    {
+      "bytes": 1823,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e41859dcf26eeb08258f2c682503d7905ae6ebc27fd9695b3ad2503275ebdfd3.json",
+      "sha256": "3c0933f1aceadf1f92d6f37771a41f1c423a3da381cd8828eef00b43bbfde1f7"
+    },
+    {
+      "bytes": 55381,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e41859dcf26eeb08258f2c682503d7905ae6ebc27fd9695b3ad2503275ebdfd3.npz",
+      "sha256": "11445244bb7df532f94d43683bd380426feb20a9e873667ce23c0f858e61de1e"
+    },
+    {
+      "bytes": 1980,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e58a4911bd16bec7967a45b601d17b2839af2c48f652df41095160778d8ec9cd.json",
+      "sha256": "1772bfc8597661349bf7abc505ed83955aca215a2e7f1e7ee1415ed30fc8aaa6"
+    },
+    {
+      "bytes": 55425,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e58a4911bd16bec7967a45b601d17b2839af2c48f652df41095160778d8ec9cd.npz",
+      "sha256": "3b419bf6ecfac05c42cf1c998729826e5bcdbf4f212bdf058226ce725ea795a3"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e639f7750757b3f0a468ef12774f039467afbba9b7a640e794ab15c52ea6dc7a.json",
+      "sha256": "143f25a92682c7fb42c973123f7bccf5b31cc1dbcb22d59f8b47c7bc286aecb1"
+    },
+    {
+      "bytes": 55376,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e639f7750757b3f0a468ef12774f039467afbba9b7a640e794ab15c52ea6dc7a.npz",
+      "sha256": "6a715369d9fa451b20bbc05d2e410b46caead039af40957f0c250c91d04ed617"
+    },
+    {
+      "bytes": 1962,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e7fdd34cfc77d6d027cd50bcaaa48a5430b1c21256260dad15a27409cbf2e797.json",
+      "sha256": "cc2131a136c9f8d0aba8cc3a92a2f5188ad42a00f62fa82c6d2a089c0abaecbe"
+    },
+    {
+      "bytes": 24282,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e7fdd34cfc77d6d027cd50bcaaa48a5430b1c21256260dad15a27409cbf2e797.npz",
+      "sha256": "836a488d9ae9aaa16950a656390411edcf5e0be2ee1091eb42362aa12e20d43f"
+    },
+    {
+      "bytes": 1822,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e90bfb82f252bdbbd2ea48ce0093127fdb29aaaab37ccc5ed41d8c43bbeac610.json",
+      "sha256": "918cfb07e08ed580a6ef1a8a43c652562bc593799020fd381f2f7077157c6cbb"
+    },
+    {
+      "bytes": 55375,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e90bfb82f252bdbbd2ea48ce0093127fdb29aaaab37ccc5ed41d8c43bbeac610.npz",
+      "sha256": "cbd7d325f4af22c06db413e80739b8a8edd2c911aadf62e70ca74361c06cd07f"
+    },
+    {
+      "bytes": 1936,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e938aa4918dd983f465f1721fdc333efd1f462f878e5bf0ada8648719c72b0cc.json",
+      "sha256": "c876eb187ad7b1eeb1e5d8335048f57fa1df50e1247427783219c197090bd933"
+    },
+    {
+      "bytes": 55400,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/e938aa4918dd983f465f1721fdc333efd1f462f878e5bf0ada8648719c72b0cc.npz",
+      "sha256": "f44d7a672bac3befd99425e8de7f4e78ddd6582062a41fa890ce61bce538c556"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ea38d58f8e3dcb978a330ff6cda0fdbfe3040486385eec0479d59cb1844462a0.json",
+      "sha256": "b4824ef7c1d63209889c3796193f9f29ca5d761911432976a43d3d55e95d17cf"
+    },
+    {
+      "bytes": 55411,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ea38d58f8e3dcb978a330ff6cda0fdbfe3040486385eec0479d59cb1844462a0.npz",
+      "sha256": "94eda0d484b49fae2d059141cfb86c24a191fec42ff49604ce8523b4877447ac"
+    },
+    {
+      "bytes": 1826,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ea50cca3c9df2dd7e80e059e5e7456f188000ec33208e776af6fc6b0216d23cc.json",
+      "sha256": "4cbb8c6d2c7eb47932e006e0cc9df2e435d6fe5e01e160a8e0158969e8029473"
+    },
+    {
+      "bytes": 55389,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ea50cca3c9df2dd7e80e059e5e7456f188000ec33208e776af6fc6b0216d23cc.npz",
+      "sha256": "09247b59790208b41ec06041e1da9a6bdaed25dd473caad6f02084f2c23ffff3"
+    },
+    {
+      "bytes": 1802,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/eb8db81cba41927bf488bb37008efa6fbfcc6f8e43e910aacced829f95be6227.json",
+      "sha256": "7149c385da42bb0c185ada90813bb5ddf31bda147ffec24a18247f71d5729ce8"
+    },
+    {
+      "bytes": 55389,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/eb8db81cba41927bf488bb37008efa6fbfcc6f8e43e910aacced829f95be6227.npz",
+      "sha256": "d233eeb6fc09ebfb691ff0ea5e9877be8c079f362a22c6bbcf8d52f3f9f72cf9"
+    },
+    {
+      "bytes": 1800,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/eb9ed2b6b1f323476b5f388975bc094824ba49f7d67311e5bfbc2a68a86be413.json",
+      "sha256": "183d1105450ebf48bce6d6782068d7d8ac2972f693d7a8d916c4b22b64d99276"
+    },
+    {
+      "bytes": 55398,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/eb9ed2b6b1f323476b5f388975bc094824ba49f7d67311e5bfbc2a68a86be413.npz",
+      "sha256": "81fe29091f8015dafa5a101a3843f7dbca7f4f382989bcaa10a62eb19302daf7"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ebb2ce3cf55cb1000af0a8c4a830c82f1730406bd0c22ef004753a287832e704.json",
+      "sha256": "bd6eaf1d70b50a0de4b41f1e785df577d8ea232ae4497f3591bb9be830190e91"
+    },
+    {
+      "bytes": 32122,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ebb2ce3cf55cb1000af0a8c4a830c82f1730406bd0c22ef004753a287832e704.npz",
+      "sha256": "bee6063cb4b697e82a429df8646a94f07e3026837107db94118726613f96e51b"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/efc94e4aa05dddb0d1cc1153f285bcd376d5661dbb837a6b9633debe85d1f98d.json",
+      "sha256": "a4a600e76dbe44794e0cbc533a69e1c4561043be56b62253fc869683fab34a55"
+    },
+    {
+      "bytes": 55389,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/efc94e4aa05dddb0d1cc1153f285bcd376d5661dbb837a6b9633debe85d1f98d.npz",
+      "sha256": "63fda30fbdeb913c8fdc8ddfbb50b44aa995373aea654d9ef875245b1e1ffa21"
+    },
+    {
+      "bytes": 1806,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f235616c56dddea42c691e92f31af645feb95eb15883d8eabe894344be197e0d.json",
+      "sha256": "6c7e6f4cba4bd147d1eca23fc4ae8cb9df6dd99ffc9543a6bb4b43ae6e295278"
+    },
+    {
+      "bytes": 55402,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f235616c56dddea42c691e92f31af645feb95eb15883d8eabe894344be197e0d.npz",
+      "sha256": "ed1a2c088aba1b02fbb2eab914b7d9acbcea18cd4bd5314a6fe05cd0d321ca65"
+    },
+    {
+      "bytes": 1842,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f32a5e31f50f621e16185f7914a5836e5bb722988e95770834e8205a101d98d6.json",
+      "sha256": "e9b0db0c894eef31c49f1efb9d9eef4a80fccf1e614511d7a39407dd47322cc7"
+    },
+    {
+      "bytes": 55415,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f32a5e31f50f621e16185f7914a5836e5bb722988e95770834e8205a101d98d6.npz",
+      "sha256": "4a6c10424c8bd87210142198e6d280e1235372537f0cbf9b0fcc63acca3db97c"
+    },
+    {
+      "bytes": 1845,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f584a559fc9a93f86ed46e690397e5ce5c495a680076e483b0bc36737d132861.json",
+      "sha256": "92262664f94e5ce1efdd2d72bc7cac833997f8b768e9bcfe20da7f11f7c91271"
+    },
+    {
+      "bytes": 55391,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f584a559fc9a93f86ed46e690397e5ce5c495a680076e483b0bc36737d132861.npz",
+      "sha256": "41f578d0c3de0ae5d039e5cb3ec85dac7d556db7baf0a8d2c39a301e8dce88cc"
+    },
+    {
+      "bytes": 2023,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f59042e5cb400aa146693c76a23ff8756ec6313da9c3f4713698a01754cd0fad.json",
+      "sha256": "09d1dfa5ee94cccce2dda72079b247b202453c4b08c44f51ce301eeb5244466e"
+    },
+    {
+      "bytes": 55369,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f59042e5cb400aa146693c76a23ff8756ec6313da9c3f4713698a01754cd0fad.npz",
+      "sha256": "34b5e508102d1af8b6f96ec70ce60ceb26e24671ec5fe47f50a10a4e830ce953"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f62283161e25bdf9526f0813265e74309dcfc6b6928a8737231c3dd994fdafe7.json",
+      "sha256": "bd2f1b8ae09cc85dba845dca8cec75d16b0606699361183cc438d47f2fe4bda2"
+    },
+    {
+      "bytes": 55403,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f62283161e25bdf9526f0813265e74309dcfc6b6928a8737231c3dd994fdafe7.npz",
+      "sha256": "3a65b6fed16cab49c0779e667e16599e5ee3ae863365f8780edfc175f6e51b00"
+    },
+    {
+      "bytes": 1800,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f7e1e366d3ec6dca27b08276eb942f213f31910932875bd42efd202b8c5e108c.json",
+      "sha256": "c64c263df000e766c1e574740444dc230ccf397f2576a7408c0e509550f93fc5"
+    },
+    {
+      "bytes": 55393,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f7e1e366d3ec6dca27b08276eb942f213f31910932875bd42efd202b8c5e108c.npz",
+      "sha256": "6d491e51beac8c9f77f647d1955cfdee3d83ea8c9639299ef7148513cc71e004"
+    },
+    {
+      "bytes": 2225,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f93793eb5a65579b31704d1e0efed37e6becbc525052c5cc4c508c3d3a907176.json",
+      "sha256": "d262dd2d46cf63cfc99845878f33867095c4fcaa52f05199055036388a260335"
+    },
+    {
+      "bytes": 1825,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/fc4a7fc3be215b99755c09678b058e6d494f5a40b306dfd994a9d8b4fc0fe43f.json",
+      "sha256": "c27a8a4624ab1665861aca683c43e3991187257cdaecf7783a67ff73c5e48a1e"
+    },
+    {
+      "bytes": 55393,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/fc4a7fc3be215b99755c09678b058e6d494f5a40b306dfd994a9d8b4fc0fe43f.npz",
+      "sha256": "64a582c7b5d3c3cbfd3578d0d2e1552a205cd7037cf5365075ea478cfd29c4a3"
+    },
+    {
+      "bytes": 1803,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/fea76ca1752ffb3f5afebb93b79bb796f1afe204aa3e6be52c4eb3510fc0f6e4.json",
+      "sha256": "7191ba1a3b3871aa3f0a51947b296eb30c49c0dfe54434a14a96b9f7033cd283"
+    },
+    {
+      "bytes": 55406,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/fea76ca1752ffb3f5afebb93b79bb796f1afe204aa3e6be52c4eb3510fc0f6e4.npz",
+      "sha256": "0f637fcea9b217a8391204681f8dfb9e01c919f11db24e0c668100dab9c6d398"
+    },
+    {
+      "bytes": 1818,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ff5a517f20ac0cd42a81589d44999399235b5a577b2fa53fb1ad71bafdbe3e35.json",
+      "sha256": "97cce2850612a5348769e1f8fb88cc757ed1cf8d60dbc09f58c1094cf1c8ef55"
+    },
+    {
+      "bytes": 55412,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/ff5a517f20ac0cd42a81589d44999399235b5a577b2fa53fb1ad71bafdbe3e35.npz",
+      "sha256": "282c9dcf9746e90634d6f92a67a1c879ddc9cde45490f8734d4aed71ed8b0b2d"
+    },
+    {
+      "bytes": 1820,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/fff563193b162686de1ce26385bda9a2135376c46ddf7c42fc6e11a5bce628e3.json",
+      "sha256": "691ceb36c02b0c8f802ec281fd88a6db1fe51351cd695d2641db5193805eb1fe"
+    },
+    {
+      "bytes": 55395,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/fff563193b162686de1ce26385bda9a2135376c46ddf7c42fc6e11a5bce628e3.npz",
+      "sha256": "8646ee27072d007145a2abe7e3907511981f9b93e918e2ce655ebdcec3e80845"
+    },
+    {
+      "bytes": 9286,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/cache_imports.json",
+      "sha256": "00d50ad30eab77bb7591fc554622d224fc934891c49ffa30fe1243258c483541"
+    },
+    {
+      "bytes": 538805,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/decisions.json",
+      "sha256": "a80ec1ac0a340565c0d21e5ba32d691c428fe4a2e74e01ee158feb310ccd4666"
+    },
+    {
+      "bytes": 2829,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/prediction/manifest.json",
+      "sha256": "77d9568aff681798e7b36a51092c5d55994e150287927bbdc16ce208030c3ac7"
+    },
+    {
+      "bytes": 171698,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/prediction/prediction.npz",
+      "sha256": "8f1b1dbb1d95e77e5f3f367539e1e7e5eeb0042380400f73ddf2735df4f7ab07"
+    },
+    {
+      "bytes": 266752,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/source_evidence.json",
+      "sha256": "173af15d8033417be3312de566c72b25c97d48b147cffbb5990660b4c5e66f60"
+    },
+    {
+      "bytes": 26018,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1/query/checkpoint.pt",
+      "sha256": "69047c5a8897b179ee48143be85b6bc93f9d16322930a93da0dbce35feacd3c6"
+    },
+    {
+      "bytes": 641371,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000000/rgb.png",
+      "sha256": "15ae557deb41aecb81c9493f74122094b97b60f88272fea5ef504c73f7e36a45"
+    },
+    {
+      "bytes": 671051,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000010/rgb.png",
+      "sha256": "7fb913a28f9348651d83b24a9f4221d3a1bb5f70675da6edae615bcf667134e3"
+    },
+    {
+      "bytes": 687664,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000020/rgb.png",
+      "sha256": "402d68db1260489458620a65ea504d03f365118902cfcd37d65176d6e828ebd2"
+    },
+    {
+      "bytes": 697627,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000030/rgb.png",
+      "sha256": "bac51be505c58ce5f5d52160db5f1105b49f5fc8270772d1825e7b7213563227"
+    },
+    {
+      "bytes": 709107,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000040/rgb.png",
+      "sha256": "3c5b171936401e7bef30b8c31285e604881e0091a05d5a003c53df9d91936444"
+    },
+    {
+      "bytes": 711119,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000050/rgb.png",
+      "sha256": "16b80970b5b1a609a1073bc4b07f0ed30a2ccdd9c90bd756bef25dea7a6bbccc"
+    },
+    {
+      "bytes": 729344,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000070/rgb.png",
+      "sha256": "4fdc68677c9b83d47c5f91d8fb846e399ab53b1457d7c36492b5ff098c467833"
+    },
+    {
+      "bytes": 741260,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000080/rgb.png",
+      "sha256": "3486429fe3aefe89ccfc4e81e71744fef4efb5a0c0f66b7bb91ebb3d987873b8"
+    },
+    {
+      "bytes": 751376,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000090/rgb.png",
+      "sha256": "f0f24587da74a0ce62523defdbfb358645d146d4324b58d84a34f1422ead0c04"
+    },
+    {
+      "bytes": 763444,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000100/rgb.png",
+      "sha256": "79af0d2bfc09e20ca8b77321abdb3f5a4d6d22811a1b0d3288793b5649bd5df8"
+    },
+    {
+      "bytes": 771841,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000110/rgb.png",
+      "sha256": "eff727e195bf326aed7600d650bb4bd285ea030b15b3c0e3ac4f46cce8cf0dd7"
+    },
+    {
+      "bytes": 780661,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000120/rgb.png",
+      "sha256": "e9d0dd6803448f4e502c618971f35a30a563546f448602797fdd33a0379b77f6"
+    },
+    {
+      "bytes": 786619,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000130/rgb.png",
+      "sha256": "e456a7d976355a935f0b4264f39f76218dac82c573e9bf0fdfb9f730474b91e8"
+    },
+    {
+      "bytes": 793328,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000140/rgb.png",
+      "sha256": "5a4541838130d7048f7fab7bc59c35d058b5079639ebd49049ea7d057f5060b9"
+    },
+    {
+      "bytes": 797143,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000150/rgb.png",
+      "sha256": "51f4170a8682cc3bde9fe5dfe098dac944384505f96164f2b6591e94b9d8a340"
+    },
+    {
+      "bytes": 785646,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000160/rgb.png",
+      "sha256": "9ae9817a9aec419f981ec82a90028489c95d1b075f0b6034d6e93030a4bf3193"
+    },
+    {
+      "bytes": 767155,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000170/rgb.png",
+      "sha256": "0778f9a8c37fe54f4b3b255c1078cfcfcab45cbb4104f957733897dd52e7a1bb"
+    },
+    {
+      "bytes": 750125,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000180/rgb.png",
+      "sha256": "2782f6adbff191f16de6ac20286c220614ad29091884420e22ef5b8cd96b5c53"
+    },
+    {
+      "bytes": 756780,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000200/rgb.png",
+      "sha256": "cc6d36d1b4561c7512ee950659039e019520274a4cc5175961c79f2608202a62"
+    },
+    {
+      "bytes": 759379,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000210/rgb.png",
+      "sha256": "b2762f8cba5e4bf00d96684895ecd92b2da05931bc17354f9d6b9dc11be190de"
+    },
+    {
+      "bytes": 764697,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000220/rgb.png",
+      "sha256": "0d2d34d44f6b6b290749c02a0032ba25f43072101fd081cd24802cd9e762cf4a"
+    },
+    {
+      "bytes": 767992,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000230/rgb.png",
+      "sha256": "6366a132385fe3216e00246f858d0d30afa9b24ad80d0b3e7fe17b656cebe3b2"
+    },
+    {
+      "bytes": 769754,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000240/rgb.png",
+      "sha256": "7b07c91102a1eeea05776344d4cfd3104b1867b628eec6636f9bfd251171d39f"
+    },
+    {
+      "bytes": 769634,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000260/rgb.png",
+      "sha256": "003cf92a27b72f53fa1b8efdcb04381bb6e879a6997f63bac0ccb35111868e5e"
+    },
+    {
+      "bytes": 752464,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000270/rgb.png",
+      "sha256": "b95c7f064084e13dbf69f00de7a440d95bb1e32aa904b74a160c68fdfed47cb0"
+    },
+    {
+      "bytes": 711802,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000280/rgb.png",
+      "sha256": "93a6ed126df5445d7c02dc5d1413636b1b81a54f2315c1f052ec9dd78df7b52e"
+    },
+    {
+      "bytes": 664253,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000290/rgb.png",
+      "sha256": "38342ac05f09cfe0765efc04f82fed1f7f8d980a159e09e4f8c468ce15b0c774"
+    },
+    {
+      "bytes": 637244,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000300/rgb.png",
+      "sha256": "1dd38032531912d32ae1c9e30070d4368c714bf149bc05d41c3650f49ae0ae6e"
+    },
+    {
+      "bytes": 592494,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000320/rgb.png",
+      "sha256": "65951b4ed954b0243b338ab31b87259470dffc250dfa4e6b7de1d32081cc4fea"
+    },
+    {
+      "bytes": 590095,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000330/rgb.png",
+      "sha256": "dea343c6694667f275a44a6eae0305aa6222adffbd232f89e2f1bd557cedfab0"
+    },
+    {
+      "bytes": 590315,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000340/rgb.png",
+      "sha256": "86148af80155b865d8e130c339b09837d572a697a53de95cbd5a5ea34265ccbd"
+    },
+    {
+      "bytes": 587110,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000350/rgb.png",
+      "sha256": "b69abec3fef1aa1711c9e22705f988db6cb3ab42517180c2ecf5c0a2899f2991"
+    },
+    {
+      "bytes": 592950,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000360/rgb.png",
+      "sha256": "3ac664a090a69efe788641cb201294816eeb117b4ad9c6ad201cae8058ddecfa"
+    },
+    {
+      "bytes": 603373,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000370/rgb.png",
+      "sha256": "9b4a590ad3a016989c3259882d84280fa8568f4ebed78d1aef56b1ab14f8c02c"
+    },
+    {
+      "bytes": 615689,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000380/rgb.png",
+      "sha256": "1649a77782cc4f63a798c35cc3c7a1c95606a793e845ae2e81fa6a86d717f823"
+    },
+    {
+      "bytes": 635968,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000400/rgb.png",
+      "sha256": "77d8c5922d2f6896c628dc7868b16260d84ad3fafaa558d2da271d3eb4697a89"
+    },
+    {
+      "bytes": 564353,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000410/rgb.png",
+      "sha256": "c68b1bffda0d8becb951608b5a9c8cebe906bbc0485832b3f8c933e94706e931"
+    },
+    {
+      "bytes": 644261,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000420/rgb.png",
+      "sha256": "6532c39b17396fc1161e4fb371c615d673f55c824d71c3e8f212a497a573eee2"
+    },
+    {
+      "bytes": 642138,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000430/rgb.png",
+      "sha256": "e0c01b5cad17034c6d3bfe261b6968cf1fb0c241cd19e252ece552240298e209"
+    },
+    {
+      "bytes": 629053,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000440/rgb.png",
+      "sha256": "2139153881cacd9a7e4c3d6948a236cd569a065641cc38a71851234b2caff55b"
+    },
+    {
+      "bytes": 617176,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000450/rgb.png",
+      "sha256": "ed59bf58513cca936c4e17352557111153cac43de9cb45b81851bf1532f4d975"
+    },
+    {
+      "bytes": 617950,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000460/rgb.png",
+      "sha256": "22543512a5f16de2ebd3a1ad5722184fd8e5efebd01c24e2cfb27f5fabc7ee9a"
+    },
+    {
+      "bytes": 621927,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000470/rgb.png",
+      "sha256": "1c1d755bc34fdd67686c182c8993234d00beca667064d475096b2fc7f64cead6"
+    },
+    {
+      "bytes": 623159,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000480/rgb.png",
+      "sha256": "5acd77d296602812c2e6a57744203354f04df6fbd0acf240bb3011d7b4cd836d"
+    },
+    {
+      "bytes": 617603,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000490/rgb.png",
+      "sha256": "a2c3d63fc4c11073bbf79cf9b6571badc73cb9849f7d518dac004480179de93f"
+    },
+    {
+      "bytes": 612634,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000500/rgb.png",
+      "sha256": "f9767cd4a5c88de32b42a269cf668be0ca9f8298a016a58adb0f67af570a5adb"
+    },
+    {
+      "bytes": 600382,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000510/rgb.png",
+      "sha256": "fe5eb4e888b9621133774a0f920f0ba027e5a926d61baccaabbd48c110389473"
+    },
+    {
+      "bytes": 577647,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000520/rgb.png",
+      "sha256": "3a16144b5bbf3dde8467d25852f44220385f6fb2784abf750fe9cb0e39baec9a"
+    },
+    {
+      "bytes": 522359,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000550/rgb.png",
+      "sha256": "6561aecc0bb25321519f2c4cd84ed5882d12ff18519640a9d40f228e2bc586eb"
+    },
+    {
+      "bytes": 542359,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000570/rgb.png",
+      "sha256": "ea7f2fba2b6393b20f020ebd54bcc68f7edebbbc74f382e07b11d408091dcfe9"
+    },
+    {
+      "bytes": 582891,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000580/rgb.png",
+      "sha256": "fe45978bc37651c1e5d6cbaf7a64f10b8d460acdf47b1656f449cc49064ef047"
+    },
+    {
+      "bytes": 609854,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000590/rgb.png",
+      "sha256": "818ed5f4b17b865097d8666500d87967c1cfd3aa1ec06eb0a0dd8c5d5062f3cb"
+    },
+    {
+      "bytes": 639366,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000600/rgb.png",
+      "sha256": "d42a459d3796049e5c05a06a93c22cf7aa8fb4cac3775d1a066b58bfc119881a"
+    },
+    {
+      "bytes": 667832,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000610/rgb.png",
+      "sha256": "eeefc5504aefe958d008300afccd758b1759b5fa06cada3b2cf943a2535fe525"
+    },
+    {
+      "bytes": 670582,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000620/rgb.png",
+      "sha256": "ff4e0b68e8865ec1b42350849e438ee601fd52fd29476caf75b40866e0de51a8"
+    },
+    {
+      "bytes": 658677,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000630/rgb.png",
+      "sha256": "f8ecce1de29cda3d25d38b9942d4cf4e2023a2e718891105dc51e3db59f99404"
+    },
+    {
+      "bytes": 616444,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000640/rgb.png",
+      "sha256": "4b0d02070d679752ebebf156ac99fd60f404ced33ac0b6be7111cb4b5fecab77"
+    },
+    {
+      "bytes": 547702,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000650/rgb.png",
+      "sha256": "5d39636fc96d8415849e83d10315b8b31deaa93e1072ea0d275b5083e0a6fb43"
+    },
+    {
+      "bytes": 474908,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000670/rgb.png",
+      "sha256": "79676675aebfb5e9ad35f4fd61ea806c2404b1db442256f966bd8a2463e06207"
+    },
+    {
+      "bytes": 483578,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000680/rgb.png",
+      "sha256": "806c76db2f3a73421685b814507d13826153c6429d342c9c1f08f2937f22bc32"
+    },
+    {
+      "bytes": 524308,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000690/rgb.png",
+      "sha256": "4c3d166599175c71760fccf36857dc9a6fb6252c53feec5aef3f23f084545ff0"
+    },
+    {
+      "bytes": 565598,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000700/rgb.png",
+      "sha256": "b61a2a7c6de10041bd5e40153f5ed15e90c8559a8aad416311d5b36228d0cc9a"
+    },
+    {
+      "bytes": 619686,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000710/rgb.png",
+      "sha256": "2787707f19c229c1b6be714ccd7bbd48589b58cee428281282462c9e1784ff55"
+    },
+    {
+      "bytes": 663343,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000720/rgb.png",
+      "sha256": "721fde3e59498618801005462327e7474515501b049b2a70b56b23011d2efe98"
+    },
+    {
+      "bytes": 687404,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000730/rgb.png",
+      "sha256": "66b3aa6bc7851a5aac7022cdef1fd2d2779d20e959ddbfe36dfc7859f46ddc54"
+    },
+    {
+      "bytes": 753398,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000780/rgb.png",
+      "sha256": "ab75bfd13cc01a8ade4d01131147ccbffeb4bc617d65d48b53c40267636586ec"
+    },
+    {
+      "bytes": 752209,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000790/rgb.png",
+      "sha256": "0953c6b5291168271cfc8f4396546f8d646fcb5532b1a7a207da5ea62f2dce85"
+    },
+    {
+      "bytes": 758444,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000800/rgb.png",
+      "sha256": "019263615a84f3f8b19790a18a30d0caf5ec72ba5bf3ddc971a071610042cbc9"
+    },
+    {
+      "bytes": 749982,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000820/rgb.png",
+      "sha256": "7be2bc4fb601df44bfc52d281352d793272420f36adf5c11c6154daf6f88a819"
+    },
+    {
+      "bytes": 730491,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000830/rgb.png",
+      "sha256": "497e18119d24ae16200113004257bb43441a32d34571fe893f57fda68a9caab2"
+    },
+    {
+      "bytes": 717544,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000840/rgb.png",
+      "sha256": "e97435e696f62433e9b44d1636e9ecb76f135073308062cbdf491250806b59ad"
+    },
+    {
+      "bytes": 707836,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000850/rgb.png",
+      "sha256": "e6951b21eae0017da2a43f917ab4e0b466ef1c59bcf98defa00eb4c06a999785"
+    },
+    {
+      "bytes": 687534,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000860/rgb.png",
+      "sha256": "bcef83a13e0a7d99aaa9ee57a5bc35bd160cb749a1b36addc68a584353072549"
+    },
+    {
+      "bytes": 648052,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000880/rgb.png",
+      "sha256": "e1eb4fd253fc17c6c99ac9f60994fc18488474083c7ffd766ec1c59157a6490a"
+    },
+    {
+      "bytes": 642163,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000890/rgb.png",
+      "sha256": "95fb4f2e14cf30e799ee0ce362181ec2a094b246cd63b1a3fa04beb8399b2608"
+    },
+    {
+      "bytes": 643048,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000900/rgb.png",
+      "sha256": "05bb4cb48f9ee03bc3abc15cfee9b1c1b44640d6a8165ba2b021d81440ef75db"
+    },
+    {
+      "bytes": 648709,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000910/rgb.png",
+      "sha256": "834305cacf2064aabe807fb97e113af2539f6d419f8575e4ba471c660878f9e3"
+    },
+    {
+      "bytes": 658880,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000930/rgb.png",
+      "sha256": "99c4522f8fed08ba3a2140f1b723e8fc36e92c7aaa962d5f77fdf8bfb7d89583"
+    },
+    {
+      "bytes": 662075,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000940/rgb.png",
+      "sha256": "e3c7a46ceea927d836a3b08c177bc7ec0362e37baac56e4d9ecfae43ede5f748"
+    },
+    {
+      "bytes": 676047,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000960/rgb.png",
+      "sha256": "667660b4e0338532a128b94d91fa414c08453e4a99136140ffdf1d12520c8f20"
+    },
+    {
+      "bytes": 699315,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/000980/rgb.png",
+      "sha256": "a9ed60b20834a25b4819dd03fdc5fd5e16c058e7e6f86b5e75724acd09d87f97"
+    },
+    {
+      "bytes": 739276,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001000/rgb.png",
+      "sha256": "93a355257f9117032c5e6c08b097cc4810941e849ac221c9608a33c571557df8"
+    },
+    {
+      "bytes": 769066,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001010/rgb.png",
+      "sha256": "0feac11ae76484f9cdf87396bdaf5c0b224f284b0a1122ad8c54618488adaf18"
+    },
+    {
+      "bytes": 785128,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001020/rgb.png",
+      "sha256": "370f071ddcae9531be5a9c7bb97eb064f28f2d6f4f33c64f4b4537dec556e18b"
+    },
+    {
+      "bytes": 785939,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001030/rgb.png",
+      "sha256": "98934a12469a021a7934ebbe9d58cd9d10142c8be37193dcd1c0c56c9886a63b"
+    },
+    {
+      "bytes": 752702,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001050/rgb.png",
+      "sha256": "710689f2a6e200bf5739a3ec0608c72034142aa691a3b1010ba2f33828618ca2"
+    },
+    {
+      "bytes": 725382,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001060/rgb.png",
+      "sha256": "194c87404832de6b54c7c554fde497f5b0f78918f34043021243beecaa60f3e9"
+    },
+    {
+      "bytes": 701989,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001070/rgb.png",
+      "sha256": "7fdb5a11506aee9488b5b8a77d07aad83a2b01663407027be1da7f77919e0493"
+    },
+    {
+      "bytes": 687907,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001080/rgb.png",
+      "sha256": "5d36a3002a5e984980080495d687ab4b8a0fdefc71fd598e5e9c023e8c900e9a"
+    },
+    {
+      "bytes": 690709,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001090/rgb.png",
+      "sha256": "b517842b630ce9504e8808b0445cc2c60531cd3cd8028cf96a54cc62fd9178c0"
+    },
+    {
+      "bytes": 706385,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001100/rgb.png",
+      "sha256": "5ba8bb9b2707a0c6c16421d643764dd5ccd7fcfe7ede9ff2ee623c1d8cb3a398"
+    },
+    {
+      "bytes": 741436,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001120/rgb.png",
+      "sha256": "91089ed93090736e71b62ba813bd691782dc1530f74b400154f60d0a91f46577"
+    },
+    {
+      "bytes": 754944,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001130/rgb.png",
+      "sha256": "dc4b05d6615b1682f801e71faef61cbc853ea27f69be184b9caa07de9cca0cd7"
+    },
+    {
+      "bytes": 766970,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001140/rgb.png",
+      "sha256": "413b3e3b7f7d855c10118a6ae792a2aaad83ab583a76c1f444d82ed34e8df6d0"
+    },
+    {
+      "bytes": 771321,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001150/rgb.png",
+      "sha256": "eb8499c932edcded5e7066166c5dc512458e0c03ce03e1886a4ff6290cc0b76b"
+    },
+    {
+      "bytes": 772920,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001160/rgb.png",
+      "sha256": "f5c0f10e52a3e9be091203c0dc05c83d0ff37bfaac7f094b7eef53048e5a7e1e"
+    },
+    {
+      "bytes": 775570,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001180/rgb.png",
+      "sha256": "b62237da5c108c8c02a627298398ae5910248f12815a756ae5dc67116da224e3"
+    },
+    {
+      "bytes": 770305,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001190/rgb.png",
+      "sha256": "e75ec547f6861e931155922cb74c261ab573599d532d8a0293a8577e95689244"
+    },
+    {
+      "bytes": 572943,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001200/rgb.png",
+      "sha256": "c0896b56148508ccb247ba7fac6c98d6f8646a79514d2f6a880ff642467ddd81"
+    },
+    {
+      "bytes": 775584,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001210/rgb.png",
+      "sha256": "bab09206b862a38d2d33784dc52dbe25396ba585f340aa410a83b581c3522988"
+    },
+    {
+      "bytes": 573161,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001230/rgb.png",
+      "sha256": "e49595d473e3cddaeb53d797e178b01d552aebe8c7db9deb6ec36ac2d31c34df"
+    },
+    {
+      "bytes": 818188,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001240/rgb.png",
+      "sha256": "ee036415fd282cbbd47aa0592dcd294e8fdc80d1a05b0a8918855d1fa2f0b47b"
+    },
+    {
+      "bytes": 825484,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001250/rgb.png",
+      "sha256": "65c33940578b05a45d6dc1437287e7c942ec78f6abd9df459687ee0631de397a"
+    },
+    {
+      "bytes": 826539,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001260/rgb.png",
+      "sha256": "13767104e152635279ac994317ee2e7b523c7f6f0645e266f26c53176c61ae29"
+    },
+    {
+      "bytes": 827547,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001270/rgb.png",
+      "sha256": "a5d05aeefd7b4f71df2b9c642611877bc6d541eef13f34fea77460260d2c6b38"
+    },
+    {
+      "bytes": 825377,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001280/rgb.png",
+      "sha256": "0b46aa2bc60ba14ec32cd7ab3682bca567d26204315b89514b89cc0ccca95e8e"
+    },
+    {
+      "bytes": 830638,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001290/rgb.png",
+      "sha256": "085740dd5726b3e6a4086144f98a823995cde34ed2d167b3b81c161feef90a0a"
+    },
+    {
+      "bytes": 831481,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001300/rgb.png",
+      "sha256": "85113e287e6e3438c3237bfb1695708d18cd5672ccbcec47522665565bb8e99a"
+    },
+    {
+      "bytes": 830976,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001310/rgb.png",
+      "sha256": "080276533a069e8eeeee4307d435d8cb65836723286b312902d4d1c479dea692"
+    },
+    {
+      "bytes": 834221,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001320/rgb.png",
+      "sha256": "3c9c48b3ee3e043fb84ab8676b45214c21778d8153c4d566a9a31b66837445cc"
+    },
+    {
+      "bytes": 837177,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001330/rgb.png",
+      "sha256": "bb51eef684f6f65a2aec54b008df055519e0cd3a41f304a5b9cdb15c7e80156b"
+    },
+    {
+      "bytes": 836990,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001350/rgb.png",
+      "sha256": "57e5a04221063b65f057b0ff27b44c62cb0210f5a4eda46b29c3d30b5e02f420"
+    },
+    {
+      "bytes": 568930,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001360/rgb.png",
+      "sha256": "a1f763fba729b646f2929497b3420b9818194fe3aed2b79e8960326b08328e3f"
+    },
+    {
+      "bytes": 829422,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001370/rgb.png",
+      "sha256": "db7b2adeb7e3f96ba0c046fe27f17777e536fae205e4396d870035cd1fbb966a"
+    },
+    {
+      "bytes": 823863,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001380/rgb.png",
+      "sha256": "816379a467af91c5b9758481d72ad4b0e95f945892631da7368f5e06e5e3de18"
+    },
+    {
+      "bytes": 575103,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001390/rgb.png",
+      "sha256": "dd7f98a2a2d8833d87f1fa4201882022a74902ebdcafe5d3585e74fbcdd56453"
+    },
+    {
+      "bytes": 803924,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001400/rgb.png",
+      "sha256": "bd688ad1f5cca66f7ee9c8987246a6cfe695df4adeb4b2af1c3f7ad6f8527e70"
+    },
+    {
+      "bytes": 575028,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001410/rgb.png",
+      "sha256": "b6a62dc5b0d390ef70fc64a2b493d55cbe0317ce7206cb2e595a4e063709bec5"
+    },
+    {
+      "bytes": 784616,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001420/rgb.png",
+      "sha256": "0b719f80f36caf878841c506d13ae1062df1678bb9ee060a3716be4ed5e7dbf3"
+    },
+    {
+      "bytes": 735577,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001440/rgb.png",
+      "sha256": "c3d70c4630a37d0bd3c5cd0dfb6e2907cf436fda0bfda13809c3c3e2d75a3f75"
+    },
+    {
+      "bytes": 446535,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001450/rgb.png",
+      "sha256": "8ac52bfc18066160a7a846dfb904c621d09de1d7688f252874c67353eb0c2f85"
+    },
+    {
+      "bytes": 704445,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001460/rgb.png",
+      "sha256": "60ce4ae6622f1076762824d8cfb142706cc1a5b443d39b1db4054a6921299a45"
+    },
+    {
+      "bytes": 712788,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001470/rgb.png",
+      "sha256": "d766aba9a0dde8a1998df9f342a48664a1f490277c0e8cfa9f853ba080914a3b"
+    },
+    {
+      "bytes": 733547,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001480/rgb.png",
+      "sha256": "f39d3283547628dc68b5fc5fc5951d2576b67fde9987ff5fefc51d2f67ddfac1"
+    },
+    {
+      "bytes": 757876,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001490/rgb.png",
+      "sha256": "62033761a7cbc03fcfbdf4ce559d0706fd8e6e108d9a9be8fd14873737b73486"
+    },
+    {
+      "bytes": 771422,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001500/rgb.png",
+      "sha256": "f7e30b4bc9a2c29743a2eecac8bdff6755e7dc5f9b4a02b06a2d061959fed1c4"
+    },
+    {
+      "bytes": 759608,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001520/rgb.png",
+      "sha256": "e91f35560272632610fcfe52da1cad6030d013a0249b97b3a71e78cd76a6596b"
+    },
+    {
+      "bytes": 757640,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001530/rgb.png",
+      "sha256": "071fcd74b0c5c67fd6cbe0d1590de7e42d267a8642e00f6c2bedc686410a50ec"
+    },
+    {
+      "bytes": 761743,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001540/rgb.png",
+      "sha256": "51754e6c8cd4c9ae4ccf304860e6301e311d2225d9ba955a55ee1f5e744e3b88"
+    },
+    {
+      "bytes": 767987,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001550/rgb.png",
+      "sha256": "5b742967718a8c799b3ec77d297ccf1852598095b615a2613767235958126fb8"
+    },
+    {
+      "bytes": 775332,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001560/rgb.png",
+      "sha256": "e92affb7a36dcf5e29eefed802be449ddcb5099debb90f314e79638227cea865"
+    },
+    {
+      "bytes": 783344,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001570/rgb.png",
+      "sha256": "8a2ffdcec130da36989a7a2fae505383fb3609ead1eaf602f024c42196275fc2"
+    },
+    {
+      "bytes": 775774,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001580/rgb.png",
+      "sha256": "5c208f0d88f978e199675b68ed043b2cd4b9e874d41473ff060a51cd1e5af16b"
+    },
+    {
+      "bytes": 768614,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001590/rgb.png",
+      "sha256": "9893982df96f2e843fc99e010742f846aa3a0c4d8580947bfa2801764ac57f83"
+    },
+    {
+      "bytes": 766953,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001600/rgb.png",
+      "sha256": "d44ea5eb198c2f2110d93714dff6c13bcbc4940480be8479de8d00d4bb47445a"
+    },
+    {
+      "bytes": 762080,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001610/rgb.png",
+      "sha256": "41b6d7c46941f46d51995f4efda0eb93be4c99edb5689a2d7d12091e2a6c82c4"
+    },
+    {
+      "bytes": 759814,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001620/rgb.png",
+      "sha256": "60d2103ce0b3de599cc2840de88d514736a660901adda1684ff8a28b9c12208d"
+    },
+    {
+      "bytes": 761027,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001630/rgb.png",
+      "sha256": "70cc54ff586f303dc00658edb4823080103b2028a3ea1336c90b235d2d3a59f1"
+    },
+    {
+      "bytes": 768470,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001640/rgb.png",
+      "sha256": "ed06d8e040b693df15b8e84666e50882785f85413bc269df182c5d51973a46d2"
+    },
+    {
+      "bytes": 777946,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001650/rgb.png",
+      "sha256": "a7629800d44b65e834d0314b4f0c22e2e3fd69c709c15fac4e4d30f199545592"
+    },
+    {
+      "bytes": 792751,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001660/rgb.png",
+      "sha256": "d3f396c4b28d1c4cc82754f3ae2e17ae254dbdbd71c372eca323f7cf34af334f"
+    },
+    {
+      "bytes": 806820,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001670/rgb.png",
+      "sha256": "57b0a87d5b095c7c73783393a30c633838be37f8889159c0ff6aeebc6f5cfff4"
+    },
+    {
+      "bytes": 824459,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001690/rgb.png",
+      "sha256": "e24bfada18610f791946cfa067b9b695312b7bd75ff9f9fa482c231ea5625546"
+    },
+    {
+      "bytes": 829980,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001700/rgb.png",
+      "sha256": "c37674a7610bdf036cb9d16c800b125faa3dba28826dd26d005cf7f5338c58b4"
+    },
+    {
+      "bytes": 829777,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001710/rgb.png",
+      "sha256": "97aa6655288f3425e11e3cf24f8e594d0e909f8ac3f5b048a908e5473942a274"
+    },
+    {
+      "bytes": 564406,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001720/rgb.png",
+      "sha256": "5eefacb110f92638b4b1f9b93b6500f1f86c1f962528ad8854539152e86ae9ff"
+    },
+    {
+      "bytes": 819305,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001730/rgb.png",
+      "sha256": "c1206a6fdeac54e3459e4700b7fbfe3815cd8ee104c6d00e3b0498cd66f0a755"
+    },
+    {
+      "bytes": 794779,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001740/rgb.png",
+      "sha256": "f932256cb1ecd0d04041c5b2b9b1f4afa8106730cbe65b89d2f6d43a7be5aac7"
+    },
+    {
+      "bytes": 766392,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001750/rgb.png",
+      "sha256": "0d53c10e4f1089bab42b82f010f3c6dd0856572745bc3dc71300f9c99dbb89ad"
+    },
+    {
+      "bytes": 742009,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001760/rgb.png",
+      "sha256": "215d2443c5bd9d56cc703f1b927d0a704a7dd04df10d15e433de83b2dfb454e5"
+    },
+    {
+      "bytes": 722805,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001770/rgb.png",
+      "sha256": "bc3ecdca81e3fd29c5bd4bc50a95490be14af7f93ae164fa4015bea6a8dab799"
+    },
+    {
+      "bytes": 722547,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001810/rgb.png",
+      "sha256": "55f03eb409f1737569c19b5ec1d0d562649a902704bfd17f03d1167359e1d63b"
+    },
+    {
+      "bytes": 731625,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001820/rgb.png",
+      "sha256": "f35848bb4c8374f67cc081e95af64745c5ead60d3c4a4cbb98b220506e76526e"
+    },
+    {
+      "bytes": 748687,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001830/rgb.png",
+      "sha256": "4ca7fb36a27a687a512d761a09dd719bba71d8ba498579608942a6f6d1e8dd84"
+    },
+    {
+      "bytes": 770943,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001840/rgb.png",
+      "sha256": "c37d7e8cb36f90e0fa433c8461d36b30a310dcae9122cba455a6b608d4dda3ab"
+    },
+    {
+      "bytes": 566779,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001850/rgb.png",
+      "sha256": "068b2deb568798a9c3a33a304b364ead115a46b03c9faf1e153aa81ae0b6e672"
+    },
+    {
+      "bytes": 809617,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001860/rgb.png",
+      "sha256": "7a498f741de937f9729d733ba1a9c62a5c1de603c0133c4c4a26e1471224debf"
+    },
+    {
+      "bytes": 569800,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001870/rgb.png",
+      "sha256": "0e6f8eb8ccb09b13110ce5512124766d1ef56b28e8fcbe8bbbfaaaa10c591d4e"
+    },
+    {
+      "bytes": 826737,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001890/rgb.png",
+      "sha256": "d0692975fba6aad145723668fac45c50515b6084b48a47123a259e1f737a58d4"
+    },
+    {
+      "bytes": 828032,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001900/rgb.png",
+      "sha256": "e54ebeae48621cd4561591915063615594adbee5730f0333bd3bee4fb7aa95a1"
+    },
+    {
+      "bytes": 830334,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001910/rgb.png",
+      "sha256": "64edc6936be9ba36c9c37c5621e55c7b3778659855f1d24e74a8b6e1d029a261"
+    },
+    {
+      "bytes": 835222,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001920/rgb.png",
+      "sha256": "20ed091d1746641118b86b824df05bb5e6853fc6d94afac7274375ec5a0a065e"
+    },
+    {
+      "bytes": 843101,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001940/rgb.png",
+      "sha256": "dd276df1547ddf411f7ef82b8fe0970f42bda1ba88792254ba9a15bddc867c13"
+    },
+    {
+      "bytes": 825632,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001950/rgb.png",
+      "sha256": "b7ef8bce14dff5e7765055f22b1f7defdd05a8d6d1e57ea4eb275f5bc356aafa"
+    },
+    {
+      "bytes": 810624,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001960/rgb.png",
+      "sha256": "81030df6862e9e2dfdee381d16922c5f0acba9f4c211a78298fe168e50beed52"
+    },
+    {
+      "bytes": 827161,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/frames/001970/rgb.png",
+      "sha256": "28ed2aa92969ffcbc483852e261bca858481365085201a01c01f6f42cbde48b5"
+    },
+    {
+      "bytes": 4339746,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/manifest.json",
+      "sha256": "3bb466d816103771f6a0dcec9101993c950fcd7fc039392f5b3496f3a9e7ec9c"
+    },
+    {
+      "bytes": 29246975,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/office1/capture/office1/surface.npz",
+      "sha256": "b3331e0b076c2a12e62cde7749541a748fb720893ec1dd40f931a7a95a803d0d"
+    },
+    {
+      "bytes": 1996,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0bb71aabe4ca95a5b6db632aacc0324beae19926f5f672050fc5b3f083fc9ebe.json",
+      "sha256": "c0c08da378527149afb4b8c9df144a5eb5d9d5082ac03d5041c7f040efef2393"
+    },
+    {
+      "bytes": 24320,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0bb71aabe4ca95a5b6db632aacc0324beae19926f5f672050fc5b3f083fc9ebe.npz",
+      "sha256": "a522bc704bdd8e646413253a4227742cd71f16e5495b4c74efaa3b779fa4be04"
+    },
+    {
+      "bytes": 2206,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0bdcb0d86be76cdda8205b7e2bb4c607a1ed2c0788beda8ac39a879fa4ff9f9e.json",
+      "sha256": "30832010d0dd980b46b2be92d4e9a2163083aee3038396d7cc9856c4f32c6c31"
+    },
+    {
+      "bytes": 24259,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0bdcb0d86be76cdda8205b7e2bb4c607a1ed2c0788beda8ac39a879fa4ff9f9e.npz",
+      "sha256": "79a8d064df79000d1b2abe4a3b981a0159d4295e2f6eac7719395d8e765af9e1"
+    },
+    {
+      "bytes": 55387,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/0d72d860c2fa958bd106085eb764a2b6d3fb18018843ce3f6f6017d9002837c6.npz",
+      "sha256": "05b188dfe6164103f7003d820f284fb0075a9d4d6fa8220be2ead0d2a0833a4c"
+    },
+    {
+      "bytes": 1835,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/152edc1afbb418a0c709ffd1aac8341cb841447362e5988e4c5d52db25e26717.json",
+      "sha256": "ce231d1433e0d5a680ce30aac96e53b66ef777ba264df52515c6e3ac9658b109"
+    },
+    {
+      "bytes": 55384,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/152edc1afbb418a0c709ffd1aac8341cb841447362e5988e4c5d52db25e26717.npz",
+      "sha256": "b22ad8a294ffe4af11371a6b77d20af9fcb2d42e3cf1cd8b443a6d60366a1f54"
+    },
+    {
+      "bytes": 55407,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/22181801eaaa5e4fd53da519f27b547d4aa3248d19201a6d8d8c60546fa0aed4.npz",
+      "sha256": "5930fbef44211c3e0e81cb91af7c36e9273de10a98a264047d38bdb065db223e"
+    },
+    {
+      "bytes": 55387,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/2d34122434091a056324746bf909a6adc06fede8a0b1a0be3fdfe39f87b19ee6.npz",
+      "sha256": "2a9b0c6db1af99c226b6d3a0de13f259d8f65468536e9f37c1d7547b9bcbc445"
+    },
+    {
+      "bytes": 2185,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3522f404407193c303c323cff1135bdaec4e7e66ac20832e843013d70f9c0afb.json",
+      "sha256": "8d2c1cdfb54d6bdb1d7b489869e7ec8f21e49820d7b8f4ad13a3f876c24fa8bb"
+    },
+    {
+      "bytes": 24277,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/3522f404407193c303c323cff1135bdaec4e7e66ac20832e843013d70f9c0afb.npz",
+      "sha256": "c3d7c9c5ee79c04d96cf133184ea0ea7e49081958cab7397ed1221a4f30595a7"
+    },
+    {
+      "bytes": 2331,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/54195f7eeb47cbd2a33e18af12bc2e4c136826ecbd11c7dfcdb46ee140e88b7c.json",
+      "sha256": "5ee04e5d78eb15fe1025cbdff58ddf78d38cff35a299881cc531ae671a586982"
+    },
+    {
+      "bytes": 24310,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/54195f7eeb47cbd2a33e18af12bc2e4c136826ecbd11c7dfcdb46ee140e88b7c.npz",
+      "sha256": "149c371537a4d107d854a5e2767961647d1c4e362fa05e5782e2242b0a35934b"
+    },
+    {
+      "bytes": 1838,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/572a534a256c1a2ed634b3b130dcd18bdd18e0f17626bbc8622eef207c94a296.json",
+      "sha256": "b39dd55c53e3bb9b522380ba4405a7d189df40e2987b196014417a85263ff0e0"
+    },
+    {
+      "bytes": 55403,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/572a534a256c1a2ed634b3b130dcd18bdd18e0f17626bbc8622eef207c94a296.npz",
+      "sha256": "5594d89a9455525eb6c440ce33426b5877e01de4a379ddfd0377a800f3aab8b7"
+    },
+    {
+      "bytes": 1837,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6400cadb512658a500b53b7ea975f28c9108e3ac07426602ba56f2ef8f169d03.json",
+      "sha256": "d5d9050842444103398e9b503f8f7894bf74f0ae6386e023e451d4f31ed41e42"
+    },
+    {
+      "bytes": 55408,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6400cadb512658a500b53b7ea975f28c9108e3ac07426602ba56f2ef8f169d03.npz",
+      "sha256": "aeec07a5fbaf87899bfb189f8d2a27412ef990adf2e2fb8e79941a36741d215e"
+    },
+    {
+      "bytes": 1854,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6b9b4c6d994d26a7a3366ab0f234e01cd0b3d7cc66168d6f18796e665f3b69c9.json",
+      "sha256": "02c6af4150740e79c4e8406fb9098671fdf0ee156a3907bb2f1edfe23118e359"
+    },
+    {
+      "bytes": 55403,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6b9b4c6d994d26a7a3366ab0f234e01cd0b3d7cc66168d6f18796e665f3b69c9.npz",
+      "sha256": "e089476eac199687ce4b08288c769b6c74064303c2ae8dd047b946d19262b03e"
+    },
+    {
+      "bytes": 55413,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/6ecbb33d21b051651495f5416fd4fb1685d06444ed10fbfd2564a611cb03c80c.npz",
+      "sha256": "ae666590e3403863eb4f5ee6a376688f9234f9d6db8885e11f9374972988d797"
+    },
+    {
+      "bytes": 1836,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/893990360ccbfb60677851276a566a4144af82e9e7284c98a98923bec548d98d.json",
+      "sha256": "21c9a540a33828057e8bbc8909b40711b97e5f1cc507059977dcf7bf2b913a3a"
+    },
+    {
+      "bytes": 55377,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/893990360ccbfb60677851276a566a4144af82e9e7284c98a98923bec548d98d.npz",
+      "sha256": "4f137ccde124bed141b0b892bd75c16385c7f0ef31388591aca0b7a3a5e3f2d9"
+    },
+    {
+      "bytes": 2420,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/98f84ca69949bcb8e33f9d17abc91b07d1f4cad92356a3fe5f80301b00e9ce4a.json",
+      "sha256": "ff89b1bbfdcf159f045b87dd653dd599e4d0c6968d5b0079c64cd2216835a23a"
+    },
+    {
+      "bytes": 39866,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/98f84ca69949bcb8e33f9d17abc91b07d1f4cad92356a3fe5f80301b00e9ce4a.npz",
+      "sha256": "b00c6cc53a5ea0f3a69e9ebbacf7f0e246224531c835fa7b7faab35b18fb6425"
+    },
+    {
+      "bytes": 1836,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a042534495cd17e8b1441365405e3a9ad5c2150bca84f8d93ad4be6fae9dfbef.json",
+      "sha256": "13fd71e874eca6def57da0bb31bf3ac0cbfd3e072b01a26e15ea6dc60a1ba5d9"
+    },
+    {
+      "bytes": 55401,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a042534495cd17e8b1441365405e3a9ad5c2150bca84f8d93ad4be6fae9dfbef.npz",
+      "sha256": "16321c41e4370c36c203b890afddbf78aa2a719bce5a21dea8306626d70cdb0b"
+    },
+    {
+      "bytes": 1857,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a1869ac2f2e8bd1f31f7f2bcc086e808977771d827f7fa4f451f917e54de123c.json",
+      "sha256": "27736d9f0107dccdcbb136b527748bda1be9e3098c1c03ccffd06cf1e02dc2bf"
+    },
+    {
+      "bytes": 55414,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/a1869ac2f2e8bd1f31f7f2bcc086e808977771d827f7fa4f451f917e54de123c.npz",
+      "sha256": "1ae3a405c4fd669842373c013ec5d9578bb60d963b00b98e2b797e0d711bd77a"
+    },
+    {
+      "bytes": 24254,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/b44009b15059fb7142dca3cd68f61782f95ac776af36146c904400ae69719ca8.npz",
+      "sha256": "bacea21b00c42c0c972770817b4fce381b29b4dd4f09939f5158cdc00d46d633"
+    },
+    {
+      "bytes": 2206,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c37a5a75e0638913a741ec16fb4711e09f462ea83c774a84eb0c903d14b2bfeb.json",
+      "sha256": "51a79a16c1f3de87577002023ed7c9eef103824c5d5b7022c3e0017e61ca1782"
+    },
+    {
+      "bytes": 24317,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/c37a5a75e0638913a741ec16fb4711e09f462ea83c774a84eb0c903d14b2bfeb.npz",
+      "sha256": "070cb134a54e7bcd58595797b62a85693edcb3d2560615ab86295d6c0edf4de9"
+    },
+    {
+      "bytes": 1836,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/cc9dc3f17af7b6008878423d94a0661a1a2f517397b78fe692af258f84146620.json",
+      "sha256": "da8ae0de573d5ffefd4aa2aa4a5686faf8d3d4c920ef36dc5d1b17ccae26b3eb"
+    },
+    {
+      "bytes": 55413,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/cc9dc3f17af7b6008878423d94a0661a1a2f517397b78fe692af258f84146620.npz",
+      "sha256": "7f45a76fc8d29c8b262dd7bcc023e29021ab47e840b6fe7c5771da9d5dd41509"
+    },
+    {
+      "bytes": 1856,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/dc6489e75bb7406b125f4d7f7077d6d3509ed4b5db14214401691e93ecbba865.json",
+      "sha256": "be9129b78ae880ea50579cd8cec3ed01a9db96aa2ecae292a08d5110d12682a1"
+    },
+    {
+      "bytes": 55382,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/dc6489e75bb7406b125f4d7f7077d6d3509ed4b5db14214401691e93ecbba865.npz",
+      "sha256": "200e3d88a3c6bddba67f54b1e300444c7c63623e3d1dc171f6fb726b463435be"
+    },
+    {
+      "bytes": 1858,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f93793eb5a65579b31704d1e0efed37e6becbc525052c5cc4c508c3d3a907176.json",
+      "sha256": "e9be03c02740f92f83a0641fac97e5693b1a5223c049b4e8690c52f57104effb"
+    },
+    {
+      "bytes": 55396,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/cache/native/3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760/f93793eb5a65579b31704d1e0efed37e6becbc525052c5cc4c508c3d3a907176.npz",
+      "sha256": "d67c8104a5c9a6285e32084beeaf61a572f0a406c8401cbf8ecdd696473e67d4"
+    },
+    {
+      "bytes": 207045,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/query/office1/Q_GAIN/receipt.json",
+      "sha256": "12ff0e345e4adca73d89ff974063c6bcdab60e76d88339e48919c8b719553c21"
+    },
+    {
+      "bytes": 78883,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/query/office1/Q_GAIN/source_evidence.json",
+      "sha256": "976287340947bc77b96d257ac3f1dda3cc6e65ea27cb187c3a7618af03fd8e3e"
+    },
+    {
+      "bytes": 16560,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/resolved_config.json",
+      "sha256": "b5f9ae0bad0af3941f17ef5db4db24a812d2ea409df4679b920237195656f188"
+    },
+    {
+      "bytes": 2925,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/office1/study/scenes/office1/baseline/N0/manifest.json",
+      "sha256": "8baa495b403060aab420f8db47ba755e7f79c3ae424052f6c480cc8a1104ba35"
+    },
+    {
+      "bytes": 210828,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/text/native/text.npz",
+      "sha256": "fa31583646d3ae7fc53c5a4378d54cf0ea3ba5b1bb8970a10b42121b073417f8"
+    }
+  ],
+  "logical": {
+    "attempts": 200,
+    "crop_inputs": 1200,
+    "failures": 0,
+    "successes": 200
+  },
+  "method_id": "RV_Q_RANDOM_s17_B200",
+  "outputs": [
+    {
+      "bytes": 266752,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/source_evidence.json",
+      "sha256": "173af15d8033417be3312de566c72b25c97d48b147cffbb5990660b4c5e66f60"
+    },
+    {
+      "bytes": 538805,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/decisions.json",
+      "sha256": "a80ec1ac0a340565c0d21e5ba32d691c428fe4a2e74e01ee158feb310ccd4666"
+    },
+    {
+      "bytes": 9286,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/cache_imports.json",
+      "sha256": "00d50ad30eab77bb7591fc554622d224fc934891c49ffa30fe1243258c483541"
+    },
+    {
+      "bytes": 2829,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/prediction/manifest.json",
+      "sha256": "77d9568aff681798e7b36a51092c5d55994e150287927bbdc16ce208030c3ac7"
+    },
+    {
+      "bytes": 171698,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/prediction/prediction.npz",
+      "sha256": "8f1b1dbb1d95e77e5f3f367539e1e7e5eeb0042380400f73ddf2735df4f7ab07"
+    }
+  ],
+  "physical": {
+    "cache_hits": 34,
+    "crop_inputs": 996,
+    "gpu": "1",
+    "inference_seconds": 33.582690730225295,
+    "model_forwards": 166,
+    "model_load_seconds": 2.3777215279405937,
+    "model_loads": 1,
+    "peak_gpu_allocated_bytes": 2802071552,
+    "peak_gpu_reserved_bytes": 2871001088,
+    "peak_memory_status": "MEASURED",
+    "tiles": 0
+  },
+  "policy": "RV_Q_RANDOM",
+  "prediction_manifest": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/query_controls/office1/RV_Q_RANDOM_s17_B200/prediction/manifest.json",
+  "required_logical": {
+    "crop_inputs": 1200,
+    "native_requests": 200,
+    "siglip2_requests": 0
+  },
+  "scene_id": "office1",
+  "seed": 17,
+  "status": "COMPLETE"
+}

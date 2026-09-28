@@ -1,0 +1,28 @@
+{
+  "aggregation": "RELEASED_DATASET_POOL",
+  "dataset": "ScanNet",
+  "elapsed_seconds": 0.2978434059768915,
+  "identity": "14e219998bb6950e52435861fd2aa548e3393c1d6ebc6db3910e2a073287a9c0",
+  "method": "RV_B_Q_COMBINE_B200_CAL",
+  "metrics": {
+    "ap25": 0.29335361997399034,
+    "ap50": 0.14919165196942977,
+    "apall": 0.042074923247762755,
+    "defined_classes": 28,
+    "macc": 0.3007724167750199,
+    "miou": 0.24832086604497478,
+    "uap": 0.042074923247762755
+  },
+  "mode": "CAL",
+  "ordered_inputs": [
+    "80fdd677c5f035476449f2c00477a5628ce7d03263c14a2bb4332ba6971406b4",
+    "5281efc67cf01a3144d8e6995eabc2633f389954176e5b418ca35a063edb70b3"
+  ],
+  "policy": "Q_COMBINE",
+  "rank_mode": "OFFICIAL_CURRENT_CLASS",
+  "scene_order": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "status": "COMPLETE"
+}
