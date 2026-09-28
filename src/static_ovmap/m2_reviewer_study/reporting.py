@@ -11,6 +11,7 @@ import numpy as np
 from src.static_ovmap.composition_study.io import read_json, write_once
 from src.static_ovmap.module_validation.contracts import canonical_digest
 
+from .audit import validate_matrix
 from .binding import InputIndex
 from .cost_ledger import build_cost_ledger
 from .diagnostics import bootstrap_delta, probability_metrics
@@ -29,7 +30,7 @@ def assert_report_ready(states):
 
 def collect_report(binding, *, allow_partial=False):
     root, index = Path(binding["output_root"]), InputIndex()
-    for name in ("reporting.py", "claims.py", "cost_ledger.py"):
+    for name in ("reporting.py", "claims.py", "cost_ledger.py", "audit.py"):
         index.identity(Path(__file__).with_name(name))
     missing = []
 
@@ -84,6 +85,28 @@ def collect_report(binding, *, allow_partial=False):
               "fresh": fresh["status"] if fresh else "INCOMPLETE"}
     if not allow_partial:
         assert_report_ready(states)
+    matrix_audit = {}
+    if states["core"] == "COMPLETE":
+        matrix_audit["core"] = validate_matrix(scene_rows, pool_rows,
+            datasets={"ScanNet": spec["datasets"]["calibration"], "Replica": replica},
+            methods=binding["methods"], ranks=RANKS)
+    if states["query"] == "COMPLETE":
+        for dataset, summary in query.items():
+            methods = sorted({row["method"] for row in summary["pooled"]})
+            expected_methods = [f"{p}_B200" if mode == "STANDALONE" else f"RV_B_{p}_B200_{mode}"
+                                for p in ("Q_GAIN", "Q_COMBINE", "RV_Q_RANDOM_s17", "RV_Q_RANDOM_s23", "RV_Q_RANDOM_s41")
+                                for mode in ("STANDALONE", "RAW", "CAL")]
+            if dataset == "Replica" and gate["triggered"]:
+                expected_methods += [f"{p}_B{budget}" if mode == "STANDALONE" else f"RV_B_{p}_B{budget}_{mode}"
+                                     for budget in (100, 400) for p in ("Q_GAIN", "Q_COMBINE")
+                                     for mode in ("STANDALONE", "RAW", "CAL")]
+            if methods != sorted(expected_methods):
+                raise ValueError("query matrix methods disagree with frozen gate")
+            scenes = spec["datasets"]["calibration"] if dataset == "ScanNet" else replica
+            measured = [read(root / "rows" / s / m / (r + ".json"), "query")
+                        for s in scenes for m in methods for r in RANKS]
+            matrix_audit["query_" + dataset] = validate_matrix(measured, summary["pooled"],
+                datasets={dataset: scenes}, methods=methods, ranks=RANKS)
     macro = []
     for dataset, scenes in (("ScanNet", spec["datasets"]["calibration"]), ("Replica", replica)):
         for method in binding["methods"]:
@@ -126,7 +149,7 @@ def collect_report(binding, *, allow_partial=False):
     except ValueError:
         ready = False
     result = {"status": "FINAL_EVIDENCE_READY" if ready else "PARTIAL",
-              "binding": binding["identity"], "states": states, "missing": missing, "scene_rows": scene_rows,
+              "binding": binding["identity"], "states": states, "missing": missing, "matrix_audit": matrix_audit, "scene_rows": scene_rows,
               "pooled_rows": pool_rows, "macro_rows": macro, "query": query, "probability_rows": probability,
               "paired_macro_comparisons": pairs, "diagnostics": diagnostics, "mechanisms": mechanisms,
               "attribution_AP25_AP50": attribution, "robustness": robust, "fresh": fresh, "curve_gate": gate,

@@ -207,3 +207,28 @@ Report continuation:
   paths Ruff and diff checks pass. Still required: remaining queries, final
   summaries, publish/all phases, dependency-resume and final artifact audit,
   final docs/bundle, normal push and full remote SHA match.
+
+Measured-matrix audit continuation:
+
+- Session10450 is now confirmed terminal (exit1): the office3 seed41 leaf
+  rejected GPU1 at2037MiB/0% with GPU_BUSY. Subsequent nvidia-smi showed GPU1
+  empty; resumed the existing content-bound controller as session71407,
+  PID852526. Completed receipts are reused. No query source/code identities
+  were changed and no busy-device guard was weakened. The historical owner of
+  that temporary allocation was not captured, so it is not attributed here.
+- GPU2 session30900 remains live, completed room1 and started room2. Latest
+  observed B200 receipts:40/50 (all CAL, office0–2, room0–1; office3 four,
+  room2 GAIN, office4 pending). Both controllers were verified by live ps.
+- Added audit.validate_matrix and integrated it into report collection:
+  exact scene/dataset/method/rank keys, duplicate/missing/unexpected rejection,
+  finite bounded metrics, exact APall=uAP, and pool scene order plus every
+  ordered evaluation identity. Query expected methods depend on the frozen
+  curve gate, not merely on whatever rows happen to exist.
+- Real checks passed:260 core scene rows/52 pools and60 CAL query rows/30 pools.
+  The compact reporting fixture rejects duplicate rows, swapped pool inputs,
+  altered APall and missing scenes. Both reporting tests pass; changed-path
+  Ruff and git diff checks pass.
+- Real partial report CLI succeeded with the new audit, snapshot
+  reports/7cd6ee9cbbee546f1127acd85322fcc29e822e03273af47319eeb194ad927929/.
+  This is still PARTIAL. Publication/all, remaining query results and final
+  requirement-by-requirement review remain outstanding; no completion claim.
