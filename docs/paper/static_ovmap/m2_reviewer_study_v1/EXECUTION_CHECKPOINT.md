@@ -278,3 +278,30 @@ Dependency/review continuation:
   evaluation caches when it reaches them.
 - Final bundle construction/size and actual publication remain pending final
   query completion, summary and root review. No push has occurred in this step.
+
+Query/report closeout continuation:
+
+- room0/room1 CPU session94272 finished successfully; room2 CPU session84234
+  also finished. Each contributed30 real query scene/rank rows. GPU2 room
+  acquisition controller30900 exited0 after all three rooms completed.
+- Final office4 random17/23/41 were briefly attempted on GPUs1/2/0 after
+  checking those devices idle. Seeds17 and23 completed; seed41 session48084
+  exited1 due a shared first-write cache race with another same-scene policy.
+  The failure was immutable JSON metadata publication (elapsed time differs),
+  not a geometry/score mismatch. The affected e2b75db3... NPZ's size and SHA256
+  match its surviving immutable receipt. No cache bytes were removed/rewritten.
+- Root cause: per-job and per-GPU locks permit distinct policies for the same
+  scene to write the same operation cache concurrently. CLI now also locks
+  scene_<scene>.lock around a leaf. Different scenes retain GPU parallelism;
+  overlapping same-scene policies serialize. Historical/query numerical modules
+  and their bound code identities were not modified.
+- Main71407 remains live and owns the sequential office4 seed41 retry. Last
+  observed coverage49/50 acquisitions and270/300 query rows. Do not start a
+  duplicate. Physical totals cover completed jobs only; the failed duplicate
+  attempt's additional GPU work is explicitly unmeasured in cost_ledger.py.
+- Reports now display scalar-fit/evaluation seconds, matched B200 query pools,
+  random-replicate mean/std/min/max, source coerror CSV/table and availability
+  strata links. Handoff uses the real --phase all command. Real partial report
+  succeeded at reports/a5b18b1f4a5334ba45dca9228670e5434829bdb46ccd15d03b7dbcc0cf9d13bc/.
+  Four reporting tests and changed-path lint/diff checks passed. No final
+  report/package/remote publication is claimed yet.

@@ -230,6 +230,33 @@ def write_report_tables(binding, *, allow_partial=False):
     with (output / "table_D_query.md").open("a") as handle:
         handle.write("\nReplica required cost totals across available scenes; N0 map creation remains included.\n\n" + _table(cost_rows,
                      ("method", "completed_scenes", "logical_requests_total", "logical_crop_inputs_total", "unique_required_operations", "proved_shared_operations_saved")) + "\n")
+        spread_rows = [{"dataset": dataset, "aggregation": row["aggregation"], "rank": row["rank_mode"],
+                        "mode": row["mode"], "metric": metric,
+                        **{key: 100 * values[key] for key in ("mean", "std_population", "min", "max")}}
+                       for dataset, summary in report["query"].items() if summary
+                       for row in summary["random_seed_spread"] for metric, values in row["metrics"].items()]
+        handle.write("\nRandom17/23/41 replicate spread (percentage points; no ensemble).\n\n" +
+                     _table(spread_rows, ("dataset", "aggregation", "rank", "mode", "metric", "mean", "std_population", "min", "max")) + "\n")
+    _csv(output / "query_random_seed_spread.csv", spread_rows)
+    coerrors = [{"scene": scene, "sources": pair, **values}
+                for scene, record in report["mechanisms"].items() if record
+                for pair, values in record["coerror"].items()]
+    strata = [{"scene": scene, "available_sources": count, "method": method,
+               "denominator": values["denominator"], **events}
+              for scene, record in report["mechanisms"].items() if record
+              for count, values in record["source_count_strata"].items()
+              for method, events in values["methods"].items()]
+    _csv(output / "source_coerrors.csv", coerrors)
+    _csv(output / "source_availability_strata.csv", strata)
+    with (output / "table_C_objects.md").open("a") as handle:
+        handle.write("\nSource error overlap on each scene's fixed paired population; no causal-independence claim.\n\n" +
+                     _table(coerrors, ("scene", "sources", "denominator", "a_only_correct", "b_only_correct", "both_wrong", "coerror_rate", "error_correlation")) + "\n")
+        handle.write("\nAll-method source-count strata and event denominators: [CSV](source_availability_strata.csv). "
+                     "Per-owner changes, margins and deterministic corrected/harmed examples remain in diagnostics/.\n")
+    with (output / "table_A_core.md").open("a") as handle:
+        handle.write("\nPer-scene measurements: [CSV](metrics_scene.csv). "
+                     "Source availability and event denominators: [CSV](source_availability_strata.csv). "
+                     "Paired scene deltas and uncertainty: [JSON](paired_macro_comparisons.json).\n")
     with (output / "table_E_vocabulary.md").open("a") as handle:
         handle.write("\nFresh prerequisite status: `" + (report["fresh"]["status"] if report["fresh"] else "PENDING") + "`.\n")
     return report, output
@@ -252,6 +279,13 @@ def write_documents(binding, report, output):
     table_links = "\n".join(f"- [Table {name[0]} — {name[2:]}]({final_directory}/table_{name}.md)" for name in
                             ("A_core", "B_probability", "C_objects", "D_query", "E_vocabulary", "F_claims"))
     fresh_status = report["fresh"]["status"] if report["fresh"] else "PENDING"
+    query_summary = report["query"]["Replica"]
+    query_text = "Replica matched-query results are pending."
+    if query_summary:
+        selected = [{"policy": row["policy"], **{key: f"{100 * row['metrics'][key]:.3f}" for key in METRICS}}
+                    for row in query_summary["pooled"] if row["mode"] == "CAL"
+                    and row["rank_mode"] == "OFFICIAL_CURRENT_CLASS" and "_B200_" in row["method"]]
+        query_text = "Replica B200 CAL fusion, official-current-class released dataset pools (percent):\n\n" + _table(selected, ("policy", *METRICS))
     results = f"""# M2 reviewer evidence results
 
 {status}. Report identity: `{report['identity']}`. Deployment remains N0.
@@ -300,9 +334,16 @@ CAL did not trigger B100/B400: GAIN fusion uAP0.0366501/mIoU0.234450 versus
 COMBINE0.0324184/0.238655 and random seed mean0.0390670/0.241298.
 Three random seeds remain separate; no lucky seed selection or ensemble.
 Completed B200 acquisitions: {costs['completed_B200_jobs']}/50.
+
+{query_text}
+
 New recorded visual forwards: {costs['study_physical_query_totals']['model_forwards']};
 new crops: {costs['study_physical_query_totals']['crop_inputs']}; measured incremental
 inference seconds: {costs['study_physical_query_totals']['inference_seconds']:.3f}.
+Recorded scalar-fit seconds: {costs['known_scalar_fit_seconds']:.6f}; scalar timing
+complete: {costs['scalar_timing_complete']}. Recorded unique evaluation-cache and
+pool seconds: {costs['study_evaluation_seconds']:.3f}. These are sums of measured
+work, not elapsed end-to-end time or a parallel speedup estimate.
 Shared mapping/frontend, source-attributed logical requests, exact operation
 unions, and physical cached execution are separate in the cost ledger.
 Historical peak memory and initial ad-hoc fold timing are missing, not zero.
@@ -349,9 +390,7 @@ receipt; no recursive self-reference or unverified push claim is made here.
 Run from the study worktree with the existing native environment:
 
 ```bash
-for phase in bind core query-controls diagnostics robustness fresh report; do
-  /home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evaluation/run_ovimap_m2_reviewer_study.py --phase "$phase" --resume
-done
+/home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evaluation/run_ovimap_m2_reviewer_study.py --phase all --resume
 ```
 
 Query leaves use separate processes and per-job/per-GPU locks. Existing completed

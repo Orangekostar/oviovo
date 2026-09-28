@@ -101,7 +101,7 @@ def build_cost_ledger(binding):
               "text_encoding": [{k: r[k] for k in ("model", "dataset", "model_loads", "text_inputs_encoded", "elapsed_seconds", "device")} for r in text],
               "scalar_fits": fit_jobs, "known_scalar_fit_seconds": sum(row["seconds"] or 0 for row in fit_jobs),
               "scalar_timing_complete": all(row["seconds"] is not None for row in fit_jobs),
-              "failed_initial_attempt_work": "NOT_FULLY_MEASURED; see repairs/query_json_roundtrip and execution checkpoint",
+              "failed_initial_attempt_work": "NOT_FULLY_MEASURED; includes initial cache-import/GPU-busy attempts and same-scene concurrent-cache write failure; see repairs/query_json_roundtrip and execution checkpoint",
               "total_wall_latency_claim": "NOT_MEASURED; cached offline evidence is not online real-time latency",
               "physical_cost_scope": "Recorded completed jobs; incomplete/failed attempt time may be additional"}
     result["identity"] = canonical_digest(result)

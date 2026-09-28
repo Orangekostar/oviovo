@@ -150,9 +150,14 @@ def main():
             method = authorize_query(binding, args.scene, policy, args.budget, seed)
             lock_root = args.output_root / "query_job_locks"
             lock_root.mkdir(parents=True, exist_ok=True)
-            with (lock_root / f"{args.scene}_{method}.lock").open("a") as handle:
-                fcntl.flock(handle, fcntl.LOCK_EX)
-                receipt = run_query_job(binding, args.scene, policy, budget=args.budget, seed=seed, gpu=args.gpu)
+            # Policies for one scene share operation-cache writes. Keep their
+            # initial publication serial while allowing different scenes on
+            # different GPUs; per-job locking alone does not protect overlap.
+            with (lock_root / f"scene_{args.scene}.lock").open("a") as scene_handle:
+                fcntl.flock(scene_handle, fcntl.LOCK_EX)
+                with (lock_root / f"{args.scene}_{method}.lock").open("a") as handle:
+                    fcntl.flock(handle, fcntl.LOCK_EX)
+                    receipt = run_query_job(binding, args.scene, policy, budget=args.budget, seed=seed, gpu=args.gpu)
             print(json.dumps({"status": "QUERY_ACQUISITION_COMPLETE", "scene": args.scene,
                               "method": receipt["method_id"], "logical": receipt["logical"]}), flush=True)
     else:
