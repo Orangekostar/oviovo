@@ -1,0 +1,430 @@
+{
+  "schema_version": 1,
+  "study_id": "ovimap-m2-reviewer-evidence-v1",
+  "status": "EXECUTION_SPEC_NOT_MEASURED",
+  "date": "2026-09-28",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "8fee8294c1a3e83feeae28782f6ef4700f08d35c",
+  "upstream_repository": "OVI-MAP/OVI-MAP",
+  "upstream_commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+  "task_branch": "research/ovimap-m2-reviewer-evidence-v1",
+  "output_root": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001",
+  "inputs": {
+    "replica_transfer": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/transfer.json",
+    "composition_root": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001",
+    "module_study_root": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_study_v1",
+    "runtime_config_in_repo": "configs/evaluation/ovimap_module_scannet_runtime.json",
+    "fallback_transfer_in_repo": "artifacts/static_ovmap/replica_composition_transfer_v1/transfer.json",
+    "old_result_csv": "artifacts/static_ovmap/replica_composition_transfer_v1/report_apall/per_scene.csv"
+  },
+  "scope": {
+    "new_visual_models": false,
+    "retrain_q_head": false,
+    "new_geometry_methods": false,
+    "new_image_inference_for_core": false,
+    "new_image_inference_for_query_controls": true,
+    "text_only_inference_for_robustness": true,
+    "recapture_existing_scenes": false,
+    "fresh_local_scannet_capture_limit": 4,
+    "publish_negative_results": true
+  },
+  "datasets": {
+    "calibration": [
+      "scene0056_00",
+      "scene0534_00"
+    ],
+    "replica": [
+      "room0",
+      "room1",
+      "room2",
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4"
+    ],
+    "official_replica_pool_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "all_historical_scannet_excluded_from_fresh": [
+      "scene0547_00",
+      "scene0434_00",
+      "scene0639_00",
+      "scene0027_00",
+      "scene0107_00",
+      "scene0538_00",
+      "scene0571_00",
+      "scene0106_00",
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00",
+      "scene0553_00",
+      "scene0064_00"
+    ],
+    "old_select_and_confirm": "EXPOSED_REGRESSION_ONLY_NOT_FRESH",
+    "replica_role": "HISTORICAL_TRANSFER_DIAGNOSTIC_NOT_BLIND"
+  },
+  "controls": [
+    "N0",
+    "Q_GAIN",
+    "S_SIGLIP2_AREA",
+    "CP_M2_EQUAL_RAW",
+    "CP_M2_EQUAL_CAL"
+  ],
+  "ablations": [
+    {
+      "method_id": "RV_A1_NQ",
+      "sources": [
+        "N0",
+        "Q_GAIN"
+      ],
+      "fusion": "probability_mean",
+      "temperature_mode": "legacy_per_source",
+      "native_score_mode": "legacy",
+      "empty_source_action": "native_label",
+      "selection_eligible": true
+    },
+    {
+      "method_id": "RV_A2_NS2",
+      "sources": [
+        "N0",
+        "S_SIGLIP2_AREA"
+      ],
+      "fusion": "probability_mean",
+      "temperature_mode": "legacy_per_source",
+      "native_score_mode": "legacy",
+      "empty_source_action": "native_label",
+      "selection_eligible": true
+    },
+    {
+      "method_id": "RV_A3_QS2",
+      "sources": [
+        "Q_GAIN",
+        "S_SIGLIP2_AREA"
+      ],
+      "fusion": "probability_mean",
+      "temperature_mode": "legacy_per_source",
+      "native_score_mode": "legacy",
+      "empty_source_action": "class_0",
+      "selection_eligible": true
+    },
+    {
+      "method_id": "RV_A4_HARD",
+      "sources": [
+        "N0",
+        "Q_GAIN",
+        "S_SIGLIP2_AREA"
+      ],
+      "fusion": "hard_vote",
+      "temperature_mode": "none",
+      "native_score_mode": "legacy",
+      "empty_source_action": "native_label",
+      "selection_eligible": true
+    },
+    {
+      "method_id": "RV_A5_T001",
+      "sources": [
+        "N0",
+        "Q_GAIN",
+        "S_SIGLIP2_AREA"
+      ],
+      "fusion": "probability_mean",
+      "temperature_mode": "constant_0.01",
+      "native_score_mode": "legacy",
+      "empty_source_action": "native_label",
+      "selection_eligible": true
+    },
+    {
+      "method_id": "RV_A6_SHARED_T",
+      "sources": [
+        "N0",
+        "Q_GAIN",
+        "S_SIGLIP2_AREA"
+      ],
+      "fusion": "probability_mean",
+      "temperature_mode": "shared_refit",
+      "native_score_mode": "legacy",
+      "empty_source_action": "native_label",
+      "selection_eligible": true
+    },
+    {
+      "method_id": "RV_A7_COS_FIXED",
+      "sources": [
+        "N0",
+        "Q_GAIN",
+        "S_SIGLIP2_AREA"
+      ],
+      "fusion": "probability_mean",
+      "temperature_mode": "legacy_per_source",
+      "native_score_mode": "native_cosine",
+      "empty_source_action": "native_label",
+      "selection_eligible": false
+    },
+    {
+      "method_id": "RV_A7_COS_REFIT",
+      "sources": [
+        "N0",
+        "Q_GAIN",
+        "S_SIGLIP2_AREA"
+      ],
+      "fusion": "probability_mean",
+      "temperature_mode": "cosine_per_source_refit",
+      "native_score_mode": "native_cosine",
+      "empty_source_action": "native_label",
+      "selection_eligible": false
+    }
+  ],
+  "calibration": {
+    "loss": "scene_balanced_source_NLL",
+    "shared_loss": "equal_mean_of_each_source_scene_balanced_NLL",
+    "bounds": [
+      0.01,
+      2.0
+    ],
+    "default_temperature": 0.07,
+    "min_objects": 5,
+    "min_classes": 2,
+    "optimizer": "bounded_minimize_scalar_in_log_temperature",
+    "maxiter": 64,
+    "xatol": 0.0001,
+    "crossfit": "leave_one_CAL_scene_out",
+    "replica_fitting": false,
+    "query_checkpoint_preexposed_to_calibration": true,
+    "common_object_evaluation": "unique_strict_geometry_IoU_gt_0.5_and_actual_source_availability",
+    "no_validation_weight_search": true,
+    "shared_requires_each_source_supported": true
+  },
+  "selection": {
+    "fixed_primary": "CP_M2_EQUAL_CAL",
+    "simple_candidates": [
+      "RV_A1_NQ",
+      "RV_A2_NS2",
+      "RV_A3_QS2",
+      "RV_A4_HARD",
+      "RV_A5_T001",
+      "RV_A6_SHARED_T"
+    ],
+    "data": "CAL_crossfitted_rows_only",
+    "order": [
+      "mean_fixedrank_uap_desc",
+      "mean_miou_desc",
+      "required_unique_operation_count_asc",
+      "listed_method_order"
+    ],
+    "no_per_scene_nonnegative_selection_gate": true,
+    "changed_owner_required": true,
+    "default_simple_when_no_intervention": "RV_A5_T001",
+    "deploy_default": "N0_UNCHANGED"
+  },
+  "evaluation": {
+    "rank_modes": [
+      "FROZEN_N0",
+      "OFFICIAL_CURRENT_CLASS"
+    ],
+    "aggregations": [
+      "SCENE_MACRO",
+      "RELEASED_DATASET_POOL"
+    ],
+    "pooled_replica_required": true,
+    "frozen_native_surface_owner": true,
+    "projection": "unchanged_float32_1NN_strict_distance_squared_lt_0.05_squared",
+    "apall_alias": "uap",
+    "runtime_overlaps": "read_and_export_from_pinned_evaluator_do_not_retype",
+    "min_region": "read_from_pinned_evaluator",
+    "expected_replica_instance_classes": 48,
+    "expected_replica_semantic_classes": 51,
+    "serialized_rank": ".6f",
+    "official_export_ap_is_not_confidence_from_fusion": true,
+    "eval_only_rerank_does_not_mutate_predictions": true,
+    "tolerance": 1e-10
+  },
+  "expected_core_rows": {
+    "scenes": 10,
+    "methods": 13,
+    "scene_method_predictions": 130,
+    "rank_views_per_prediction": 2,
+    "scene_method_rank_records": 260,
+    "replica_pooled_method_rank_records": 26,
+    "new_ablation_predictions_on_replica": 64,
+    "numbers_are_records_not_independent_trials": true
+  },
+  "query_controls": {
+    "mandatory_budget": 200,
+    "scenes": [
+      "scene0056_00",
+      "scene0534_00",
+      "room0",
+      "room1",
+      "room2",
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4"
+    ],
+    "policies": [
+      "Q_GAIN",
+      "Q_COMBINE",
+      "RV_Q_RANDOM"
+    ],
+    "random_seeds": [
+      17,
+      23,
+      41
+    ],
+    "random_budget_separate_from_old_exploration": true,
+    "fusion_modes": [
+      "RAW",
+      "CAL"
+    ],
+    "gain_baseline_uses_existing_M2_inputs": true,
+    "replace_middle_source_only": true,
+    "keep_n0_and_static_s2_fixed": true,
+    "no_n0_label_fallback_for_query_source": true,
+    "calibrate_only_middle_source_for_replacement": true,
+    "raw_all_temperatures": 0.07,
+    "curve_gate": "CAL_gain_fusion_mean_uap_gt_combine_and_mean_random_and_mean_miou_ge_both",
+    "curve_budgets": [
+      100,
+      400
+    ],
+    "curve_policies": [
+      "Q_GAIN",
+      "Q_COMBINE"
+    ],
+    "curve_scenes": [
+      "room0",
+      "room1",
+      "room2",
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4"
+    ],
+    "reuse_B200_temperatures_on_curves": true,
+    "max_B200_logical_native_requests": 10000,
+    "max_curve_additional_logical_native_requests": 8000,
+    "existing_full_native_baseline_cost_is_additional": true,
+    "standalone_budget_policies_also_evaluated": true
+  },
+  "diagnostics": {
+    "object_population": "all_frozen_positive_owners",
+    "geometry_match_for_semantic_attribution": "unique_strict_IoU_gt_0.5",
+    "probability_primary_population": "fixed_unique_GT_correspondence_and_all_three_real_sources_available",
+    "secondary_probability_population": "method_available_union_with_coverage_report",
+    "nll_clip": 1e-12,
+    "brier": "sum_over_all_K_classes_no_division_by_K",
+    "ece_equal_width_bins": 15,
+    "softmax_requires_fixed_vocabulary": true,
+    "request_overlap": "exact_used_ids_and_visual_operation_fingerprints",
+    "bootstrap_seed": 17,
+    "bootstrap_resamples": 2000,
+    "bootstrap_unit": "scene",
+    "no_vertex_iid_statistics": true,
+    "pooled_bootstrap_required": false
+  },
+  "robustness": {
+    "dataset": "Replica",
+    "methods": [
+      "N0",
+      "Q_GAIN",
+      "S_SIGLIP2_AREA",
+      "CP_M2_EQUAL_RAW",
+      "CP_M2_EQUAL_CAL",
+      "CAL_SELECTED_SIMPLE"
+    ],
+    "prompts": [
+      "{name}",
+      "a photo of {name}",
+      "a close-up photo of {name}"
+    ],
+    "distractors": [
+      "airplane",
+      "helicopter",
+      "submarine",
+      "spaceship",
+      "sailboat",
+      "bus",
+      "train",
+      "motorcycle",
+      "snowmobile",
+      "skateboard",
+      "zebra",
+      "elephant",
+      "giraffe",
+      "horse",
+      "bear",
+      "cow"
+    ],
+    "base_names_retained_verbatim_in_extension": true,
+    "distractor_output_scoring": "incorrect_object_class_not_ignored",
+    "extended_vocabulary_official_AP": false,
+    "canonical_phrases_remain_frozen": true,
+    "temperatures_refit": false,
+    "new_image_inference": false,
+    "singleton_softmax_test": "required_degeneracy_check_not_retrieval_claim",
+    "query_trajectory_fixed": true,
+    "aggregate_recovery": "exact_retained_request_features_and_weights_no_inversion_of_probabilities"
+  },
+  "fresh_validation": {
+    "target_scene_count": 4,
+    "trigger": "at_least_4_locally_authorized_complete_unexposed_physical_families",
+    "candidate_order": "sha256(M2_REVIEW_FRESH_V1\\0family_id)_ascending",
+    "no_new_dataset_downloads": true,
+    "method_plan": [
+      "N0",
+      "CP_M2_EQUAL_CAL",
+      "CAL_SELECTED_SIMPLE",
+      "CAL_SELECTED_SINGLE"
+    ],
+    "single_candidates": [
+      "Q_GAIN",
+      "S_SIGLIP2_AREA"
+    ],
+    "same_200_frame_schedule_recipe_as_locked_scannet_protocol": true,
+    "freeze_before_new_scene_export_or_annotation_conversion": true,
+    "missing_fresh_does_not_block_existing_scene_study": true,
+    "no_candidate_reselection_after_fresh": true
+  },
+  "phases": [
+    "bind",
+    "core",
+    "query-controls",
+    "diagnostics",
+    "robustness",
+    "fresh",
+    "report",
+    "publish"
+  ],
+  "deliverables": [
+    "M2_REVIEWER_RESULTS.md",
+    "M2_REVIEWER_HANDOFF.md",
+    "M2_CLAIM_LEDGER.md",
+    "metrics_scene.csv",
+    "metrics_pooled.csv",
+    "object_attribution.json.gz",
+    "calibration_quality.csv",
+    "costs.csv",
+    "novelty_decision.json",
+    "publication_receipt.json"
+  ],
+  "tests": {
+    "focused_only": true,
+    "full_repo_regression": false,
+    "synthetic_fixture_groups": 10,
+    "real_no_new_inference_checks": "one_existing_scene_or_one_object_with_legacy_parity_then_official_pool_check",
+    "publish_limit_mib": 100,
+    "prohibit_rehashing_all_old_publication_files": true
+  },
+  "execution_entrypoint": "scripts/evaluation/run_ovimap_m2_reviewer_study.py",
+  "mandatory_outcome": "measured_evidence_and_claim_decisions_not_smoke_only"
+}

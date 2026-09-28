@@ -1,0 +1,150 @@
+{
+  "artifact": "M2 reviewer-evidence instruction package",
+  "date": "2026-09-28",
+  "status": "PASS_INSTRUCTION_PACKAGE_AUDIT",
+  "scope": "Specification/file consistency only. Not code execution on the target server, not new model inference or benchmark verification.",
+  "source_review": "Connected GitHub excerpts and pinned source records; an optional local mirror failed DNS and is not claimed.",
+  "new_algorithm_experiments_run": 0,
+  "remote_repository_modified": false,
+  "checks": [
+    {
+      "check": "base_and_upstream",
+      "status": "PASS",
+      "detail": "Full pinned SHAs appear in the execution directive."
+    },
+    {
+      "check": "method_uniqueness",
+      "status": "PASS",
+      "detail": "Five controls plus eight variants; no duplicated method IDs."
+    },
+    {
+      "check": "method_definitions",
+      "status": "PASS",
+      "detail": "Every machine method has an English operational definition."
+    },
+    {
+      "check": "core_count",
+      "status": "PASS",
+      "detail": "10 scenes x 13 methods = 130 prediction records."
+    },
+    {
+      "check": "ranking_count",
+      "status": "PASS",
+      "detail": "Two rankings = 260 records; not image runs."
+    },
+    {
+      "check": "pooled_count",
+      "status": "PASS",
+      "detail": "13 methods x two rank views = 26 pooled Replica records."
+    },
+    {
+      "check": "B200_budget",
+      "status": "PASS",
+      "detail": "5 policy/seed paths x 10 scenes x B200."
+    },
+    {
+      "check": "curve_budget",
+      "status": "PASS",
+      "detail": "8 Replica x two policies x (B100+B400)."
+    },
+    {
+      "check": "no_scene_overlap",
+      "status": "PASS",
+      "detail": "Calibration and Replica names disjoint; exposure status explicit."
+    },
+    {
+      "check": "no_fake_fresh",
+      "status": "PASS",
+      "detail": "Old confirmation explicitly excluded; selection cannot use fresh results."
+    },
+    {
+      "check": "calibration_rules",
+      "status": "PASS",
+      "detail": "Bounded, source-balanced objective; shared support and fallback specified."
+    },
+    {
+      "check": "A3_fallback",
+      "status": "PASS",
+      "detail": "No silent N0 vote when N0 is deleted from fusion."
+    },
+    {
+      "check": "A7_split",
+      "status": "PASS",
+      "detail": "Representation change and matched calibration separately defined."
+    },
+    {
+      "check": "probability_population",
+      "status": "PASS",
+      "detail": "Probability metrics include fixed population and formulas."
+    },
+    {
+      "check": "official_pooling",
+      "status": "PASS",
+      "detail": "Ranking/aggregation views are distinct and do not relax source invariants."
+    },
+    {
+      "check": "query_prefix_rules",
+      "status": "PASS",
+      "detail": "Current-frame replay, quota and state rules are explicit."
+    },
+    {
+      "check": "robustness_rules",
+      "status": "PASS",
+      "detail": "Text-only stress cannot alter query trajectories or discard distractor errors."
+    },
+    {
+      "check": "core_no_image_inference",
+      "status": "PASS",
+      "detail": "Cached ablations do not authorize new model training or image inference."
+    },
+    {
+      "check": "phase_definitions",
+      "status": "PASS",
+      "detail": "All declared phases have a written execution requirement."
+    },
+    {
+      "check": "source_references",
+      "status": "PASS",
+      "detail": "22 source IDs resolve to pinned repository paths."
+    },
+    {
+      "check": "source_hash_format",
+      "status": "PASS",
+      "detail": "Only supplied blob identities are recorded; no invented SHA256 mirroring claim."
+    },
+    {
+      "check": "no_future_artifact_claim",
+      "status": "PASS",
+      "detail": "Proposed code is not described as existing."
+    },
+    {
+      "check": "publishing",
+      "status": "PASS",
+      "detail": "Code, results and three reports must be committed and remote-verified."
+    },
+    {
+      "check": "scope_limits",
+      "status": "PASS",
+      "detail": "Focused tests only; no old publication rehash requirement."
+    }
+  ],
+  "manual_review_corrections": [
+    "Added true official dataset-pool evaluation alongside scene means.",
+    "Kept official reranking in evaluation-only manifests instead of relaxing S/Q locks.",
+    "Split N0 representation probe into fixed-temperature and N0-only refit rows.",
+    "Prevented absent N0 from returning through the A3 fallback.",
+    "Used shared-temperature objective matched to per-source NLL, not mixture-NLL.",
+    "Required random B200 replay to use a new study contract rather than old exploration aliases.",
+    "Fixed vocabulary tests to original query trajectories and actual stored aggregates.",
+    "Excluded old confirmation scenes from new freshness claims.",
+    "Isolated fresh-stage data availability from mandatory cached and query experiments."
+  ],
+  "remaining_execution_dependencies": [
+    "Target-server source arrays and cached features must be readable.",
+    "Replacement query requests may require bounded native inference.",
+    "Fresh four-scene check may be unavailable; core work must still complete.",
+    "GitHub push uses existing authentication and is not performed by this package."
+  ],
+  "english_word_count": 6154,
+  "zip_integrity": "PASS_BYTE_FOR_BYTE"
+}
