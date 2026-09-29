@@ -193,3 +193,74 @@ Live E03 / NFS state at the end of this continuation:
   original-area source-contract sidecars without rewriting measured source or
   metric JSON bytes; distinguish target-cap vs technical fallback; implement
   remaining phase runner, selection/interaction, costs, diagnostics and reports.
+
+CAL freeze and real Replica continuation (supersedes the preceding NFS wait):
+
+- NFS recovered without restart/remount/kill. All three waiting E03 workers
+  exited0. Fourth scene0534 OVR session98015 also exited0. FC/OVR requests:
+  scene0056 each276/280, scene0534 each263/264. All five missing observations
+  are EMPTY_DENSE_MASK_SUPPORT, identical for matched branches; owners97/91
+  remain available. Full E03 fits,16 scene/rank rows and8 CAL pools completed.
+  Final scalar FC.016176252917508814; OVR.018987936793950364.
+- Official CAL A7 FC APall4.224843%,mIoU24.457288%; A7 OVR APall4.234029%,
+  AP5014.927249%,AP2531.782474%,mIoU24.884025%,mAcc31.697263%.
+- Credential-aware SAM3 probe73747 exited0 and persisted e04/access_probe.json:
+  exact repo revision3c879f39826c281e95690f02c7821c4de09afae7, manual gate,
+  no existing token,401/GatedRepo. SPATIAL/MIX50 are asset-access-blocked;
+  SHORTLIST does not require weights. CAL SHORTLIST produced4 scene/rank rows
+  and2 pools, with53 frozen original-source disagreement targets per CAL scene.
+  All original A7 labels reconstructed exactly before target freeze/evaluation.
+- Added decisions.py, operations.py, selection.py. Exact required visual
+  operations are unions of actual model/input crop/frame/box/pool identities,
+  including N0 mapping; raw crop sharing crosses mask modes but not models.
+  CAL gate requires all source methods' two-scene/two-rank rows and both pools,
+  explicit genuine finite changed-source evidence and an actual SAM3 block.
+- Frozen composition: AW_E01_GMED + AW_E03_OVR. Composition CAL4 rows/2 pools
+  completed. Official APall3.726239%,AP5014.013815%,AP2530.090087%,
+  mIoU23.735309%,mAcc31.434342%. Its AP loss versus OVR-only is retained.
+- Research nomination is N0, chosen by fixed CAL APall→mIoU→AP50 rule, not by
+  selecting the favorable mIoU column. nomination.json identity
+  f167b38fdd6cb7a7eec33a635c091f7f195a1fc1964c3611a2fbf2c88a0a2559.
+  transfer_lock.json binds choices, all8 final scalars and original inputs
+  before any new Replica job; identity
+  aebcf15ea870a47c28cc0d0df805fe1f6a2bdbe53cdb710919e36d3a8a2896fb.
+- E01 Replica session8789 exited0: all8 scenes,176 scene/rank rows (5 controls
+  plus6 E01 methods),22 real released pools. Reference rows agree exactly with
+  parent. Replica official N0 APall8.685272%,mIoU27.261462%; A7_REFIT
+  APall9.217907%,mIoU27.720221%; RAW_EQ/UNIT_EQ A7 APall8.997345%,
+  mIoU26.780052%; GMED A7 APall8.987528%,mIoU27.314416%. No robust-readout gain
+  versus A7, and GMED does not beat UNIT_EQ on APall. No Q images were rerun.
+- Added resumable phase runner scripts/evaluation/run_ovimap_a7_evidence_upgrade.py
+  and workflow.py, with original native coordinator, separate visual envs,
+  three GPU queues, per-attempt logs and coordinator lock. Actual E02 Replica
+  launched through this runner in session60979, still running at this update.
+  All8 SAM2 mask workers exited0; GLOBAL/SAM2 sources through room0 complete,
+  room1/room2 in progress, with no observed request failures. Do not start C0
+  until E02 evaluation/pooling also finishes: one Replica family at a time.
+- Added source_contract.py non-destructive supplements: aggregate NPZ, original
+  visibility weights, per-view receipt identities and explicit unavailable
+  reasons. All8 variants on scene0056 reconstruct source scores with error0.
+  Measured source/metric/selection JSON bytes are not rewritten. Remaining
+  scene contracts will be exported during final reporting.
+- Added post-prediction diagnostics.py: reused immutable geometry matching,
+  actual cosine N0 source for A7 diagnostics, correct-class source ranks,
+  common-available correctness, unused correct evidence, damage vsN0/A7,
+  deterministic owner-ID examples and the parent's real released-event
+  attribution helper. Both CAL scenes completed. Fixed example method is the
+  CAL-selected composition; scene0056 first harmed owners12/119, no corrected
+  identifiable owners; scene0534 neither. These geometric diagnostics are
+  explicitly distinct from released AP matches and whole-map mIoU.
+- Actual environment snapshots after successful smokes now persisted under
+  environments/{semantic,region,sam2}.json, including executable/Python,
+  Torch/CUDA/package versions and pip freeze. No environments upgraded.
+- Eight compact tests passed before one additional bounded shortlist fixture;
+  the two localized fixtures subsequently both passed. Whole task Ruff passes.
+  Final comprehensive checks must wait for the remaining implementation.
+- Remaining: finish E02 Replica then C0/E03/E04 SHORTLIST/composition on all8;
+  complete runner automatic asset/smoke prerequisites (current family resume
+  paths work, but fresh `all` asset preparation is not yet wired); implement
+  reporting.py/publication.py (runner lazily imports these not-yet-existing
+  modules, so `report/publish/all` completion is not yet runnable); final matrix
+  and source/fallback/rank/selection audits; full cost/download/training-overlap
+  ledger; four tables/three docs; <=40MiB real artifact bundle and verifiedpush.
+  No goal completion or GitHub publication claim has been made.
