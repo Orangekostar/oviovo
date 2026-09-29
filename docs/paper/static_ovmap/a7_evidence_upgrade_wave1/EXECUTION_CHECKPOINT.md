@@ -78,3 +78,41 @@ Real binding/E01 CAL continuation:
   completed sessions. Next implement E02 recognition crops/SAM2 worker and real
   deterministic CAL smoke; then remaining CAL families, composition/selection,
   every executable Replica family, reports and verified publication.
+
+E02 real CAL continuation (supersedes the earlier no-smoke/no-worker state):
+
+- Added crops.py and sam2_worker.py. One deterministic original CAL request
+  passed the real pinned SAM2 BF16 smoke with original-resolution output and
+  exact original six-crop pixel parity. Full CAL mask runs completed all280/264
+  requests, using142/141 image encodings respectively, with no failed masks.
+  Smoke is a separately counted additional image encoding/box decode.
+- Added recognition_worker.py. Both GLOBAL and SAM2 now have genuine S2
+  sources for both CAL scenes:280/264 successful requests and97/91 available
+  owners each. All use original request/view order, bbox, areas, own S2 text,
+  per-crop unit vectors, raw six-crop view means and final-only normalization.
+  Original-model/processor/code/request/geometry identities are verified before
+  reusing actual raw crop vectors0/2/4; every request computed only3 changed
+  foreground crops. Foreground survives the actual processor. No extra
+  background crops, fourth fusion vote, new geometry or GT-dependent requests.
+- Both E02 variants' fits and16 scene/rank rows plus8 pools completed (evaluation
+  sessions96770/75001 exit0). Final scalars: GLOBAL.010000492837221748,
+  SAM2.010800840632491917. Official CAL A7 GLOBAL: APall3.732776%,
+  mIoU22.645275%; A7 SAM2: APall3.743512%, AP5014.230065%, AP2528.265637%,
+  mIoU22.457145%, mAcc30.325458%. SAM2 has an AP/mIoU tradeoff on CAL, not an
+  established net/transfer gain. No nomination or Replica evaluation yet.
+- Four task-local fixtures passed, including actual historical crop pixel
+  conventions and an independent norm-sensitive area-aggregation fixture.
+  Task-local Ruff passed. Real GPU results above are separate integration
+  evidence; no parent test/benchmark sweep was rerun.
+- Added capacity_assets.py: official exact-revision SO400M download runs in
+  session57562 (asset root assets/so400m). Added ovr_assets.py: official author
+  Google download runs in session63986 (assets/ovrcoat). Its real HEAD returned
+  HTTP200 application/octet-stream, filename ovrcoat.pth,4633915328 bytes.
+  OVR source clone is detached at9fd9450d22852d269d426b521663a127f3983a4b.
+  Neither checkpoint is yet claimed smoke-tested. Planned downloaded weights
+  SAM2+SO400M+OVR total about9.39GiB, leaving room below25GiB for matched FC.
+- Next: finish/check E02 CAL pools; implement dynamic-dimension C0 original
+  union six-crop worker with its own text/processor and real CAL smoke; inspect
+  official OVR active branch and matched OpenCLIP control; persist SAM3 access
+  evidence. Full remaining composition, nomination, all executable Replica
+  families, diagnostics, costs, reports and verified branch push remain open.
