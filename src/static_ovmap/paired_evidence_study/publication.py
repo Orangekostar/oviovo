@@ -19,7 +19,7 @@ def bundle(binding):
     root = Path(binding['output_root'])
     spec = read(binding['spec'])
     destination = ROOT / spec['publication']['artifact_root']
-    selected = [root / 'binding.json', root / 'transfer_lock.json', root / 'report/data.json', root / 'review/outputs.json', root / 'review/requirements.json']
+    selected = [root / 'binding.json', root / 'transfer_lock.json', root / 'report/data.json', root / 'review/outputs.json', root / 'review/requirements.json', root / 'review/tests.json']
     for directory in ('evidence', 'execution', 'locked', 'probabilities', 'rows', 'pooled', 'sensitivity', 'diagnostics', 'evaluation_aliases', 'evaluation_context'):
         selected += sorted(p for p in (root / directory).rglob('*') if p.is_file() and (p.name.endswith('.json') or p.name.endswith('.json.gz')))
     external = {}
@@ -75,11 +75,13 @@ def publish(binding):
         previous = read(previous_path)
         head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
         remote = subprocess.check_output(['git', 'ls-remote', 'origin', 'refs/heads/' + branch], cwd=ROOT, text=True).split()[0]
-        if head != previous['local_sha'] or remote != head:
-            raise ValueError('published branch moved; do not silently replace its receipt')
-        if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip():
-            raise ValueError('publication already exists but worktree has new changes')
-        return previous
+        if remote not in (previous['local_sha'], head):
+            raise ValueError('published remote moved independently; do not replace its receipt')
+        subprocess.run(['git', 'merge-base', '--is-ancestor', previous['local_sha'], head], cwd=ROOT, check=True)
+        if head == previous['local_sha'] and not subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip():
+            return previous
+        # A scoped follow-up commit may add delivery metadata without rewriting history.
+        write_once(root / 'publication' / (previous['local_sha'] + '.json'), previous)
     bundle(binding)
     scopes = ['src/static_ovmap/paired_evidence_study', 'tests/paired_evidence',
               'scripts/evaluation/run_ovimap_paired_evidence.py', 'docs/paper/static_ovmap/paired_evidence_v1',
@@ -104,6 +106,6 @@ def publish(binding):
         raise ValueError('local/remote full SHA mismatch')
     receipt = {'status': 'PUSH_VERIFIED', 'branch': branch, 'local_sha': sha, 'remote_sha': remote,
                'push_stdout': push.stdout, 'push_stderr': push.stderr, 'elapsed_seconds': time.monotonic() - start}
-    write_once(root / 'publication/final.json', receipt)
+    atomic_write_json(root / 'publication/final.json', receipt)
     print(json.dumps({k: receipt[k] for k in ('status', 'branch', 'local_sha', 'remote_sha')}), flush=True)
     return receipt
