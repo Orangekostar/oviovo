@@ -1,0 +1,692 @@
+{
+  "base": "RV_A7_COS_REFIT",
+  "binding": "3036348dd8e035215c1d1543a7ef0f6f9f300e79981c8b8c887321108800b998",
+  "cap": 64,
+  "eligible_count": 26,
+  "identity": "47c46274eb1d34584ae58790535c57c8ecf0e5217ee20d293ae4613e14783a8a",
+  "inputs": [
+    {
+      "bytes": 13565,
+      "path": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/predictions/room2/locked.json",
+      "sha256": "9b19431ef0df7d07cebf00afeb32a848c609ca96f7b08afafe199ceed6f3aeae"
+    },
+    {
+      "bytes": 1790096,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/native/room2/mapper/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "e1e8e33ec7b5ef200c4ed1d60371d805bbaeeca4c8c1eba01900c32d1fbb3e0e"
+    },
+    {
+      "bytes": 426380,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/scenes/room2/study/scenes/room2/semantic_requests.json",
+      "sha256": "619bbc29fddb98ed64afe091bc8a4f37325c9e8f1f64953abd68c68cae71bbd7"
+    },
+    {
+      "bytes": 210828,
+      "path": "/mnt/shared/ww/ovimap-replica-composition-transfer-v1/attempt_001/text/native/text.npz",
+      "sha256": "fa31583646d3ae7fc53c5a4378d54cf0ea3ba5b1bb8970a10b42121b073417f8"
+    }
+  ],
+  "new_source_outputs_used": false,
+  "scene": "room2",
+  "selected": [
+    {
+      "a7_restricted_probabilities": [
+        0.6862552795894771,
+        0.31374472041052287
+      ],
+      "a7_winner": 1,
+      "candidates": [
+        1,
+        29
+      ],
+      "hash": "0d3e574ba9451ad388d18627ec736dbb2d83e869febf4a1b3aed83d3b286f2b2",
+      "original_source_labels": [
+        1,
+        1,
+        29
+      ],
+      "owner_id": 2,
+      "request_ids": [
+        "3dcf62b00233a5227a1a16cda3823ed9dbd8519fa7e02ffd7667d0e733efb93b",
+        "d72303b111caf0bf5ad38425284e55cdcec9a4e3ec07aa787b291bbc756ae363",
+        "9f28650bcbc73f4fdf7aabd7436c0542ab3f33d2da5dd7814af5b1b638afa522"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.15635390483435724,
+        0.8436460951656427
+      ],
+      "a7_winner": 43,
+      "candidates": [
+        12,
+        43
+      ],
+      "hash": "295891af8448903c0ca0ce08b3d3541eacbe7137b9f3fca78cfdd5593d42a379",
+      "original_source_labels": [
+        43,
+        43,
+        12
+      ],
+      "owner_id": 71,
+      "request_ids": [
+        "672d175d4e137caf70eb92ac196e6a2b5b53f2bbafd833cd7a25d11ed1e01847",
+        "a75f221193c3363a4a693e9b92e30786709a69966d160cb223c9e270d55fdd6e",
+        "059177b4094f6a6680d4b082f064327bdf84993ce2f9788e194034b50cf4a9f1"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.8564053159853933,
+        0.14359468401460662
+      ],
+      "a7_winner": 1,
+      "candidates": [
+        1,
+        36
+      ],
+      "hash": "2c2247e37591ffd85a89bb3b8d5a59be5e5a0d203e1a46e966abcb83507b1655",
+      "original_source_labels": [
+        1,
+        1,
+        36
+      ],
+      "owner_id": 73,
+      "request_ids": [
+        "8c48baea1a10967869a413444954eeea2b278b5837d22f3d7aa6bb76f3f42135",
+        "e32f706a43779bb76cb616a413bcb55e2de376449e644242754e6ef8526d599d",
+        "37376c8802bfde3a6f65c7f29678afd0749e4bdf6edc545200b7d0c5f2580cd8"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.7412652827716086,
+        0.2587347172283914
+      ],
+      "a7_winner": 1,
+      "candidates": [
+        1,
+        21
+      ],
+      "hash": "2d4cb3c4e65c0a3c06aa3579c29757a8e97b9f4c952b076ec25c859ecfdeea18",
+      "original_source_labels": [
+        1,
+        1,
+        21
+      ],
+      "owner_id": 113,
+      "request_ids": [
+        "2d1dd795a8d7bfc216f163a4895fdb01a6b214cad4a674bfddba0aac94527c7a",
+        "0d742da08241e6b9d4a423b87892dd0ac144b3f3b1f75a4e134bf2cbc00df6e7"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.2018539001496452,
+        0.7981460998503548
+      ],
+      "a7_winner": 49,
+      "candidates": [
+        23,
+        49
+      ],
+      "hash": "3c85b89980a087409d67d1345180f38f8c7ecf0830afbd37109ec7dcb91d61b7",
+      "original_source_labels": [
+        49,
+        23,
+        49
+      ],
+      "owner_id": 14,
+      "request_ids": [
+        "d30d2dc8f61e85ea6c1e8654f9d36b2cb86e319338a4d8a0855188bdf1c5865c",
+        "477786708eb6ddcd2fd7d2b737d251f91c9e0691ae06b8ea9a118d0723077be3",
+        "9dbca16ee77dc6063fa39abcfb111aa60840226f26fe9ab66def2899a0bb14e2"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.44556394961301465,
+        0.5544360503869853
+      ],
+      "a7_winner": 50,
+      "candidates": [
+        19,
+        50
+      ],
+      "hash": "401f655b68eb5e86b1b43e7fc4c19f86c13abda6d9d79f3ed9492ca8db763e44",
+      "original_source_labels": [
+        19,
+        50,
+        19
+      ],
+      "owner_id": 45,
+      "request_ids": [
+        "73e83d10a8b6ce7e2003ee267bae93c15aba56acf4a87712839dd58f067461d2",
+        "5ca15b8fc3765f3305124619b41f355d6c7bbc0208d82b8a0e80eada33809fba",
+        "192568a928c64956a7752ad81512c471fa26214b766f678bafb0956e21722487"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.24171277256656168,
+        0.7582872274334383
+      ],
+      "a7_winner": 30,
+      "candidates": [
+        16,
+        30
+      ],
+      "hash": "5379aa2a0a9554aaaea869fb80bff22d0c2c3e026e1ff7d114f831113df41139",
+      "original_source_labels": [
+        30,
+        30,
+        16
+      ],
+      "owner_id": 11,
+      "request_ids": [
+        "e22956b60b02ebb3365c5792e08cfa68bf1075167cf4bc7c3f44246d6f44cb55",
+        "dd495ddd21098651695181118fddc2b85bd74d537e8085f063926434cda53e82",
+        "b85bb4d8686ae412e43984fd37d3e9152821ebc68f4bb95170579c952fe109dc"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.5867560978265078,
+        0.41324390217349216
+      ],
+      "a7_winner": 25,
+      "candidates": [
+        25,
+        46
+      ],
+      "hash": "5754a07daa43403c8ca97e0980b5b06cfa2f63a4f2d42478fc6699f811e68451",
+      "original_source_labels": [
+        25,
+        25,
+        46
+      ],
+      "owner_id": 34,
+      "request_ids": [
+        "2d82eedbc0e8b35c3770a0c6b96b96840016997be38387401b0b92d0f718692c",
+        "1c6c967a1062c79bd8ae263a51740a60424ef1a5c1a07f72577c776d268f6646",
+        "d8ade7a8e22277eab5c80b161525acc8921c773e2bed18830ce68d0fd15939e9"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.646219663004215,
+        0.353780336995785
+      ],
+      "a7_winner": 9,
+      "candidates": [
+        9,
+        11
+      ],
+      "hash": "5d3b991cfa09e5d5ddbdf7606afdf4cfe2a9d7fce9720267aa31c36a827c7837",
+      "original_source_labels": [
+        9,
+        9,
+        11
+      ],
+      "owner_id": 6,
+      "request_ids": [
+        "f327382977137fc3ba5c7b570df9e5d809526b94e3203103df78c27ade644bbb",
+        "3eaf274c23aae529a66770b9770dad680a64ea3f9453c2114fbbaee12e22546b",
+        "14ba3f137eee7d79f9012b7a782a500ec4b13aa37774e8ad7b244a237c0397ae"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.25757787546973526,
+        0.3927211650458385,
+        0.3497009594844263
+      ],
+      "a7_winner": 21,
+      "candidates": [
+        17,
+        21,
+        50
+      ],
+      "hash": "6de75e2bc5e3fb102f361eb77b5358a332703c78bfa7c9ad40ee7c27d04dc56c",
+      "original_source_labels": [
+        17,
+        50,
+        21
+      ],
+      "owner_id": 58,
+      "request_ids": [
+        "6ad441e2486e6c112a28402210128c53631c606c558f6a1171614f61eee1e3ec",
+        "db98242fe7a29071cfb411a88433099d00ed7c5583198176f9cdb6300cf48e7f",
+        "e099d5b42fec99e83f00e198cb6d706732d6cb0abe3f36d07afb5e358fe34ec4"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.3810296129714476,
+        0.6189703870285524
+      ],
+      "a7_winner": 50,
+      "candidates": [
+        21,
+        50
+      ],
+      "hash": "7413a144d80c5bdf8eb6591dce06622df4a107eec3ea7a083054e272dab20e14",
+      "original_source_labels": [
+        50,
+        50,
+        21
+      ],
+      "owner_id": 111,
+      "request_ids": [
+        "d5198ceb00a3ab2cb91d66b1c8443faa876b68c68ab25ffe46eb719209b53ac2",
+        "311f38f855b576f986bf40fd91eaa090af29edf1b9884d6c9938d4d9d376d9b2",
+        "9a2f3ee1c52490ca1bac484ab05b1fa011ad9bd23e5eb11f493679991f49ba9d"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.5257952855941487,
+        0.47420471440585127
+      ],
+      "a7_winner": 21,
+      "candidates": [
+        21,
+        50
+      ],
+      "hash": "8d391fff67f9181d1b96b3e16faf7fdb06a58739666059d414b4205938890ea0",
+      "original_source_labels": [
+        50,
+        50,
+        21
+      ],
+      "owner_id": 79,
+      "request_ids": [
+        "0dae5070a2ada9e2f336efb2d58ba5723ba681c7b9005a2e9189f066d5a85489",
+        "fd39be33ae3d256e026d8206175deba8ec4fff6a591b92e5f18d89ac18bab41e",
+        "7ca8cd63085932e1f725e5a0ba03ec989c4df4afe424ff6a6e1a97469bc10956"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.5515173045132058,
+        0.44848269548679415
+      ],
+      "a7_winner": 19,
+      "candidates": [
+        19,
+        43
+      ],
+      "hash": "92a6f3fbbab3b446e48f2c8f75a99c8dd66d89ee56bb9528523e6e719c39e589",
+      "original_source_labels": [
+        19,
+        19,
+        43
+      ],
+      "owner_id": 81,
+      "request_ids": [
+        "901e89505a521f0c3f58976e0468d3cec055123a02531acd1de894545b653abe",
+        "79db22a4a0aed2b946685eadaf2e3fc957cd863ad245d151676c754454b57d9a",
+        "ce512b8e64b00b3a216c74c4474097d154f852ec6bd79e1bf5fb909b96d08afd"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.4803159310674416,
+        0.5196840689325585
+      ],
+      "a7_winner": 50,
+      "candidates": [
+        33,
+        50
+      ],
+      "hash": "a66de25847b1980dbfb6bc897e21b534321b08997278beba687c668ca6e272cb",
+      "original_source_labels": [
+        50,
+        50,
+        33
+      ],
+      "owner_id": 24,
+      "request_ids": [
+        "d8a75fc53957816fa46003ace4466630ff540a67093a279c9cc5e370e9ca3fea",
+        "11f9ebafd83cc86fecdf13ef8e60f81a5b5310e47b44f2a9c8c28bdfd2fec6df",
+        "f697eeea6324708251a9b6c3b873033f5d6cf972fd431c080b215c1e6ef376a6"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.39124533278347995,
+        0.4481846319488718,
+        0.16057003526764815
+      ],
+      "a7_winner": 19,
+      "candidates": [
+        12,
+        19,
+        50
+      ],
+      "hash": "b1331ef25582a2a967a243e291294b9f01bc8eff3a4d1bff8a86c62f2d80a612",
+      "original_source_labels": [
+        19,
+        12,
+        50
+      ],
+      "owner_id": 28,
+      "request_ids": [
+        "91f5f20c7be4730118f3f825b71dbf49d3ae56cafa481e6db539b5be75e9fdba",
+        "c50b663bcdc685c7844bfb5d1ce164b18e90c1e4f4ce798bc58afdde084e2355",
+        "6cfe3044cd1728086291d933a4aa88c643d641736018d657d522cf955944a591"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.43375163008747464,
+        0.5662483699125253
+      ],
+      "a7_winner": 43,
+      "candidates": [
+        17,
+        43
+      ],
+      "hash": "b9cd5e52bc3bf75f39732c3dbe12a8c2d1aabf2fec93a00d3d1b206cf8c097fd",
+      "original_source_labels": [
+        17,
+        43,
+        43
+      ],
+      "owner_id": 15,
+      "request_ids": [
+        "7fb38a934b9dbe06d69911d753096511061a7f8c490da7f6b88e3be75716b672",
+        "56ba5c67bcf4ac5875f99ae0ed8aa0d68ae9e65dd4d05a0d2fff8bbcf516b063",
+        "87764d42a52eeb207dee077ce37f450679c47d0ac4f902d107a92c2d7221f84d"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.6661751254536994,
+        0.3338248745463005
+      ],
+      "a7_winner": 3,
+      "candidates": [
+        3,
+        50
+      ],
+      "hash": "c98f53cc77a8af054c98c243cd6b89dcbe433543aba068dc963b7dbbda4a3c63",
+      "original_source_labels": [
+        50,
+        50,
+        3
+      ],
+      "owner_id": 1,
+      "request_ids": [
+        "446f6d425e59c45bea525c20f079a10ae946c5ff13f8138471399547960e42f1",
+        "ac73cc58d9669b0a56c3bcb78d6cbaa1473197d5014a886a7a71ca9e974cd804",
+        "2635e52ba49656e4b6e22b1879fa88afeb5b547c2c4aa23680c209ddfe7dcb9c"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.37196817206480604,
+        0.6280318279351941
+      ],
+      "a7_winner": 30,
+      "candidates": [
+        25,
+        30
+      ],
+      "hash": "d2c96a5b118053b91fd7a25a14c1a20294689903f55aa04c4c74c280d644d6b1",
+      "original_source_labels": [
+        30,
+        25,
+        30
+      ],
+      "owner_id": 10,
+      "request_ids": [
+        "e2259da452abfa2a93091bff6d868d5cca4ce7c9d8d81d3d04075c0cb939484c",
+        "4f58e4b5603737c6834b97f26a404e8397bbd7be3b683f3ba125fe60e3d71f50",
+        "0502a1bddae56109caf52a0c64a41f7c58202acdce8cea74e3d052e8e8c6bdce"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.2628653215992463,
+        0.4676213952867702,
+        0.26951328311398354
+      ],
+      "a7_winner": 19,
+      "candidates": [
+        6,
+        19,
+        50
+      ],
+      "hash": "d62547fb98b8bf2a9ed1315d9adb39201a64762e2541d8655e92bb45e295fb9b",
+      "original_source_labels": [
+        50,
+        6,
+        19
+      ],
+      "owner_id": 30,
+      "request_ids": [
+        "b7ff3149dc21cc4ddc71948b5dd12dea3425b6e0bdf3683a944b1b3a41725963",
+        "dde11399d20b5f60ef5b93fd9ae4a19c569b425ccd3fe0171d31451f9a82de39",
+        "dfea6adbb1ab7784b92deea28005baab44e768bc145380d4a915a1dd6661ac70"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.5956619326570701,
+        0.4043380673429299
+      ],
+      "a7_winner": 4,
+      "candidates": [
+        4,
+        19
+      ],
+      "hash": "dc71547debcef2e04f94d968602f5cf0c807256ba7cc4bf837638b527aaf9b19",
+      "original_source_labels": [
+        19,
+        4,
+        19
+      ],
+      "owner_id": 5,
+      "request_ids": [
+        "c8a9aca3952e2770044fc662c5025004ef03f5ecdc3eb7dd6e638f68290345b1",
+        "52ace5ff35b164ec985c70bc62568a4c3c84560b3596abf46712afb1e004620c",
+        "12166faab4aec6b627fcb4dc5664b477cedbdd31c6ffc19b26e0d42541de14b4"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.5493587732624481,
+        0.45064122673755197
+      ],
+      "a7_winner": 9,
+      "candidates": [
+        9,
+        11
+      ],
+      "hash": "de7daae00e5cca8b013297829d837d55bb2fa40360d53da66c1dc980fe1d6ece",
+      "original_source_labels": [
+        9,
+        9,
+        11
+      ],
+      "owner_id": 40,
+      "request_ids": [
+        "4d671390eae874aab7de9bb0ce3e3d84107bd4c526c8ac112c61051c60cea9ff",
+        "9697f74933b148ea1fc6d05ac06598fd311b2cc8cc08d63b86fcc6f40d8493ba",
+        "dfa1b7bc53d87dbaa801f2a35c4fed82e083b0bda520faea634880befd5d6230"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.45342251770820213,
+        0.5465774822917978
+      ],
+      "a7_winner": 46,
+      "candidates": [
+        25,
+        46
+      ],
+      "hash": "ea4bb724485964016dcdccd8f8ca81be8d01086b1a9a3d4746b1dc4ab0a99b95",
+      "original_source_labels": [
+        25,
+        25,
+        46
+      ],
+      "owner_id": 49,
+      "request_ids": [
+        "91418d65bfeda52f5db97c5d744a38ea7a9d0ce78e97d3943103e96b0010c732",
+        "7db528101b02a2ecb32a3c88d648cf89e9688a1f489018891f74a6c5c4a41b17",
+        "001b8fab06e3bfd1e8789df5dee8fd106057271afdbe274f1cf0403e1dd48c48"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.7800571388550034,
+        0.21994286114499664
+      ],
+      "a7_winner": 1,
+      "candidates": [
+        1,
+        36
+      ],
+      "hash": "ea8745efe8507c7e5a1a1b191e73429c7ce320601d00d53a705b008965652db2",
+      "original_source_labels": [
+        1,
+        1,
+        36
+      ],
+      "owner_id": 75,
+      "request_ids": [
+        "a80e930c935e86a1ba2c91561e02bf76c536e94a089a737732e81ab6ec84f017",
+        "212394e40ebd240309c710b533d183f659b122eed113fa4c7038a7858da948f4",
+        "1c3e009f2cbf2b495339fc418130c337f6e01a236e4ecc2d4590fc803b5d2eef"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.31640409109081863,
+        0.6835959089091814
+      ],
+      "a7_winner": 7,
+      "candidates": [
+        3,
+        7
+      ],
+      "hash": "ed79871e58d1ac865acdff7ece57612b5dc68c37d6940a2f6b9b08c48b7249fe",
+      "original_source_labels": [
+        7,
+        7,
+        3
+      ],
+      "owner_id": 27,
+      "request_ids": [
+        "afca9170b907a2eff60dcbbfccce2c84b2ddb7a516e4a5ea98db4b4b3d405332",
+        "5bc01c95cb67062059d8ce0ff7fa1c98ace30750343918a099028539a6c00eaa",
+        "e3d105edcb40b4acff5747495cf1c76a1660e1dbd6176ec27b42387b18a63837"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.6211844849445824,
+        0.3788155150554175
+      ],
+      "a7_winner": 16,
+      "candidates": [
+        16,
+        21
+      ],
+      "hash": "f6c19712cb243c895daadba5d097d82cef4b92c937c2914c35f8a895f784e153",
+      "original_source_labels": [
+        16,
+        21,
+        16
+      ],
+      "owner_id": 59,
+      "request_ids": [
+        "c381c06fc0ad74296cc9974f9eb4a72a7d8f6a1374df010c4c067523669a9455",
+        "1f41eb579d936e9d9989ea5f99b79767d5b750b2e3c5d39fec9fdfa1d4d0447e",
+        "5d948c2478935a8572843f2b3ebe437c9b7f61dc99008498f14b8b304a1b0f24"
+      ]
+    },
+    {
+      "a7_restricted_probabilities": [
+        0.46706943926207617,
+        0.3898255541266785,
+        0.1431050066112453
+      ],
+      "a7_winner": 4,
+      "candidates": [
+        4,
+        19,
+        50
+      ],
+      "hash": "fdf45033892a5bfba71ce256208625bff4ec3a5bcae3737dea2d4db446d1ed85",
+      "original_source_labels": [
+        19,
+        4,
+        50
+      ],
+      "owner_id": 72,
+      "request_ids": [
+        "581758c7465b3f69f03901f3af1e8ecbaf88fa3b5e2daaeb856fd8fd7a8dffac",
+        "5fbd1284db9ade8d5b3a27450ef41c7f59eac4de2c8ef7a4631fbd891c9d717b",
+        "b6dd1900c7ae34b708f2d7102324c24148ab5ed3fea03b6f42a51f87ba293e76"
+      ]
+    }
+  ],
+  "selection_basis": "original_sources_and_static_views_only",
+  "valid_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ]
+}

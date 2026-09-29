@@ -1,0 +1,29 @@
+{
+  "status": "PRIMARY_AGENT_EVIDENCE_INTERPRETATION",
+  "findings": [
+    "The CAL-frozen research nomination is N0. Its CAL APall is 4.235291%, versus 4.234029% for OVR_A7; the small but non-tied APall difference takes precedence over OVR's higher mIoU. Deployment remains N0_UNCHANGED. Replica results did not change the nomination.",
+    "E01 provides no Replica APall gain over original A7. GMED_A7 (8.987528%) is below UNIT_EQ_A7 (8.997345%), so these results do not validate robust aggregation. All E01 variants retain original paid/retained observations and require zero new image forwards.",
+    "E02 SAM2_A7 has Replica APall 9.124101%, below GLOBAL_A7 9.177206% and original A7 9.217907%. The additional SAM2 encodings and box decodes are not supported by an APall benefit here. These recognition-mask experiments say nothing about reconstructed 3D shape quality.",
+    "C0 SO400M_A7 improves Replica APall to 9.474653% and mIoU to 28.517334%, versus A7 9.217907% and 27.720221%. This is an ordinary model-capacity control, not evidence of a new aggregation algorithm; its CAL APall is slightly below A7.",
+    "E03 has a conditional matched-control result. OVR_DIRECT exceeds FC_FROZEN_DIRECT in Replica APall (10.939594% versus 10.498388%), and common-identifiable source correctness improves from 82/157 to 94/157. However, OVR_A7 is below FC_FROZEN_A7 in APall (10.232525% versus 10.491020%) and mIoU (28.623663% versus 30.013672%). Region tuning helps the direct source but is not a uniform fusion gain. OVR_DIRECT's higher APall also coexists with lower mIoU than FC_FROZEN_A7; no single metric establishes universal superiority.",
+    "FC_FROZEN_A7 changes 52/375 Replica owner labels relative to A7. On 161 uniquely geometry-identifiable owners it corrects 10 and harms 2, with 17 unused-correct-evidence cases. OVR_A7 corrects 9 and harms 2, with 23 unused-correct-evidence cases. These geometry diagnostics are distinct from released AP match-set changes and cannot be counted as AP true positives.",
+    "The sole CAL-frozen GMED+OVR combination has Replica APall 10.286507% and mIoU 28.413136%; it does not exceed FC_FROZEN_A7. Its CAL APall interaction is negative (-0.507790 percentage points). Favorable and adverse interactions are retained; no alternate combination was selected after viewing Replica.",
+    "E04 SHORTLIST exactly preserves A7 decisions. SPATIAL and MIX50 remain untested because official original SAM3 access returned 401/GatedRepo. Missing model evidence is not a measured zero or a scientific failure.",
+    "Both datasets were previously exposed. These are development/regression findings without a claim of statistical significance or fresh generalization. Visual networks are frozen, but fitting temperature scalars still uses CAL semantic supervision. Pretraining/checkpoint overlap with evaluation datasets is unresolved, not assumed clean."
+  ],
+  "next_capability": "E06: a fixed class text-prototype bank with image features frozen",
+  "next_rationale": "Among available, uniquely geometry-identifiable Replica source errors, the correct class ranks 2-5 in 60/75 FC_FROZEN errors and 53/63 OVR errors (S2:70/91). This supports testing class-language discrimination as an unresolved capability. Use the roadmap's predeclared raw-name/structure/appearance bank and freeze image features; do not invent GT-specific aliases or tune descriptions on these errors. This is a prospective recommendation, not a proved remedy; fusion conflict remains a limitation. E06 was not executed in wave1.",
+  "evidence": {
+    "matrix": "audit/matrix.json",
+    "adapter_contracts": "review/adapter_contracts.json",
+    "tables": "report/data.json",
+    "per_scene_rank_diagnostics": "diagnostics/<scene>/objects.json.gz",
+    "nomination": "nomination.json",
+    "transfer_freeze": "transfer_lock.json",
+    "rank_error_counts": {
+      "S_SIGLIP2_AREA": {"wrong_available_identifiable": 91, "correct_class_rank_2_to_5": 70},
+      "AW_E03_FC_FROZEN": {"wrong_available_identifiable": 75, "correct_class_rank_2_to_5": 60},
+      "AW_E03_OVR": {"wrong_available_identifiable": 63, "correct_class_rank_2_to_5": 53}
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "architecture": "convnext_large_d_320",
+  "branches": {
+    "FC_FROZEN": {
+      "OVR_vs_original_trunk_changed_elements": 196226860,
+      "loaded_key_count": 543,
+      "loaded_state_elements": 351772609
+    },
+    "OVR": {
+      "OVR_vs_original_trunk_changed_elements": 196226860,
+      "loaded_key_count": 543,
+      "loaded_state_elements": 351772609
+    }
+  },
+  "inputs": [
+    {
+      "bytes": 210792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/smoke/scene0056_00/FC_FROZEN/weight_audit.json",
+      "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+    },
+    {
+      "bytes": 221646,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/smoke/scene0056_00/OVR/weight_audit.json",
+      "sha256": "d2f86b15392c57182a0a7e58e449ab69fd7eb503ae63752419f85547ab6b4983"
+    }
+  ],
+  "new_image_inference": false,
+  "parameters_per_branch": 351772609,
+  "scope": "Architecture enumeration checked against real strict weight-load mappings; this enumeration model was not used for inference.",
+  "status": "AUDITED_ARCHITECTURE_PARAMETER_COUNT",
+  "trainable_parameters_in_this_study": 0,
+  "visual_parameters_per_branch": 199770816
+}

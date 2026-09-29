@@ -1,0 +1,802 @@
+{
+  "accounting_limits": [
+    "Every method requires the original geometry/frontend and N0 map; historical frontend time is not remeasured here.",
+    "Logical unions identify required visual work, not FLOPs, latency, or measured physical calls.",
+    "Completed receipt invocation counters are not a complete accounting of interrupted or failed earlier invocations.",
+    "Worker wall times include loading, I/O and cache validation; parallel wall times must not be summed as end-to-end latency.",
+    "Peak memory is per worker, not summed across sequential workers.",
+    "E01 uses existing Q image features; E01 shared readout time must not be charged three times.",
+    "DIRECT/A7/composition reuse the same source worker work; these are dependencies, not additional inference runs.",
+    "Text physical calls are reported separately when measured; historical native/S2 text work is not zero-cost.",
+    "Download, smoke, scalar fit, and evaluation costs are separate from these full-scene workers."
+  ],
+  "binding": "3036348dd8e035215c1d1543a7ef0f6f9f300e79981c8b8c887321108800b998",
+  "blocked_methods": [
+    "AW_E04_SPATIAL",
+    "AW_E04_MIX50"
+  ],
+  "identity": "13c58bb255c2e94c23abcf116810331c09a292e1439967c2955628dbeb9ba750",
+  "inputs": [
+    {
+      "bytes": 4606,
+      "path": "/home/ww/crove/ovimap-a7-evidence-upgrade-wave1/src/static_ovmap/a7_evidence_upgrade/costs.py",
+      "sha256": "8675367afdc04e763012fc751012cc7af3ad3ebcb93bb67e49b98b08bc0256fd"
+    },
+    {
+      "bytes": 115142,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/c0/requests/room0/receipt.json",
+      "sha256": "15bf3612fd530b3331ffd5f8804ee056d875c67b0a97f003f0c1c0d281e602c5"
+    },
+    {
+      "bytes": 47807,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/composition.json",
+      "sha256": "88f4cdedff7251ac3f185c565cf72c3ae5309a2b54e93774de8365aa3958574d"
+    },
+    {
+      "bytes": 131437,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/room0/receipt.json",
+      "sha256": "6fe539982d943271d62254c93e5406c10dc35052afe403d2f874ea9f6353544e"
+    },
+    {
+      "bytes": 223048,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/room0/AW_E02_GLOBAL/receipt.json",
+      "sha256": "32ffd32f5d65f1cc5eb4f5d0649abb1240ea619ce29b848487902d927d0c1121"
+    },
+    {
+      "bytes": 313036,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/room0/AW_E02_SAM2/receipt.json",
+      "sha256": "111e600069cb7aa6d06309067a50385553667b5fdb79dbffbd6f05dec1911b0a"
+    },
+    {
+      "bytes": 123694,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/sam2_masks/room0/receipt.json",
+      "sha256": "52cb14ef663ef3cd63ded37c600e7847ab3cf48e26ea41e430699b0ea5a02831"
+    },
+    {
+      "bytes": 120322,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/room0/AW_E03_FC_FROZEN/receipt.json",
+      "sha256": "dc6bd55d79195803f6e2ee65c007040834ec6661685da2bc287e8d5f409887b8"
+    },
+    {
+      "bytes": 118458,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/room0/AW_E03_OVR/receipt.json",
+      "sha256": "fadd27d7ab1a1937384bd5ec6887c2db458dad00514a55b2a26db017d39e34c6"
+    },
+    {
+      "bytes": 6124752,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/operations/room0/156b3b1efbd28309a9dccc5119d2d47cabd275707a536b6827a8166c995dc9e5.json",
+      "sha256": "bd19436ab113abc73004096c833a8bbbcc0df144576e50011f47f98b36e19bad"
+    }
+  ],
+  "logical_required_visual_operations": {
+    "AW_C0_SO400M_A7": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "b7b018dfe139618ae47a93efda759ca607eada8e17c6393c44b31669777bebea": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "9d0701ce5156ecf1a996e64526e85401fbaae41b06e6925040dfa7f3a6cb13c6"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "AW_C0_SO400M_DIRECT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 3526
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "b7b018dfe139618ae47a93efda759ca607eada8e17c6393c44b31669777bebea": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "9d0701ce5156ecf1a996e64526e85401fbaae41b06e6925040dfa7f3a6cb13c6"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4450
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4450
+    },
+    "AW_COMBO_QR": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "68be4bf032e83274fcdb566a206f6a305bb35aec74c8e8f43ad05f39fa8e9fab": {
+          "counts": {
+            "dense_image": 92,
+            "region_pool_projection": 152
+          },
+          "model": {
+            "adapter": "RGB_bilinear800_max1333_pad32_signed_global_mask",
+            "branch": "OVR",
+            "precision": "float32",
+            "weights": {
+              "bytes": 4633915328,
+              "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/ovrcoat/ovrcoat.pth",
+              "sha256": "a72c560721f5a83addf1264df56632dac56137c0f8f6023b8c638baa616aabfd"
+            }
+          }
+        }
+      },
+      "counts_by_kind": {
+        "dense_image": 92,
+        "image_crop": 4206,
+        "region_pool_projection": 152
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4450
+    },
+    "AW_E01_GMED_A7": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "AW_E01_GMED_DIRECT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4206
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4206
+    },
+    "AW_E01_RAW_EQ_A7": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "AW_E01_RAW_EQ_DIRECT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4206
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4206
+    },
+    "AW_E01_UNIT_EQ_A7": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "AW_E01_UNIT_EQ_DIRECT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4206
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4206
+    },
+    "AW_E02_GLOBAL_A7": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "AW_E02_GLOBAL_DIRECT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 3526
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4450
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4450
+    },
+    "AW_E02_SAM2_A7": {
+      "by_model": {
+        "353fecaf2a455cff1454cee733d785646b2f7ff6cfd92e953a0b38a6ad567d69": {
+          "counts": {
+            "sam2_box_decode": 154,
+            "sam2_image": 92
+          },
+          "model": {
+            "checkpoint": {
+              "bytes": 898083611,
+              "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/sam2/sam2.1_hiera_large.pt",
+              "sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318"
+            },
+            "code_commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+            "precision": "bfloat16_autocast"
+          }
+        },
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130,
+        "sam2_box_decode": 154,
+        "sam2_image": 92
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5376
+    },
+    "AW_E02_SAM2_DIRECT": {
+      "by_model": {
+        "353fecaf2a455cff1454cee733d785646b2f7ff6cfd92e953a0b38a6ad567d69": {
+          "counts": {
+            "sam2_box_decode": 154,
+            "sam2_image": 92
+          },
+          "model": {
+            "checkpoint": {
+              "bytes": 898083611,
+              "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/sam2/sam2.1_hiera_large.pt",
+              "sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318"
+            },
+            "code_commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+            "precision": "bfloat16_autocast"
+          }
+        },
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 3526
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4450,
+        "sam2_box_decode": 154,
+        "sam2_image": 92
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4696
+    },
+    "AW_E03_FC_FROZEN_A7": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "936f0f3b5240554435776e242c2ca723199821917863d5779cf15e7d396f98d3": {
+          "counts": {
+            "dense_image": 92,
+            "region_pool_projection": 152
+          },
+          "model": {
+            "adapter": "RGB_bilinear800_max1333_pad32_signed_global_mask",
+            "branch": "FC_FROZEN",
+            "precision": "float32",
+            "weights": [
+              {
+                "bytes": 524657,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+                "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+              },
+              {
+                "bytes": 589,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+                "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+              },
+              {
+                "bytes": 1407151868,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+                "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+              },
+              {
+                "bytes": 472,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+                "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+              },
+              {
+                "bytes": 2224053,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+                "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+              },
+              {
+                "bytes": 806,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+                "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+              },
+              {
+                "bytes": 862328,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+                "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+              }
+            ]
+          }
+        }
+      },
+      "counts_by_kind": {
+        "dense_image": 92,
+        "image_crop": 4206,
+        "region_pool_projection": 152
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4450
+    },
+    "AW_E03_FC_FROZEN_DIRECT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 3526
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "936f0f3b5240554435776e242c2ca723199821917863d5779cf15e7d396f98d3": {
+          "counts": {
+            "dense_image": 92,
+            "region_pool_projection": 152
+          },
+          "model": {
+            "adapter": "RGB_bilinear800_max1333_pad32_signed_global_mask",
+            "branch": "FC_FROZEN",
+            "precision": "float32",
+            "weights": [
+              {
+                "bytes": 524657,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+                "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+              },
+              {
+                "bytes": 589,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+                "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+              },
+              {
+                "bytes": 1407151868,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+                "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+              },
+              {
+                "bytes": 472,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+                "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+              },
+              {
+                "bytes": 2224053,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+                "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+              },
+              {
+                "bytes": 806,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+                "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+              },
+              {
+                "bytes": 862328,
+                "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+                "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+              }
+            ]
+          }
+        }
+      },
+      "counts_by_kind": {
+        "dense_image": 92,
+        "image_crop": 3526,
+        "region_pool_projection": 152
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 3770
+    },
+    "AW_E03_OVR_A7": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "68be4bf032e83274fcdb566a206f6a305bb35aec74c8e8f43ad05f39fa8e9fab": {
+          "counts": {
+            "dense_image": 92,
+            "region_pool_projection": 152
+          },
+          "model": {
+            "adapter": "RGB_bilinear800_max1333_pad32_signed_global_mask",
+            "branch": "OVR",
+            "precision": "float32",
+            "weights": {
+              "bytes": 4633915328,
+              "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/ovrcoat/ovrcoat.pth",
+              "sha256": "a72c560721f5a83addf1264df56632dac56137c0f8f6023b8c638baa616aabfd"
+            }
+          }
+        }
+      },
+      "counts_by_kind": {
+        "dense_image": 92,
+        "image_crop": 4206,
+        "region_pool_projection": 152
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4450
+    },
+    "AW_E03_OVR_DIRECT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 3526
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "68be4bf032e83274fcdb566a206f6a305bb35aec74c8e8f43ad05f39fa8e9fab": {
+          "counts": {
+            "dense_image": 92,
+            "region_pool_projection": 152
+          },
+          "model": {
+            "adapter": "RGB_bilinear800_max1333_pad32_signed_global_mask",
+            "branch": "OVR",
+            "precision": "float32",
+            "weights": {
+              "bytes": 4633915328,
+              "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/ovrcoat/ovrcoat.pth",
+              "sha256": "a72c560721f5a83addf1264df56632dac56137c0f8f6023b8c638baa616aabfd"
+            }
+          }
+        }
+      },
+      "counts_by_kind": {
+        "dense_image": 92,
+        "image_crop": 3526,
+        "region_pool_projection": 152
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 3770
+    },
+    "AW_E04_SHORTLIST": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "N0": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 3526
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 3526
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 3526
+    },
+    "Q_GAIN": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4206
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4206
+    },
+    "RV_A7_COS_FIXED": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "RV_A7_COS_REFIT": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 4206
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 5130
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 5130
+    },
+    "S_SIGLIP2_AREA": {
+      "by_model": {
+        "46afbe6a285584a503a6c2b2ecbc5d8c0bae33eb44e3bf09dd632950ccbf7b4e": {
+          "counts": {
+            "image_crop": 3526
+          },
+          "model": "3bae2a446c31ffdd7b4341380624241cb4fc5f6740a0f98f0ed7c9445b060760"
+        },
+        "52003287e0a9ef4f26edf915222a23b4435291ce55c50acdb950cea241fbc791": {
+          "counts": {
+            "image_crop": 924
+          },
+          "model": "74e855b61073a8e80386896af37005a669ecd69351158d0fae52a9f3907dd03b"
+        }
+      },
+      "counts_by_kind": {
+        "image_crop": 4450
+      },
+      "unique_operation_count_for_prescribed_tiebreak_only": 4450
+    }
+  },
+  "operation_manifest": {
+    "bytes": 6124752,
+    "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/operations/room0/156b3b1efbd28309a9dccc5119d2d47cabd275707a536b6827a8166c995dc9e5.json",
+    "sha256": "bd19436ab113abc73004096c833a8bbbcc0df144576e50011f47f98b36e19bad"
+  },
+  "physical_completed_worker_invocations": {
+    "AW_C0_SO400M": {
+      "measured": {
+        "available_owners": 53,
+        "encoder_calls_this_invocation": 154,
+        "model_load_seconds": 8.011050929082558,
+        "parameter_count": 1136008498,
+        "peak_gpu_allocated_bytes": 4799970304,
+        "peak_gpu_reserved_bytes": 5431623680,
+        "physical_crop_inputs_this_invocation": 924,
+        "physical_text_calls_this_invocation": 2,
+        "physical_text_inputs_this_invocation": 51,
+        "requests": 154,
+        "successful_requests": 154,
+        "text_seconds": 0.2738068369217217,
+        "wall_seconds": 79.45380820904393
+      },
+      "receipt": {
+        "bytes": 115142,
+        "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/c0/requests/room0/receipt.json",
+        "sha256": "15bf3612fd530b3331ffd5f8804ee056d875c67b0a97f003f0c1c0d281e602c5"
+      }
+    },
+    "AW_E02_GLOBAL": {
+      "measured": {
+        "available_owners": 53,
+        "encoder_calls_this_invocation": 154,
+        "model_load_seconds": 6.099023974034935,
+        "peak_gpu_allocated_bytes": 3628349440,
+        "peak_gpu_reserved_bytes": 3701473280,
+        "physical_crop_inputs_this_invocation": 462,
+        "requests": 154,
+        "reused_raw_crops_this_invocation": 462,
+        "successful_requests": 154,
+        "wall_seconds": 54.46260189299937
+      },
+      "receipt": {
+        "bytes": 223048,
+        "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/room0/AW_E02_GLOBAL/receipt.json",
+        "sha256": "32ffd32f5d65f1cc5eb4f5d0649abb1240ea619ce29b848487902d927d0c1121"
+      }
+    },
+    "AW_E02_SAM2": {
+      "measured": {
+        "available_owners": 53,
+        "encoder_calls_this_invocation": 154,
+        "model_load_seconds": 5.622276390087791,
+        "peak_gpu_allocated_bytes": 3628349440,
+        "peak_gpu_reserved_bytes": 3701473280,
+        "physical_crop_inputs_this_invocation": 462,
+        "requests": 154,
+        "reused_raw_crops_this_invocation": 462,
+        "successful_requests": 154,
+        "wall_seconds": 56.93228901096154
+      },
+      "receipt": {
+        "bytes": 313036,
+        "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/room0/AW_E02_SAM2/receipt.json",
+        "sha256": "111e600069cb7aa6d06309067a50385553667b5fdb79dbffbd6f05dec1911b0a"
+      }
+    },
+    "AW_E03_FC_FROZEN": {
+      "measured": {
+        "available_owners": 53,
+        "model_load_seconds": 8.107811587979086,
+        "peak_gpu_allocated_bytes": 2032777728,
+        "peak_gpu_reserved_bytes": 2401239040,
+        "physical_image_encodings_this_invocation": 92,
+        "physical_region_poolings_this_invocation": 152,
+        "physical_text_calls_this_invocation": 51,
+        "physical_text_inputs_this_invocation": 714,
+        "requests": 154,
+        "successful_requests": 152,
+        "text_seconds": 2.1501307419966906,
+        "wall_seconds": 39.20167982392013
+      },
+      "receipt": {
+        "bytes": 120322,
+        "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/room0/AW_E03_FC_FROZEN/receipt.json",
+        "sha256": "dc6bd55d79195803f6e2ee65c007040834ec6661685da2bc287e8d5f409887b8"
+      }
+    },
+    "AW_E03_OVR": {
+      "measured": {
+        "available_owners": 53,
+        "model_load_seconds": 7.7525055930018425,
+        "peak_gpu_allocated_bytes": 2032777728,
+        "peak_gpu_reserved_bytes": 2401239040,
+        "physical_image_encodings_this_invocation": 92,
+        "physical_region_poolings_this_invocation": 152,
+        "physical_text_calls_this_invocation": 51,
+        "physical_text_inputs_this_invocation": 714,
+        "requests": 154,
+        "successful_requests": 152,
+        "text_seconds": 2.1328427449334413,
+        "wall_seconds": 38.66031830501743
+      },
+      "receipt": {
+        "bytes": 118458,
+        "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/room0/AW_E03_OVR/receipt.json",
+        "sha256": "fadd27d7ab1a1937384bd5ec6887c2db458dad00514a55b2a26db017d39e34c6"
+      }
+    },
+    "E01_shared_readout": {
+      "measured": {
+        "elapsed_seconds": 5.568139225943014,
+        "physical_image_forwards": 0
+      },
+      "receipt": {
+        "bytes": 131437,
+        "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/room0/receipt.json",
+        "sha256": "6fe539982d943271d62254c93e5406c10dc35052afe403d2f874ea9f6353544e"
+      }
+    },
+    "E02_SAM2_masks": {
+      "measured": {
+        "inference_seconds": 13.60427279677242,
+        "model_load_seconds": 2.616439973935485,
+        "parameter_count": 224446642,
+        "peak_gpu_allocated_bytes": 1723341312,
+        "peak_gpu_reserved_bytes": 1828716544,
+        "physical_box_decodes": 154,
+        "physical_image_encodings": 92,
+        "requests": 154,
+        "successful_masks": 154,
+        "wall_seconds": 36.48349617095664
+      },
+      "receipt": {
+        "bytes": 123694,
+        "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/sam2_masks/room0/receipt.json",
+        "sha256": "52cb14ef663ef3cd63ded37c600e7847ab3cf48e26ea41e430699b0ea5a02831"
+      }
+    }
+  },
+  "scene": "room0",
+  "status": "SCENE_COSTS_RECORDED"
+}

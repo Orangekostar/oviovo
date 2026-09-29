@@ -1,0 +1,20 @@
+{
+  "aggregation": "SCENE",
+  "dataset": "ScanNet",
+  "evaluation_identity": "5d17e7591a75f63d9e9db881e18b137adc2c802216fc9152c04ad27b6cc07d6f",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/evaluation_cache/5d17e7591a75f63d9e9db881e18b137adc2c802216fc9152c04ad27b6cc07d6f/receipt.json",
+  "method": "AW_E02_SAM2_DIRECT",
+  "metrics": {
+    "ap25": 0.24287280701754385,
+    "ap50": 0.21052631578947367,
+    "apall": 0.05263157894736842,
+    "defined_classes": 20,
+    "macc": 0.35504127325257007,
+    "miou": 0.2627497228470722,
+    "uap": 0.05263157894736842
+  },
+  "prediction_identity": "65e3c953db5b051dea16665f657d99847d597327ec7a122f435ae1c5e5008665",
+  "rank_mode": "OFFICIAL_CURRENT_CLASS",
+  "scene": "scene0534_00",
+  "status": "COMPLETE"
+}

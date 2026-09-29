@@ -89,7 +89,9 @@ def main():
             from src.static_ovmap.a7_evidence_upgrade.publication import publish
 
             results.append(publish(binding))
-        print(json.dumps(results), flush=True)
+        # Full provenance stays in immutable receipts, not multi-megabyte logs.
+        print(json.dumps([{k: v for k, v in result.items() if k not in {"inputs", "outputs"}}
+                          for result in results]), flush=True)
 
 
 if __name__ == "__main__":

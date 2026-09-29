@@ -1,0 +1,4673 @@
+{
+  "blocked_methods_without_numeric_results": [
+    "AW_E04_SPATIAL",
+    "AW_E04_MIX50"
+  ],
+  "identity": "fd3a699d2110f926dcabe3fbf42570329b040b16c69dc95ba75960ca47d64bc7",
+  "inputs": [
+    {
+      "bytes": 4978,
+      "path": "/home/ww/crove/ovimap-a7-evidence-upgrade-wave1/src/static_ovmap/a7_evidence_upgrade/comparisons.py",
+      "sha256": "3854a71f65a2cbd86a9c7ff685177643b671fe5c502a03c3fdb0dad7b3e5814d"
+    },
+    {
+      "bytes": 47807,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/composition.json",
+      "sha256": "88f4cdedff7251ac3f185c565cf72c3ae5309a2b54e93774de8365aa3958574d"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_A7/FROZEN_N0.json",
+      "sha256": "3cfda865b736b40f9ee723f614da888daf1c429023dab799b80fc26a5ddcb5e2"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "988bed19352b36c78eadd8146ba0cc0fba09f4d7be66e9db260e64da8c66631c"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_DIRECT/FROZEN_N0.json",
+      "sha256": "adb9d77c54538fb85fe90bc94e7d3470a68d57a5ae95c91575a70affe2b879b9"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "283adef7c2b2fd13f165e58a431dfeba9b65efa3eb15033ec4f196fe516e719c"
+    },
+    {
+      "bytes": 764,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_COMBO_QR/FROZEN_N0.json",
+      "sha256": "b240fb1b2618c2ce1ab4c0b10e7411d9e0006843eefe5f9384245782d1bbaf01"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_COMBO_QR/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "9d798a96593ee6516c5637aa40ecdc9df49678dc2be8c72aa1c0f99bb26148d7"
+    },
+    {
+      "bytes": 770,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_A7/FROZEN_N0.json",
+      "sha256": "1e97e47d44a1b1f3b2de4be2a65f71e835ddc7f2c57ebf39cdb1015915a2917d"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "54e5b9992f944c7d7bdb50e599a22d9ab6d2832d311c7676c5bc46998d8e57f9"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_DIRECT/FROZEN_N0.json",
+      "sha256": "2c44bfc35b49fbbed3ceb9d105715058b4957f22bbd2ba44ebd5920c161ca887"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "32ed957b20fcf4758053c6f84930e04d3b011179e277b233c26bbef9f8b57bae"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_A7/FROZEN_N0.json",
+      "sha256": "c4c18c7d36e7af48964e96463e4ab5c8b178f6ee0f49d65e88b124b13ca692da"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "67010e6e5c77e636855341c96f2dede6338c9b021749cce8bd9f3f2580eabcba"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "8837fac3aca55e6a22121fefee3248fafa5540408f6f6690a6e6c6a0f686d343"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "9cbf27915b6a30f936f828c8b05bf915fabf5e048c6c13540cc721aec07905f0"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_A7/FROZEN_N0.json",
+      "sha256": "74fb4c8fc26f9112b337ec22c7419e8d30b16a697d52d2093d7168309af8858b"
+    },
+    {
+      "bytes": 783,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "46e002d9cfec09706c4280ea751300e7b9541b5029069aed4b8674e278ab0938"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "418782ef5d1597c3fb286c78086ec67a15ecc626823b855ea410d22fa737fa60"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b4d609cf9c0bc11a76ec66f92b22a8dfc8d797e8ed0839fecc83642daa12c2c2"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_A7/FROZEN_N0.json",
+      "sha256": "ee2559848c7a95fc0f83ed19cbb04e705421cb8226e807be1a2e611faf0d2bf6"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7b596fee119058ac8f13ad95b5bfccfb4b99760da10a55d0048772b8e7f11038"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_DIRECT/FROZEN_N0.json",
+      "sha256": "74b2c04c226e638afb726ed3382de55954b08558ee204c52d96635a750fea801"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "4c2a1a44121ee960126a0f5751f7b90a9096767b774695d99b42d5f864b3a0fc"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_A7/FROZEN_N0.json",
+      "sha256": "c49b357c23383121d5665ef1d116fac4b5e044c2deb21d5077ed7a23fe950571"
+    },
+    {
+      "bytes": 784,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "63b60bfb468e2307c44e7a52790dbc114f7c796786987b5b896e753a3d29ba95"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_DIRECT/FROZEN_N0.json",
+      "sha256": "80bee8d7ca4212457cf6d47f738f98fa6cbc9b30e674771d28f3aae8484ed2e1"
+    },
+    {
+      "bytes": 784,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6e61a3366dd2d263885274532cebdcd56ae7a00fdf28c09103036f0cdc376850"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_A7/FROZEN_N0.json",
+      "sha256": "d85bb3a3816956609f5de392105beae6e0d857dad1d6aee52a8ef85db8329eec"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "660e3573a73f248112a276205e1f8358aca0dd28fcee65c8b8f6be98df7ca1eb"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_DIRECT/FROZEN_N0.json",
+      "sha256": "47f3cf5ca6abe122ed9e9743730235f850ffa3fb338bb4f3fe1df3fad6a74ce8"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "c47ed3e90ab315897542c7193d718285a46979002dff7a0eff325c199f2059ea"
+    },
+    {
+      "bytes": 764,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_A7/FROZEN_N0.json",
+      "sha256": "8b441b9d99034fd7561c9cc27381aa5af3290e219b94b2e436c9bc51cfb836ff"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "083f3839c51505de4a94538a67476762c6e4a75fed915c9864427b1411f67595"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_DIRECT/FROZEN_N0.json",
+      "sha256": "06db6a90c7c3d1e5fcedfc1ef97e77b44b6677b80c6c684192906b4e6957b1ad"
+    },
+    {
+      "bytes": 785,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "14fb4ab284e6afc4d19f4397e9be539307900028bdc08457ae67df28c6101350"
+    },
+    {
+      "bytes": 770,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E04_SHORTLIST/FROZEN_N0.json",
+      "sha256": "a04047118c911c1004ec478c69d8e9b2539820165f42ff089ae6b928e6733fdc"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E04_SHORTLIST/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6fd12aec93e3b45664063b120d81db11187ba38916325dda4a99586f06d2a942"
+    },
+    {
+      "bytes": 757,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/N0/FROZEN_N0.json",
+      "sha256": "2b5ebd2076ecc4c142bee91f1d750dec0c23db1cb129d7fb16251ce3ccb1b594"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/N0/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "535486d9b699b0a39fbfdf82dd2e7ace85de567087341a5e7f826ddc784ef25f"
+    },
+    {
+      "bytes": 763,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/Q_GAIN/FROZEN_N0.json",
+      "sha256": "7f3fbfbcaeec1d9906e3a3ee45bdb9d2f825ea1fcc141c5ae61c035f3db9b023"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/Q_GAIN/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7ba0d028deeef8ba5991cb8f88d4fb229cf5a1809ccf3386d6b2073fa5f8829b"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_FIXED/FROZEN_N0.json",
+      "sha256": "fb3f2354d071d58732d36de0c75c4710db9774eb3ed095ccd473f6b16168ba3a"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_FIXED/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "3367160b3ec79a8f493fa62e0f6524aa866a489c5d11c3843b171947395e4f09"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_REFIT/FROZEN_N0.json",
+      "sha256": "0d58188435f50d1443f5bb3d2bbd8efc5ce6a62ddc336c98d48f61ad7c24fa9f"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_REFIT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ffc38a2c0ad9080e01edfa2f652fb0a1a147a3440a8336369d405307951ace64"
+    },
+    {
+      "bytes": 765,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/S_SIGLIP2_AREA/FROZEN_N0.json",
+      "sha256": "a11c3c61054cd7075480d51f38338fcc3d76cef13687fadc92b39e4dea7ef23a"
+    },
+    {
+      "bytes": 780,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/S_SIGLIP2_AREA/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "1e1cd9c8ff64d2d216683bb0960f391da03af47146726dc6e97e3f9cab0eb381"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_A7/FROZEN_N0.json",
+      "sha256": "d248517356251c4f60771ef42c4a9476de36e57a19ef8232fd2313105badea25"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b5b604e0b8dbeb221dc4c6125effb15a7afb1b989affd2fe319b5bdc5d8827be"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_DIRECT/FROZEN_N0.json",
+      "sha256": "e79dc7472b41b56d9929b1d95b0cbc52d63a9002e3bed56a6ceb324cd3752ef7"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "45bc6cbad316e6db8a43b90438f62feae39f7c03f48d70954c59d806bd4a82cd"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_COMBO_QR/FROZEN_N0.json",
+      "sha256": "71afd1d867f5cd2330cb1eeb1ef5ebf1eab44e1fbc8274da736e45c2253b9f8e"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_COMBO_QR/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "e95abc32f04f1985356bad7fb973cb2485b8ab15a326c2bc96d6a2ed8e2c66a6"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_A7/FROZEN_N0.json",
+      "sha256": "f6aa8d06122a1d54f4cb7942604ef15b9568c4b3a10678e28c2a9e71e7a954ad"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6847b68378d6811ad79941e3fca0eeb20f076216f0bf1e8cff5b1a2c774203a4"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_DIRECT/FROZEN_N0.json",
+      "sha256": "7494be09ba2e9d6f2fb039dc97eb784dd1d116119efd7a5edfc3613dbbbc9744"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "d1fcf3e0c78460523b7cfabf8c0d3d8cc9cc819ba49e994859f718e1a548e035"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_A7/FROZEN_N0.json",
+      "sha256": "21f351794c2b9b7d473beeb40c3a4c6efca0cd5ba04aceccf6170d9ae01a61f0"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7ff7eef10d8e1cc0de1a3fb94d61d986b40c520b9fc154c5ff689fe8999408ab"
+    },
+    {
+      "bytes": 780,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "019ba2fa87264c2549a61b6cc386f2548d6ba779e687d825958f598f2c963cc6"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ffbff7ef3c61e5c3758d64daadf41fcad2fb502e60d85134cb5b4a2a3df2bb3e"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_A7/FROZEN_N0.json",
+      "sha256": "a5374391ebbfd4768332bc705545801c115017b43e0827b43f4a5df47a9abc3d"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "268fd24d06807f366e5866ba996e494399d44f31775013112693b8f02efacab8"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "f86eb46d3d52d7c1cb5e700b60433642ddd660496cf4c0c2ac38f68c48e6e83a"
+    },
+    {
+      "bytes": 793,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a663d254f01fb758b0f549811056dd90f2632a8d21032aaf1f1b389807ff0064"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_A7/FROZEN_N0.json",
+      "sha256": "b7048e5ba9e79f47bc297d05b66180c0968074fa91e180c81df50c9c23f2f14f"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ad05046ed78da89ae47276c159fd0066871e5ce697b8caffcdd92531244c9918"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_DIRECT/FROZEN_N0.json",
+      "sha256": "0d3b1c7c0ae818e40ce61d6a9b270b282f9eb6905dd49ed9479197072c9f8ee0"
+    },
+    {
+      "bytes": 794,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b14b87f9c0563895b481054c563142a464522cadaac86f131a10e03b4cda198a"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_A7/FROZEN_N0.json",
+      "sha256": "b0e6fd95785ed06a72a13379251373c7819770eaee051684b734f660d0db0449"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "aafd2b553d76f1fcff7eb9f7dff4e90bb32fd3ac83965c4abde6cc7879766350"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_DIRECT/FROZEN_N0.json",
+      "sha256": "bef75217e47f27e6b084560cdde7a70f7914f535038174f4b63d46aa409e5bdd"
+    },
+    {
+      "bytes": 791,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "bd69d82f5f78b71524cdb04f09e56513cf2af1c6749b73b59a1eab0e4788ffac"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_A7/FROZEN_N0.json",
+      "sha256": "6c9e72d2eae9baa8427df9ea32757cb6cfa7c103d37015160f38e3dedc89c5ed"
+    },
+    {
+      "bytes": 791,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "447966cfebe77a5e2d5dc9611c2cc7184525fdf449bb714c8b9f49681dbb9a07"
+    },
+    {
+      "bytes": 783,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_DIRECT/FROZEN_N0.json",
+      "sha256": "5e234184523a73c33882ca102a911663f30219e110e71b0733dc840cfe8d81c5"
+    },
+    {
+      "bytes": 797,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6151028e894a68a9aae40c26d9e318129c4126c7546377038547fd9de426ae35"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_A7/FROZEN_N0.json",
+      "sha256": "573360e44078070f0201e44e54b25fb796e5690e200c9a31f585a3660fb04414"
+    },
+    {
+      "bytes": 784,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "df06d6983937c098b0affb7f6b6349ec4696471b7d00506592637a1913ec7a59"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_DIRECT/FROZEN_N0.json",
+      "sha256": "67f399ad79fbdcab592e0c1e6bdc0c66c69ae20f8081b770a87685ad93988184"
+    },
+    {
+      "bytes": 791,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "5cf8b8b136df74dcc80ab27495d0d571f2fb28b1477926c68927c68e04ca7514"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E04_SHORTLIST/FROZEN_N0.json",
+      "sha256": "14d848540790142c587ee8763534194f892091119c75687fb9af121d8dae4a5c"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E04_SHORTLIST/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "91d62ef9fec794c7b40bcd22a618c993490c30d5e961a14874ce5dce0f1e6d32"
+    },
+    {
+      "bytes": 763,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/N0/FROZEN_N0.json",
+      "sha256": "bf1a856be4e7cfe69ddf8300014408e4222c56250c197312e58c987c604698f6"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/N0/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "f3fbf423fc289586ec2bd140d75fe7bf0d9909aff266f2edf9ccebfb5bcd0a7d"
+    },
+    {
+      "bytes": 767,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/Q_GAIN/FROZEN_N0.json",
+      "sha256": "c3d2ba7c1d9045b945033a9416445f3cb536ffa46c8f7aa7fa2a69e4b15aec3b"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/Q_GAIN/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ab6d20084aafcc787923337e1ff4ccb39fe4ebd3cbccf786d1e632d6f332a009"
+    },
+    {
+      "bytes": 770,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_FIXED/FROZEN_N0.json",
+      "sha256": "e6ad06031b3d3f4d00ca467494e3ae676faf9e6e007b2ca78f990cc6c76834ae"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_FIXED/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ebdb1c35506934fd269ad5eaeb13f06f65b277142879f38dbc2a0734cc2d214a"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_REFIT/FROZEN_N0.json",
+      "sha256": "e76452f7bde62ebd80d27dae01bdea7261efb37743bc3a00c8a2535b469d26c4"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_REFIT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ebe779795326e12e772abc604753969d34e50ce3d966b8fb5625c73fe572a506"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/S_SIGLIP2_AREA/FROZEN_N0.json",
+      "sha256": "5eb71e0b8e80bf1a2b75c7a97c7719b02da4aa63b766dfa24ea2d5b9ad173977"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/S_SIGLIP2_AREA/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6a1c6ccccafe8be746cb1876448d29b243df4db32bf4f1397b57cbbba0a746e9"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_A7/FROZEN_N0.json",
+      "sha256": "3317f01caa81b7c3f91d09f11da52766205a626466d5f3ef3ba9d402b9aa89a8"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "9dcc7a4d398540021e0dcefe5e55375eebe960330b700f514d12e557fb011173"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_DIRECT/FROZEN_N0.json",
+      "sha256": "e400ff09c9ad78ac2491630f0c46503ab03d4e7a0fbf489c59efb8136b0463ef"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6e5f208c59700ee8149bcfec2df3c2d95c4234016fe4905b34e51272e5729b85"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_COMBO_QR/FROZEN_N0.json",
+      "sha256": "d4102296cf7547ee5cfe402004aa5e375350b17bdcb43835b0d59853a38a1b57"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_COMBO_QR/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "f2176daf66274a8bcbd2ef568c9f1a4310eeedab79b54f734b2e301272494ea6"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_A7/FROZEN_N0.json",
+      "sha256": "73d369bccc2b2b8ba842b4795ed587867ad7e36c64b12179dfb87b80a8005e70"
+    },
+    {
+      "bytes": 785,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "0228dbfb6f6fe756e5854ab3edb46b79f5bb32fbcf130817ed831d582b24c3cd"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_DIRECT/FROZEN_N0.json",
+      "sha256": "7e5646bda50174eb9357ee9f5019c86cae7e7a921c42718559c751a82b045b8f"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "cf798e4c3a9a2cd0f1cd540f4f20c7b7bee525d0b119d7187db10ccdbbb29ce5"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_A7/FROZEN_N0.json",
+      "sha256": "af00294c31140c3ab8a18478c927f22a9deeaeafe22692effe72f87bec173bc7"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b8bdd1b247999b660bbce49de99578da8b069ad19c1b30c1bb3cd1e38662acdf"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "d40ea11008b6cbb592082b8360b26de4ff9073cd6b19ce9ce447d49ae46bdf0a"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "0933116067c400c5b57eb8b16d9bed1fff35a21a1107d5a555c83f07378e4806"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_A7/FROZEN_N0.json",
+      "sha256": "b839ab29d2d75e8f5cfa4d7425acd8e95b2165d19797a1308e90b948e62e1188"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a72369fadab4ab5509700255ed483b2b1724a35f5f3f96edc4b073bb988ad777"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "e0d9e3087126434a2740a442d3d8b29d80ca2597460cc9e83d0a99fca9431e64"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7decce3c210f548e9d794e83ca51b2e15cd2cd195d6f57d5fedfa074810f0508"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_A7/FROZEN_N0.json",
+      "sha256": "65e4414a05cab90cc47e19ea244f5787829db0ca4c439d8944bc6e1afa036221"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a7756c3ea64b0c995ca66e7c15f47490a4e7bf958538e5e52897a7bf9db4dfcc"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_DIRECT/FROZEN_N0.json",
+      "sha256": "07f213693da97f0228645fe60e89abc6c2030abe1064def3772661df472890e2"
+    },
+    {
+      "bytes": 795,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "12b7bdc12ac3acffaf9be7b071989ed25ea30330353e3cfe1ad9ff2469e7b410"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_A7/FROZEN_N0.json",
+      "sha256": "588eb6fb164f1d283ee828b973b4601784e1c4c34d529491c0263846346c4838"
+    },
+    {
+      "bytes": 785,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "890e6bffa64e49e68ed2a5c0b74cdfd77aa6f1d3b51217f7236ed2f0f89a6169"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_DIRECT/FROZEN_N0.json",
+      "sha256": "cb8ffc7d53b73226f3fc2ebc292b9b5404a7015b1f6e9244e27f40e32d43593b"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "e74157a00efeeace9cdf0929d9e4ddb32dfac3b8db2e57e789a3c78e026d0c54"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_A7/FROZEN_N0.json",
+      "sha256": "26dab605ac51f1cd32d5feac0e8ed87b249daa96e1f561fcc5af53aab7b20cff"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7804fc6e5e51f14d662e9d2f33f1ba9cf4e2022884e0517582f1a3de9d749443"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_DIRECT/FROZEN_N0.json",
+      "sha256": "0db38e970760de4192f11b3a8657d851a2e864eb70c35e5c190a51e4b7b8b8e1"
+    },
+    {
+      "bytes": 797,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a839644c51bb88c093da2e9fe8c3381fb875063302e7161be99d8982444e3bb2"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_A7/FROZEN_N0.json",
+      "sha256": "5cadf644afc00ab9a45f73e2f88b5ef4850621ad48d86fd16fe2a58f7575806c"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "4d69994fddc8f4246a180d6d52b6eece2428e9c60cbbb0c1ed490b4f60ed5b39"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_DIRECT/FROZEN_N0.json",
+      "sha256": "7f052fdc60b67ce5f275d4423d2d26609a1547cf5d23540195cb7fd6c0922fe5"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "730884527b15b4a7c0c0cc21179ce52ae445a9b4dc4a1c46ebad8e0c0a45d329"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E04_SHORTLIST/FROZEN_N0.json",
+      "sha256": "5f465841fad984194ecdc562315add4104373e1059f78cd06f27b48ef94914bc"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E04_SHORTLIST/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a9107feb80f28b401bbe59355b3ce223dafeb2f62172d382a23047afab5153eb"
+    },
+    {
+      "bytes": 762,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/N0/FROZEN_N0.json",
+      "sha256": "f54b9af88d7fc5f053066f38ef76db7c48ad7640ebc0b0db4ad43f38b73f2714"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/N0/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "4f3dcb28213235afdd15c516b51c5928130e88390f01d83eba81ad01e3addb55"
+    },
+    {
+      "bytes": 765,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/Q_GAIN/FROZEN_N0.json",
+      "sha256": "f0b221c484bf6a2a51fc0fd93a2681c00c5fdfe9fa8a5ea5538a47eedc545986"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/Q_GAIN/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "900d6020cc1ec55eb6582b97eb1d0602c3eb76124fe0daa599c33b3682dbe9b1"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_FIXED/FROZEN_N0.json",
+      "sha256": "30e3a82b6f306e5986929d6eb518933f55d952a146ea6d76c86dcf37fb730e6b"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_FIXED/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "76172b68eaed98162e81a660a3e85998913ba8c4f628643ae69b7617b5840e18"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_REFIT/FROZEN_N0.json",
+      "sha256": "fb1c781c910a33ba05ce89c5f10b19d5443f49d5af0f5a7d347f9bb6190655eb"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_REFIT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "0f366a237f66ce80f1b826d4747bf77329be57429cff08bc0176542b99ff2b79"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/S_SIGLIP2_AREA/FROZEN_N0.json",
+      "sha256": "f9824d2282b56c308b0b71054b9c2e9b401fa01504cc131aa1ba9f787c04794c"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/S_SIGLIP2_AREA/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7bf774c289604966833da1476e3f40b3cee9bf3e94237c8a318a9397b5551683"
+    }
+  ],
+  "ranks": {
+    "FROZEN_N0": {
+      "interaction": {
+        "Q": "AW_E01_GMED_A7",
+        "Q+region": "AW_COMBO_QR",
+        "base": "RV_A7_COS_REFIT",
+        "formula": "Q+region - Q - region + base A7",
+        "per_scene_interaction_pp": {
+          "scene0056_00": {
+            "ap25": -2.2718253968253945,
+            "ap50": -1.7616213151927433,
+            "apall": -0.18565759637188192,
+            "macc": -0.2689594780376281,
+            "miou": -0.6980297522331286
+          },
+          "scene0534_00": {
+            "ap25": -1.1695906432748593,
+            "ap50": -0.43859649122806876,
+            "apall": -0.24366471734892786,
+            "macc": -0.17188684137049992,
+            "miou": -1.4071228926215928
+          }
+        },
+        "pooled_interaction_pp": {
+          "ap25": -1.3616990005878904,
+          "ap50": -0.6047912992357407,
+          "apall": -0.19914756025867092,
+          "macc": -0.27243833663858075,
+          "miou": -1.1979864969933862
+        },
+        "region": "AW_E03_OVR_A7"
+      },
+      "matched_contrasts": {
+        "E01_normalization_A7": {
+          "new": "AW_E01_UNIT_EQ_A7",
+          "old": "AW_E01_RAW_EQ_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          }
+        },
+        "E01_normalization_DIRECT": {
+          "new": "AW_E01_UNIT_EQ_DIRECT",
+          "old": "AW_E01_RAW_EQ_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": -0.023923444976076125,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": -0.02883239544862748
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": -0.008818342151672987,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": -0.008622576114711289
+          }
+        },
+        "E01_robustness_A7": {
+          "new": "AW_E01_GMED_A7",
+          "old": "AW_E01_UNIT_EQ_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.043507581196022826,
+              "miou": 0.062274332867318094
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.019022256039569196,
+            "miou": 0.030999911156978643
+          }
+        },
+        "E01_robustness_DIRECT": {
+          "new": "AW_E01_GMED_DIRECT",
+          "old": "AW_E01_UNIT_EQ_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.5729521800950377,
+              "ap50": 0.06554705215419676,
+              "apall": 0.009973125052489817,
+              "macc": -0.09100197969219015,
+              "miou": 0.5353638063584937
+            },
+            "scene0534_00": {
+              "ap25": 0.023923444976076125,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -4.8745551617564775,
+              "miou": -2.709233810611261
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 0.30590465775651166,
+            "ap50": 0.033987360376250275,
+            "apall": 0.005171250027217328,
+            "macc": -3.3418681864293145,
+            "miou": -2.6527846542068163
+          }
+        },
+        "E02_SAM2_vs_GLOBAL_A7": {
+          "new": "AW_E02_SAM2_A7",
+          "old": "AW_E02_GLOBAL_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": -0.07186596472310569,
+              "ap50": 0.1814926145283266,
+              "apall": 0.03430844948702043,
+              "macc": -0.24213499942474237,
+              "miou": -0.5249182247856671
+            },
+            "scene0534_00": {
+              "ap25": 0.06578947368421906,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.016807529773332774,
+              "miou": 0.03280710115394214
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": -0.0011887974851021443,
+            "ap50": 0.09410728160728077,
+            "apall": 0.017789566400677748,
+            "macc": -0.14313801491945277,
+            "miou": -0.18812975089652628
+          }
+        },
+        "E02_SAM2_vs_GLOBAL_DIRECT": {
+          "new": "AW_E02_SAM2_DIRECT",
+          "old": "AW_E02_GLOBAL_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": -0.6292517006802723,
+              "ap50": -0.18353174603174677,
+              "apall": -0.017636684303351004,
+              "macc": -1.159565880317237,
+              "miou": -1.0670807170545609
+            },
+            "scene0534_00": {
+              "ap25": 4.3859649122806985,
+              "ap50": 3.9473684210526327,
+              "apall": 0.24366471734892856,
+              "macc": 2.754909490742402,
+              "miou": 3.2949267327753855
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 2.7601410934744246,
+            "ap50": 2.682613168724282,
+            "apall": 0.16232281664380413,
+            "macc": 0.9436661541851021,
+            "miou": 1.3430196651089632
+          }
+        },
+        "E03_tuned_vs_frozen_A7": {
+          "new": "AW_E03_OVR_A7",
+          "old": "AW_E03_FC_FROZEN_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": -1.2840136054421747,
+              "ap50": 0.042517006802721136,
+              "apall": 0.017715419501133575,
+              "macc": 1.0307416169202,
+              "miou": 1.201718633997348
+            },
+            "scene0534_00": {
+              "ap25": -0.029239766081862184,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.022089896273524978,
+              "miou": -0.0036387822232031297
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": -0.06533589866922762,
+            "ap50": 0.022045855379185242,
+            "apall": 0.009185773074661674,
+            "macc": 0.3744395438737447,
+            "miou": 0.4267370939891435
+          }
+        },
+        "E03_tuned_vs_frozen_DIRECT": {
+          "new": "AW_E03_OVR_DIRECT",
+          "old": "AW_E03_FC_FROZEN_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": -0.744047619047622,
+              "ap50": -0.7142857142857142,
+              "apall": -0.2380952380952381,
+              "macc": -4.432818520392223,
+              "miou": -0.5838906172958735
+            },
+            "scene0534_00": {
+              "ap25": 9.34210526315789,
+              "ap50": 7.4561403508771935,
+              "apall": 3.6062378167641325,
+              "macc": 8.80274821871197,
+              "miou": 6.30553848070324
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 3.7191358024691286,
+            "ap50": 2.3302469135802473,
+            "apall": 1.4797668038408782,
+            "macc": 2.350357572050288,
+            "miou": 2.4038789518434465
+          }
+        }
+      },
+      "methods": {
+        "AW_C0_SO400M_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -1.01293052185909,
+              "ap50": 1.5730871311228454,
+              "apall": 0.18893006244196686,
+              "macc": 0.08916605379731546,
+              "miou": 2.179482733237839
+            },
+            "scene0534_00": {
+              "ap25": 1.3397129186602852,
+              "ap50": 1.315789473684212,
+              "apall": 0.14619883040935672,
+              "macc": -0.9400421813799298,
+              "miou": -0.9422063494442634
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.27467790146361576,
+              "ap50": 0.09853574005359719,
+              "apall": 0.018188546462355983,
+              "defined_classes": 14,
+              "macc": 0.2267974505076045,
+              "miou": 0.20481079976995034,
+              "uap": 0.018188546462355983
+            },
+            "scene0534_00": {
+              "ap25": 0.2935672514619883,
+              "ap50": 0.17105263157894737,
+              "apall": 0.04824561403508772,
+              "defined_classes": 20,
+              "macc": 0.3577261309795526,
+              "miou": 0.24486738819389003,
+              "uap": 0.04824561403508772
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -0.21658125824792762,
+            "ap50": 1.124316784039006,
+            "apall": 0.1322572888930916,
+            "macc": -0.6116933917318823,
+            "miou": 0.13212051202231845
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.1779835390946458,
+            "ap50": -0.30864197530864057,
+            "apall": -0.1714677640603554,
+            "macc": 1.1859078652554256,
+            "miou": 0.7975835282733212
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2900593233926567,
+            "ap50": 0.14677161829939608,
+            "apall": 0.04063823122465098,
+            "defined_classes": 28,
+            "macc": 0.3010594493228847,
+            "miou": 0.22812832811487516,
+            "uap": 0.04063823122465098
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.28412257646280203,
+            "ap50": 0.13479418581627228,
+            "apall": 0.03321708024872185,
+            "macc": 0.29226179074357855,
+            "miou": 0.2248390939819202
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -1.01293052185909,
+            "ap50": 1.315789473684212,
+            "apall": 0.14619883040935672,
+            "macc": -0.9400421813799298,
+            "miou": -0.9422063494442634
+          }
+        },
+        "AW_C0_SO400M_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -2.50920706277849,
+              "ap50": 1.2858396563753705,
+              "apall": 0.10004518189041973,
+              "macc": -2.717344121968748,
+              "miou": 0.11252548284029218
+            },
+            "scene0534_00": {
+              "ap25": -4.003854332801704,
+              "ap50": 2.631578947368421,
+              "apall": 0.29239766081871343,
+              "macc": -0.33749757853691054,
+              "miou": -2.1023802687600956
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.25971513605442176,
+              "ap50": 0.09566326530612244,
+              "apall": 0.017299697656840512,
+              "defined_classes": 14,
+              "macc": 0.19873234874994386,
+              "miou": 0.18414122726597487,
+              "uap": 0.017299697656840512
+            },
+            "scene0534_00": {
+              "ap25": 0.24013157894736842,
+              "ap50": 0.18421052631578946,
+              "apall": 0.049707602339181284,
+              "defined_classes": 20,
+              "macc": 0.3637515770079828,
+              "miou": 0.2332656490007317,
+              "uap": 0.049707602339181284
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -5.647778147778151,
+            "ap50": 1.9012995749106838,
+            "apall": 0.18904949074702096,
+            "macc": -0.9996409664159378,
+            "miou": -0.7701017106045899
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -6.609180428624869,
+            "ap50": 0.46834081556303697,
+            "apall": -0.11467556220642605,
+            "macc": 0.7979602905713701,
+            "miou": -0.10463869435358708
+          },
+          "released_pool_fraction": {
+            "ap25": 0.23574735449735448,
+            "ap50": 0.15454144620811286,
+            "apall": 0.041206153243190276,
+            "defined_classes": 28,
+            "macc": 0.29717997357604414,
+            "miou": 0.21910610588860607,
+            "uap": 0.041206153243190276
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2499233575008951,
+            "ap50": 0.13993689581095595,
+            "apall": 0.0335036499980109,
+            "macc": 0.2812419628789633,
+            "miou": 0.2087034381333533
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -4.003854332801704,
+            "ap50": 1.2858396563753705,
+            "apall": 0.10004518189041973,
+            "macc": -2.717344121968748,
+            "miou": -2.1023802687600956
+          }
+        },
+        "AW_COMBO_QR": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -3.6961401693544533,
+              "ap50": 1.4842523547880695,
+              "apall": 0.19925153109676894,
+              "macc": 0.2623016033376613,
+              "miou": 2.270985527721309
+            },
+            "scene0534_00": {
+              "ap25": 6.602870813397127,
+              "ap50": 1.315789473684212,
+              "apall": 0.14619883040935672,
+              "macc": 1.2183464305620728,
+              "miou": 0.7991824946444126
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.24784580498866213,
+              "ap50": 0.09764739229024944,
+              "apall": 0.018291761148904004,
+              "defined_classes": 14,
+              "macc": 0.22852880600300796,
+              "miou": 0.20572582771478504,
+              "uap": 0.018291761148904004
+            },
+            "scene0534_00": {
+              "ap25": 0.34619883040935673,
+              "ap50": 0.17105263157894737,
+              "apall": 0.04824561403508772,
+              "defined_classes": 20,
+              "macc": 0.3793100170989726,
+              "miou": 0.2622812766347768,
+              "uap": 0.04824561403508772
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 1.8012157595490963,
+            "ap50": 1.0782543074209727,
+            "apall": 0.1376091615289135,
+            "macc": 0.7167040275755598,
+            "miou": 1.0545964800507457
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": 0.8398134787023781,
+            "ap50": -0.354704451926674,
+            "apall": -0.1661158914245335,
+            "macc": 2.5143052845628677,
+            "miou": 1.7200594963017486
+          },
+          "released_pool_fraction": {
+            "ap25": 0.31023729357062696,
+            "ap50": 0.14631099353321575,
+            "apall": 0.0406917499510092,
+            "defined_classes": 28,
+            "macc": 0.3143434235159591,
+            "miou": 0.23735308779515943,
+            "uap": 0.0406917499510092
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.29702231769900944,
+            "ap50": 0.1343500119345984,
+            "apall": 0.03326868759199586,
+            "macc": 0.3039194115509903,
+            "miou": 0.23400355217478092
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -3.6961401693544533,
+            "ap50": 1.315789473684212,
+            "apall": 0.14619883040935672,
+            "macc": 0.2623016033376613,
+            "miou": 0.7991824946444126
+          }
+        },
+        "AW_E01_GMED_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 1.785714285714285,
+              "ap50": 1.7857142857142863,
+              "apall": 0.1984126984126984,
+              "macc": -0.060723132601622765,
+              "miou": 0.3927160847316147
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.034575489819438365,
+              "miou": 0.01263936413427591
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3026643495393495,
+              "ap50": 0.1006620115995116,
+              "apall": 0.0182833728220633,
+              "defined_classes": 14,
+              "macc": 0.22529855864361512,
+              "miou": 0.1869431332848881,
+              "uap": 0.0182833728220633
+            },
+            "scene0534_00": {
+              "ap25": 0.28017012227538546,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.36747230769154626,
+              "miou": 0.2544158453296754,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.28659611992945533,
+            "ap50": 0.30864197530864057,
+            "apall": 0.03429355281207094,
+            "macc": 0.009517494496763534,
+            "miou": 0.04927000003741022
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.6748061609172629,
+            "ap50": -1.124316784039006,
+            "apall": -0.26943150014137607,
+            "macc": 1.8071187514840714,
+            "miou": 0.714733016288413
+          },
+          "released_pool_fraction": {
+            "ap25": 0.29509109717443055,
+            "ap50": 0.13861487021209243,
+            "apall": 0.039658593863840776,
+            "defined_classes": 28,
+            "macc": 0.30727155818517116,
+            "miou": 0.22729982299502607,
+            "uap": 0.039658593863840776
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.29141723590736746,
+            "ap50": 0.12927837422080843,
+            "apall": 0.032533499276528724,
+            "macc": 0.2963854331675807,
+            "miou": 0.22067948930728176
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.060723132601622765,
+            "miou": 0.01263936413427591
+          }
+        },
+        "AW_E01_GMED_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -5.433509942438511,
+              "ap50": 1.6568005407291129,
+              "apall": 0.15047507607031385,
+              "macc": -2.3607009865033945,
+              "miou": -0.9659043076399865
+            },
+            "scene0534_00": {
+              "ap25": 2.216905901116423,
+              "ap50": 1.315789473684212,
+              "apall": 0.14619883040935672,
+              "macc": -7.992991520621101,
+              "miou": -6.927698539743318
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.23047210725782155,
+              "ap50": 0.09937287414965987,
+              "apall": 0.017803996598639453,
+              "defined_classes": 14,
+              "macc": 0.2022987801045974,
+              "miou": 0.17335692936117209,
+              "uap": 0.017803996598639453
+            },
+            "scene0534_00": {
+              "ap25": 0.3023391812865497,
+              "ap50": 0.17105263157894737,
+              "apall": 0.04824561403508772,
+              "defined_classes": 20,
+              "macc": 0.28719663758714087,
+              "miou": 0.18501246629089949,
+              "uap": 0.04824561403508772
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -1.913495455162123,
+            "ap50": 1.1677237371681803,
+            "apall": 0.11231766633001197,
+            "macc": -5.649467525569795,
+            "miou": -4.954770957668273
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -2.8748977360088412,
+            "ap50": -0.2652350221794664,
+            "apall": -0.19140738662343504,
+            "macc": -3.851866268582488,
+            "miou": -4.2893079414172695
+          },
+          "released_pool_fraction": {
+            "ap25": 0.27309018142351477,
+            "ap50": 0.14720568783068783,
+            "apall": 0.040438834999020186,
+            "defined_classes": 28,
+            "macc": 0.25068170798450556,
+            "miou": 0.17725941341796925,
+            "uap": 0.040438834999020186
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2664056442721856,
+            "ap50": 0.13521275286430362,
+            "apall": 0.03302480531686358,
+            "macc": 0.24474770884586913,
+            "miou": 0.1791846978260358
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -5.433509942438511,
+            "ap50": 1.315789473684212,
+            "apall": 0.14619883040935672,
+            "macc": -7.992991520621101,
+            "miou": -6.927698539743318
+          }
+        },
+        "AW_E01_RAW_EQ_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 1.785714285714285,
+              "ap50": 1.7857142857142863,
+              "apall": 0.1984126984126984,
+              "macc": -0.017215551405599938,
+              "miou": 0.3304417518642966
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.034575489819438365,
+              "miou": 0.01263936413427591
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3026643495393495,
+              "ap50": 0.1006620115995116,
+              "apall": 0.0182833728220633,
+              "defined_classes": 14,
+              "macc": 0.22573363445557534,
+              "miou": 0.18632038995621492,
+              "uap": 0.0182833728220633
+            },
+            "scene0534_00": {
+              "ap25": 0.28017012227538546,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.36747230769154626,
+              "miou": 0.2544158453296754,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.28659611992945533,
+            "ap50": 0.30864197530864057,
+            "apall": 0.03429355281207094,
+            "macc": 0.02853975053633273,
+            "miou": 0.01827008888043158
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.6748061609172629,
+            "ap50": -1.124316784039006,
+            "apall": -0.26943150014137607,
+            "macc": 1.8261410075236406,
+            "miou": 0.6837331051314344
+          },
+          "released_pool_fraction": {
+            "ap25": 0.29509109717443055,
+            "ap50": 0.13861487021209243,
+            "apall": 0.039658593863840776,
+            "defined_classes": 28,
+            "macc": 0.30746178074556685,
+            "miou": 0.2269898238834563,
+            "uap": 0.039658593863840776
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.29141723590736746,
+            "ap50": 0.12927837422080843,
+            "apall": 0.032533499276528724,
+            "macc": 0.2966029710735608,
+            "miou": 0.22036811764294517
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.017215551405599938,
+            "miou": 0.01263936413427591
+          }
+        },
+        "AW_E01_RAW_EQ_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -6.006462122533549,
+              "ap50": 1.591253488574916,
+              "apall": 0.14050195101782403,
+              "macc": -2.269699006811204,
+              "miou": -1.50126811399848
+            },
+            "scene0534_00": {
+              "ap25": 2.216905901116423,
+              "ap50": 1.315789473684212,
+              "apall": 0.14619883040935672,
+              "macc": -3.1184363588646233,
+              "miou": -4.18963233368343
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.22474258545687117,
+              "ap50": 0.0987174036281179,
+              "apall": 0.017704265348114555,
+              "defined_classes": 14,
+              "macc": 0.2032087999015193,
+              "miou": 0.16800329129758715,
+              "uap": 0.017704265348114555
+            },
+            "scene0534_00": {
+              "ap25": 0.3023391812865497,
+              "ap50": 0.17105263157894737,
+              "apall": 0.04824561403508772,
+              "defined_classes": 20,
+              "macc": 0.33594218920470564,
+              "miou": 0.21239312835149837,
+              "uap": 0.04824561403508772
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -2.2105817707669617,
+            "ap50": 1.13373637679193,
+            "apall": 0.10714641630279464,
+            "macc": -2.3075993391404817,
+            "miou": -2.293363727346745
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -3.1719840516136797,
+            "ap50": -0.29922238255571665,
+            "apall": -0.19657863665065237,
+            "macc": -0.5099980821531735,
+            "miou": -1.6279007110957422
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2701193182674664,
+            "ap50": 0.14686581422692532,
+            "apall": 0.04038712249874801,
+            "defined_classes": 28,
+            "macc": 0.2841003898487987,
+            "miou": 0.20387348572118452,
+            "uap": 0.04038712249874801
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.26354088337171044,
+            "ap50": 0.13488501760353264,
+            "apall": 0.03297493969160113,
+            "macc": 0.26957549455311247,
+            "miou": 0.19019820982454277
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -6.006462122533549,
+            "ap50": 1.315789473684212,
+            "apall": 0.14050195101782403,
+            "macc": -3.1184363588646233,
+            "miou": -4.18963233368343
+          }
+        },
+        "AW_E01_UNIT_EQ_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 1.785714285714285,
+              "ap50": 1.7857142857142863,
+              "apall": 0.1984126984126984,
+              "macc": -0.017215551405599938,
+              "miou": 0.3304417518642966
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.034575489819438365,
+              "miou": 0.01263936413427591
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3026643495393495,
+              "ap50": 0.1006620115995116,
+              "apall": 0.0182833728220633,
+              "defined_classes": 14,
+              "macc": 0.22573363445557534,
+              "miou": 0.18632038995621492,
+              "uap": 0.0182833728220633
+            },
+            "scene0534_00": {
+              "ap25": 0.28017012227538546,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.36747230769154626,
+              "miou": 0.2544158453296754,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.28659611992945533,
+            "ap50": 0.30864197530864057,
+            "apall": 0.03429355281207094,
+            "macc": 0.02853975053633273,
+            "miou": 0.01827008888043158
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.6748061609172629,
+            "ap50": -1.124316784039006,
+            "apall": -0.26943150014137607,
+            "macc": 1.8261410075236406,
+            "miou": 0.6837331051314344
+          },
+          "released_pool_fraction": {
+            "ap25": 0.29509109717443055,
+            "ap50": 0.13861487021209243,
+            "apall": 0.039658593863840776,
+            "defined_classes": 28,
+            "macc": 0.30746178074556685,
+            "miou": 0.2269898238834563,
+            "uap": 0.039658593863840776
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.29141723590736746,
+            "ap50": 0.12927837422080843,
+            "apall": 0.032533499276528724,
+            "macc": 0.2966029710735608,
+            "miou": 0.22036811764294517
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.017215551405599938,
+            "miou": 0.01263936413427591
+          }
+        },
+        "AW_E01_UNIT_EQ_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -6.006462122533549,
+              "ap50": 1.591253488574916,
+              "apall": 0.14050195101782403,
+              "macc": -2.269699006811204,
+              "miou": -1.50126811399848
+            },
+            "scene0534_00": {
+              "ap25": 2.1929824561403466,
+              "ap50": 1.315789473684212,
+              "apall": 0.14619883040935672,
+              "macc": -3.1184363588646233,
+              "miou": -4.218464729132057
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.22474258545687117,
+              "ap50": 0.0987174036281179,
+              "apall": 0.017704265348114555,
+              "defined_classes": 14,
+              "macc": 0.2032087999015193,
+              "miou": 0.16800329129758715,
+              "uap": 0.017704265348114555
+            },
+            "scene0534_00": {
+              "ap25": 0.3020999468367889,
+              "ap50": 0.17105263157894737,
+              "apall": 0.04824561403508772,
+              "defined_classes": 20,
+              "macc": 0.33594218920470564,
+              "miou": 0.2121048043970121,
+              "uap": 0.04824561403508772
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -2.2194001129186347,
+            "ap50": 1.13373637679193,
+            "apall": 0.10714641630279464,
+            "macc": -2.3075993391404817,
+            "miou": -2.3019863034614563
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -3.1808023937653527,
+            "ap50": -0.29922238255571665,
+            "apall": -0.19657863665065237,
+            "macc": -0.5099980821531735,
+            "miou": -1.6365232872104536
+          },
+          "released_pool_fraction": {
+            "ap25": 0.27003113484594965,
+            "ap50": 0.14686581422692532,
+            "apall": 0.04038712249874801,
+            "defined_classes": 28,
+            "macc": 0.2841003898487987,
+            "miou": 0.2037872599600374,
+            "uap": 0.04038712249874801
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.26342126614683004,
+            "ap50": 0.13488501760353264,
+            "apall": 0.03297493969160113,
+            "macc": 0.26957549455311247,
+            "miou": 0.19005404784729962
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -6.006462122533549,
+            "ap50": 1.315789473684212,
+            "apall": 0.14050195101782403,
+            "macc": -3.1184363588646233,
+            "miou": -4.218464729132057
+          }
+        },
+        "AW_E02_GLOBAL_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 1.785714285714285,
+              "ap50": 1.7857142857142863,
+              "apall": 0.1984126984126984,
+              "macc": -0.6074715229207994,
+              "miou": 0.35121131228355307
+            },
+            "scene0534_00": {
+              "ap25": 0.023923444976070574,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.016218721037997152,
+              "miou": 0.01449211179013754
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3026643495393495,
+              "ap50": 0.1006620115995116,
+              "apall": 0.0182833728220633,
+              "defined_classes": 14,
+              "macc": 0.21983107474042335,
+              "miou": 0.18652808556040748,
+              "uap": 0.0182833728220633
+            },
+            "scene0534_00": {
+              "ap25": 0.28040935672514616,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.36728874000373185,
+              "miou": 0.25443437280623404,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.28659611992945533,
+            "ap50": 0.30864197530864057,
+            "apall": 0.03429355281207094,
+            "macc": -0.24904189924926934,
+            "miou": -0.0354376711537846
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.6748061609172629,
+            "ap50": -1.124316784039006,
+            "apall": -0.26943150014137607,
+            "macc": 1.5485593577380385,
+            "miou": 0.6300253450972182
+          },
+          "released_pool_fraction": {
+            "ap25": 0.29509109717443055,
+            "ap50": 0.13861487021209243,
+            "apall": 0.039658593863840776,
+            "defined_classes": 28,
+            "macc": 0.3046859642477108,
+            "miou": 0.22645274628311413,
+            "uap": 0.039658593863840776
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.29153685313224786,
+            "ap50": 0.12927837422080843,
+            "apall": 0.032533499276528724,
+            "macc": 0.2935599073720776,
+            "miou": 0.22048122918332075
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.023923444976070574,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.6074715229207994,
+            "miou": 0.01449211179013754
+          }
+        },
+        "AW_E02_GLOBAL_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -0.5314576296719109,
+              "ap50": 0.6934360282574575,
+              "apall": -0.28245040893850415,
+              "macc": -4.097343564255718,
+              "miou": -1.2871013328382834
+            },
+            "scene0534_00": {
+              "ap25": -5.97753854332802,
+              "ap50": 0.0,
+              "apall": 0.1949317738791416,
+              "macc": -3.9634374448205834,
+              "miou": -2.4488996169014317
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.27949263038548755,
+              "ap50": 0.08973922902494331,
+              "apall": 0.013474741748551273,
+              "defined_classes": 14,
+              "macc": 0.18493235432707417,
+              "miou": 0.17014495910918911,
+              "uap": 0.013474741748551273
+            },
+            "scene0534_00": {
+              "ap25": 0.22039473684210525,
+              "ap50": 0.15789473684210525,
+              "apall": 0.048732943469785565,
+              "defined_classes": 20,
+              "macc": 0.32749217834514605,
+              "miou": 0.22980045551931835,
+              "uap": 0.048732943469785565
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -5.08524140468585,
+            "ap50": -0.257724528557865,
+            "apall": -0.07786866197360062,
+            "macc": -4.253799470590291,
+            "miou": -2.0969858029672492
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -6.046643685532568,
+            "ap50": -1.6906832879055118,
+            "apall": -0.38159371492704763,
+            "macc": -2.456198213602984,
+            "miou": -1.4315227867162466
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2413727219282775,
+            "ap50": 0.13295120517342737,
+            "apall": 0.03853697171598406,
+            "defined_classes": 28,
+            "macc": 0.2646383885343006,
+            "miou": 0.20583726496497948,
+            "uap": 0.03853697171598406
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2499436836137964,
+            "ap50": 0.12381698293352428,
+            "apall": 0.03110384260916842,
+            "macc": 0.2562122663361101,
+            "miou": 0.19997270731425373
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -5.97753854332802,
+            "ap50": 0.0,
+            "apall": -0.28245040893850415,
+            "macc": -4.097343564255718,
+            "miou": -2.4488996169014317
+          }
+        },
+        "AW_E02_SAM2_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 1.7138483209911792,
+              "ap50": 1.967206900242613,
+              "apall": 0.23272114789971882,
+              "macc": -0.8496065223455418,
+              "miou": -0.173706912502114
+            },
+            "scene0534_00": {
+              "ap25": 0.08971291866028963,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.03302625081132993,
+              "miou": 0.04729921294407968
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.30194568989211845,
+              "ap50": 0.10247693774479487,
+              "apall": 0.018626457316933503,
+              "defined_classes": 14,
+              "macc": 0.21740972474617593,
+              "miou": 0.1812789033125508,
+              "uap": 0.018626457316933503
+            },
+            "scene0534_00": {
+              "ap25": 0.28106725146198835,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.3674568153014652,
+              "miou": 0.25476244381777347,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.2854073224443532,
+            "ap50": 0.40274925691592134,
+            "apall": 0.05208311921274869,
+            "macc": -0.3921799141687221,
+            "miou": -0.22356742205031088
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.675994958402365,
+            "ap50": -1.0302095024317253,
+            "apall": -0.2516419337406983,
+            "macc": 1.4054213428185858,
+            "miou": 0.4418955942006919
+          },
+          "released_pool_fraction": {
+            "ap25": 0.29507920919957953,
+            "ap50": 0.13955594302816524,
+            "apall": 0.03983648952784755,
+            "defined_classes": 28,
+            "macc": 0.3032545840985163,
+            "miou": 0.22457144877414886,
+            "uap": 0.03983648952784755
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2915064706770534,
+            "ap50": 0.13018583729345007,
+            "apall": 0.03270504152396383,
+            "macc": 0.2924332700238206,
+            "miou": 0.21802067356516214
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.08971291866028963,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.8496065223455418,
+            "miou": -0.173706912502114
+          }
+        },
+        "AW_E02_SAM2_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -1.1607093303521832,
+              "ap50": 0.5099042822257107,
+              "apall": -0.3000870932418551,
+              "macc": -5.256909444572955,
+              "miou": -2.3541820498928443
+            },
+            "scene0534_00": {
+              "ap25": -1.5915736310473216,
+              "ap50": 3.9473684210526327,
+              "apall": 0.43859649122807015,
+              "macc": -1.2085279540781813,
+              "miou": 0.8460271158739541
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.27320011337868483,
+              "ap50": 0.08790391156462585,
+              "apall": 0.013298374905517763,
+              "defined_classes": 14,
+              "macc": 0.1733366955239018,
+              "miou": 0.1594741519386435,
+              "uap": 0.013298374905517763
+            },
+            "scene0534_00": {
+              "ap25": 0.26425438596491224,
+              "ap50": 0.19736842105263158,
+              "apall": 0.05116959064327485,
+              "defined_classes": 20,
+              "macc": 0.35504127325257007,
+              "miou": 0.2627497228470722,
+              "uap": 0.05116959064327485
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -2.3251003112114255,
+            "ap50": 2.424888640166417,
+            "apall": 0.08445415467020351,
+            "macc": -3.3101333164051896,
+            "miou": -0.7539661378582863
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -3.2865025920581434,
+            "ap50": 0.9919298808187704,
+            "apall": -0.2192708982832435,
+            "macc": -1.5125320594178815,
+            "miou": -0.08850312160728346
+          },
+          "released_pool_fraction": {
+            "ap25": 0.26897413286302174,
+            "ap50": 0.1597773368606702,
+            "apall": 0.0401601998824221,
+            "defined_classes": 28,
+            "macc": 0.2740750500761516,
+            "miou": 0.2192674616160691,
+            "uap": 0.0401601998824221
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2687272496717985,
+            "ap50": 0.14263616630862871,
+            "apall": 0.032233982774396305,
+            "macc": 0.2641889843882359,
+            "miou": 0.21111193739285786
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -1.5915736310473216,
+            "ap50": 0.5099042822257107,
+            "apall": -0.3000870932418551,
+            "macc": -5.256909444572955,
+            "miou": -2.3541820498928443
+          }
+        },
+        "AW_E03_FC_FROZEN_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -1.9260154528011664,
+              "ap50": 1.4176423774638056,
+              "apall": 0.1687810095548189,
+              "macc": -0.4387574029432878,
+              "miou": 1.3745805612254747
+            },
+            "scene0534_00": {
+              "ap25": 7.801701222753849,
+              "ap50": 1.7543859649122806,
+              "apall": 0.3898635477582846,
+              "macc": 1.3335678858396094,
+              "miou": 2.197304805354933
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.265547052154195,
+              "ap50": 0.0969812925170068,
+              "apall": 0.017987055933484503,
+              "defined_classes": 14,
+              "macc": 0.22151821594019847,
+              "miou": 0.1967617780498267,
+              "uap": 0.017987055933484503
+            },
+            "scene0534_00": {
+              "ap25": 0.35818713450292394,
+              "ap50": 0.17543859649122806,
+              "apall": 0.050682261208576995,
+              "defined_classes": 20,
+              "macc": 0.380462231651748,
+              "miou": 0.276262499741882,
+              "uap": 0.050682261208576995
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 2.941654538876759,
+            "ap50": 1.3523577759688876,
+            "apall": 0.2932773959008518,
+            "macc": 0.6051853258436324,
+            "miou": 1.7765758830175782
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": 1.9802522580300408,
+            "ap50": -0.0806009833787591,
+            "apall": -0.010447657052595205,
+            "macc": 2.4027865828309403,
+            "miou": 2.442038899268581
+          },
+          "released_pool_fraction": {
+            "ap25": 0.3216416813639036,
+            "ap50": 0.1490520282186949,
+            "apall": 0.042248432294728584,
+            "defined_classes": 28,
+            "macc": 0.31322823649863984,
+            "miou": 0.24457288182482775,
+            "uap": 0.042248432294728584
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.31186709332855944,
+            "ap50": 0.13620994450411744,
+            "apall": 0.03433465857103075,
+            "macc": 0.30099022379597323,
+            "miou": 0.23651213889585435
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -1.9260154528011664,
+            "ap50": 1.4176423774638056,
+            "apall": 0.1687810095548189,
+            "macc": -0.4387574029432878,
+            "miou": 1.3745805612254747
+          }
+        },
+        "AW_E03_FC_FROZEN_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -11.771536994751278,
+              "ap50": -5.202255581719868,
+              "apall": -0.4753516435064055,
+              "macc": -2.0115793264518427,
+              "miou": -3.010689989121637
+            },
+            "scene0534_00": {
+              "ap25": -2.249468367889418,
+              "ap50": -0.8771929824561403,
+              "apall": -0.682261208576998,
+              "macc": -7.203012643428735,
+              "miou": -2.4738555260027244
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.16709183673469388,
+              "ap50": 0.03078231292517006,
+              "apall": 0.01154572940287226,
+              "defined_classes": 14,
+              "macc": 0.20578999670511292,
+              "miou": 0.15290907254635558,
+              "uap": 0.01154572940287226
+            },
+            "scene0534_00": {
+              "ap25": 0.2576754385964913,
+              "ap50": 0.14912280701754385,
+              "apall": 0.03996101364522417,
+              "defined_classes": 20,
+              "macc": 0.2950964263590645,
+              "miou": 0.22955089642830542,
+              "uap": 0.03996101364522417
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -5.357875149541816,
+            "ap50": -1.5400584497806735,
+            "apall": -0.5294004406658732,
+            "macc": -4.598060739770371,
+            "miou": -2.6733106993641202
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -6.319277430388534,
+            "ap50": -2.9730172091283205,
+            "apall": -0.8331254936193202,
+            "macc": -2.8004594827830633,
+            "miou": -2.0078476831131176
+          },
+          "released_pool_fraction": {
+            "ap25": 0.23864638447971784,
+            "ap50": 0.12012786596119929,
+            "apall": 0.034021653929061334,
+            "defined_classes": 28,
+            "macc": 0.2611957758424998,
+            "miou": 0.20007401600101077,
+            "uap": 0.034021653929061334
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2123836376655926,
+            "ap50": 0.08995255997135695,
+            "apall": 0.025753371524048215,
+            "macc": 0.2504432115320887,
+            "miou": 0.1912299844873305
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -11.771536994751278,
+            "ap50": -5.202255581719868,
+            "apall": -0.682261208576998,
+            "macc": -7.203012643428735,
+            "miou": -3.010689989121637
+          }
+        },
+        "AW_E03_OVR_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -3.2100290582433413,
+              "ap50": 1.4601593842665266,
+              "apall": 0.18649642905595246,
+              "macc": 0.5919842139769121,
+              "miou": 2.5762991952228225
+            },
+            "scene0534_00": {
+              "ap25": 7.772461456671986,
+              "ap50": 1.7543859649122806,
+              "apall": 0.3898635477582846,
+              "macc": 1.3556577821131344,
+              "miou": 2.1936660231317298
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.25270691609977325,
+              "ap50": 0.097406462585034,
+              "apall": 0.01816421012849584,
+              "defined_classes": 14,
+              "macc": 0.23182563210940046,
+              "miou": 0.20877896438980018,
+              "uap": 0.01816421012849584
+            },
+            "scene0534_00": {
+              "ap25": 0.3578947368421053,
+              "ap50": 0.17543859649122806,
+              "apall": 0.050682261208576995,
+              "defined_classes": 20,
+              "macc": 0.3806831306144832,
+              "miou": 0.27622611191964996,
+              "uap": 0.050682261208576995
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 2.8763186402075314,
+            "ap50": 1.374403631348073,
+            "apall": 0.3024631689755135,
+            "macc": 0.9796248697173771,
+            "miou": 2.2033129770067217
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": 1.9149163593608132,
+            "ap50": -0.05855512799957385,
+            "apall": -0.0012618839779335311,
+            "macc": 2.7772261267046847,
+            "miou": 2.8687759932577244
+          },
+          "released_pool_fraction": {
+            "ap25": 0.3209883223772113,
+            "ap50": 0.14927248677248675,
+            "apall": 0.0423402900254752,
+            "defined_classes": 28,
+            "macc": 0.3169726319373773,
+            "miou": 0.2488402527647192,
+            "uap": 0.0423402900254752
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.30530082647093926,
+            "ap50": 0.13642252953813103,
+            "apall": 0.03442323566853642,
+            "macc": 0.30625438136194183,
+            "miou": 0.24250253815472506
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -3.2100290582433413,
+            "ap50": 1.4601593842665266,
+            "apall": 0.18649642905595246,
+            "macc": 0.5919842139769121,
+            "miou": 2.1936660231317298
+          }
+        },
+        "AW_E03_OVR_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -12.5155846137989,
+              "ap50": -5.916541296005582,
+              "apall": -0.7134468816016436,
+              "macc": -6.444397846844066,
+              "miou": -3.5945806064175105
+            },
+            "scene0534_00": {
+              "ap25": 7.092636895268472,
+              "ap50": 6.578947368421054,
+              "apall": 2.923976608187134,
+              "macc": 1.5997355752832343,
+              "miou": 3.831682954700516
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.15965136054421766,
+              "ap50": 0.02363945578231292,
+              "apall": 0.009164777021919878,
+              "defined_classes": 14,
+              "macc": 0.16146181150119068,
+              "miou": 0.14707016637339684,
+              "uap": 0.009164777021919878
+            },
+            "scene0534_00": {
+              "ap25": 0.3510964912280702,
+              "ap50": 0.2236842105263158,
+              "apall": 0.07602339181286549,
+              "defined_classes": 20,
+              "macc": 0.3831239085461842,
+              "miou": 0.29260628123533783,
+              "uap": 0.07602339181286549
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -1.6387393470726874,
+            "ap50": 0.7901884637995737,
+            "apall": 0.950366363175005,
+            "macc": -2.247703167720083,
+            "miou": -0.26943174752067367
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -2.6001416279194056,
+            "ap50": -0.642770295548073,
+            "apall": 0.646641310221558,
+            "macc": -0.4501019107327753,
+            "miou": 0.3960312687303291
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2758377425044091,
+            "ap50": 0.14343033509700176,
+            "apall": 0.04881932196747012,
+            "defined_classes": 28,
+            "macc": 0.2846993515630027,
+            "miou": 0.22411280551944524,
+            "uap": 0.04881932196747012
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.25537392588614394,
+            "ap50": 0.12366183315431435,
+            "apall": 0.04259408441739269,
+            "macc": 0.27229286002368747,
+            "miou": 0.21983822380436735
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -12.5155846137989,
+            "ap50": -5.916541296005582,
+            "apall": -0.7134468816016436,
+            "macc": -6.444397846844066,
+            "miou": -3.5945806064175105
+          }
+        },
+        "AW_E04_SHORTLIST": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.28480720668220666,
+              "ap50": 0.08280486874236874,
+              "apall": 0.016299245837936314,
+              "defined_classes": 14,
+              "macc": 0.22590578996963134,
+              "miou": 0.18301597243757195,
+              "uap": 0.016299245837936314
+            },
+            "scene0534_00": {
+              "ap25": 0.28017012227538546,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.3671265527933519,
+              "miou": 0.25428945168833267,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.9614022808467182,
+            "ap50": -1.4329587593476467,
+            "apall": -0.303725052953447,
+            "macc": 1.7976012569873079,
+            "miou": 0.6654630162510028
+          },
+          "released_pool_fraction": {
+            "ap25": 0.292225135975136,
+            "ap50": 0.13552845045900602,
+            "apall": 0.039315658335720066,
+            "defined_classes": 28,
+            "macc": 0.3071763832402035,
+            "miou": 0.22680712299465197,
+            "uap": 0.039315658335720066
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.28248866447879606,
+            "ap50": 0.120349802792237,
+            "apall": 0.031541435784465235,
+            "macc": 0.2965161713814916,
+            "miou": 0.2186527120629523
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          }
+        },
+        "N0": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -6.667692426620997,
+              "ap50": 1.5730871311228454,
+              "apall": 0.18893006244196686,
+              "macc": -3.9895693533349403,
+              "miou": -2.9249504266395303
+            },
+            "scene0534_00": {
+              "ap25": 7.60208358892569,
+              "ap50": 1.7543859649122806,
+              "apall": 0.3898635477582846,
+              "macc": -1.044075971618047,
+              "miou": 0.5080498386208221
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2181302824159967,
+              "ap50": 0.09853574005359719,
+              "apall": 0.018188546462355983,
+              "defined_classes": 14,
+              "macc": 0.18601009643628194,
+              "miou": 0.15376646817117665,
+              "uap": 0.018188546462355983
+            },
+            "scene0534_00": {
+              "ap25": 0.35619095816464236,
+              "ap50": 0.17543859649122806,
+              "apall": 0.050682261208576995,
+              "defined_classes": 20,
+              "macc": 0.3566857930771714,
+              "miou": 0.2593699500745409,
+              "uap": 0.050682261208576995
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.9614022808467182,
+            "ap50": 1.4329587593476467,
+            "apall": 0.303725052953447,
+            "macc": -1.7976012569873079,
+            "miou": -0.6654630162510028
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          },
+          "released_pool_fraction": {
+            "ap25": 0.3018391587836032,
+            "ap50": 0.1498580380524825,
+            "apall": 0.042352908865254536,
+            "defined_classes": 28,
+            "macc": 0.28920037067033044,
+            "miou": 0.22015249283214194,
+            "uap": 0.042352908865254536
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2871606202903195,
+            "ap50": 0.13698716827241264,
+            "apall": 0.03443540383546649,
+            "macc": 0.2713479447567267,
+            "miou": 0.20656820912285878
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -6.667692426620997,
+            "ap50": 1.5730871311228454,
+            "apall": 0.18893006244196686,
+            "macc": -3.9895693533349403,
+            "miou": -2.9249504266395303
+          }
+        },
+        "Q_GAIN": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -5.3191038458895585,
+              "ap50": 1.7195131257631253,
+              "apall": 0.1858140573418352,
+              "macc": -2.572784227233402,
+              "miou": -1.6845310710423362
+            },
+            "scene0534_00": {
+              "ap25": -4.625199362041468,
+              "ap50": 1.315789473684212,
+              "apall": 0.14619883040935672,
+              "macc": -9.852793278286425,
+              "miou": -3.9994615046861997
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.23161616822331108,
+              "ap50": 0.09999999999999999,
+              "apall": 0.018157386411354667,
+              "defined_classes": 14,
+              "macc": 0.20017794769729733,
+              "miou": 0.1661706617271486,
+              "uap": 0.018157386411354667
+            },
+            "scene0534_00": {
+              "ap25": 0.23391812865497078,
+              "ap50": 0.17105263157894737,
+              "apall": 0.04824561403508772,
+              "defined_classes": 20,
+              "macc": 0.2685986200104876,
+              "miou": 0.21429483664147067,
+              "uap": 0.04824561403508772
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -6.616078537374836,
+            "ap50": 1.2002413738524842,
+            "apall": 0.13064158254487493,
+            "macc": -7.101963282904747,
+            "miou": -3.2472253505184954
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -7.577480818221555,
+            "ap50": -0.23271738549516252,
+            "apall": -0.17308347040857208,
+            "macc": -5.304362025917439,
+            "miou": -2.5817623342674927
+          },
+          "released_pool_fraction": {
+            "ap25": 0.22606435060138763,
+            "ap50": 0.14753086419753086,
+            "apall": 0.040622074161168815,
+            "defined_classes": 28,
+            "macc": 0.23615675041115605,
+            "miou": 0.19433486948946702,
+            "uap": 0.040622074161168815
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.23276714843914093,
+            "ap50": 0.1355263157894737,
+            "apall": 0.03320150022322119,
+            "macc": 0.2343882838538925,
+            "miou": 0.19023274918430963
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -5.3191038458895585,
+            "ap50": 1.315789473684212,
+            "apall": 0.14619883040935672,
+            "macc": -9.852793278286425,
+            "miou": -3.9994615046861997
+          }
+        },
+        "RV_A7_COS_FIXED": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 1.785714285714285,
+              "ap50": 1.7857142857142863,
+              "apall": 0.1984126984126984,
+              "macc": -0.5427570754203942,
+              "miou": 0.4148658981224379
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3026643495393495,
+              "ap50": 0.1006620115995116,
+              "apall": 0.0182833728220633,
+              "defined_classes": 14,
+              "macc": 0.2204782192154274,
+              "miou": 0.18716463141879633,
+              "uap": 0.0182833728220633
+            },
+            "scene0534_00": {
+              "ap25": 0.28017012227538546,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.3671265527933519,
+              "miou": 0.25428945168833267,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.30864197530864335,
+            "ap50": 0.30864197530864057,
+            "apall": 0.03429355281207094,
+            "macc": -0.23730264409358992,
+            "miou": 0.06274989834360034
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.6527603055380748,
+            "ap50": -1.124316784039006,
+            "apall": -0.26943150014137607,
+            "macc": 1.560298612893718,
+            "miou": 0.7282129145946031
+          },
+          "released_pool_fraction": {
+            "ap25": 0.29531155572822243,
+            "ap50": 0.13861487021209243,
+            "apall": 0.039658593863840776,
+            "defined_classes": 28,
+            "macc": 0.3048033567992676,
+            "miou": 0.22743462197808798,
+            "uap": 0.039658593863840776
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.29141723590736746,
+            "ap50": 0.12927837422080843,
+            "apall": 0.032533499276528724,
+            "macc": 0.2938023860043896,
+            "miou": 0.22072704155356448
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.5427570754203942,
+            "miou": 0.0
+          }
+        },
+        "RV_A7_COS_REFIT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.28480720668220666,
+              "ap50": 0.08280486874236874,
+              "apall": 0.016299245837936314,
+              "defined_classes": 14,
+              "macc": 0.22590578996963134,
+              "miou": 0.18301597243757195,
+              "uap": 0.016299245837936314
+            },
+            "scene0534_00": {
+              "ap25": 0.28017012227538546,
+              "ap50": 0.15789473684210525,
+              "apall": 0.04678362573099415,
+              "defined_classes": 20,
+              "macc": 0.3671265527933519,
+              "miou": 0.25428945168833267,
+              "uap": 0.04678362573099415
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.9614022808467182,
+            "ap50": -1.4329587593476467,
+            "apall": -0.303725052953447,
+            "macc": 1.7976012569873079,
+            "miou": 0.6654630162510028
+          },
+          "released_pool_fraction": {
+            "ap25": 0.292225135975136,
+            "ap50": 0.13552845045900602,
+            "apall": 0.039315658335720066,
+            "defined_classes": 28,
+            "macc": 0.3071763832402035,
+            "miou": 0.22680712299465197,
+            "uap": 0.039315658335720066
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.28248866447879606,
+            "ap50": 0.120349802792237,
+            "apall": 0.031541435784465235,
+            "macc": 0.2965161713814916,
+            "miou": 0.2186527120629523
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          }
+        },
+        "S_SIGLIP2_AREA": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -0.9363140166711581,
+              "ap50": -0.3411444706087563,
+              "apall": -0.06309414791557631,
+              "macc": -3.70606438475177,
+              "miou": -1.426516794494348
+            },
+            "scene0534_00": {
+              "ap25": -1.15297713981925,
+              "ap50": 3.94736842105263,
+              "apall": 1.2183235867446387,
+              "macc": 2.21948216832672,
+              "miou": 2.0927622026596095
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2754440665154951,
+              "ap50": 0.07939342403628118,
+              "apall": 0.01566830435878055,
+              "defined_classes": 14,
+              "macc": 0.18884514612211364,
+              "miou": 0.16875080449262847,
+              "uap": 0.01566830435878055
+            },
+            "scene0534_00": {
+              "ap25": 0.26864035087719296,
+              "ap50": 0.19736842105263155,
+              "apall": 0.058966861598440536,
+              "defined_classes": 20,
+              "macc": 0.3893213744766191,
+              "miou": 0.27521707371492876,
+              "uap": 0.058966861598440536
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -1.282821259673117,
+            "ap50": 2.600888052276937,
+            "apall": 0.8246233361974096,
+            "macc": 0.45081647637615907,
+            "miou": 1.010343738939759
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -2.244223540519835,
+            "ap50": 1.1679292929292902,
+            "apall": 0.5208982832439625,
+            "macc": 2.2484177333634667,
+            "miou": 1.6758067551907618
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2793969233784048,
+            "ap50": 0.1615373309817754,
+            "apall": 0.04756189169769416,
+            "defined_classes": 28,
+            "macc": 0.3116845480039651,
+            "miou": 0.23691056038404956,
+            "uap": 0.04756189169769416
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.272042208696344,
+            "ap50": 0.13838092254445636,
+            "apall": 0.03731758297861054,
+            "macc": 0.2890832602993664,
+            "miou": 0.22198393910377862
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -1.15297713981925,
+            "ap50": -0.3411444706087563,
+            "apall": -0.06309414791557631,
+            "macc": -3.70606438475177,
+            "miou": -1.426516794494348
+          }
+        }
+      }
+    },
+    "OFFICIAL_CURRENT_CLASS": {
+      "interaction": {
+        "Q": "AW_E01_GMED_A7",
+        "Q+region": "AW_COMBO_QR",
+        "base": "RV_A7_COS_REFIT",
+        "formula": "Q+region - Q - region + base A7",
+        "per_scene_interaction_pp": {
+          "scene0056_00": {
+            "ap25": -0.4861111111111094,
+            "ap50": 0.024092970521542856,
+            "apall": 0.01275510204081648,
+            "macc": -0.2689594780376281,
+            "miou": -0.6980297522331286
+          },
+          "scene0534_00": {
+            "ap25": -2.0467836257309995,
+            "ap50": -1.315789473684212,
+            "apall": -0.7309941520467835,
+            "macc": -0.17188684137049992,
+            "miou": -1.4071228926215928
+          }
+        },
+        "pooled_interaction_pp": {
+          "ap25": -1.6703409758965282,
+          "ap50": -0.913433274544384,
+          "apall": -0.5077895355673122,
+          "macc": -0.27243833663858075,
+          "miou": -1.1979864969933862
+        },
+        "region": "AW_E03_OVR_A7"
+      },
+      "matched_contrasts": {
+        "E01_normalization_A7": {
+          "new": "AW_E01_UNIT_EQ_A7",
+          "old": "AW_E01_RAW_EQ_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          }
+        },
+        "E01_normalization_DIRECT": {
+          "new": "AW_E01_UNIT_EQ_DIRECT",
+          "old": "AW_E01_RAW_EQ_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": -0.023923444976070574,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": -0.02883239544862748
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": -0.008818342151678538,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": -0.008622576114711289
+          }
+        },
+        "E01_robustness_A7": {
+          "new": "AW_E01_GMED_A7",
+          "old": "AW_E01_UNIT_EQ_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.043507581196022826,
+              "miou": 0.062274332867318094
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.019022256039569196,
+            "miou": 0.030999911156978643
+          }
+        },
+        "E01_robustness_DIRECT": {
+          "new": "AW_E01_GMED_DIRECT",
+          "old": "AW_E01_UNIT_EQ_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.8528657189371458,
+              "ap50": 0.05704365079365198,
+              "apall": 0.011219765684051392,
+              "macc": -0.09100197969219015,
+              "miou": 0.5353638063584937
+            },
+            "scene0534_00": {
+              "ap25": 0.023923444976070574,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -4.8745551617564775,
+              "miou": -2.709233810611261
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 0.45104501123019447,
+            "ap50": 0.029578189300411006,
+            "apall": 0.00581765628061906,
+            "macc": -3.3418681864293145,
+            "miou": -2.6527846542068163
+          }
+        },
+        "E02_SAM2_vs_GLOBAL_A7": {
+          "new": "AW_E02_SAM2_A7",
+          "old": "AW_E02_GLOBAL_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": -0.5465483590483655,
+              "ap50": 0.0941147146504312,
+              "apall": 0.020705429931620542,
+              "macc": -0.24213499942474237,
+              "miou": -0.5249182247856671
+            },
+            "scene0534_00": {
+              "ap25": 0.0657894736842135,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.016807529773332774,
+              "miou": 0.03280710115394214
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": -0.2473204093574488,
+            "ap50": 0.04880022241133264,
+            "apall": 0.010736148853432437,
+            "macc": -0.14313801491945277,
+            "miou": -0.18812975089652628
+          }
+        },
+        "E02_SAM2_vs_GLOBAL_DIRECT": {
+          "new": "AW_E02_SAM2_DIRECT",
+          "old": "AW_E02_GLOBAL_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": -0.4854024943310664,
+              "ap50": -0.11975623582766437,
+              "apall": -0.01165280927185701,
+              "macc": -1.159565880317237,
+              "miou": -1.0670807170545609
+            },
+            "scene0534_00": {
+              "ap25": 3.4539473684210535,
+              "ap50": 3.508771929824561,
+              "apall": 0.1949317738791423,
+              "macc": 2.754909490742402,
+              "miou": 3.2949267327753855
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 2.1788653733098156,
+            "ap50": 2.407039976484418,
+            "apall": 0.13113201384806344,
+            "macc": 0.9436661541851021,
+            "miou": 1.3430196651089632
+          }
+        },
+        "E03_tuned_vs_frozen_A7": {
+          "new": "AW_E03_OVR_A7",
+          "old": "AW_E03_FC_FROZEN_A7",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": 0.40249433106575583,
+              "ap50": 0.042517006802721136,
+              "apall": 0.017715419501133575,
+              "macc": 1.0307416169202,
+              "miou": 1.201718633997348
+            },
+            "scene0534_00": {
+              "ap25": -0.029239766081867735,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.022089896273524978,
+              "miou": -0.0036387822232031297
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 0.1918657474212937,
+            "ap50": 0.022045855379185242,
+            "apall": 0.009185773074661674,
+            "macc": 0.3744395438737447,
+            "miou": 0.4267370939891435
+          }
+        },
+        "E03_tuned_vs_frozen_DIRECT": {
+          "new": "AW_E03_OVR_DIRECT",
+          "old": "AW_E03_FC_FROZEN_DIRECT",
+          "per_scene_delta_pp": {
+            "scene0056_00": {
+              "ap25": -1.8239795918367356,
+              "ap50": -1.9302721088435368,
+              "apall": -0.667044595616024,
+              "macc": -4.432818520392223,
+              "miou": -0.5838906172958735
+            },
+            "scene0534_00": {
+              "ap25": 9.385964912280704,
+              "ap50": 7.4561403508771935,
+              "apall": 3.752436647173489,
+              "macc": 8.80274821871197,
+              "miou": 6.30553848070324
+            }
+          },
+          "pooled_delta_pp": {
+            "ap25": 4.115961199294532,
+            "ap50": 2.6256613756613785,
+            "apall": 1.428816382520086,
+            "macc": 2.350357572050288,
+            "miou": 2.4038789518434465
+          }
+        }
+      },
+      "methods": {
+        "AW_C0_SO400M_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -1.0341625966626022,
+              "ap50": -0.172325194646622,
+              "apall": -0.005241396610444066,
+              "macc": 0.08916605379731546,
+              "miou": 2.179482733237839
+            },
+            "scene0534_00": {
+              "ap25": 0.023923444976076125,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.9400421813799298,
+              "miou": -0.9422063494442634
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2926052618016904,
+              "ap50": 0.09915352504638218,
+              "apall": 0.018365414347557202,
+              "defined_classes": 14,
+              "macc": 0.2267974505076045,
+              "miou": 0.20481079976995034,
+              "uap": 0.018365414347557202
+            },
+            "scene0534_00": {
+              "ap25": 0.24850146198830406,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.3577261309795526,
+              "miou": 0.24486738819389003,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -0.5362324575287569,
+            "ap50": -0.08935380463158116,
+            "apall": -0.0027177612054153644,
+            "macc": -0.6116933917318823,
+            "miou": 0.13212051202231845
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -2.1851451018117696,
+            "ap50": -0.8938926300037398,
+            "apall": -0.5052323648002649,
+            "macc": 1.1859078652554256,
+            "miou": 0.7975835282733212
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2799877077654855,
+            "ap50": 0.1409191117524451,
+            "apall": 0.03730058521725189,
+            "defined_classes": 28,
+            "macc": 0.3010594493228847,
+            "miou": 0.22812832811487516,
+            "uap": 0.03730058521725189
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27055336189499724,
+            "ap50": 0.13071711340038406,
+            "apall": 0.03086886701783318,
+            "macc": 0.29226179074357855,
+            "miou": 0.2248390939819202
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -1.0341625966626022,
+            "ap50": -0.172325194646622,
+            "apall": -0.005241396610444066,
+            "macc": -0.9400421813799298,
+            "miou": -0.9422063494442634
+          }
+        },
+        "AW_C0_SO400M_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -2.8995640602783537,
+              "ap50": -0.6510280394208936,
+              "apall": -0.17865924859972426,
+              "macc": -2.717344121968748,
+              "miou": 0.11252548284029218
+            },
+            "scene0534_00": {
+              "ap25": -0.8130648591174877,
+              "ap50": 4.824561403508773,
+              "apall": 0.9259259259259258,
+              "macc": -0.33749757853691054,
+              "miou": -2.1023802687600956
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2739512471655329,
+              "ap50": 0.09436649659863947,
+              "apall": 0.0166312358276644,
+              "defined_classes": 14,
+              "macc": 0.19873234874994386,
+              "miou": 0.18414122726597487,
+              "uap": 0.0166312358276644
+            },
+            "scene0534_00": {
+              "ap25": 0.24013157894736842,
+              "ap50": 0.21052631578947367,
+              "apall": 0.05263157894736842,
+              "defined_classes": 20,
+              "macc": 0.3637515770079828,
+              "miou": 0.2332656490007317,
+              "uap": 0.05263157894736842
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -2.370247208210169,
+            "ap50": 3.0574916338805243,
+            "apall": 0.5589393745257937,
+            "macc": -0.9996409664159378,
+            "miou": -0.7701017106045899
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -4.019159852493182,
+            "ap50": 2.2529528085083657,
+            "apall": 0.05642477093094414,
+            "macc": 0.7979602905713701,
+            "miou": -0.10463869435358708
+          },
+          "released_pool_fraction": {
+            "ap25": 0.26164756025867136,
+            "ap50": 0.17238756613756614,
+            "apall": 0.04291715657456398,
+            "defined_classes": 28,
+            "macc": 0.29717997357604414,
+            "miou": 0.21910610588860607,
+            "uap": 0.04291715657456398
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2570414130564507,
+            "ap50": 0.15244640619405658,
+            "apall": 0.03463140738751641,
+            "macc": 0.2812419628789633,
+            "miou": 0.2087034381333533
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -2.8995640602783537,
+            "ap50": -0.6510280394208936,
+            "apall": -0.17865924859972426,
+            "macc": -2.717344121968748,
+            "miou": -2.1023802687600956
+          }
+        },
+        "AW_COMBO_QR": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -2.3851082779654256,
+              "ap50": -0.3229384702598967,
+              "apall": -0.012606716475763863,
+              "macc": 0.2623016033376613,
+              "miou": 2.270985527721309
+            },
+            "scene0534_00": {
+              "ap25": 5.287081339712921,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 1.2183464305620728,
+              "miou": 0.7991824946444126
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.27909580498866216,
+              "ap50": 0.09764739229024944,
+              "apall": 0.018291761148904004,
+              "defined_classes": 14,
+              "macc": 0.22852880600300796,
+              "miou": 0.20572582771478504,
+              "uap": 0.018291761148904004
+            },
+            "scene0534_00": {
+              "ap25": 0.3011330409356725,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.3793100170989726,
+              "miou": 0.2622812766347768,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 1.5550841476767496,
+            "ap50": -0.1674495771717993,
+            "apall": -0.00653681595039618,
+            "macc": 0.7167040275755598,
+            "miou": 1.0545964800507457
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.09382849660626302,
+            "ap50": -0.9719884025439579,
+            "apall": -0.5090514195452457,
+            "macc": 2.5143052845628677,
+            "miou": 1.7200594963017486
+          },
+          "released_pool_fraction": {
+            "ap25": 0.30090087381754055,
+            "ap50": 0.1401381540270429,
+            "apall": 0.03726239466980208,
+            "defined_classes": 28,
+            "macc": 0.3143434235159591,
+            "miou": 0.23735308779515943,
+            "uap": 0.03726239466980208
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.29011442296216733,
+            "ap50": 0.12996404702231767,
+            "apall": 0.03083204041850658,
+            "macc": 0.3039194115509903,
+            "miou": 0.23400355217478092
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -2.3851082779654256,
+            "ap50": -0.3229384702598967,
+            "apall": -0.012606716475763863,
+            "macc": 0.2623016033376613,
+            "miou": 0.7991824946444126
+          }
+        },
+        "AW_E01_GMED_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.060723132601622765,
+              "miou": 0.3927160847316147
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.034575489819438365,
+              "miou": 0.01263936413427591
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3029468877683164,
+              "ap50": 0.1008767769928484,
+              "apall": 0.018417828313661642,
+              "defined_classes": 14,
+              "macc": 0.22529855864361512,
+              "miou": 0.1869431332848881,
+              "uap": 0.018417828313661642
+            },
+            "scene0534_00": {
+              "ap25": 0.2482622275385433,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.36747230769154626,
+              "miou": 0.2544158453296754,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -0.022045855379182466,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.009517494496763534,
+            "miou": 0.04927000003741022
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.6709584996621951,
+            "ap50": -0.8045388253721586,
+            "apall": -0.5025146035948496,
+            "macc": 1.8071187514840714,
+            "miou": 0.714733016288413
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2851295737869812,
+            "ap50": 0.1418126497987609,
+            "apall": 0.03732776282930604,
+            "defined_classes": 28,
+            "macc": 0.30727155818517116,
+            "miou": 0.22729982299502607,
+            "uap": 0.03732776282930604
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27560455765342984,
+            "ap50": 0.13157873937361717,
+            "apall": 0.0308950740008854,
+            "macc": 0.2963854331675807,
+            "miou": 0.22067948930728176
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.060723132601622765,
+            "miou": 0.01263936413427591
+          }
+        },
+        "AW_E01_GMED_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -7.148580586080594,
+              "ap50": -0.1659798534798515,
+              "apall": -0.054690679690679034,
+              "macc": -2.3607009865033945,
+              "miou": -0.9659043076399865
+            },
+            "scene0534_00": {
+              "ap25": 5.078748006379582,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -7.992991520621101,
+              "miou": -6.927698539743318
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.23146108190751047,
+              "ap50": 0.09921697845804989,
+              "apall": 0.017870921516754852,
+              "defined_classes": 14,
+              "macc": 0.2022987801045974,
+              "miou": 0.17335692936117209,
+              "uap": 0.017870921516754852
+            },
+            "scene0534_00": {
+              "ap25": 0.2990497076023391,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.28719663758714087,
+              "miou": 0.18501246629089949,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -1.7148283814950482,
+            "ap50": -0.08606362773029563,
+            "apall": -0.028358130209982235,
+            "macc": -5.649467525569795,
+            "miou": -4.954770957668273
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -3.3637410257780607,
+            "ap50": -0.8906024531024542,
+            "apall": -0.5308727338048318,
+            "macc": -3.851866268582488,
+            "miou": -4.2893079414172695
+          },
+          "released_pool_fraction": {
+            "ap25": 0.26820174852582257,
+            "ap50": 0.14095201352145795,
+            "apall": 0.03704418152720622,
+            "defined_classes": 28,
+            "macc": 0.25068170798450556,
+            "miou": 0.17725941341796925,
+            "uap": 0.03704418152720622
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.26525539475492477,
+            "ap50": 0.1307488401062179,
+            "apall": 0.030621620602432006,
+            "macc": 0.24474770884586913,
+            "miou": 0.1791846978260358
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -7.148580586080594,
+            "ap50": -0.1659798534798515,
+            "apall": -0.054690679690679034,
+            "macc": -7.992991520621101,
+            "miou": -6.927698539743318
+          }
+        },
+        "AW_E01_RAW_EQ_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.017215551405599938,
+              "miou": 0.3304417518642966
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.034575489819438365,
+              "miou": 0.01263936413427591
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3029468877683164,
+              "ap50": 0.1008767769928484,
+              "apall": 0.018417828313661642,
+              "defined_classes": 14,
+              "macc": 0.22573363445557534,
+              "miou": 0.18632038995621492,
+              "uap": 0.018417828313661642
+            },
+            "scene0534_00": {
+              "ap25": 0.2482622275385433,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.36747230769154626,
+              "miou": 0.2544158453296754,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -0.022045855379182466,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.02853975053633273,
+            "miou": 0.01827008888043158
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.6709584996621951,
+            "ap50": -0.8045388253721586,
+            "apall": -0.5025146035948496,
+            "macc": 1.8261410075236406,
+            "miou": 0.6837331051314344
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2851295737869812,
+            "ap50": 0.1418126497987609,
+            "apall": 0.03732776282930604,
+            "defined_classes": 28,
+            "macc": 0.30746178074556685,
+            "miou": 0.2269898238834563,
+            "uap": 0.03732776282930604
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27560455765342984,
+            "ap50": 0.13157873937361717,
+            "apall": 0.0308950740008854,
+            "macc": 0.2966029710735608,
+            "miou": 0.22036811764294517
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.017215551405599938,
+            "miou": 0.01263936413427591
+          }
+        },
+        "AW_E01_RAW_EQ_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -8.00144630501774,
+              "ap50": -0.22302350427350348,
+              "apall": -0.06591044537473043,
+              "macc": -2.269699006811204,
+              "miou": -1.50126811399848
+            },
+            "scene0534_00": {
+              "ap25": 5.078748006379582,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -3.1184363588646233,
+              "miou": -4.18963233368343
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.222932424718139,
+              "ap50": 0.09864654195011337,
+              "apall": 0.017758723859914338,
+              "defined_classes": 14,
+              "macc": 0.2032087999015193,
+              "miou": 0.16800329129758715,
+              "uap": 0.017758723859914338
+            },
+            "scene0534_00": {
+              "ap25": 0.2990497076023391,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.33594218920470564,
+              "miou": 0.21239312835149837,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -2.157055050573564,
+            "ap50": -0.11564181703070664,
+            "apall": -0.034175786490601295,
+            "macc": -2.3075993391404817,
+            "miou": -2.293363727346745
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -3.8059676948565766,
+            "ap50": -0.9201806424028652,
+            "apall": -0.5366903900854508,
+            "macc": -0.5099980821531735,
+            "miou": -1.6279007110957422
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2637794818350374,
+            "ap50": 0.14065623162845384,
+            "apall": 0.03698600496440003,
+            "defined_classes": 28,
+            "macc": 0.2841003898487987,
+            "miou": 0.20387348572118452,
+            "uap": 0.03698600496440003
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.26099106616023904,
+            "ap50": 0.13046362185224966,
+            "apall": 0.03056552177401175,
+            "macc": 0.26957549455311247,
+            "miou": 0.19019820982454277
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -8.00144630501774,
+            "ap50": -0.22302350427350348,
+            "apall": -0.06591044537473043,
+            "macc": -3.1184363588646233,
+            "miou": -4.18963233368343
+          }
+        },
+        "AW_E01_UNIT_EQ_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.017215551405599938,
+              "miou": 0.3304417518642966
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.034575489819438365,
+              "miou": 0.01263936413427591
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3029468877683164,
+              "ap50": 0.1008767769928484,
+              "apall": 0.018417828313661642,
+              "defined_classes": 14,
+              "macc": 0.22573363445557534,
+              "miou": 0.18632038995621492,
+              "uap": 0.018417828313661642
+            },
+            "scene0534_00": {
+              "ap25": 0.2482622275385433,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.36747230769154626,
+              "miou": 0.2544158453296754,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -0.022045855379182466,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.02853975053633273,
+            "miou": 0.01827008888043158
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.6709584996621951,
+            "ap50": -0.8045388253721586,
+            "apall": -0.5025146035948496,
+            "macc": 1.8261410075236406,
+            "miou": 0.6837331051314344
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2851295737869812,
+            "ap50": 0.1418126497987609,
+            "apall": 0.03732776282930604,
+            "defined_classes": 28,
+            "macc": 0.30746178074556685,
+            "miou": 0.2269898238834563,
+            "uap": 0.03732776282930604
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27560455765342984,
+            "ap50": 0.13157873937361717,
+            "apall": 0.0308950740008854,
+            "macc": 0.2966029710735608,
+            "miou": 0.22036811764294517
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.017215551405599938,
+            "miou": 0.01263936413427591
+          }
+        },
+        "AW_E01_UNIT_EQ_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -8.00144630501774,
+              "ap50": -0.22302350427350348,
+              "apall": -0.06591044537473043,
+              "macc": -2.269699006811204,
+              "miou": -1.50126811399848
+            },
+            "scene0534_00": {
+              "ap25": 5.054824561403512,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -3.1184363588646233,
+              "miou": -4.218464729132057
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.222932424718139,
+              "ap50": 0.09864654195011337,
+              "apall": 0.017758723859914338,
+              "defined_classes": 14,
+              "macc": 0.2032087999015193,
+              "miou": 0.16800329129758715,
+              "uap": 0.017758723859914338
+            },
+            "scene0534_00": {
+              "ap25": 0.2988104731525784,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.33594218920470564,
+              "miou": 0.2121048043970121,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -2.165873392725243,
+            "ap50": -0.11564181703070664,
+            "apall": -0.034175786490601295,
+            "macc": -2.3075993391404817,
+            "miou": -2.3019863034614563
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -3.8147860370082554,
+            "ap50": -0.9201806424028652,
+            "apall": -0.5366903900854508,
+            "macc": -0.5099980821531735,
+            "miou": -1.6365232872104536
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2636912984135206,
+            "ap50": 0.14065623162845384,
+            "apall": 0.03698600496440003,
+            "defined_classes": 28,
+            "macc": 0.2841003898487987,
+            "miou": 0.2037872599600374,
+            "uap": 0.03698600496440003
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.26087144893535874,
+            "ap50": 0.13046362185224966,
+            "apall": 0.03056552177401175,
+            "macc": 0.26957549455311247,
+            "miou": 0.19005404784729962
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -8.00144630501774,
+            "ap50": -0.22302350427350348,
+            "apall": -0.06591044537473043,
+            "macc": -3.1184363588646233,
+            "miou": -4.218464729132057
+          }
+        },
+        "AW_E02_GLOBAL_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.6074715229207994,
+              "miou": 0.35121131228355307
+            },
+            "scene0534_00": {
+              "ap25": 0.023923444976076125,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.016218721037997152,
+              "miou": 0.01449211179013754
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3029468877683164,
+              "ap50": 0.1008767769928484,
+              "apall": 0.018417828313661642,
+              "defined_classes": 14,
+              "macc": 0.21983107474042335,
+              "miou": 0.18652808556040748,
+              "uap": 0.018417828313661642
+            },
+            "scene0534_00": {
+              "ap25": 0.24850146198830406,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.36728874000373185,
+              "miou": 0.25443437280623404,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -0.022045855379182466,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.24904189924926934,
+            "miou": -0.0354376711537846
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.6709584996621951,
+            "ap50": -0.8045388253721586,
+            "apall": -0.5025146035948496,
+            "macc": 1.5485593577380385,
+            "miou": 0.6300253450972182
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2851295737869812,
+            "ap50": 0.1418126497987609,
+            "apall": 0.03732776282930604,
+            "defined_classes": 28,
+            "macc": 0.3046859642477108,
+            "miou": 0.22645274628311413,
+            "uap": 0.03732776282930604
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27572417487831025,
+            "ap50": 0.13157873937361717,
+            "apall": 0.0308950740008854,
+            "macc": 0.2935599073720776,
+            "miou": 0.22048122918332075
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.6074715229207994,
+            "miou": 0.01449211179013754
+          }
+        },
+        "AW_E02_GLOBAL_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -2.8364971668543184,
+              "ap50": -1.177530306994591,
+              "apall": -0.500292531542531,
+              "macc": -4.097343564255718,
+              "miou": -1.2871013328382834
+            },
+            "scene0534_00": {
+              "ap25": -3.992889420520998,
+              "ap50": 1.315789473684212,
+              "apall": 0.7309941520467835,
+              "macc": -3.9634374448205834,
+              "miou": -2.4488996169014317
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2745819160997732,
+              "ap50": 0.08910147392290249,
+              "apall": 0.013414902998236333,
+              "defined_classes": 14,
+              "macc": 0.18493235432707417,
+              "miou": 0.17014495910918911,
+              "uap": 0.013414902998236333
+            },
+            "scene0534_00": {
+              "ap25": 0.20833333333333331,
+              "ap50": 0.17543859649122806,
+              "apall": 0.050682261208576995,
+              "defined_classes": 20,
+              "macc": 0.32749217834514605,
+              "miou": 0.22980045551931835,
+              "uap": 0.050682261208576995
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -4.266558201743384,
+            "ap50": 0.3153546556324355,
+            "apall": 0.25499234989975683,
+            "macc": -4.253799470590291,
+            "miou": -2.0969858029672492
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -5.9154708460263965,
+            "ap50": -0.4891841697397231,
+            "apall": -0.24752225369509273,
+            "macc": -2.456198213602984,
+            "miou": -1.4315227867162466
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2426844503233392,
+            "ap50": 0.14496619635508526,
+            "apall": 0.03987768632830361,
+            "defined_classes": 28,
+            "macc": 0.2646383885343006,
+            "miou": 0.20583726496497948,
+            "uap": 0.03987768632830361
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.24145762471655327,
+            "ap50": 0.13227003520706526,
+            "apall": 0.032048582103406664,
+            "macc": 0.2562122663361101,
+            "miou": 0.19997270731425373
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -3.992889420520998,
+            "ap50": -1.177530306994591,
+            "apall": -0.500292531542531,
+            "macc": -4.097343564255718,
+            "miou": -2.4488996169014317
+          }
+        },
+        "AW_E02_SAM2_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -0.5465483590483655,
+              "ap50": 0.0941147146504312,
+              "apall": 0.020705429931620542,
+              "macc": -0.8496065223455418,
+              "miou": -0.173706912502114
+            },
+            "scene0534_00": {
+              "ap25": 0.08971291866028963,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.03302625081132993,
+              "miou": 0.04729921294407968
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.29748140417783275,
+              "ap50": 0.10181792413935271,
+              "apall": 0.018624882612977848,
+              "defined_classes": 14,
+              "macc": 0.21740972474617593,
+              "miou": 0.1812789033125508,
+              "uap": 0.018624882612977848
+            },
+            "scene0534_00": {
+              "ap25": 0.2491593567251462,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.3674568153014652,
+              "miou": 0.25476244381777347,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -0.2693662647366313,
+            "ap50": 0.04880022241133264,
+            "apall": 0.010736148853432437,
+            "macc": -0.3921799141687221,
+            "miou": -0.22356742205031088
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.918278909019644,
+            "ap50": -0.755738602960826,
+            "apall": -0.4917784547414171,
+            "macc": 1.4054213428185858,
+            "miou": 0.4418955942006919
+          },
+          "released_pool_fraction": {
+            "ap25": 0.28265636969340674,
+            "ap50": 0.14230065202287423,
+            "apall": 0.037435124317840365,
+            "defined_classes": 28,
+            "macc": 0.3032545840985163,
+            "miou": 0.22457144877414886,
+            "uap": 0.037435124317840365
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2733203804514895,
+            "ap50": 0.13204931294686933,
+            "apall": 0.030998601150543502,
+            "macc": 0.2924332700238206,
+            "miou": 0.21802067356516214
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -0.5465483590483655,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.8496065223455418,
+            "miou": -0.173706912502114
+          }
+        },
+        "AW_E02_SAM2_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -3.321899661185385,
+              "ap50": -1.2972865428222555,
+              "apall": -0.5119453408143879,
+              "macc": -5.256909444572955,
+              "miou": -2.3541820498928443
+            },
+            "scene0534_00": {
+              "ap25": -0.5389420520999444,
+              "ap50": 4.824561403508773,
+              "apall": 0.9259259259259258,
+              "macc": -1.2085279540781813,
+              "miou": 0.8460271158739541
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.26972789115646256,
+              "ap50": 0.08790391156462585,
+              "apall": 0.013298374905517763,
+              "defined_classes": 14,
+              "macc": 0.1733366955239018,
+              "miou": 0.1594741519386435,
+              "uap": 0.013298374905517763
+            },
+            "scene0534_00": {
+              "ap25": 0.24287280701754385,
+              "ap50": 0.21052631578947367,
+              "apall": 0.05263157894736842,
+              "defined_classes": 20,
+              "macc": 0.35504127325257007,
+              "miou": 0.2627497228470722,
+              "uap": 0.05263157894736842
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -2.0876928284335685,
+            "ap50": 2.7223946321168535,
+            "apall": 0.3861243637478202,
+            "macc": -3.3101333164051896,
+            "miou": -0.7539661378582863
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -3.736605472716581,
+            "ap50": 1.917855806744695,
+            "apall": -0.11639023984702929,
+            "macc": -1.5125320594178815,
+            "miou": -0.08850312160728346
+          },
+          "released_pool_fraction": {
+            "ap25": 0.26447310405643737,
+            "ap50": 0.16903659611992944,
+            "apall": 0.04118900646678424,
+            "defined_classes": 28,
+            "macc": 0.2740750500761516,
+            "miou": 0.2192674616160691,
+            "uap": 0.04118900646678424
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2563003490870032,
+            "ap50": 0.14921511367704976,
+            "apall": 0.03296497692644309,
+            "macc": 0.2641889843882359,
+            "miou": 0.21111193739285786
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -3.321899661185385,
+            "ap50": -1.2972865428222555,
+            "apall": -0.5119453408143879,
+            "macc": -5.256909444572955,
+            "miou": -2.3541820498928443
+          }
+        },
+        "AW_E03_FC_FROZEN_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -2.301491497920072,
+              "ap50": -0.3895484475841607,
+              "apall": -0.04307723801771392,
+              "macc": -0.4387574029432878,
+              "miou": 1.3745805612254747
+            },
+            "scene0534_00": {
+              "ap25": 7.363104731525786,
+              "ap50": 1.315789473684212,
+              "apall": 0.7309941520467835,
+              "macc": 1.3335678858396094,
+              "miou": 2.197304805354933
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2799319727891157,
+              "ap50": 0.0969812925170068,
+              "apall": 0.017987055933484503,
+              "defined_classes": 14,
+              "macc": 0.22151821594019847,
+              "miou": 0.1967617780498267,
+              "uap": 0.017987055933484503
+            },
+            "scene0534_00": {
+              "ap25": 0.32189327485380115,
+              "ap50": 0.17543859649122806,
+              "apall": 0.050682261208576995,
+              "defined_classes": 20,
+              "macc": 0.380462231651748,
+              "miou": 0.276262499741882,
+              "uap": 0.050682261208576995
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 3.0556052315311666,
+            "ap50": 0.7239378419933995,
+            "apall": 0.49206694654225436,
+            "macc": 0.6051853258436324,
+            "miou": 1.7765758830175782
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": 1.406692587248154,
+            "ap50": -0.0806009833787591,
+            "apall": -0.010447657052595205,
+            "macc": 2.4027865828309403,
+            "miou": 2.442038899268581
+          },
+          "released_pool_fraction": {
+            "ap25": 0.3159060846560847,
+            "ap50": 0.1490520282186949,
+            "apall": 0.042248432294728584,
+            "defined_classes": 28,
+            "macc": 0.31322823649863984,
+            "miou": 0.24457288182482775,
+            "uap": 0.042248432294728584
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.30091262382145845,
+            "ap50": 0.13620994450411744,
+            "apall": 0.03433465857103075,
+            "macc": 0.30099022379597323,
+            "miou": 0.23651213889585435
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -2.301491497920072,
+            "ap50": -0.3895484475841607,
+            "apall": -0.04307723801771392,
+            "macc": -0.4387574029432878,
+            "miou": 1.3745805612254747
+          }
+        },
+        "AW_E03_FC_FROZEN_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -9.121219389076538,
+              "ap50": -5.938017835339263,
+              "apall": -0.3300670339360812,
+              "macc": -2.0115793264518427,
+              "miou": -3.010689989121637
+            },
+            "scene0534_00": {
+              "ap25": -1.1529771398192419,
+              "ap50": 0.0,
+              "apall": -0.1949317738791423,
+              "macc": -7.203012643428735,
+              "miou": -2.4738555260027244
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.21173469387755103,
+              "ap50": 0.041496598639455776,
+              "apall": 0.01511715797430083,
+              "defined_classes": 14,
+              "macc": 0.20578999670511292,
+              "miou": 0.15290907254635558,
+              "uap": 0.01511715797430083
+            },
+            "scene0534_00": {
+              "ap25": 0.23673245614035088,
+              "ap50": 0.16228070175438594,
+              "apall": 0.041423001949317736,
+              "defined_classes": 20,
+              "macc": 0.2950964263590645,
+              "miou": 0.22955089642830542,
+              "uap": 0.041423001949317736
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -3.2120314527721905,
+            "ap50": -0.6869969022746808,
+            "apall": -0.04254504640307105,
+            "macc": -4.598060739770371,
+            "miou": -2.6733106993641202
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -4.860944097055203,
+            "ap50": -1.4915357276468395,
+            "apall": -0.5450596499979206,
+            "macc": -2.8004594827830633,
+            "miou": -2.0078476831131176
+          },
+          "released_pool_fraction": {
+            "ap25": 0.25322971781305115,
+            "ap50": 0.1349426807760141,
+            "apall": 0.03690231236527533,
+            "defined_classes": 28,
+            "macc": 0.2611957758424998,
+            "miou": 0.20007401600101077,
+            "uap": 0.03690231236527533
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.22423357500895097,
+            "ap50": 0.10188865019692087,
+            "apall": 0.02827007996180928,
+            "macc": 0.2504432115320887,
+            "miou": 0.1912299844873305
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -9.121219389076538,
+            "ap50": -5.938017835339263,
+            "apall": -0.3300670339360812,
+            "macc": -7.203012643428735,
+            "miou": -3.010689989121637
+          }
+        },
+        "AW_E03_OVR_A7": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -1.898997166854316,
+              "ap50": -0.34703144078143955,
+              "apall": -0.025361818516580342,
+              "macc": 0.5919842139769121,
+              "miou": 2.5762991952228225
+            },
+            "scene0534_00": {
+              "ap25": 7.333864965443918,
+              "ap50": 1.315789473684212,
+              "apall": 0.7309941520467835,
+              "macc": 1.3556577821131344,
+              "miou": 2.1936660231317298
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.28395691609977325,
+              "ap50": 0.097406462585034,
+              "apall": 0.01816421012849584,
+              "defined_classes": 14,
+              "macc": 0.23182563210940046,
+              "miou": 0.20877896438980018,
+              "uap": 0.01816421012849584
+            },
+            "scene0534_00": {
+              "ap25": 0.32160087719298247,
+              "ap50": 0.17543859649122806,
+              "apall": 0.050682261208576995,
+              "defined_classes": 20,
+              "macc": 0.3806831306144832,
+              "miou": 0.27622611191964996,
+              "uap": 0.050682261208576995
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 3.2474709789524603,
+            "ap50": 0.7459836973725847,
+            "apall": 0.501252719616916,
+            "macc": 0.9796248697173771,
+            "miou": 2.2033129770067217
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": 1.5985583346694476,
+            "ap50": -0.05855512799957385,
+            "apall": -0.0012618839779335311,
+            "macc": 2.7772261267046847,
+            "miou": 2.8687759932577244
+          },
+          "released_pool_fraction": {
+            "ap25": 0.31782474213029765,
+            "ap50": 0.14927248677248675,
+            "apall": 0.0423402900254752,
+            "defined_classes": 28,
+            "macc": 0.3169726319373773,
+            "miou": 0.2488402527647192,
+            "uap": 0.0423402900254752
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.30277889664637786,
+            "ap50": 0.13642252953813103,
+            "apall": 0.03442323566853642,
+            "macc": 0.30625438136194183,
+            "miou": 0.24250253815472506
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -1.898997166854316,
+            "ap50": -0.34703144078143955,
+            "apall": -0.025361818516580342,
+            "macc": 0.5919842139769121,
+            "miou": 2.1936660231317298
+          }
+        },
+        "AW_E03_OVR_DIRECT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -10.945198980913274,
+              "ap50": -7.868289944182799,
+              "apall": -0.9971116295521052,
+              "macc": -6.444397846844066,
+              "miou": -3.5945806064175105
+            },
+            "scene0534_00": {
+              "ap25": 8.232987772461462,
+              "ap50": 7.4561403508771935,
+              "apall": 3.557504873294347,
+              "macc": 1.5997355752832343,
+              "miou": 3.831682954700516
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.19349489795918368,
+              "ap50": 0.022193877551020407,
+              "apall": 0.00844671201814059,
+              "defined_classes": 14,
+              "macc": 0.16146181150119068,
+              "miou": 0.14707016637339684,
+              "uap": 0.00844671201814059
+            },
+            "scene0534_00": {
+              "ap25": 0.3305921052631579,
+              "ap50": 0.23684210526315788,
+              "apall": 0.07894736842105263,
+              "defined_classes": 20,
+              "macc": 0.3831239085461842,
+              "miou": 0.29260628123533783,
+              "uap": 0.07894736842105263
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.9039297465223417,
+            "ap50": 1.9386644733866976,
+            "apall": 1.386271336117015,
+            "macc": -2.247703167720083,
+            "miou": -0.26943174752067367
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -0.744982897760671,
+            "ap50": 1.134125648014539,
+            "apall": 0.8837567325221652,
+            "macc": -0.4501019107327753,
+            "miou": 0.3960312687303291
+          },
+          "released_pool_fraction": {
+            "ap25": 0.29438932980599647,
+            "ap50": 0.16119929453262788,
+            "apall": 0.05119047619047619,
+            "defined_classes": 28,
+            "macc": 0.2846993515630027,
+            "miou": 0.22411280551944524,
+            "uap": 0.05119047619047619
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2620435016111708,
+            "ap50": 0.12951799140708914,
+            "apall": 0.04369704021959661,
+            "macc": 0.27229286002368747,
+            "miou": 0.21983822380436735
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -10.945198980913274,
+            "ap50": -7.868289944182799,
+            "apall": -0.9971116295521052,
+            "macc": -6.444397846844066,
+            "miou": -3.5945806064175105
+          }
+        },
+        "AW_E04_SHORTLIST": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3029468877683164,
+              "ap50": 0.1008767769928484,
+              "apall": 0.018417828313661642,
+              "defined_classes": 14,
+              "macc": 0.22590578996963134,
+              "miou": 0.18301597243757195,
+              "uap": 0.018417828313661642
+            },
+            "scene0534_00": {
+              "ap25": 0.2482622275385433,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.3671265527933519,
+              "miou": 0.25428945168833267,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.6489126442830127,
+            "ap50": -0.8045388253721586,
+            "apall": -0.5025146035948496,
+            "macc": 1.7976012569873079,
+            "miou": 0.6654630162510028
+          },
+          "released_pool_fraction": {
+            "ap25": 0.28535003234077305,
+            "ap50": 0.1418126497987609,
+            "apall": 0.03732776282930604,
+            "defined_classes": 28,
+            "macc": 0.3071763832402035,
+            "miou": 0.22680712299465197,
+            "uap": 0.03732776282930604
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27560455765342984,
+            "ap50": 0.13157873937361717,
+            "apall": 0.0308950740008854,
+            "macc": 0.2965161713814916,
+            "miou": 0.2186527120629523
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          }
+        },
+        "N0": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -8.481660535231972,
+              "ap50": -0.23410369392512093,
+              "apall": -0.022928185130565923,
+              "macc": -3.9895693533349403,
+              "miou": -2.9249504266395303
+            },
+            "scene0534_00": {
+              "ap25": 10.792873062609907,
+              "ap50": 1.315789473684212,
+              "apall": 0.7309941520467835,
+              "macc": -1.044075971618047,
+              "miou": 0.5080498386208221
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2181302824159967,
+              "ap50": 0.09853574005359719,
+              "apall": 0.018188546462355983,
+              "defined_classes": 14,
+              "macc": 0.18601009643628194,
+              "miou": 0.15376646817117665,
+              "uap": 0.018188546462355983
+            },
+            "scene0534_00": {
+              "ap25": 0.35619095816464236,
+              "ap50": 0.17543859649122806,
+              "apall": 0.050682261208576995,
+              "defined_classes": 20,
+              "macc": 0.3566857930771714,
+              "miou": 0.2593699500745409,
+              "uap": 0.050682261208576995
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 1.6489126442830127,
+            "ap50": 0.8045388253721586,
+            "apall": 0.5025146035948496,
+            "macc": -1.7976012569873079,
+            "miou": -0.6654630162510028
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          },
+          "released_pool_fraction": {
+            "ap25": 0.3018391587836032,
+            "ap50": 0.1498580380524825,
+            "apall": 0.042352908865254536,
+            "defined_classes": 28,
+            "macc": 0.28920037067033044,
+            "miou": 0.22015249283214194,
+            "uap": 0.042352908865254536
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2871606202903195,
+            "ap50": 0.13698716827241264,
+            "apall": 0.03443540383546649,
+            "macc": 0.2713479447567267,
+            "miou": 0.20656820912285878
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -8.481660535231972,
+            "ap50": -0.23410369392512093,
+            "apall": -0.022928185130565923,
+            "macc": -3.9895693533349403,
+            "miou": -2.9249504266395303
+          }
+        },
+        "Q_GAIN": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -7.694198988841852,
+              "ap50": -0.012264521193090794,
+              "apall": -0.004312266217027655,
+              "macc": -2.572784227233402,
+              "miou": -1.6845310710423362
+            },
+            "scene0534_00": {
+              "ap25": -2.0923046251993567,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -9.852793278286425,
+              "miou": -3.9994615046861997
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.2260048978798979,
+              "ap50": 0.1007541317809175,
+              "apall": 0.018374705651491366,
+              "defined_classes": 14,
+              "macc": 0.20017794769729733,
+              "miou": 0.1661706617271486,
+              "uap": 0.018374705651491366
+            },
+            "scene0534_00": {
+              "ap25": 0.22733918128654973,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.2685986200104876,
+              "miou": 0.21429483664147067,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": -6.991127870757497,
+            "ap50": -0.006359381359380412,
+            "apall": -0.002235989890311124,
+            "macc": -7.101963282904747,
+            "miou": -3.2472253505184954
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -8.640040515040509,
+            "ap50": -0.810898206731539,
+            "apall": -0.5047505934851606,
+            "macc": -5.304362025917439,
+            "miou": -2.5817623342674927
+          },
+          "released_pool_fraction": {
+            "ap25": 0.2154387536331981,
+            "ap50": 0.1417490559851671,
+            "apall": 0.03730540293040293,
+            "defined_classes": 28,
+            "macc": 0.23615675041115605,
+            "miou": 0.19433486948946702,
+            "uap": 0.03730540293040293
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2266720395832238,
+            "ap50": 0.13151741676765172,
+            "apall": 0.030873512669800263,
+            "macc": 0.2343882838538925,
+            "miou": 0.19023274918430963
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -7.694198988841852,
+            "ap50": -0.012264521193090794,
+            "apall": -0.004312266217027655,
+            "macc": -9.852793278286425,
+            "miou": -3.9994615046861997
+          }
+        },
+        "RV_A7_COS_FIXED": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": -0.5427570754203942,
+              "miou": 0.4148658981224379
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3029468877683164,
+              "ap50": 0.1008767769928484,
+              "apall": 0.018417828313661642,
+              "defined_classes": 14,
+              "macc": 0.2204782192154274,
+              "miou": 0.18716463141879633,
+              "uap": 0.018417828313661642
+            },
+            "scene0534_00": {
+              "ap25": 0.2482622275385433,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.3671265527933519,
+              "miou": 0.25428945168833267,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.23730264409358992,
+            "miou": 0.06274989834360034
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.6489126442830127,
+            "ap50": -0.8045388253721586,
+            "apall": -0.5025146035948496,
+            "macc": 1.560298612893718,
+            "miou": 0.7282129145946031
+          },
+          "released_pool_fraction": {
+            "ap25": 0.28535003234077305,
+            "ap50": 0.1418126497987609,
+            "apall": 0.03732776282930604,
+            "defined_classes": 28,
+            "macc": 0.3048033567992676,
+            "miou": 0.22743462197808798,
+            "uap": 0.03732776282930604
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27560455765342984,
+            "ap50": 0.13157873937361717,
+            "apall": 0.0308950740008854,
+            "macc": 0.2938023860043896,
+            "miou": 0.22072704155356448
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": -0.5427570754203942,
+            "miou": 0.0
+          }
+        },
+        "RV_A7_COS_REFIT": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            },
+            "scene0534_00": {
+              "ap25": 0.0,
+              "ap50": 0.0,
+              "apall": 0.0,
+              "macc": 0.0,
+              "miou": 0.0
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.3029468877683164,
+              "ap50": 0.1008767769928484,
+              "apall": 0.018417828313661642,
+              "defined_classes": 14,
+              "macc": 0.22590578996963134,
+              "miou": 0.18301597243757195,
+              "uap": 0.018417828313661642
+            },
+            "scene0534_00": {
+              "ap25": 0.2482622275385433,
+              "ap50": 0.16228070175438594,
+              "apall": 0.04337231968810916,
+              "defined_classes": 20,
+              "macc": 0.3671265527933519,
+              "miou": 0.25428945168833267,
+              "uap": 0.04337231968810916
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.6489126442830127,
+            "ap50": -0.8045388253721586,
+            "apall": -0.5025146035948496,
+            "macc": 1.7976012569873079,
+            "miou": 0.6654630162510028
+          },
+          "released_pool_fraction": {
+            "ap25": 0.28535003234077305,
+            "ap50": 0.1418126497987609,
+            "apall": 0.03732776282930604,
+            "defined_classes": 28,
+            "macc": 0.3071763832402035,
+            "miou": 0.22680712299465197,
+            "uap": 0.03732776282930604
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.27560455765342984,
+            "ap50": 0.13157873937361717,
+            "apall": 0.0308950740008854,
+            "macc": 0.2965161713814916,
+            "miou": 0.2186527120629523
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "apall": 0.0,
+            "macc": 0.0,
+            "miou": 0.0
+          }
+        },
+        "S_SIGLIP2_AREA": {
+          "per_scene_delta_A7_pp": {
+            "scene0056_00": {
+              "ap25": -1.3613932363932435,
+              "ap50": -0.36262100994243623,
+              "apall": -0.07653969707541071,
+              "macc": -3.70606438475177,
+              "miou": -1.426516794494348
+            },
+            "scene0534_00": {
+              "ap25": 1.6211456671983067,
+              "ap50": 6.578947368421054,
+              "apall": 1.9005847953216373,
+              "macc": 2.21948216832672,
+              "miou": 2.0927622026596095
+            }
+          },
+          "per_scene_fraction": {
+            "scene0056_00": {
+              "ap25": 0.289332955404384,
+              "ap50": 0.09725056689342404,
+              "apall": 0.017652431342907535,
+              "defined_classes": 14,
+              "macc": 0.18884514612211364,
+              "miou": 0.16875080449262847,
+              "uap": 0.017652431342907535
+            },
+            "scene0534_00": {
+              "ap25": 0.26447368421052636,
+              "ap50": 0.22807017543859648,
+              "apall": 0.06237816764132553,
+              "defined_classes": 20,
+              "macc": 0.3893213744766191,
+              "miou": 0.27521707371492876,
+              "uap": 0.06237816764132553
+            }
+          },
+          "pooled_delta_A7_pp": {
+            "ap25": 0.4489277868907515,
+            "ap50": 4.44160392077059,
+            "apall": 1.2977613093353837,
+            "macc": 0.45081647637615907,
+            "miou": 1.010343738939759
+          },
+          "pooled_delta_N0_pp": {
+            "ap25": -1.1999848573922611,
+            "ap50": 3.637065095398431,
+            "apall": 0.7952467057405342,
+            "macc": 2.2484177333634667,
+            "miou": 1.6758067551907618
+          },
+          "released_pool_fraction": {
+            "ap25": 0.28983931020968057,
+            "ap50": 0.1862286890064668,
+            "apall": 0.05030537592265988,
+            "defined_classes": 28,
+            "macc": 0.3116845480039651,
+            "miou": 0.23691056038404956,
+            "uap": 0.05030537592265988
+          },
+          "scene_mean_fraction": {
+            "ap25": 0.2769033198074552,
+            "ap50": 0.16266037116601026,
+            "apall": 0.04001529949211653,
+            "macc": 0.2890832602993664,
+            "miou": 0.22198393910377862
+          },
+          "worst_scene_delta_A7_pp": {
+            "ap25": -1.3613932363932435,
+            "ap50": -0.36262100994243623,
+            "apall": -0.07653969707541071,
+            "macc": -3.70606438475177,
+            "miou": -1.426516794494348
+          }
+        }
+      }
+    }
+  },
+  "scene_mean_is_not_released_pool": true,
+  "scene_order": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "split": "cal",
+  "status": "MEASURED_COMPARISONS",
+  "units": "raw metrics are fractions; all deltas and interactions are percentage points"
+}

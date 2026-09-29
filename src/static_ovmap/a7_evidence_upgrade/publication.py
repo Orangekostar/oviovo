@@ -29,10 +29,10 @@ def bundle(binding):
         selected.append((root / name, Path(name), False))
     for folder in ("rows", "pooled", "calibration", "locked", "e04", "environments", "phases", "audit", "review", "report", "comparisons", "costs"):
         for path in sorted((root / folder).rglob("*.json")):
-            if "before_lint_refactor" in path.name:
+            if ".before_" in path.name:
                 continue
             relative = path.relative_to(root)
-            compress = folder in {"report", "audit"} and path.stat().st_size > 512 * 1024
+            compress = folder in {"report", "audit", "review"} and path.stat().st_size > 512 * 1024
             selected.append((path, Path(str(relative) + ".gz") if compress else relative, compress))
     for folder in ("source_contracts", "diagnostics"):
         for path in sorted((root / folder).rglob("*")):
@@ -111,10 +111,18 @@ def bundle(binding):
                          "large_feature_mask_prediction_arrays": "Referenced by source contracts and actual prediction/evaluator manifests; not included as uploaded bytes."}
     external_manifest["original_RGBD_and_masks"] = capture_files
     external_manifest["capture_hash_scope"] = "Hashes come from byte-verified original capture manifests; publication does not rerun the historical dataset audit."
-    write_once(destination / "external_files.json", external_manifest)
+    external_source = root / "publication/external_files.json"
+    write_once(external_source, external_manifest)
+    external_target = destination / "external_files.json.gz"
+    payload = gzip.compress(external_source.read_bytes(), mtime=0)
+    if external_target.exists() and external_target.read_bytes() != payload:
+        raise ValueError("published external manifest differs")
+    if not external_target.exists():
+        external_target.write_bytes(payload)
     result = {"status": "COMPACT_EVIDENCE_BUNDLED", "binding": binding["identity"], "entries": entries,
               "principal_metrics_selection_copied_byte_for_byte": True,
-              "external_manifest": index.identity(destination / "external_files.json")}
+              "external_manifest": index.identity(external_target),
+              "external_manifest_decompressed_source": index.identity(external_source)}
     write_once(destination / "publication_manifest.json", result)
     size = sum(p.stat().st_size for p in destination.rglob("*") if p.is_file())
     if size > 40 * 1024**2:
@@ -126,10 +134,48 @@ def git(*args):
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
 
+def verify_bundle(binding):
+    root, destination, index = Path(binding["output_root"]), ROOT / BUNDLE, InputIndex()
+    manifest = read_json(destination / "publication_manifest.json")
+    targets = set()
+    for entry in manifest["entries"]:
+        target, source = destination / entry["target"], Path(entry["source"])
+        if entry["target"] in targets:
+            raise ValueError("duplicate publication target")
+        targets.add(entry["target"])
+        index.identity(target, entry["published"])
+        body = target.read_bytes()
+        if entry["lossless_gzip"]:
+            body = gzip.decompress(body)
+        if body != source.read_bytes() or hashlib.sha256(body).hexdigest() != entry["source_sha256"]:
+            raise ValueError("published evidence differs from actual source bytes")
+    for folder in ("rows", "pooled", "calibration", "locked"):
+        expected = {str(p.relative_to(root)) for p in (root / folder).rglob("*.json")}
+        actual = {p for p in targets if p.startswith(folder + "/")}
+        if expected != actual:
+            raise ValueError("principal result/decision matrix incomplete in bundle")
+    external = Path(manifest["external_manifest"]["path"])
+    index.identity(external, manifest["external_manifest"])
+    source = Path(manifest["external_manifest_decompressed_source"]["path"])
+    if gzip.decompress(external.read_bytes()) != source.read_bytes():
+        raise ValueError("external-file manifest compression was not lossless")
+    size = sum(p.stat().st_size for p in destination.rglob("*") if p.is_file())
+    if size > 40 * 1024**2:
+        raise ValueError("verified bundle exceeds publication budget")
+    result = {"status": "BUNDLE_BYTES_AND_COVERAGE_VERIFIED", "bytes": size, "files": len(targets),
+              "scene_rows": sum(p.startswith("rows/") for p in targets),
+              "pool_rows": sum(p.startswith("pooled/") for p in targets),
+              "manifest": index.identity(destination / "publication_manifest.json"),
+              "all_copied_or_decompressed_bytes_equal_original": True}
+    write_once(root / "publication/bundle_review.json", result)
+    return result
+
+
 def publish(binding):
     if git("branch", "--show-current") != BRANCH:
         raise ValueError("publication must remain on the prescribed research branch")
     result = bundle(binding)
+    verify_bundle(binding)
     scope = ["src/static_ovmap/a7_evidence_upgrade", "tests/a7_evidence_upgrade",
              "scripts/evaluation/run_ovimap_a7_evidence_upgrade.py", str(BUNDLE),
              "docs/paper/static_ovmap/a7_evidence_upgrade_wave1",
@@ -138,7 +184,11 @@ def publish(binding):
     if any(not any(p == allowed or p.startswith(allowed + "/") for allowed in scope) for p in staged):
         raise ValueError("unrelated staged files preserved; cannot include them in publication commit")
     subprocess.run(["git", "add", "--", *scope], cwd=ROOT, check=True)
-    subprocess.run(["git", "diff", "--cached", "--check"], cwd=ROOT, check=True)
+    # Official cards are intentionally byte-preserved, including upstream
+    # trailing spaces; continue checking every authored file and other artifact.
+    card_exclusions = [":(exclude)" + str(BUNDLE / "assets/model_cards" / name)
+                       for name in ("fc_frozen.md", "so400m.md")]
+    subprocess.run(["git", "diff", "--cached", "--check", "--", ".", *card_exclusions], cwd=ROOT, check=True)
     if git("diff", "--cached", "--name-only"):
         subprocess.run(["git", "commit", "-m", "Publish measured A7 wave-1 evidence and reproducible reports"], cwd=ROOT, check=True)
     head = git("rev-parse", "HEAD")

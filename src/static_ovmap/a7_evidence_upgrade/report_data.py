@@ -14,14 +14,14 @@ from .diagnostics import diagnose_scene
 from .source_contract import export_contract
 
 
-def request_intervention(root, scene, variant):
+def request_intervention(root, scene, variant, request_ids):
     if variant.startswith("AW_E01_"):
         return {"request_accounting": "original retained Q features; no new visual requests"}
     family = "c0/requests" if variant.startswith("AW_C0_") else "e02" if variant.startswith("AW_E02_") else "e03"
     folder = root / family / scene
     if family != "c0/requests":
         folder /= variant + "/requests"
-    rows = [read_json(p) for p in sorted(folder.glob("*.json")) if p.name != "receipt.json"]
+    rows = [read_json(folder / (request_id + ".json")) for request_id in sorted(request_ids)]
     if not rows:
         raise ValueError("measured visual source has no request receipts")
     status = Counter(r["status"] for r in rows)
@@ -58,7 +58,7 @@ def collect(binding):
             index.identity(contract_path)
             reasons = Counter(o["explicit_fallback_reason"] for o in contract["owners"].values() if not o["available"])
             intervention[scene]["sources"][name] = {"fallback_owner_reasons": dict(reasons),
-                **request_intervention(root, scene, name)}
+                **request_intervention(root, scene, name, manifest["requests"])}
         diagnostic_path = root / "diagnostics" / scene / "summary.json"
         if not diagnostic_path.exists():
             diagnose_scene(binding, scene, methods)

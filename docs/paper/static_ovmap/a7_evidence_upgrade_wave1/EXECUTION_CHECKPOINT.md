@@ -381,3 +381,54 @@ CAL freeze and real Replica continuation (supersedes the preceding NFS wait):
   write review/interpretation.json, render/review three docs, finalize a concrete
   prepublication requirement ledger; execute/inspect <=40MiB bundle, normalpush,
   verify full SHA and external receipt. Do not claim goal complete beforehand.
+
+## Final local evidence and publication preparation
+
+- Full matrix session41633 completed successfully: REAL_MATRIX_VERIFIED,
+  identity63209d66392b5159bcaa8018268b5cfaa9bd19de94059d1b57a10d60de96f62f,
+  460 scene/rank rows,92 pools,13,041 owner-method checks,150 DIRECT fallbacks;
+  actual prediction arrays/geometry/ranks, same-mode controls and CAL provenance
+  verified. All10 scenes' post-prediction diagnostics and costs are complete.
+- Final adapter receipt check succeeded over1,611 static requests/encoder:
+  exact original Q retention/parity/zero forwards; SAM2 quality/tie choice and
+  original requests; E02 raw pixel parity; strict543-key FC/OVR branches; actual
+  packed original mask hashes and nonempty dense support; shared frame work;
+  original E04 shortlist/views. Artifact:review/adapter_contracts.json.
+- Corrected a validation assumption: captured global-mask area is not necessarily
+  native visibility/overlap weight (e.g.office0:5615 pixels versus5439 weight).
+  Actual mask SHA is now checked against the original target; original weighting
+  remains unchanged and separately verified by source contracts.
+- Corrected only derived C0 request accounting: text.json status AVAILABLE was
+  wrongly counted as a failed view when globbing JSON. Reporting now reads exact
+  original manifest request IDs. Actual C0 visual failures are zero. All metrics,
+  comparisons and object diagnostics were checked unchanged. A compact regression
+  verifies metadata exclusion while retaining real failed visual requests.
+- Reports rendered and inspected: A7_WAVE1_RESULTS/HANDOFF/SELECTION.md, with
+  four full table groups, controls/losses/matched contrasts/interaction, true
+  source intervention and AP attribution, costs/omissions and nomination scope.
+  DIRECT and standalone Q/S2 are explicitly ineligible for the prespecified
+  research nomination, even when their CAL APall is higher. N0 remains nominated.
+- Primary recommendation: E06 fixed text-prototype bank with images frozen,
+  not executed. Among available identifiable Replica errors, correct class ranks
+  2-5 in60/75 FC and53/63 OVR errors (S2:70/91). This is an unresolved semantic
+  discrimination capability, not an asserted remedy. Fusion conflict remains.
+  Detailed conclusions/evidence:review/interpretation.json.
+- Primary prepublication requirement ledger:review/requirements.json covers
+  original specification, real matrix and adapters, calibration/selection,
+  geometry, costs/limits, reports, blocked SAM3 and checks. Publication itself
+  remains for exact external SHA proof, never preclaimed in that ledger.
+- All10 original ZIP instruction files remain byte-identical. Final relevant
+  tests:10 passed2.96s; task Ruff and changed-path compile pass. Report tables
+  passed column-shape checks and were reviewed against real JSON.
+- First bundle exceeded40MiB; preserved outside Git as
+  publication_oversize_draft_001. Lossless compression of the external manifest
+  and large adapter audit reduced actual bundle to37,481,359 bytes (35.75MiB).
+  No principal metrics/selection were rewritten or omitted. Final1,130 selected
+  files include all460 rows and92 pools; every copied/decompressed byte matches
+  its original. External publication/bundle_review.json records this check.
+- Small artifacts are ready at artifacts/static_ovmap/a7_evidence_upgrade_wave1/
+  attempt_001. Model/RGB-D/large-array bytes remain external, with actual path,
+  size and hash/rebuild references; they are not claimed as uploaded.
+- Next action is ordinary publish on the prescribed branch and exact local versus
+  remote full-SHA verification. The final publication receipt lives externally at
+  output_root/publication/<full_sha>.json to avoid recursive commit metadata.

@@ -1,0 +1,1049 @@
+{
+  "Replica_used_for_selection": false,
+  "binding": "3036348dd8e035215c1d1543a7ef0f6f9f300e79981c8b8c887321108800b998",
+  "cal_rankings": {
+    "q": [
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.33148933900520205,
+        "identity": "5086cb83571cf75b23ad8e1dee08af32d0ff707a7663c9defc238cea55407fdd",
+        "method": "AW_E01_GMED_A7",
+        "metrics": {
+          "ap25": 0.2851295737869812,
+          "ap50": 0.1418126497987609,
+          "apall": 0.03732776282930604,
+          "defined_classes": 28,
+          "macc": 0.30727155818517116,
+          "miou": 0.22729982299502607,
+          "uap": 0.03732776282930604
+        },
+        "ordered_inputs": [
+          "220428b1d0f080c5dcbffd2f0bfa4b3f562c41d5cefadb4171e950b7534a1977",
+          "5200693f138efb38968930723a7429253c1cdf333e3d3c158dbd68173e4112eb"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "234f98d10090b52f560acb2e4f834afb12fb8f322973edb2839ece218d324378",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 15724
+      },
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.32404635299462825,
+        "identity": "6c34cc7ac1f39d7f8fa973ddb40e1790bb745168a88ec7f6504947a83ff2bc0d",
+        "method": "AW_E01_RAW_EQ_A7",
+        "metrics": {
+          "ap25": 0.2851295737869812,
+          "ap50": 0.1418126497987609,
+          "apall": 0.03732776282930604,
+          "defined_classes": 28,
+          "macc": 0.30746178074556685,
+          "miou": 0.2269898238834563,
+          "uap": 0.03732776282930604
+        },
+        "ordered_inputs": [
+          "17bdd5ce3aebff50e5279cb3d38832e99f57677cf6514ca2639197f291e10682",
+          "5200693f138efb38968930723a7429253c1cdf333e3d3c158dbd68173e4112eb"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "234f98d10090b52f560acb2e4f834afb12fb8f322973edb2839ece218d324378",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 15724
+      },
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.32404635299462825,
+        "identity": "6c34cc7ac1f39d7f8fa973ddb40e1790bb745168a88ec7f6504947a83ff2bc0d",
+        "method": "AW_E01_UNIT_EQ_A7",
+        "metrics": {
+          "ap25": 0.2851295737869812,
+          "ap50": 0.1418126497987609,
+          "apall": 0.03732776282930604,
+          "defined_classes": 28,
+          "macc": 0.30746178074556685,
+          "miou": 0.2269898238834563,
+          "uap": 0.03732776282930604
+        },
+        "ordered_inputs": [
+          "17bdd5ce3aebff50e5279cb3d38832e99f57677cf6514ca2639197f291e10682",
+          "5200693f138efb38968930723a7429253c1cdf333e3d3c158dbd68173e4112eb"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "234f98d10090b52f560acb2e4f834afb12fb8f322973edb2839ece218d324378",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 15724
+      }
+    ],
+    "region": [
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.21740216005127877,
+        "identity": "25f678742a8ee3e37f507d4fd0cc66b164d4b5c6b2f0b169c379fae246da8421",
+        "method": "AW_E03_OVR_A7",
+        "metrics": {
+          "ap25": 0.31782474213029765,
+          "ap50": 0.14927248677248675,
+          "apall": 0.0423402900254752,
+          "defined_classes": 28,
+          "macc": 0.3169726319373773,
+          "miou": 0.2488402527647192,
+          "uap": 0.0423402900254752
+        },
+        "ordered_inputs": [
+          "edc47a12d28961b56e84c704df80dcef40c46c010d1a5bb0fe7dfd5f7ab5bc41",
+          "c358da1697e3a6982c2d6802e67c08fc9cefa897492cde647f3a677b5dd2578a"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "4b2d387260056695faba7cc01a81534185f00cdde06885e328a15639a211bda4",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 13290
+      },
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.24318728398066014,
+        "identity": "f0197000c0ad4802038f50e066fcf77fb11dcfe5b2b0caf502cf9e55f4374d1f",
+        "method": "AW_E03_FC_FROZEN_A7",
+        "metrics": {
+          "ap25": 0.3159060846560847,
+          "ap50": 0.1490520282186949,
+          "apall": 0.042248432294728584,
+          "defined_classes": 28,
+          "macc": 0.31322823649863984,
+          "miou": 0.24457288182482775,
+          "uap": 0.042248432294728584
+        },
+        "ordered_inputs": [
+          "94f2d54c68849b136d0382ccb255ac84316b9ca9123006653792eb8640d62f45",
+          "e7e8b6f30f9503b31a8473800d76f846960c0589d27029e7b661bed21c97f68c"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "0a3dd97dcd23bb0cad6ddc192a0b5dc83298a26c2e0d8929a131ebd2f50ceacf",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 13290
+      },
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.34277702297549695,
+        "identity": "87de09cf09d283d60fb4ba4fa3732ed186b571404c7d71a43644e55c966d0a36",
+        "method": "AW_E02_SAM2_A7",
+        "metrics": {
+          "ap25": 0.28265636969340674,
+          "ap50": 0.14230065202287423,
+          "apall": 0.037435124317840365,
+          "defined_classes": 28,
+          "macc": 0.3032545840985163,
+          "miou": 0.22457144877414886,
+          "uap": 0.037435124317840365
+        },
+        "ordered_inputs": [
+          "1f840f4bbc081a3af8d1dec55f3c9e5cfaac819434a911191ac635f362b1de02",
+          "8594346c0c3e11fe113287d8c4774767d40d6fa245abc983a626199bc30975f0"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "1ee39d4192446021b15752cdcb11d1bfd97526510f592c66aaf0c2eceb05871c",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 16551
+      },
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.37074539298191667,
+        "identity": "4e8986c169c94a16388d1441b03c79dfa42eaea7b5b764141fd1f7d903eb7862",
+        "method": "AW_E02_GLOBAL_A7",
+        "metrics": {
+          "ap25": 0.2851295737869812,
+          "ap50": 0.1418126497987609,
+          "apall": 0.03732776282930604,
+          "defined_classes": 28,
+          "macc": 0.3046859642477108,
+          "miou": 0.22645274628311413,
+          "uap": 0.03732776282930604
+        },
+        "ordered_inputs": [
+          "aaf9c29da1b10786d3cbeeea4d6c5720210aab65e6bbf1c9154ac689d3fad1d1",
+          "174dbcd7e8e29fd31ba02f57f1e4880ce10ea3f2532c836b38e1ae39763ea4cd"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "b3aa1781c9d96dd46c157dcb3d9f0deecbe403e05ba76bfea8837525279a1fbf",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 15724
+      },
+      {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.31102803791873157,
+        "identity": "6ea8d5a9c6bfb55e1a53a1adcf1551ec4d825d75b9670443c37e8381630ff3f9",
+        "method": "AW_C0_SO400M_A7",
+        "metrics": {
+          "ap25": 0.2799877077654855,
+          "ap50": 0.1409191117524451,
+          "apall": 0.03730058521725189,
+          "defined_classes": 28,
+          "macc": 0.3010594493228847,
+          "miou": 0.22812832811487516,
+          "uap": 0.03730058521725189
+        },
+        "ordered_inputs": [
+          "955ad2036f88c465f5c28e2e6732ac5ed76464b393933a8a2940c8eb74e2c52c",
+          "0da393fd41c14c8e4405cbf15357d99a482bd8d1979ea3788e6b0838b349ae9e"
+        ],
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "required_operation_union_identity": "6723705e8b0b79dc8e31585b3c1940fb93f1cc0a78a2e5f5ffacacfe86fc04a7",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00"
+        ],
+        "split": "cal",
+        "status": "COMPLETE",
+        "unique_required_operations": 15724
+      }
+    ]
+  },
+  "identity": "3f42dbbc1313fcb6bb6f143e6f77fdefe342950546bc5ac6de961553b4581d7d",
+  "inputs": [
+    {
+      "bytes": 660450,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/c0/scene0056_00/AW_C0_SO400M.json",
+      "sha256": "9c4b5bd0293b7bbf4dddeba823600ef8973c5085dc7f7506da7c285f1204fafc"
+    },
+    {
+      "bytes": 619138,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/c0/scene0534_00/AW_C0_SO400M.json",
+      "sha256": "ed225e977126cd77d0151fdc709d59491a3bbf5eba5df8696ddd4972928608c4"
+    },
+    {
+      "bytes": 741986,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/scene0056_00/AW_E01_GMED.json",
+      "sha256": "8fb5ad71c86a84f53bba03da7eaf04c007f5e6e8f0fa6d7df856c4d05926c11c"
+    },
+    {
+      "bytes": 740884,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/scene0056_00/AW_E01_RAW_EQ.json",
+      "sha256": "6eaf0d07706ac7ad9e413702a79c45232f75a25f7883c80a41e291d29c0de896"
+    },
+    {
+      "bytes": 740591,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/scene0056_00/AW_E01_UNIT_EQ.json",
+      "sha256": "ec84685cd51847f04c0b78f9b33e8c19865e47c6894de9f0b1d326a2efc3ffeb"
+    },
+    {
+      "bytes": 648554,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/scene0534_00/AW_E01_GMED.json",
+      "sha256": "a41f0a5f7f4f4ae20f34e115a606ecc098cb7d269dd13a5d79419500938bffe1"
+    },
+    {
+      "bytes": 647157,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/scene0534_00/AW_E01_RAW_EQ.json",
+      "sha256": "68667c2f9d1c05e0339339aff331084cafeb1863f1c2b263c3cde702cfabf138"
+    },
+    {
+      "bytes": 646927,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e01/scene0534_00/AW_E01_UNIT_EQ.json",
+      "sha256": "10f2135fda9330bcd0c8908eba90a42ae7b2f88c8a3bbee69805fb9bb2328be5"
+    },
+    {
+      "bytes": 658727,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/scene0056_00/AW_E02_GLOBAL.json",
+      "sha256": "136bc67dc97c5080385fb7519e8db1e078ffb38bde2872e5a215c004d1f26767"
+    },
+    {
+      "bytes": 658724,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/scene0056_00/AW_E02_SAM2.json",
+      "sha256": "4a4fec71fc5a6d6846b6cc4946e14176dd59910956830bffcfbbe7ce02dde172"
+    },
+    {
+      "bytes": 617860,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/scene0534_00/AW_E02_GLOBAL.json",
+      "sha256": "7da7055c4c54f638ee7489b4ac98353cb5ebeb9a4b3b5dec0caa9f153b7ce913"
+    },
+    {
+      "bytes": 617917,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e02/scene0534_00/AW_E02_SAM2.json",
+      "sha256": "7f046584ef609e00d34a639c0663aa5f25411998bea56fff9bce9ac6f238e124"
+    },
+    {
+      "bytes": 649535,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/scene0056_00/AW_E03_FC_FROZEN.json",
+      "sha256": "ea2f3a4fe9b35adad3e582f3b0e45c14d6d05ab4a652dba3c7670e5746f15871"
+    },
+    {
+      "bytes": 651814,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/scene0056_00/AW_E03_OVR.json",
+      "sha256": "1d96745428e5ec9a0caad92e4bce08cf8c05b1c050a366021f9f4a3f249f6c07"
+    },
+    {
+      "bytes": 609936,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/scene0534_00/AW_E03_FC_FROZEN.json",
+      "sha256": "8d7611e209a915e585fb8c9a4489b03e8794607a3570b2161df2f8c923449c93"
+    },
+    {
+      "bytes": 611421,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e03/scene0534_00/AW_E03_OVR.json",
+      "sha256": "a8eb513186f3269e5af85223bb05811a1c12090f36b891a03987fa6e7350edd7"
+    },
+    {
+      "bytes": 621,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/e04/access_probe.json",
+      "sha256": "7fe6ae275b5a46dade25e4571d8882f2aa5b726acf808ea942dd710982bab5af"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_A7/FROZEN_N0.json",
+      "sha256": "3cfda865b736b40f9ee723f614da888daf1c429023dab799b80fc26a5ddcb5e2"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "988bed19352b36c78eadd8146ba0cc0fba09f4d7be66e9db260e64da8c66631c"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_DIRECT/FROZEN_N0.json",
+      "sha256": "adb9d77c54538fb85fe90bc94e7d3470a68d57a5ae95c91575a70affe2b879b9"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_C0_SO400M_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "283adef7c2b2fd13f165e58a431dfeba9b65efa3eb15033ec4f196fe516e719c"
+    },
+    {
+      "bytes": 770,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_A7/FROZEN_N0.json",
+      "sha256": "1e97e47d44a1b1f3b2de4be2a65f71e835ddc7f2c57ebf39cdb1015915a2917d"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "54e5b9992f944c7d7bdb50e599a22d9ab6d2832d311c7676c5bc46998d8e57f9"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_DIRECT/FROZEN_N0.json",
+      "sha256": "2c44bfc35b49fbbed3ceb9d105715058b4957f22bbd2ba44ebd5920c161ca887"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_GMED_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "32ed957b20fcf4758053c6f84930e04d3b011179e277b233c26bbef9f8b57bae"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_A7/FROZEN_N0.json",
+      "sha256": "c4c18c7d36e7af48964e96463e4ab5c8b178f6ee0f49d65e88b124b13ca692da"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "67010e6e5c77e636855341c96f2dede6338c9b021749cce8bd9f3f2580eabcba"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "8837fac3aca55e6a22121fefee3248fafa5540408f6f6690a6e6c6a0f686d343"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_RAW_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "9cbf27915b6a30f936f828c8b05bf915fabf5e048c6c13540cc721aec07905f0"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_A7/FROZEN_N0.json",
+      "sha256": "74fb4c8fc26f9112b337ec22c7419e8d30b16a697d52d2093d7168309af8858b"
+    },
+    {
+      "bytes": 783,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "46e002d9cfec09706c4280ea751300e7b9541b5029069aed4b8674e278ab0938"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "418782ef5d1597c3fb286c78086ec67a15ecc626823b855ea410d22fa737fa60"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E01_UNIT_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b4d609cf9c0bc11a76ec66f92b22a8dfc8d797e8ed0839fecc83642daa12c2c2"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_A7/FROZEN_N0.json",
+      "sha256": "ee2559848c7a95fc0f83ed19cbb04e705421cb8226e807be1a2e611faf0d2bf6"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7b596fee119058ac8f13ad95b5bfccfb4b99760da10a55d0048772b8e7f11038"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_DIRECT/FROZEN_N0.json",
+      "sha256": "74b2c04c226e638afb726ed3382de55954b08558ee204c52d96635a750fea801"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_GLOBAL_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "4c2a1a44121ee960126a0f5751f7b90a9096767b774695d99b42d5f864b3a0fc"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_A7/FROZEN_N0.json",
+      "sha256": "c49b357c23383121d5665ef1d116fac4b5e044c2deb21d5077ed7a23fe950571"
+    },
+    {
+      "bytes": 784,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "63b60bfb468e2307c44e7a52790dbc114f7c796786987b5b896e753a3d29ba95"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_DIRECT/FROZEN_N0.json",
+      "sha256": "80bee8d7ca4212457cf6d47f738f98fa6cbc9b30e674771d28f3aae8484ed2e1"
+    },
+    {
+      "bytes": 784,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E02_SAM2_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6e61a3366dd2d263885274532cebdcd56ae7a00fdf28c09103036f0cdc376850"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_A7/FROZEN_N0.json",
+      "sha256": "d85bb3a3816956609f5de392105beae6e0d857dad1d6aee52a8ef85db8329eec"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "660e3573a73f248112a276205e1f8358aca0dd28fcee65c8b8f6be98df7ca1eb"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_DIRECT/FROZEN_N0.json",
+      "sha256": "47f3cf5ca6abe122ed9e9743730235f850ffa3fb338bb4f3fe1df3fad6a74ce8"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_FC_FROZEN_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "c47ed3e90ab315897542c7193d718285a46979002dff7a0eff325c199f2059ea"
+    },
+    {
+      "bytes": 764,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_A7/FROZEN_N0.json",
+      "sha256": "8b441b9d99034fd7561c9cc27381aa5af3290e219b94b2e436c9bc51cfb836ff"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "083f3839c51505de4a94538a67476762c6e4a75fed915c9864427b1411f67595"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_DIRECT/FROZEN_N0.json",
+      "sha256": "06db6a90c7c3d1e5fcedfc1ef97e77b44b6677b80c6c684192906b4e6957b1ad"
+    },
+    {
+      "bytes": 785,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E03_OVR_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "14fb4ab284e6afc4d19f4397e9be539307900028bdc08457ae67df28c6101350"
+    },
+    {
+      "bytes": 770,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E04_SHORTLIST/FROZEN_N0.json",
+      "sha256": "a04047118c911c1004ec478c69d8e9b2539820165f42ff089ae6b928e6733fdc"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/AW_E04_SHORTLIST/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6fd12aec93e3b45664063b120d81db11187ba38916325dda4a99586f06d2a942"
+    },
+    {
+      "bytes": 757,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/N0/FROZEN_N0.json",
+      "sha256": "2b5ebd2076ecc4c142bee91f1d750dec0c23db1cb129d7fb16251ce3ccb1b594"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/N0/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "535486d9b699b0a39fbfdf82dd2e7ace85de567087341a5e7f826ddc784ef25f"
+    },
+    {
+      "bytes": 763,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/Q_GAIN/FROZEN_N0.json",
+      "sha256": "7f3fbfbcaeec1d9906e3a3ee45bdb9d2f825ea1fcc141c5ae61c035f3db9b023"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/Q_GAIN/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7ba0d028deeef8ba5991cb8f88d4fb229cf5a1809ccf3386d6b2073fa5f8829b"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_FIXED/FROZEN_N0.json",
+      "sha256": "fb3f2354d071d58732d36de0c75c4710db9774eb3ed095ccd473f6b16168ba3a"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_FIXED/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "3367160b3ec79a8f493fa62e0f6524aa866a489c5d11c3843b171947395e4f09"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_REFIT/FROZEN_N0.json",
+      "sha256": "0d58188435f50d1443f5bb3d2bbd8efc5ce6a62ddc336c98d48f61ad7c24fa9f"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/RV_A7_COS_REFIT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ffc38a2c0ad9080e01edfa2f652fb0a1a147a3440a8336369d405307951ace64"
+    },
+    {
+      "bytes": 765,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/S_SIGLIP2_AREA/FROZEN_N0.json",
+      "sha256": "a11c3c61054cd7075480d51f38338fcc3d76cef13687fadc92b39e4dea7ef23a"
+    },
+    {
+      "bytes": 780,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/pooled/cal/S_SIGLIP2_AREA/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "1e1cd9c8ff64d2d216683bb0960f391da03af47146726dc6e97e3f9cab0eb381"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_A7/FROZEN_N0.json",
+      "sha256": "d248517356251c4f60771ef42c4a9476de36e57a19ef8232fd2313105badea25"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b5b604e0b8dbeb221dc4c6125effb15a7afb1b989affd2fe319b5bdc5d8827be"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_DIRECT/FROZEN_N0.json",
+      "sha256": "e79dc7472b41b56d9929b1d95b0cbc52d63a9002e3bed56a6ceb324cd3752ef7"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_C0_SO400M_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "45bc6cbad316e6db8a43b90438f62feae39f7c03f48d70954c59d806bd4a82cd"
+    },
+    {
+      "bytes": 769,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_A7/FROZEN_N0.json",
+      "sha256": "f6aa8d06122a1d54f4cb7942604ef15b9568c4b3a10678e28c2a9e71e7a954ad"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6847b68378d6811ad79941e3fca0eeb20f076216f0bf1e8cff5b1a2c774203a4"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_DIRECT/FROZEN_N0.json",
+      "sha256": "7494be09ba2e9d6f2fb039dc97eb784dd1d116119efd7a5edfc3613dbbbc9744"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_GMED_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "d1fcf3e0c78460523b7cfabf8c0d3d8cc9cc819ba49e994859f718e1a548e035"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_A7/FROZEN_N0.json",
+      "sha256": "21f351794c2b9b7d473beeb40c3a4c6efca0cd5ba04aceccf6170d9ae01a61f0"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7ff7eef10d8e1cc0de1a3fb94d61d986b40c520b9fc154c5ff689fe8999408ab"
+    },
+    {
+      "bytes": 780,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "019ba2fa87264c2549a61b6cc386f2548d6ba779e687d825958f598f2c963cc6"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_RAW_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ffbff7ef3c61e5c3758d64daadf41fcad2fb502e60d85134cb5b4a2a3df2bb3e"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_A7/FROZEN_N0.json",
+      "sha256": "a5374391ebbfd4768332bc705545801c115017b43e0827b43f4a5df47a9abc3d"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "268fd24d06807f366e5866ba996e494399d44f31775013112693b8f02efacab8"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "f86eb46d3d52d7c1cb5e700b60433642ddd660496cf4c0c2ac38f68c48e6e83a"
+    },
+    {
+      "bytes": 793,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E01_UNIT_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a663d254f01fb758b0f549811056dd90f2632a8d21032aaf1f1b389807ff0064"
+    },
+    {
+      "bytes": 772,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_A7/FROZEN_N0.json",
+      "sha256": "b7048e5ba9e79f47bc297d05b66180c0968074fa91e180c81df50c9c23f2f14f"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ad05046ed78da89ae47276c159fd0066871e5ce697b8caffcdd92531244c9918"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_DIRECT/FROZEN_N0.json",
+      "sha256": "0d3b1c7c0ae818e40ce61d6a9b270b282f9eb6905dd49ed9479197072c9f8ee0"
+    },
+    {
+      "bytes": 794,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_GLOBAL_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b14b87f9c0563895b481054c563142a464522cadaac86f131a10e03b4cda198a"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_A7/FROZEN_N0.json",
+      "sha256": "b0e6fd95785ed06a72a13379251373c7819770eaee051684b734f660d0db0449"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "aafd2b553d76f1fcff7eb9f7dff4e90bb32fd3ac83965c4abde6cc7879766350"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_DIRECT/FROZEN_N0.json",
+      "sha256": "bef75217e47f27e6b084560cdde7a70f7914f535038174f4b63d46aa409e5bdd"
+    },
+    {
+      "bytes": 791,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E02_SAM2_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "bd69d82f5f78b71524cdb04f09e56513cf2af1c6749b73b59a1eab0e4788ffac"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_A7/FROZEN_N0.json",
+      "sha256": "6c9e72d2eae9baa8427df9ea32757cb6cfa7c103d37015160f38e3dedc89c5ed"
+    },
+    {
+      "bytes": 791,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "447966cfebe77a5e2d5dc9611c2cc7184525fdf449bb714c8b9f49681dbb9a07"
+    },
+    {
+      "bytes": 783,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_DIRECT/FROZEN_N0.json",
+      "sha256": "5e234184523a73c33882ca102a911663f30219e110e71b0733dc840cfe8d81c5"
+    },
+    {
+      "bytes": 797,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_FC_FROZEN_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6151028e894a68a9aae40c26d9e318129c4126c7546377038547fd9de426ae35"
+    },
+    {
+      "bytes": 771,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_A7/FROZEN_N0.json",
+      "sha256": "573360e44078070f0201e44e54b25fb796e5690e200c9a31f585a3660fb04414"
+    },
+    {
+      "bytes": 784,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "df06d6983937c098b0affb7f6b6349ec4696471b7d00506592637a1913ec7a59"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_DIRECT/FROZEN_N0.json",
+      "sha256": "67f399ad79fbdcab592e0c1e6bdc0c66c69ae20f8081b770a87685ad93988184"
+    },
+    {
+      "bytes": 791,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E03_OVR_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "5cf8b8b136df74dcc80ab27495d0d571f2fb28b1477926c68927c68e04ca7514"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E04_SHORTLIST/FROZEN_N0.json",
+      "sha256": "14d848540790142c587ee8763534194f892091119c75687fb9af121d8dae4a5c"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/AW_E04_SHORTLIST/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "91d62ef9fec794c7b40bcd22a618c993490c30d5e961a14874ce5dce0f1e6d32"
+    },
+    {
+      "bytes": 763,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/N0/FROZEN_N0.json",
+      "sha256": "bf1a856be4e7cfe69ddf8300014408e4222c56250c197312e58c987c604698f6"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/N0/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "f3fbf423fc289586ec2bd140d75fe7bf0d9909aff266f2edf9ccebfb5bcd0a7d"
+    },
+    {
+      "bytes": 767,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/Q_GAIN/FROZEN_N0.json",
+      "sha256": "c3d2ba7c1d9045b945033a9416445f3cb536ffa46c8f7aa7fa2a69e4b15aec3b"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/Q_GAIN/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ab6d20084aafcc787923337e1ff4ccb39fe4ebd3cbccf786d1e632d6f332a009"
+    },
+    {
+      "bytes": 770,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_FIXED/FROZEN_N0.json",
+      "sha256": "e6ad06031b3d3f4d00ca467494e3ae676faf9e6e007b2ca78f990cc6c76834ae"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_FIXED/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ebdb1c35506934fd269ad5eaeb13f06f65b277142879f38dbc2a0734cc2d214a"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_REFIT/FROZEN_N0.json",
+      "sha256": "e76452f7bde62ebd80d27dae01bdea7261efb37743bc3a00c8a2535b469d26c4"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/RV_A7_COS_REFIT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "ebe779795326e12e772abc604753969d34e50ce3d966b8fb5625c73fe572a506"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/S_SIGLIP2_AREA/FROZEN_N0.json",
+      "sha256": "5eb71e0b8e80bf1a2b75c7a97c7719b02da4aa63b766dfa24ea2d5b9ad173977"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0056_00/S_SIGLIP2_AREA/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6a1c6ccccafe8be746cb1876448d29b243df4db32bf4f1397b57cbbba0a746e9"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_A7/FROZEN_N0.json",
+      "sha256": "3317f01caa81b7c3f91d09f11da52766205a626466d5f3ef3ba9d402b9aa89a8"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "9dcc7a4d398540021e0dcefe5e55375eebe960330b700f514d12e557fb011173"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_DIRECT/FROZEN_N0.json",
+      "sha256": "e400ff09c9ad78ac2491630f0c46503ab03d4e7a0fbf489c59efb8136b0463ef"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_C0_SO400M_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "6e5f208c59700ee8149bcfec2df3c2d95c4234016fe4905b34e51272e5729b85"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_A7/FROZEN_N0.json",
+      "sha256": "73d369bccc2b2b8ba842b4795ed587867ad7e36c64b12179dfb87b80a8005e70"
+    },
+    {
+      "bytes": 785,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "0228dbfb6f6fe756e5854ab3edb46b79f5bb32fbcf130817ed831d582b24c3cd"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_DIRECT/FROZEN_N0.json",
+      "sha256": "7e5646bda50174eb9357ee9f5019c86cae7e7a921c42718559c751a82b045b8f"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_GMED_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "cf798e4c3a9a2cd0f1cd540f4f20c7b7bee525d0b119d7187db10ccdbbb29ce5"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_A7/FROZEN_N0.json",
+      "sha256": "af00294c31140c3ab8a18478c927f22a9deeaeafe22692effe72f87bec173bc7"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "b8bdd1b247999b660bbce49de99578da8b069ad19c1b30c1bb3cd1e38662acdf"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "d40ea11008b6cbb592082b8360b26de4ff9073cd6b19ce9ce447d49ae46bdf0a"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_RAW_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "0933116067c400c5b57eb8b16d9bed1fff35a21a1107d5a555c83f07378e4806"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_A7/FROZEN_N0.json",
+      "sha256": "b839ab29d2d75e8f5cfa4d7425acd8e95b2165d19797a1308e90b948e62e1188"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a72369fadab4ab5509700255ed483b2b1724a35f5f3f96edc4b073bb988ad777"
+    },
+    {
+      "bytes": 779,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_DIRECT/FROZEN_N0.json",
+      "sha256": "e0d9e3087126434a2740a442d3d8b29d80ca2597460cc9e83d0a99fca9431e64"
+    },
+    {
+      "bytes": 792,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E01_UNIT_EQ_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7decce3c210f548e9d794e83ca51b2e15cd2cd195d6f57d5fedfa074810f0508"
+    },
+    {
+      "bytes": 776,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_A7/FROZEN_N0.json",
+      "sha256": "65e4414a05cab90cc47e19ea244f5787829db0ca4c439d8944bc6e1afa036221"
+    },
+    {
+      "bytes": 789,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a7756c3ea64b0c995ca66e7c15f47490a4e7bf958538e5e52897a7bf9db4dfcc"
+    },
+    {
+      "bytes": 782,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_DIRECT/FROZEN_N0.json",
+      "sha256": "07f213693da97f0228645fe60e89abc6c2030abe1064def3772661df472890e2"
+    },
+    {
+      "bytes": 795,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_GLOBAL_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "12b7bdc12ac3acffaf9be7b071989ed25ea30330353e3cfe1ad9ff2469e7b410"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_A7/FROZEN_N0.json",
+      "sha256": "588eb6fb164f1d283ee828b973b4601784e1c4c34d529491c0263846346c4838"
+    },
+    {
+      "bytes": 785,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "890e6bffa64e49e68ed2a5c0b74cdfd77aa6f1d3b51217f7236ed2f0f89a6169"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_DIRECT/FROZEN_N0.json",
+      "sha256": "cb8ffc7d53b73226f3fc2ebc292b9b5404a7015b1f6e9244e27f40e32d43593b"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E02_SAM2_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "e74157a00efeeace9cdf0929d9e4ddb32dfac3b8db2e57e789a3c78e026d0c54"
+    },
+    {
+      "bytes": 777,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_A7/FROZEN_N0.json",
+      "sha256": "26dab605ac51f1cd32d5feac0e8ed87b249daa96e1f561fcc5af53aab7b20cff"
+    },
+    {
+      "bytes": 790,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7804fc6e5e51f14d662e9d2f33f1ba9cf4e2022884e0517582f1a3de9d749443"
+    },
+    {
+      "bytes": 781,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_DIRECT/FROZEN_N0.json",
+      "sha256": "0db38e970760de4192f11b3a8657d851a2e864eb70c35e5c190a51e4b7b8b8e1"
+    },
+    {
+      "bytes": 797,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_FC_FROZEN_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a839644c51bb88c093da2e9fe8c3381fb875063302e7161be99d8982444e3bb2"
+    },
+    {
+      "bytes": 773,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_A7/FROZEN_N0.json",
+      "sha256": "5cadf644afc00ab9a45f73e2f88b5ef4850621ad48d86fd16fe2a58f7575806c"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_A7/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "4d69994fddc8f4246a180d6d52b6eece2428e9c60cbbb0c1ed490b4f60ed5b39"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_DIRECT/FROZEN_N0.json",
+      "sha256": "7f052fdc60b67ce5f275d4423d2d26609a1547cf5d23540195cb7fd6c0922fe5"
+    },
+    {
+      "bytes": 788,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E03_OVR_DIRECT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "730884527b15b4a7c0c0cc21179ce52ae445a9b4dc4a1c46ebad8e0c0a45d329"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E04_SHORTLIST/FROZEN_N0.json",
+      "sha256": "5f465841fad984194ecdc562315add4104373e1059f78cd06f27b48ef94914bc"
+    },
+    {
+      "bytes": 787,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/AW_E04_SHORTLIST/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "a9107feb80f28b401bbe59355b3ce223dafeb2f62172d382a23047afab5153eb"
+    },
+    {
+      "bytes": 762,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/N0/FROZEN_N0.json",
+      "sha256": "f54b9af88d7fc5f053066f38ef76db7c48ad7640ebc0b0db4ad43f38b73f2714"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/N0/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "4f3dcb28213235afdd15c516b51c5928130e88390f01d83eba81ad01e3addb55"
+    },
+    {
+      "bytes": 765,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/Q_GAIN/FROZEN_N0.json",
+      "sha256": "f0b221c484bf6a2a51fc0fd93a2681c00c5fdfe9fa8a5ea5538a47eedc545986"
+    },
+    {
+      "bytes": 778,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/Q_GAIN/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "900d6020cc1ec55eb6582b97eb1d0602c3eb76124fe0daa599c33b3682dbe9b1"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_FIXED/FROZEN_N0.json",
+      "sha256": "30e3a82b6f306e5986929d6eb518933f55d952a146ea6d76c86dcf37fb730e6b"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_FIXED/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "76172b68eaed98162e81a660a3e85998913ba8c4f628643ae69b7617b5840e18"
+    },
+    {
+      "bytes": 774,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_REFIT/FROZEN_N0.json",
+      "sha256": "fb1c781c910a33ba05ce89c5f10b19d5443f49d5af0f5a7d347f9bb6190655eb"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/RV_A7_COS_REFIT/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "0f366a237f66ce80f1b826d4747bf77329be57429cff08bc0176542b99ff2b79"
+    },
+    {
+      "bytes": 775,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/S_SIGLIP2_AREA/FROZEN_N0.json",
+      "sha256": "f9824d2282b56c308b0b71054b9c2e9b401fa01504cc131aa1ba9f787c04794c"
+    },
+    {
+      "bytes": 786,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/rows/scene0534_00/S_SIGLIP2_AREA/OFFICIAL_CURRENT_CLASS.json",
+      "sha256": "7bf774c289604966833da1476e3f40b3cee9bf3e94237c8a318a9397b5551683"
+    },
+    {
+      "bytes": 628772,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0056_00/Q_GAIN/source_evidence.json",
+      "sha256": "167b11fe6d58173518021214155398ca4108989afbbc82661cc7683beea12530"
+    },
+    {
+      "bytes": 548115,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/query/scene0534_00/Q_GAIN/source_evidence.json",
+      "sha256": "68a20a7e1ed4319cfd484bca5700396426acef45583cf1c1dcc1bdace18df5fb"
+    },
+    {
+      "bytes": 659375,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0056_00/S_SIGLIP2_AREA.json",
+      "sha256": "d41387062843cbe1dc4d105f18981591e46226cc48483b5b2d18f50c26f1d66c"
+    },
+    {
+      "bytes": 618530,
+      "path": "/mnt/shared/ww/ovimap-complementary-composition-v1/attempt_001/sources/scene0534_00/S_SIGLIP2_AREA.json",
+      "sha256": "4af610cd398e454be4feb23cbd31fba59f017050701763ccdf45045d94d0c0de"
+    }
+  ],
+  "new_scalar_fit": false,
+  "q_variant": "AW_E01_GMED",
+  "region_variant": "AW_E03_OVR",
+  "requires_individual_net_gain": false,
+  "source_changes": {
+    "AW_C0_SO400M": {
+      "changed_genuine_common_owners": 188,
+      "maximum_score_difference": 0.04733540263625514
+    },
+    "AW_E01_GMED": {
+      "changed_genuine_common_owners": 178,
+      "maximum_score_difference": 0.08657880677097157
+    },
+    "AW_E01_RAW_EQ": {
+      "changed_genuine_common_owners": 177,
+      "maximum_score_difference": 0.0680072726863454
+    },
+    "AW_E01_UNIT_EQ": {
+      "changed_genuine_common_owners": 178,
+      "maximum_score_difference": 0.06822958335301424
+    },
+    "AW_E02_GLOBAL": {
+      "changed_genuine_common_owners": 188,
+      "maximum_score_difference": 0.04413621563881418
+    },
+    "AW_E02_SAM2": {
+      "changed_genuine_common_owners": 188,
+      "maximum_score_difference": 0.04676958705529487
+    },
+    "AW_E03_FC_FROZEN": {
+      "changed_genuine_common_owners": 188,
+      "maximum_score_difference": 0.24721903075961055
+    },
+    "AW_E03_OVR": {
+      "changed_genuine_common_owners": 188,
+      "maximum_score_difference": 0.2433639029947734
+    }
+  },
+  "status": "PAIR_FROZEN"
+}

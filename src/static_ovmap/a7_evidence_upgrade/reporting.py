@@ -129,6 +129,8 @@ def report(binding):
     selection = ("# A7 wave-1 selection\n\n"
         f"CAL-frozen research nomination: **{nomination['nomination']}**. Deployment: **{nomination['deployment']}**.\n\n"
         "Selection uses CAL released pooled APall, then mIoU, then AP50 (tolerance 1e-10), then fewer unique required visual operations, then fixed registry order. "
+        "Eligible candidates are the measured _A7 variants, E04_MIX50 and the optional combination, with N0 and A7_REFIT as incumbents. "
+        "DIRECT rows and standalone Q/S2 are diagnostic controls, excluded by the prespecified nomination rule even when their CAL APall is higher. "
         "Replica was not used to nominate, prune prescribed methods, tune temperatures or choose the combination.\n\n"
         f"The one frozen combination uses {pair['q_variant']} and {pair['region_variant']}; each retains its own CAL-fitted scalar. "
         "No new image inference or scalar search is introduced for composition.\n\n"

@@ -1,0 +1,27 @@
+{
+  "aggregation": "RELEASED_DATASET_POOL",
+  "dataset": "ScanNet",
+  "elapsed_seconds": 0.30789038201328367,
+  "identity": "5aefc4d1913b5a6e9f6769eefd607fee1f89fecba0bce9b5e33a13ce978c8285",
+  "method": "AW_E03_FC_FROZEN_A7",
+  "metrics": {
+    "ap25": 0.3216416813639036,
+    "ap50": 0.1490520282186949,
+    "apall": 0.042248432294728584,
+    "defined_classes": 28,
+    "macc": 0.31322823649863984,
+    "miou": 0.24457288182482775,
+    "uap": 0.042248432294728584
+  },
+  "ordered_inputs": [
+    "fc9378a48bff22beb56e9a05c9e7243b0b812cb9d166f5da9a71b962800a5f2d",
+    "a2e810af4380f3286c4046777ae17ca00b1bd0fe11f127c731a8b56d45f12374"
+  ],
+  "rank_mode": "FROZEN_N0",
+  "scene_order": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "split": "cal",
+  "status": "COMPLETE"
+}
