@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "kind": "SYNTHETIC_MATH_SPECIFICATION_ONLY",
+  "checks": [
+    "local_zero_identity",
+    "local_outside_and_inside_mass",
+    "local_constant_residual_identity",
+    "common_temperature_null_residual",
+    "local_class_permutation",
+    "aggregation_jacobian_finite_difference",
+    "support_kernel_psd_and_isolated_unknown",
+    "proxy_spd_with_relative_floor",
+    "active_set_qp_against_simplex_grid",
+    "anchored_graph_closed_form",
+    "no_cross_covariance_diagonal_limit",
+    "shuffled_rho_preserves_spd"
+  ],
+  "check_count": 12,
+  "vision_forwards": 0,
+  "benchmark_evaluations": 0,
+  "maximum_jacobian_absolute_error": 2.7482460751571125e-10
+}

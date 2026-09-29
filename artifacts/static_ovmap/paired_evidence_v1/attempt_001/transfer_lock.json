@@ -1,0 +1,1256 @@
+{
+  "CAL_grid": [
+    {
+      "id": "N0",
+      "method": "N0",
+      "metrics": {
+        "ap25": 0.3018391587836032,
+        "ap50": 0.1498580380524825,
+        "apall": 0.042352908865254536,
+        "defined_classes": 28,
+        "macc": 0.28920037067033044,
+        "miou": 0.22015249283214194,
+        "uap": 0.042352908865254536
+      },
+      "parameter": null,
+      "registry_order": 0,
+      "tier": 0
+    },
+    {
+      "id": "RV_A7_COS_REFIT",
+      "method": "RV_A7_COS_REFIT",
+      "metrics": {
+        "ap25": 0.28535003234077305,
+        "ap50": 0.1418126497987609,
+        "apall": 0.03732776282930604,
+        "defined_classes": 28,
+        "macc": 0.3071763832402035,
+        "miou": 0.22680712299465197,
+        "uap": 0.03732776282930604
+      },
+      "parameter": null,
+      "registry_order": 1,
+      "tier": 0
+    },
+    {
+      "id": "AW_E03_FC_FROZEN_A7",
+      "method": "AW_E03_FC_FROZEN_A7",
+      "metrics": {
+        "ap25": 0.3159060846560847,
+        "ap50": 0.1490520282186949,
+        "apall": 0.042248432294728584,
+        "defined_classes": 28,
+        "macc": 0.31322823649863984,
+        "miou": 0.24457288182482775,
+        "uap": 0.042248432294728584
+      },
+      "parameter": null,
+      "registry_order": 2,
+      "tier": 0
+    },
+    {
+      "id": "AW_E03_FC_FROZEN_DIRECT",
+      "method": "AW_E03_FC_FROZEN_DIRECT",
+      "metrics": {
+        "ap25": 0.25322971781305115,
+        "ap50": 0.1349426807760141,
+        "apall": 0.03690231236527533,
+        "defined_classes": 28,
+        "macc": 0.2611957758424998,
+        "miou": 0.20007401600101077,
+        "uap": 0.03690231236527533
+      },
+      "parameter": null,
+      "registry_order": 3,
+      "tier": 0
+    },
+    {
+      "id": "AW_E03_OVR_DIRECT",
+      "method": "AW_E03_OVR_DIRECT",
+      "metrics": {
+        "ap25": 0.29438932980599647,
+        "ap50": 0.16119929453262788,
+        "apall": 0.05119047619047619,
+        "defined_classes": 28,
+        "macc": 0.2846993515630027,
+        "miou": 0.22411280551944524,
+        "uap": 0.05119047619047619
+      },
+      "parameter": null,
+      "registry_order": 4,
+      "tier": 0
+    },
+    {
+      "id": "AW_E03_OVR_A7",
+      "method": "AW_E03_OVR_A7",
+      "metrics": {
+        "ap25": 0.31782474213029765,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.3169726319373773,
+        "miou": 0.2488402527647192,
+        "uap": 0.0423402900254752
+      },
+      "parameter": null,
+      "registry_order": 5,
+      "tier": 0
+    },
+    {
+      "id": "PE_R0_BLEND__0",
+      "method": "PE_R0_BLEND",
+      "metrics": {
+        "ap25": 0.3159060846560847,
+        "ap50": 0.1490520282186949,
+        "apall": 0.042248432294728584,
+        "defined_classes": 28,
+        "macc": 0.31322823649863984,
+        "miou": 0.24457288182482775,
+        "uap": 0.042248432294728584
+      },
+      "parameter": 0,
+      "registry_order": 6,
+      "tier": 3
+    },
+    {
+      "id": "PE_R0_BLEND__0.25",
+      "method": "PE_R0_BLEND",
+      "metrics": {
+        "ap25": 0.31559744268077605,
+        "ap50": 0.1490520282186949,
+        "apall": 0.042248432294728584,
+        "defined_classes": 28,
+        "macc": 0.31320827992414596,
+        "miou": 0.2442529894885838,
+        "uap": 0.042248432294728584
+      },
+      "parameter": 0.25,
+      "registry_order": 7,
+      "tier": 3
+    },
+    {
+      "id": "PE_R0_BLEND__0.5",
+      "method": "PE_R0_BLEND",
+      "metrics": {
+        "ap25": 0.31768445032333914,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.3168139334032824,
+        "miou": 0.24863915928165062,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.5,
+      "registry_order": 8,
+      "tier": 3
+    },
+    {
+      "id": "PE_R0_BLEND__0.75",
+      "method": "PE_R0_BLEND",
+      "metrics": {
+        "ap25": 0.31782474213029765,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.31697171837666477,
+        "miou": 0.24883934720713116,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.75,
+      "registry_order": 9,
+      "tier": 3
+    },
+    {
+      "id": "PE_R0_BLEND__1",
+      "method": "PE_R0_BLEND",
+      "metrics": {
+        "ap25": 0.31782474213029765,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.3169726319373773,
+        "miou": 0.2488402527647192,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 1,
+      "registry_order": 10,
+      "tier": 3
+    },
+    {
+      "id": "PE_R1_FOURWAY",
+      "method": "PE_R1_FOURWAY",
+      "metrics": {
+        "ap25": 0.2696649029982363,
+        "ap50": 0.13622868900646679,
+        "apall": 0.04093180482069371,
+        "defined_classes": 28,
+        "macc": 0.2769969563133622,
+        "miou": 0.21710783486345206,
+        "uap": 0.04093180482069371
+      },
+      "parameter": null,
+      "registry_order": 11,
+      "tier": 3
+    },
+    {
+      "id": "PE_R2_GLOBAL__0",
+      "method": "PE_R2_GLOBAL",
+      "metrics": {
+        "ap25": 0.3159060846560847,
+        "ap50": 0.1490520282186949,
+        "apall": 0.042248432294728584,
+        "defined_classes": 28,
+        "macc": 0.31322823649863984,
+        "miou": 0.24457288182482775,
+        "uap": 0.042248432294728584
+      },
+      "parameter": 0,
+      "registry_order": 12,
+      "tier": 3
+    },
+    {
+      "id": "PE_R2_GLOBAL__0.25",
+      "method": "PE_R2_GLOBAL",
+      "metrics": {
+        "ap25": 0.2887352359574582,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.29150044895490124,
+        "miou": 0.2420609587755238,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.25,
+      "registry_order": 13,
+      "tier": 3
+    },
+    {
+      "id": "PE_R2_GLOBAL__0.5",
+      "method": "PE_R2_GLOBAL",
+      "metrics": {
+        "ap25": 0.28814300411522636,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.29515734386569775,
+        "miou": 0.23515967141737976,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.5,
+      "registry_order": 14,
+      "tier": 3
+    },
+    {
+      "id": "PE_R2_GLOBAL__1",
+      "method": "PE_R2_GLOBAL",
+      "metrics": {
+        "ap25": 0.25907921810699586,
+        "ap50": 0.16174309229864786,
+        "apall": 0.04995100921026847,
+        "defined_classes": 28,
+        "macc": 0.2737713529779807,
+        "miou": 0.2294051153041235,
+        "uap": 0.04995100921026847
+      },
+      "parameter": 1,
+      "registry_order": 15,
+      "tier": 3
+    },
+    {
+      "id": "PE_R2_GLOBAL__2",
+      "method": "PE_R2_GLOBAL",
+      "metrics": {
+        "ap25": 0.32214138741916515,
+        "ap50": 0.18627645502645504,
+        "apall": 0.05546288131164674,
+        "defined_classes": 28,
+        "macc": 0.3032768565418676,
+        "miou": 0.25741034259826073,
+        "uap": 0.05546288131164674
+      },
+      "parameter": 2,
+      "registry_order": 16,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL__0",
+      "method": "PE_R3_LOCAL",
+      "metrics": {
+        "ap25": 0.3159060846560847,
+        "ap50": 0.1490520282186949,
+        "apall": 0.042248432294728584,
+        "defined_classes": 28,
+        "macc": 0.31322823649863984,
+        "miou": 0.24457288182482775,
+        "uap": 0.042248432294728584
+      },
+      "parameter": 0,
+      "registry_order": 17,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL__0.25",
+      "method": "PE_R3_LOCAL",
+      "metrics": {
+        "ap25": 0.2887352359574582,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.29150044895490124,
+        "miou": 0.2420609587755238,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.25,
+      "registry_order": 18,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL__0.5",
+      "method": "PE_R3_LOCAL",
+      "metrics": {
+        "ap25": 0.28814300411522636,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.29515734386569775,
+        "miou": 0.23515967141737976,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.5,
+      "registry_order": 19,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL__1",
+      "method": "PE_R3_LOCAL",
+      "metrics": {
+        "ap25": 0.25907921810699586,
+        "ap50": 0.16174309229864786,
+        "apall": 0.04995100921026847,
+        "defined_classes": 28,
+        "macc": 0.2737713529779807,
+        "miou": 0.2294051153041235,
+        "uap": 0.04995100921026847
+      },
+      "parameter": 1,
+      "registry_order": 20,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL__2",
+      "method": "PE_R3_LOCAL",
+      "metrics": {
+        "ap25": 0.2823265726043504,
+        "ap50": 0.18627645502645504,
+        "apall": 0.05546288131164674,
+        "defined_classes": 28,
+        "macc": 0.28924524661961243,
+        "miou": 0.24365020513435282,
+        "uap": 0.05546288131164674
+      },
+      "parameter": 2,
+      "registry_order": 21,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL_CALDELTA__0",
+      "method": "PE_R3_LOCAL_CALDELTA",
+      "metrics": {
+        "ap25": 0.3159060846560847,
+        "ap50": 0.1490520282186949,
+        "apall": 0.042248432294728584,
+        "defined_classes": 28,
+        "macc": 0.31322823649863984,
+        "miou": 0.24457288182482775,
+        "uap": 0.042248432294728584
+      },
+      "parameter": 0,
+      "registry_order": 22,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL_CALDELTA__0.25",
+      "method": "PE_R3_LOCAL_CALDELTA",
+      "metrics": {
+        "ap25": 0.31768445032333914,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.314733890133739,
+        "miou": 0.24847774238234127,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.25,
+      "registry_order": 23,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL_CALDELTA__0.5",
+      "method": "PE_R3_LOCAL_CALDELTA",
+      "metrics": {
+        "ap25": 0.31651301373523594,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.31787482010926843,
+        "miou": 0.25218909011230334,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.5,
+      "registry_order": 24,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL_CALDELTA__1",
+      "method": "PE_R3_LOCAL_CALDELTA",
+      "metrics": {
+        "ap25": 0.2968768371546149,
+        "ap50": 0.1987801293356849,
+        "apall": 0.058181461885165583,
+        "defined_classes": 28,
+        "macc": 0.3048033548794836,
+        "miou": 0.25999994933158865,
+        "uap": 0.058181461885165583
+      },
+      "parameter": 1,
+      "registry_order": 25,
+      "tier": 3
+    },
+    {
+      "id": "PE_R3_LOCAL_CALDELTA__2",
+      "method": "PE_R3_LOCAL_CALDELTA",
+      "metrics": {
+        "ap25": 0.29405496766607875,
+        "ap50": 0.1970789241622575,
+        "apall": 0.055291413547586384,
+        "defined_classes": 28,
+        "macc": 0.29129407897767073,
+        "miou": 0.2572141763082883,
+        "uap": 0.055291413547586384
+      },
+      "parameter": 2,
+      "registry_order": 26,
+      "tier": 3
+    },
+    {
+      "id": "PE_D1_LOGPOOL",
+      "method": "PE_D1_LOGPOOL",
+      "metrics": {
+        "ap25": 0.3255842151675485,
+        "ap50": 0.18608906525573193,
+        "apall": 0.0504788849696257,
+        "defined_classes": 28,
+        "macc": 0.3267706210459275,
+        "miou": 0.2607203639949628,
+        "uap": 0.0504788849696257
+      },
+      "parameter": null,
+      "registry_order": 27,
+      "tier": 1
+    },
+    {
+      "id": "PE_D1_ANCHORED",
+      "method": "PE_D1_ANCHORED",
+      "metrics": {
+        "ap25": 0.32699769366436027,
+        "ap50": 0.1860186409954928,
+        "apall": 0.050441121235874326,
+        "defined_classes": 28,
+        "macc": 0.3231682437394137,
+        "miou": 0.25793640096855036,
+        "uap": 0.050441121235874326
+      },
+      "parameter": null,
+      "registry_order": 28,
+      "tier": 1
+    },
+    {
+      "id": "PE_D2_GROUPED",
+      "method": "PE_D2_GROUPED",
+      "metrics": {
+        "ap25": 0.2694591416813639,
+        "ap50": 0.1364858906525573,
+        "apall": 0.040674603174603176,
+        "defined_classes": 28,
+        "macc": 0.26901827420510493,
+        "miou": 0.21299392325506236,
+        "uap": 0.040674603174603176
+      },
+      "parameter": null,
+      "registry_order": 29,
+      "tier": 1
+    },
+    {
+      "id": "PE_D3_DIAGONAL",
+      "method": "PE_D3_DIAGONAL",
+      "metrics": {
+        "ap25": 0.3271164021164021,
+        "ap50": 0.1860186409954928,
+        "apall": 0.050441121235874326,
+        "defined_classes": 28,
+        "macc": 0.3175195220908385,
+        "miou": 0.2525614181899033,
+        "uap": 0.050441121235874326
+      },
+      "parameter": null,
+      "registry_order": 30,
+      "tier": 2
+    },
+    {
+      "id": "PE_D4_LINEAGE",
+      "method": "PE_D4_LINEAGE",
+      "metrics": {
+        "ap25": 0.3247379934879935,
+        "ap50": 0.18548280423280425,
+        "apall": 0.05014819713893788,
+        "defined_classes": 28,
+        "macc": 0.32281101595170786,
+        "miou": 0.25725685095440204,
+        "uap": 0.05014819713893788
+      },
+      "parameter": null,
+      "registry_order": 31,
+      "tier": 2
+    },
+    {
+      "id": "PE_D4_SHUFFLED",
+      "method": "PE_D4_SHUFFLED",
+      "metrics": {
+        "ap25": 0.3247379934879935,
+        "ap50": 0.18548280423280425,
+        "apall": 0.05014819713893788,
+        "defined_classes": 28,
+        "macc": 0.32281101595170786,
+        "miou": 0.25725685095440204,
+        "uap": 0.05014819713893788
+      },
+      "parameter": null,
+      "registry_order": 32,
+      "tier": 2
+    }
+  ],
+  "Replica_used_for_selection": false,
+  "active_choices": {
+    "PE_R0_BLEND": {
+      "id": "PE_R0_BLEND__0.5",
+      "method": "PE_R0_BLEND",
+      "metrics": {
+        "ap25": 0.31768445032333914,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.3168139334032824,
+        "miou": 0.24863915928165062,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.5,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 4.23402900254752,
+          "metric": "apall",
+          "retained": [
+            "PE_R0_BLEND__0.25",
+            "PE_R0_BLEND__0.5",
+            "PE_R0_BLEND__0.75",
+            "PE_R0_BLEND__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 24.88402527647192,
+          "metric": "miou",
+          "retained": [
+            "PE_R0_BLEND__0.5",
+            "PE_R0_BLEND__0.75",
+            "PE_R0_BLEND__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 14.927248677248675,
+          "metric": "ap50",
+          "retained": [
+            "PE_R0_BLEND__0.5",
+            "PE_R0_BLEND__0.75",
+            "PE_R0_BLEND__1"
+          ]
+        }
+      ],
+      "registry_order": 8,
+      "tier": 3
+    },
+    "PE_R2_GLOBAL": {
+      "id": "PE_R2_GLOBAL__2",
+      "method": "PE_R2_GLOBAL",
+      "metrics": {
+        "ap25": 0.32214138741916515,
+        "ap50": 0.18627645502645504,
+        "apall": 0.05546288131164674,
+        "defined_classes": 28,
+        "macc": 0.3032768565418676,
+        "miou": 0.25741034259826073,
+        "uap": 0.05546288131164674
+      },
+      "parameter": 2,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.546288131164674,
+          "metric": "apall",
+          "retained": [
+            "PE_R2_GLOBAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.741034259826073,
+          "metric": "miou",
+          "retained": [
+            "PE_R2_GLOBAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.627645502645503,
+          "metric": "ap50",
+          "retained": [
+            "PE_R2_GLOBAL__2"
+          ]
+        }
+      ],
+      "registry_order": 16,
+      "tier": 3
+    },
+    "PE_R3_LOCAL": {
+      "id": "PE_R3_LOCAL__2",
+      "method": "PE_R3_LOCAL",
+      "metrics": {
+        "ap25": 0.2823265726043504,
+        "ap50": 0.18627645502645504,
+        "apall": 0.05546288131164674,
+        "defined_classes": 28,
+        "macc": 0.28924524661961243,
+        "miou": 0.24365020513435282,
+        "uap": 0.05546288131164674
+      },
+      "parameter": 2,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.546288131164674,
+          "metric": "apall",
+          "retained": [
+            "PE_R3_LOCAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 24.365020513435283,
+          "metric": "miou",
+          "retained": [
+            "PE_R3_LOCAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.627645502645503,
+          "metric": "ap50",
+          "retained": [
+            "PE_R3_LOCAL__2"
+          ]
+        }
+      ],
+      "registry_order": 21,
+      "tier": 3
+    },
+    "PE_R3_LOCAL_CALDELTA": {
+      "id": "PE_R3_LOCAL_CALDELTA__1",
+      "method": "PE_R3_LOCAL_CALDELTA",
+      "metrics": {
+        "ap25": 0.2968768371546149,
+        "ap50": 0.1987801293356849,
+        "apall": 0.058181461885165583,
+        "defined_classes": 28,
+        "macc": 0.3048033548794836,
+        "miou": 0.25999994933158865,
+        "uap": 0.058181461885165583
+      },
+      "parameter": 1,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.818146188516558,
+          "metric": "apall",
+          "retained": [
+            "PE_R3_LOCAL_CALDELTA__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.999994933158867,
+          "metric": "miou",
+          "retained": [
+            "PE_R3_LOCAL_CALDELTA__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 19.87801293356849,
+          "metric": "ap50",
+          "retained": [
+            "PE_R3_LOCAL_CALDELTA__1"
+          ]
+        }
+      ],
+      "registry_order": 25,
+      "tier": 3
+    }
+  },
+  "binding": "6e0751c377b470d1126e3cf241b19c53b12bce9fdb80a2541bef2c2d1bca19bd",
+  "choices": {
+    "PE_D1_ANCHORED": {
+      "id": "PE_D1_ANCHORED",
+      "method": "PE_D1_ANCHORED",
+      "metrics": {
+        "ap25": 0.32699769366436027,
+        "ap50": 0.1860186409954928,
+        "apall": 0.050441121235874326,
+        "defined_classes": 28,
+        "macc": 0.3231682437394137,
+        "miou": 0.25793640096855036,
+        "uap": 0.050441121235874326
+      },
+      "parameter": null,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.044112123587433,
+          "metric": "apall",
+          "retained": [
+            "PE_D1_ANCHORED"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.793640096855036,
+          "metric": "miou",
+          "retained": [
+            "PE_D1_ANCHORED"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.60186409954928,
+          "metric": "ap50",
+          "retained": [
+            "PE_D1_ANCHORED"
+          ]
+        }
+      ],
+      "registry_order": 28,
+      "tier": 1
+    },
+    "PE_D1_LOGPOOL": {
+      "id": "PE_D1_LOGPOOL",
+      "method": "PE_D1_LOGPOOL",
+      "metrics": {
+        "ap25": 0.3255842151675485,
+        "ap50": 0.18608906525573193,
+        "apall": 0.0504788849696257,
+        "defined_classes": 28,
+        "macc": 0.3267706210459275,
+        "miou": 0.2607203639949628,
+        "uap": 0.0504788849696257
+      },
+      "parameter": null,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.04788849696257,
+          "metric": "apall",
+          "retained": [
+            "PE_D1_LOGPOOL"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 26.07203639949628,
+          "metric": "miou",
+          "retained": [
+            "PE_D1_LOGPOOL"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.608906525573193,
+          "metric": "ap50",
+          "retained": [
+            "PE_D1_LOGPOOL"
+          ]
+        }
+      ],
+      "registry_order": 27,
+      "tier": 1
+    },
+    "PE_D2_GROUPED": {
+      "id": "PE_D2_GROUPED",
+      "method": "PE_D2_GROUPED",
+      "metrics": {
+        "ap25": 0.2694591416813639,
+        "ap50": 0.1364858906525573,
+        "apall": 0.040674603174603176,
+        "defined_classes": 28,
+        "macc": 0.26901827420510493,
+        "miou": 0.21299392325506236,
+        "uap": 0.040674603174603176
+      },
+      "parameter": null,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 4.067460317460317,
+          "metric": "apall",
+          "retained": [
+            "PE_D2_GROUPED"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 21.299392325506236,
+          "metric": "miou",
+          "retained": [
+            "PE_D2_GROUPED"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 13.648589065255731,
+          "metric": "ap50",
+          "retained": [
+            "PE_D2_GROUPED"
+          ]
+        }
+      ],
+      "registry_order": 29,
+      "tier": 1
+    },
+    "PE_D3_DIAGONAL": {
+      "id": "PE_D3_DIAGONAL",
+      "method": "PE_D3_DIAGONAL",
+      "metrics": {
+        "ap25": 0.3271164021164021,
+        "ap50": 0.1860186409954928,
+        "apall": 0.050441121235874326,
+        "defined_classes": 28,
+        "macc": 0.3175195220908385,
+        "miou": 0.2525614181899033,
+        "uap": 0.050441121235874326
+      },
+      "parameter": null,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.044112123587433,
+          "metric": "apall",
+          "retained": [
+            "PE_D3_DIAGONAL"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.25614181899033,
+          "metric": "miou",
+          "retained": [
+            "PE_D3_DIAGONAL"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.60186409954928,
+          "metric": "ap50",
+          "retained": [
+            "PE_D3_DIAGONAL"
+          ]
+        }
+      ],
+      "registry_order": 30,
+      "tier": 2
+    },
+    "PE_D4_LINEAGE": {
+      "id": "PE_D4_LINEAGE",
+      "method": "PE_D4_LINEAGE",
+      "metrics": {
+        "ap25": 0.3247379934879935,
+        "ap50": 0.18548280423280425,
+        "apall": 0.05014819713893788,
+        "defined_classes": 28,
+        "macc": 0.32281101595170786,
+        "miou": 0.25725685095440204,
+        "uap": 0.05014819713893788
+      },
+      "parameter": null,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.014819713893788,
+          "metric": "apall",
+          "retained": [
+            "PE_D4_LINEAGE"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.725685095440205,
+          "metric": "miou",
+          "retained": [
+            "PE_D4_LINEAGE"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.548280423280424,
+          "metric": "ap50",
+          "retained": [
+            "PE_D4_LINEAGE"
+          ]
+        }
+      ],
+      "registry_order": 31,
+      "tier": 2
+    },
+    "PE_D4_SHUFFLED": {
+      "id": "PE_D4_SHUFFLED",
+      "method": "PE_D4_SHUFFLED",
+      "metrics": {
+        "ap25": 0.3247379934879935,
+        "ap50": 0.18548280423280425,
+        "apall": 0.05014819713893788,
+        "defined_classes": 28,
+        "macc": 0.32281101595170786,
+        "miou": 0.25725685095440204,
+        "uap": 0.05014819713893788
+      },
+      "parameter": null,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.014819713893788,
+          "metric": "apall",
+          "retained": [
+            "PE_D4_SHUFFLED"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.725685095440205,
+          "metric": "miou",
+          "retained": [
+            "PE_D4_SHUFFLED"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.548280423280424,
+          "metric": "ap50",
+          "retained": [
+            "PE_D4_SHUFFLED"
+          ]
+        }
+      ],
+      "registry_order": 32,
+      "tier": 2
+    },
+    "PE_R0_BLEND": {
+      "id": "PE_R0_BLEND__0.5",
+      "method": "PE_R0_BLEND",
+      "metrics": {
+        "ap25": 0.31768445032333914,
+        "ap50": 0.14927248677248675,
+        "apall": 0.0423402900254752,
+        "defined_classes": 28,
+        "macc": 0.3168139334032824,
+        "miou": 0.24863915928165062,
+        "uap": 0.0423402900254752
+      },
+      "parameter": 0.5,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 4.23402900254752,
+          "metric": "apall",
+          "retained": [
+            "PE_R0_BLEND__0",
+            "PE_R0_BLEND__0.25",
+            "PE_R0_BLEND__0.5",
+            "PE_R0_BLEND__0.75",
+            "PE_R0_BLEND__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 24.88402527647192,
+          "metric": "miou",
+          "retained": [
+            "PE_R0_BLEND__0.5",
+            "PE_R0_BLEND__0.75",
+            "PE_R0_BLEND__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 14.927248677248675,
+          "metric": "ap50",
+          "retained": [
+            "PE_R0_BLEND__0.5",
+            "PE_R0_BLEND__0.75",
+            "PE_R0_BLEND__1"
+          ]
+        }
+      ],
+      "registry_order": 8,
+      "tier": 3
+    },
+    "PE_R1_FOURWAY": {
+      "id": "PE_R1_FOURWAY",
+      "method": "PE_R1_FOURWAY",
+      "metrics": {
+        "ap25": 0.2696649029982363,
+        "ap50": 0.13622868900646679,
+        "apall": 0.04093180482069371,
+        "defined_classes": 28,
+        "macc": 0.2769969563133622,
+        "miou": 0.21710783486345206,
+        "uap": 0.04093180482069371
+      },
+      "parameter": null,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 4.093180482069371,
+          "metric": "apall",
+          "retained": [
+            "PE_R1_FOURWAY"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 21.710783486345207,
+          "metric": "miou",
+          "retained": [
+            "PE_R1_FOURWAY"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 13.62286890064668,
+          "metric": "ap50",
+          "retained": [
+            "PE_R1_FOURWAY"
+          ]
+        }
+      ],
+      "registry_order": 11,
+      "tier": 3
+    },
+    "PE_R2_GLOBAL": {
+      "id": "PE_R2_GLOBAL__2",
+      "method": "PE_R2_GLOBAL",
+      "metrics": {
+        "ap25": 0.32214138741916515,
+        "ap50": 0.18627645502645504,
+        "apall": 0.05546288131164674,
+        "defined_classes": 28,
+        "macc": 0.3032768565418676,
+        "miou": 0.25741034259826073,
+        "uap": 0.05546288131164674
+      },
+      "parameter": 2,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.546288131164674,
+          "metric": "apall",
+          "retained": [
+            "PE_R2_GLOBAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.741034259826073,
+          "metric": "miou",
+          "retained": [
+            "PE_R2_GLOBAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.627645502645503,
+          "metric": "ap50",
+          "retained": [
+            "PE_R2_GLOBAL__2"
+          ]
+        }
+      ],
+      "registry_order": 16,
+      "tier": 3
+    },
+    "PE_R3_LOCAL": {
+      "id": "PE_R3_LOCAL__2",
+      "method": "PE_R3_LOCAL",
+      "metrics": {
+        "ap25": 0.2823265726043504,
+        "ap50": 0.18627645502645504,
+        "apall": 0.05546288131164674,
+        "defined_classes": 28,
+        "macc": 0.28924524661961243,
+        "miou": 0.24365020513435282,
+        "uap": 0.05546288131164674
+      },
+      "parameter": 2,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.546288131164674,
+          "metric": "apall",
+          "retained": [
+            "PE_R3_LOCAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 24.365020513435283,
+          "metric": "miou",
+          "retained": [
+            "PE_R3_LOCAL__2"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 18.627645502645503,
+          "metric": "ap50",
+          "retained": [
+            "PE_R3_LOCAL__2"
+          ]
+        }
+      ],
+      "registry_order": 21,
+      "tier": 3
+    },
+    "PE_R3_LOCAL_CALDELTA": {
+      "id": "PE_R3_LOCAL_CALDELTA__1",
+      "method": "PE_R3_LOCAL_CALDELTA",
+      "metrics": {
+        "ap25": 0.2968768371546149,
+        "ap50": 0.1987801293356849,
+        "apall": 0.058181461885165583,
+        "defined_classes": 28,
+        "macc": 0.3048033548794836,
+        "miou": 0.25999994933158865,
+        "uap": 0.058181461885165583
+      },
+      "parameter": 1,
+      "ranking_stages": [
+        {
+          "band_pp": 0.05,
+          "maximum_pp": 5.818146188516558,
+          "metric": "apall",
+          "retained": [
+            "PE_R3_LOCAL_CALDELTA__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 25.999994933158867,
+          "metric": "miou",
+          "retained": [
+            "PE_R3_LOCAL_CALDELTA__1"
+          ]
+        },
+        {
+          "band_pp": 0.1,
+          "maximum_pp": 19.87801293356849,
+          "metric": "ap50",
+          "retained": [
+            "PE_R3_LOCAL_CALDELTA__1"
+          ]
+        }
+      ],
+      "registry_order": 25,
+      "tier": 3
+    }
+  },
+  "combination": {
+    "component_changed_CAL_labels": {
+      "PE_D4_LINEAGE": 33,
+      "PE_R3_LOCAL__2": 78
+    },
+    "id": "PE_COMBO_D4_R3",
+    "interaction_probe_uses_nonselected_eta": false,
+    "method": "PE_COMBO_D4_R3",
+    "metrics": {
+      "ap25": 0.3308017342739565,
+      "ap50": 0.2296443268665491,
+      "apall": 0.06481154876216604,
+      "defined_classes": 28,
+      "macc": 0.3326499675557527,
+      "miou": 0.28902347868601164,
+      "uap": 0.06481154876216604
+    },
+    "parameter": 2,
+    "registry_order": 33,
+    "status": "MEASURED",
+    "tier": 3
+  },
+  "deployment": "N0_UNCHANGED",
+  "identity": "1b5c3dfca410a965249f77b2275a6e54517bbc9e5188e3f767180b2654456198",
+  "research_nominee": {
+    "component_changed_CAL_labels": {
+      "PE_D4_LINEAGE": 33,
+      "PE_R3_LOCAL__2": 78
+    },
+    "id": "PE_COMBO_D4_R3",
+    "interaction_probe_uses_nonselected_eta": false,
+    "method": "PE_COMBO_D4_R3",
+    "metrics": {
+      "ap25": 0.3308017342739565,
+      "ap50": 0.2296443268665491,
+      "apall": 0.06481154876216604,
+      "defined_classes": 28,
+      "macc": 0.3326499675557527,
+      "miou": 0.28902347868601164,
+      "uap": 0.06481154876216604
+    },
+    "parameter": 2,
+    "ranking_stages": [
+      {
+        "band_pp": 0.05,
+        "maximum_pp": 6.481154876216603,
+        "metric": "apall",
+        "retained": [
+          "PE_COMBO_D4_R3"
+        ]
+      },
+      {
+        "band_pp": 0.1,
+        "maximum_pp": 28.902347868601165,
+        "metric": "miou",
+        "retained": [
+          "PE_COMBO_D4_R3"
+        ]
+      },
+      {
+        "band_pp": 0.1,
+        "maximum_pp": 22.96443268665491,
+        "metric": "ap50",
+        "retained": [
+          "PE_COMBO_D4_R3"
+        ]
+      }
+    ],
+    "registry_order": 33,
+    "status": "MEASURED",
+    "tier": 3
+  },
+  "status": "CAL_FROZEN"
+}

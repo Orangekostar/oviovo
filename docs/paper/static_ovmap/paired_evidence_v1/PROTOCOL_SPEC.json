@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "issued": "2026-09-29",
+  "task_id": "ovimap-paired-evidence-v1",
+  "status": "EXECUTION_SPECIFICATION_NOT_EXPERIMENT_RESULT",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "9c35333088551a9d4a67937936d4d9c347b2b207",
+  "branch": "research/ovimap-paired-evidence-v1",
+  "parent_binding": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/binding.json",
+  "output_root": "/mnt/shared/ww/ovimap-paired-evidence-v1/attempt_001",
+  "runtime_default": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "runner": "scripts/evaluation/run_ovimap_paired_evidence.py",
+  "implementation_root": "src/static_ovmap/paired_evidence_study",
+  "phases": [
+    "bind",
+    "recover",
+    "cal",
+    "freeze",
+    "replica",
+    "diagnose",
+    "report",
+    "publish",
+    "all"
+  ],
+  "datasets": {
+    "calibration": [
+      "scene0056_00",
+      "scene0534_00"
+    ],
+    "replica": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "all_exposed": true,
+    "new_confirmation_in_scope": false
+  },
+  "primary_baseline": "AW_E03_FC_FROZEN_A7",
+  "controls": [
+    "N0",
+    "RV_A7_COS_REFIT",
+    "AW_E03_FC_FROZEN_A7",
+    "AW_E03_FC_FROZEN_DIRECT",
+    "AW_E03_OVR_DIRECT",
+    "AW_E03_OVR_A7"
+  ],
+  "variants": [
+    {
+      "id": "PE_R0_BLEND",
+      "family": "R",
+      "grid_parameter": "lambda",
+      "grid": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1
+      ],
+      "compute_tier": 3,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_R1_FOURWAY",
+      "family": "R",
+      "grid_parameter": null,
+      "compute_tier": 3,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_R2_GLOBAL",
+      "family": "R",
+      "grid_parameter": "eta",
+      "grid": [
+        0,
+        0.25,
+        0.5,
+        1,
+        2
+      ],
+      "compute_tier": 3,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_R3_LOCAL",
+      "family": "R",
+      "grid_parameter": "eta",
+      "grid": [
+        0,
+        0.25,
+        0.5,
+        1,
+        2
+      ],
+      "compute_tier": 3,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_R3_LOCAL_CALDELTA",
+      "family": "R",
+      "grid_parameter": "eta",
+      "grid": [
+        0,
+        0.25,
+        0.5,
+        1,
+        2
+      ],
+      "compute_tier": 3,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_D1_LOGPOOL",
+      "family": "D",
+      "grid_parameter": null,
+      "compute_tier": 1,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_D1_ANCHORED",
+      "family": "D",
+      "grid_parameter": null,
+      "compute_tier": 1,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_D2_GROUPED",
+      "family": "D",
+      "grid_parameter": null,
+      "compute_tier": 1,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_D3_DIAGONAL",
+      "family": "D",
+      "grid_parameter": null,
+      "compute_tier": 2,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_D4_LINEAGE",
+      "family": "D",
+      "grid_parameter": null,
+      "compute_tier": 2,
+      "nomination_eligible": true
+    },
+    {
+      "id": "PE_D4_SHUFFLED",
+      "family": "D",
+      "grid_parameter": null,
+      "compute_tier": 2,
+      "nomination_eligible": false
+    }
+  ],
+  "source_symbols": {
+    "N": "cosine_native",
+    "Q": "Q_GAIN",
+    "F": "AW_E03_FC_FROZEN",
+    "O": "AW_E03_OVR"
+  },
+  "temperatures": {
+    "refit": false,
+    "calibration": "reuse_original_leave_one_scene_out_values",
+    "replica": "reuse_original_final_values",
+    "N0_cosine": true
+  },
+  "residual": {
+    "main": "(paired_O_cosine-paired_F_cosine)/T_F",
+    "caldelta": "logsoftmax(paired_O/T_O)-logsoftmax(paired_F/T_F)",
+    "pairing": "same_actual_successful_request_intersection_same_original_areas",
+    "candidate": "stable_top5_base_union_argmax_paired_OVR",
+    "topk": 5,
+    "no_pair": "KEEP_BASE_AND_MARK_NO_PAIRED_RESIDUAL",
+    "eta_zero": "EXACT_BASE",
+    "outside_mass": "UNCHANGED",
+    "inside_mass": "CONSERVE_START_DISTRIBUTION_MASS"
+  },
+  "dependence": {
+    "sources": [
+      "N",
+      "Q",
+      "F"
+    ],
+    "full_class_pairs": true,
+    "pair_chunk_size": 256,
+    "kernel": "same_image_and_vision_space_normalized_binary_support_Gram",
+    "unknown_mask": "isolated_atom_block_and_explicit_unknown_status",
+    "cross_model_latent_dot": false,
+    "relative_noise": "norm(feature)/sqrt(dimension)",
+    "variance_floor_ratio": 0.1,
+    "variance_scale_minimum": 1e-12,
+    "pair_weight_floor_ratio": 1e-06,
+    "pair_weights": "inverse_variance_then_mean_one",
+    "graph_ridge": "number_of_classes",
+    "qp": "enumerate_all_nonempty_active_subsets_max_3_sources",
+    "covariance_is_proxy": true,
+    "shuffled_control": "permute_NQ_rho_across_class_pairs_preserve_diagonal",
+    "shuffle_seed_prefix": 1729,
+    "float64_surrogate_tolerance": 1e-06,
+    "missing_view_arrays": "KEEP_BASE_PER_OWNER_AND_RECORD_COVERAGE"
+  },
+  "selection": {
+    "metric_view": "RELEASED_DATASET_POOL/OFFICIAL_CURRENT_CLASS",
+    "apall_practical_tie_pp": 0.05,
+    "miou_practical_tie_pp": 0.1,
+    "ap50_practical_tie_pp": 0.1,
+    "order": [
+      "apall_band",
+      "miou_band",
+      "ap50_band",
+      "compute_tier",
+      "identity_distance",
+      "registry_order"
+    ],
+    "parameter_is_global_per_method": true,
+    "Replica_can_tune": false,
+    "direct_controls_eligible": true,
+    "old_A7_nomination_eligible": false,
+    "exact_noop_alias": "prefer_original_baseline_id",
+    "control_compute_tiers": {
+      "N0": 0,
+      "RV_A7_COS_REFIT": 0,
+      "AW_E03_FC_FROZEN_A7": 0,
+      "AW_E03_FC_FROZEN_DIRECT": 0,
+      "AW_E03_OVR_DIRECT": 0,
+      "AW_E03_OVR_A7": 0
+    },
+    "bands_are_statistical_equivalence": false,
+    "deployment": "N0_UNCHANGED"
+  },
+  "combination": {
+    "method": "PE_COMBO_D4_R3",
+    "maximum": 1,
+    "operators": [
+      "PE_D4_LINEAGE",
+      "PE_R3_LOCAL"
+    ],
+    "order": "D4_then_R3",
+    "parameter": "best_active_nonzero_R3_eta_on_CAL",
+    "candidate_set": "original_B_candidate_set",
+    "mass": "D4_probability_mass_in_that_set",
+    "trigger": "both_executable_and_each_changes_at_least_one_CAL_label_vs_B",
+    "single_module_gain_required": false,
+    "retune_on_Replica": false
+  },
+  "evaluation": {
+    "primary_rank": "OFFICIAL_CURRENT_CLASS",
+    "auxiliary_rank": "FROZEN_N0",
+    "pool": "call_released_evaluator_on_all_ordered_scene_files_and_sum_confusions",
+    "expected_ap_thresholds": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "thresholds_must_be_read_from_runtime": true,
+    "ap25_separate": true,
+    "instance_geometry": "UNCHANGED",
+    "geometric_diagnostic_iou": "strict_gt_0.5_unique",
+    "loo_sensitivity": "eight_seven_scene_pools_for_nominee_and_B_no_new_predictions"
+  },
+  "planned_counts": {
+    "controls": 6,
+    "new_methods": 11,
+    "canonical_methods": 17,
+    "cal_sweep_configurations_including_controls": 33,
+    "cal_sweep_scene_config_records": 66,
+    "cal_sweep_rank_rows": 132,
+    "canonical_scene_method_records": 170,
+    "canonical_rank_rows": 340,
+    "canonical_dataset_rank_pools": 68,
+    "extra_CAL_rank_rows_after_counting_selected_canonical_rows": 64,
+    "max_total_rank_rows_excluding_combination": 404,
+    "optional_combo_scene_method_records": 10,
+    "optional_combo_rank_rows": 20,
+    "optional_combo_pools": 4,
+    "note": "logical records; exact output identities may reuse evaluator calls; blocked rows never numeric"
+  },
+  "budget": {
+    "image_forwards": 0,
+    "image_model_loads": 0,
+    "text_model_forwards": 0,
+    "neural_training_jobs": 0,
+    "new_temperature_fits": 0,
+    "new_model_download_bytes": 0,
+    "map_reconstructions": 0,
+    "parameter_grids": 4,
+    "max_values_per_grid": 5,
+    "max_combinations": 1,
+    "cpu_blas_threads": 4,
+    "compact_publication_target_MiB": 100,
+    "old_archive_full_reaudit": false
+  },
+  "reports": [
+    "PAIRED_EVIDENCE_RESULTS.md",
+    "PAIRED_EVIDENCE_HANDOFF.md",
+    "PAIRED_EVIDENCE_SELECTION.md",
+    "PAIRED_EVIDENCE_CLAIMS.md"
+  ],
+  "publication": {
+    "artifact_root": "artifacts/static_ovmap/paired_evidence_v1/attempt_001",
+    "docs_root": "docs/paper/static_ovmap",
+    "normal_push_required": true,
+    "full_remote_sha_verification": true,
+    "force_push": false,
+    "self_hash_receipt_in_commit": false
+  },
+  "deferred": [
+    "conditional_information_acquisition",
+    "E06",
+    "new_geometry_modules",
+    "new_neural_routing"
+  ]
+}

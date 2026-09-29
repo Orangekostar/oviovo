@@ -1,0 +1,48 @@
+{
+  "phase": "recover",
+  "physical_model_loads": 0,
+  "results": [
+    {
+      "binding": "6e0751c377b470d1126e3cf241b19c53b12bce9fdb80a2541bef2c2d1bca19bd",
+      "bundle": {
+        "bytes": 2318203,
+        "path": "/mnt/shared/ww/ovimap-paired-evidence-v1/attempt_001/evidence/scene0534_00/frozen.json.gz",
+        "sha256": "fa9f1d0ca902eec629875223192dbdb14adea4b2351dd75889d3421423a4af06"
+      },
+      "dependence_owners": 93,
+      "elapsed_seconds": 59.1939997819718,
+      "job_seconds": 8.698217866010964,
+      "operator_seconds": 35.15337363339495,
+      "owners": 93,
+      "paired_owners": 91,
+      "physical_image_forwards": 0,
+      "physical_model_loads": 0,
+      "physical_text_forwards": 0,
+      "process_peak_rss_kib": 102400,
+      "scene": "scene0534_00",
+      "status": "RECOVERED"
+    },
+    {
+      "binding": "6e0751c377b470d1126e3cf241b19c53b12bce9fdb80a2541bef2c2d1bca19bd",
+      "bundle": {
+        "bytes": 2520406,
+        "path": "/mnt/shared/ww/ovimap-paired-evidence-v1/attempt_001/evidence/scene0056_00/frozen.json.gz",
+        "sha256": "dc165a8b4fe67841d0dd835ee3d6550d70cdc4c4454ca877c42864d9cf4fdc79"
+      },
+      "dependence_owners": 99,
+      "elapsed_seconds": 49.15458251000382,
+      "job_seconds": 8.794219737057574,
+      "operator_seconds": 31.149292991496623,
+      "owners": 99,
+      "paired_owners": 97,
+      "physical_image_forwards": 0,
+      "physical_model_loads": 0,
+      "physical_text_forwards": 0,
+      "process_peak_rss_kib": 102912,
+      "scene": "scene0056_00",
+      "status": "RECOVERED"
+    }
+  ],
+  "threads_per_process": 4,
+  "workers": 2
+}

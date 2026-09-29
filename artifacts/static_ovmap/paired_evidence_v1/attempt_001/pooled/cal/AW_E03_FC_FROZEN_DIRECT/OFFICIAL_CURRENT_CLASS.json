@@ -1,0 +1,39 @@
+{
+  "aggregation": "RELEASED_DATASET_POOL",
+  "dataset": "ScanNet",
+  "elapsed_seconds": 0.30080331896897405,
+  "identity": "7b9248b9e18a29bfa36135b7d6533dab42371db6f4e8066a04fc67060e602a89",
+  "method": "AW_E03_FC_FROZEN_DIRECT",
+  "metrics": {
+    "ap25": 0.25322971781305115,
+    "ap50": 0.1349426807760141,
+    "apall": 0.03690231236527533,
+    "defined_classes": 28,
+    "macc": 0.2611957758424998,
+    "miou": 0.20007401600101077,
+    "uap": 0.03690231236527533
+  },
+  "ordered_inputs": [
+    "d27a4c5cd234da1d5c420ecae08224201c791fe316890cfb2ebcd5a2e5db03ea",
+    "1cda7e557ee4f834d4633d80e6116e4dcd278f049f49904623379519939d4d8d"
+  ],
+  "rank_mode": "OFFICIAL_CURRENT_CLASS",
+  "runtime_overlaps": [
+    0.5,
+    0.55,
+    0.6000000000000001,
+    0.6500000000000001,
+    0.7000000000000002,
+    0.7500000000000002,
+    0.8000000000000003,
+    0.8500000000000003,
+    0.9000000000000004,
+    0.25
+  ],
+  "scene_order": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "split": "cal",
+  "status": "COMPLETE"
+}

@@ -1,0 +1,21 @@
+{
+  "aggregation": "SCENE",
+  "configuration_alias": "PE_R0_BLEND__0.5",
+  "dataset": "ScanNet",
+  "evaluation_identity": "c7a4bea67fa7da9b0a8cbea3c3a0e6f51581e8d02d5e8ce8c36134c6445d3a0a",
+  "evaluation_receipt": "/mnt/shared/ww/ovimap-paired-evidence-v1/attempt_001/evaluation_cache/c7a4bea67fa7da9b0a8cbea3c3a0e6f51581e8d02d5e8ce8c36134c6445d3a0a/receipt.json",
+  "method": "PE_R0_BLEND",
+  "metrics": {
+    "ap25": 0.35765550239234445,
+    "ap50": 0.17543859649122806,
+    "apall": 0.050682261208576995,
+    "defined_classes": 20,
+    "macc": 0.380462231651748,
+    "miou": 0.27593172546959716,
+    "uap": 0.050682261208576995
+  },
+  "prediction_identity": "3f0bcddce7423e827e170dd09592df8f45a3e9d0477d791bbef75202e6d095f8",
+  "rank_mode": "FROZEN_N0",
+  "scene": "scene0534_00",
+  "status": "COMPLETE"
+}

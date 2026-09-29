@@ -1,0 +1,49 @@
+{
+  "aggregation": "RELEASED_DATASET_POOL",
+  "dataset": "Replica",
+  "elapsed_seconds": 0.9723857779754326,
+  "identity": "536759fcd54e6b44f1c041b53e1a8e4c683b5c266dcca6fa196e9ad58d3c5fde",
+  "method": "AW_E03_FC_FROZEN_A7",
+  "metrics": {
+    "ap25": 0.4135013668380265,
+    "ap50": 0.24847166577599586,
+    "apall": 0.1126612450790335,
+    "defined_classes": 48,
+    "macc": 0.3753501810349849,
+    "miou": 0.31115799093495217,
+    "uap": 0.1126612450790335
+  },
+  "ordered_inputs": [
+    "1c23d2f476b4ff62843b9fbbb95b279df85547bfb6c3b4024bc25244c7537e76",
+    "3980c9cc6f96433b9a3a9200a65ff2ff8257124e0d2ecd1dd33f4c5d4526f679",
+    "a27c5b4cf1bc7f0814ec68160c6ef7f24eb198f40dd116a0bd46353e93b75c10",
+    "be47b19700dfd02dbd8728d88325baf7241988ace10804b51d2873d3358e3afa",
+    "3dbfe3c33dd60db8fc56b0add62d999abecfea68856e728892cb06de220b33ae",
+    "67371ec4afc5209c0d7727c2af6fc8586db5b12e754313a3d1385333ec0b7469",
+    "fe33ece0b165f20e5db0b584040a4eeeeabaffe080350fead5790aba879a8ee9"
+  ],
+  "rank_mode": "FROZEN_N0",
+  "runtime_overlaps": [
+    0.5,
+    0.55,
+    0.6000000000000001,
+    0.6500000000000001,
+    0.7000000000000002,
+    0.7500000000000002,
+    0.8000000000000003,
+    0.8500000000000003,
+    0.9000000000000004,
+    0.25
+  ],
+  "scene_order": [
+    "office0",
+    "office2",
+    "office3",
+    "office4",
+    "room0",
+    "room1",
+    "room2"
+  ],
+  "split": "replica",
+  "status": "COMPLETE"
+}

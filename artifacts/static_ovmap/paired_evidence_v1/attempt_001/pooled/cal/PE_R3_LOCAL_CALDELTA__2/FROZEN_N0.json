@@ -1,0 +1,39 @@
+{
+  "aggregation": "RELEASED_DATASET_POOL",
+  "dataset": "ScanNet",
+  "elapsed_seconds": 0.3127964660525322,
+  "identity": "ead080a6ebfc49f4892577772b0900cf6a952c44387df38d72ba6d25ee701149",
+  "method": "PE_R3_LOCAL_CALDELTA__2",
+  "metrics": {
+    "ap25": 0.29973177542621987,
+    "ap50": 0.1978284832451499,
+    "apall": 0.05726410934744268,
+    "defined_classes": 28,
+    "macc": 0.29129407897767073,
+    "miou": 0.2572141763082883,
+    "uap": 0.05726410934744268
+  },
+  "ordered_inputs": [
+    "d7cf14557867bcc25e73b9c6de2ed5fe6f2ab3de91ad6166c6b6af45925fa683",
+    "80390547bcad1cf16258f8d15dacfdcf4d93281371a374553cdf42e53133dcc4"
+  ],
+  "rank_mode": "FROZEN_N0",
+  "runtime_overlaps": [
+    0.5,
+    0.55,
+    0.6000000000000001,
+    0.6500000000000001,
+    0.7000000000000002,
+    0.7500000000000002,
+    0.8000000000000003,
+    0.8500000000000003,
+    0.9000000000000004,
+    0.25
+  ],
+  "scene_order": [
+    "scene0056_00",
+    "scene0534_00"
+  ],
+  "split": "cal",
+  "status": "COMPLETE"
+}
