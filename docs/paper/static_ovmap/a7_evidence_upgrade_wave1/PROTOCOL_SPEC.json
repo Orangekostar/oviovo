@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "spec_date": "2026-09-29",
+  "status": "DESIGN_NOT_EXECUTED",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+  "upstream_ovimap_commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+  "branch": "research/ovimap-a7-evidence-upgrade-wave1",
+  "output_root": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001",
+  "source_binding": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/source_binding.json",
+  "reviewer_root": "/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001",
+  "runner": "scripts/evaluation/run_ovimap_a7_evidence_upgrade.py",
+  "package": "src/static_ovmap/a7_evidence_upgrade",
+  "scope": {
+    "execute": [
+      "E01",
+      "E02",
+      "C0",
+      "E03",
+      "E04"
+    ],
+    "defer": [
+      "E05",
+      "E06",
+      "E07",
+      "E08",
+      "E09",
+      "E10",
+      "E11",
+      "E12"
+    ],
+    "new_mapping": false,
+    "new_owner_allocation": false,
+    "new_q_policy": false,
+    "new_foundation_training": false,
+    "new_selector_training": false,
+    "scalar_fitting": true,
+    "optional_one_compatible_composition": true,
+    "new_dataset_downloads": false,
+    "official_model_downloads": true,
+    "model_download_limit_gib": 25
+  },
+  "datasets": {
+    "calibration": [
+      "scene0056_00",
+      "scene0534_00"
+    ],
+    "replica": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "roles": "CAL development; Replica exposed historical regression, not fresh confirmation",
+    "all_native_owners_in_metrics": true,
+    "reuse_original_schedule": true
+  },
+  "references": [
+    "N0",
+    "Q_GAIN",
+    "S_SIGLIP2_AREA",
+    "RV_A7_COS_FIXED",
+    "RV_A7_COS_REFIT"
+  ],
+  "primary_base": "RV_A7_COS_REFIT",
+  "secondary_base": "RV_A7_COS_FIXED",
+  "source_variants": [
+    {
+      "id": "AW_E01_RAW_EQ",
+      "family": "E01",
+      "slot": "Q_GAIN",
+      "readout": "equal mean of raw per-view six-crop means",
+      "visual": "none"
+    },
+    {
+      "id": "AW_E01_UNIT_EQ",
+      "family": "E01",
+      "slot": "Q_GAIN",
+      "readout": "equal mean of unit per-view six-crop means",
+      "visual": "none"
+    },
+    {
+      "id": "AW_E01_GMED",
+      "family": "E01",
+      "slot": "Q_GAIN",
+      "readout": "smoothed geometric median of unit per-view six-crop means",
+      "visual": "none"
+    },
+    {
+      "id": "AW_E02_GLOBAL",
+      "family": "E02",
+      "slot": "S_SIGLIP2_AREA",
+      "readout": "same S2 six crops; foreground mask = captured global target",
+      "visual": "existing S2 backend; three changed foreground crops/request"
+    },
+    {
+      "id": "AW_E02_SAM2",
+      "family": "E02",
+      "slot": "S_SIGLIP2_AREA",
+      "readout": "same S2 six crops; foreground mask = SAM2.1 box-refined target",
+      "visual": "SAM2.1 large plus changed S2 foreground crops"
+    },
+    {
+      "id": "AW_C0_SO400M",
+      "family": "C0",
+      "slot": "S_SIGLIP2_AREA",
+      "readout": "same union six crops; SigLIP2-SO400M image/text pair",
+      "visual": "SO400M six crops/request"
+    },
+    {
+      "id": "AW_E03_FC_FROZEN",
+      "family": "E03",
+      "slot": "S_SIGLIP2_AREA",
+      "readout": "frozen original ConvNeXt-L/FC-CLIP region branch; fixed global mask",
+      "visual": "one dense image backbone per distinct selected frame"
+    },
+    {
+      "id": "AW_E03_OVR",
+      "family": "E03",
+      "slot": "S_SIGLIP2_AREA",
+      "readout": "official OVR-tuned matching backbone; same region adapter",
+      "visual": "one dense image backbone per distinct selected frame"
+    }
+  ],
+  "variant_outputs": [
+    "DIRECT",
+    "A7"
+  ],
+  "e04_methods": [
+    "AW_E04_SHORTLIST",
+    "AW_E04_SPATIAL",
+    "AW_E04_MIX50"
+  ],
+  "mandatory_new_methods": [
+    "AW_E01_RAW_EQ_DIRECT",
+    "AW_E01_RAW_EQ_A7",
+    "AW_E01_UNIT_EQ_DIRECT",
+    "AW_E01_UNIT_EQ_A7",
+    "AW_E01_GMED_DIRECT",
+    "AW_E01_GMED_A7",
+    "AW_E02_GLOBAL_DIRECT",
+    "AW_E02_GLOBAL_A7",
+    "AW_E02_SAM2_DIRECT",
+    "AW_E02_SAM2_A7",
+    "AW_C0_SO400M_DIRECT",
+    "AW_C0_SO400M_A7",
+    "AW_E03_FC_FROZEN_DIRECT",
+    "AW_E03_FC_FROZEN_A7",
+    "AW_E03_OVR_DIRECT",
+    "AW_E03_OVR_A7",
+    "AW_E04_SHORTLIST",
+    "AW_E04_SPATIAL",
+    "AW_E04_MIX50"
+  ],
+  "expected_if_assets_available": {
+    "scenes": 10,
+    "reference_methods": 5,
+    "new_methods": 19,
+    "scene_method_records": 240,
+    "rank_modes": 2,
+    "scene_rank_records": 480,
+    "replica_pooled_records": 48,
+    "optional_combo_methods": 1,
+    "optional_combo_scene_rank_records": 20
+  },
+  "evaluation": {
+    "primary_rank": "OFFICIAL_CURRENT_CLASS",
+    "secondary_rank": "FROZEN_N0",
+    "primary_aggregation": "RELEASED_DATASET_POOL",
+    "secondary_aggregation": "SCENE_MACRO",
+    "metrics": [
+      "apall",
+      "ap50",
+      "ap25",
+      "miou",
+      "macc"
+    ],
+    "apall_alias": "uap",
+    "runtime_thresholds_from_pinned_evaluator": true,
+    "projection": "unchanged source projection",
+    "ranking": "official current predicted class area ranking, not semantic confidence"
+  },
+  "inputs": {
+    "reuse_original_static_manifest": true,
+    "max_static_targets_per_scene": 128,
+    "max_static_views": 3,
+    "box_convention": "native inclusive extrema, historical exclusive crop slicing",
+    "fixed_original_area_weights": true,
+    "roi_black_background": 0,
+    "extra_background_crops": false
+  },
+  "calibration": {
+    "objective": "scene-balanced source NLL; each changed slot only",
+    "fit_scenes": [
+      "scene0056_00",
+      "scene0534_00"
+    ],
+    "folds": "leave one scene out",
+    "final_fit": "both CAL scenes; freeze before Replica results",
+    "bounds": [
+      0.01,
+      2.0
+    ],
+    "default_temperature": 0.07,
+    "maxiter": 64,
+    "xatol": 0.0001,
+    "minimum_unique_objects": 5,
+    "minimum_classes": 2,
+    "matching": "unique geometry IoU strictly > 0.5",
+    "replica_fitting": false,
+    "other_slot_temperatures": "exact corresponding A7_REFIT fold/final values"
+  },
+  "e01": {
+    "freeze_paid_and_final_retained_requests": true,
+    "max_retained_views": 10,
+    "eps": 0.0001,
+    "tol": 1e-08,
+    "maxiter": 64,
+    "n1": "original view direction",
+    "n2": "unit midpoint; do not claim outlier discrimination",
+    "zero_direction": "original area aggregate; explicit numerical fallback",
+    "q_controller_feedback": false
+  },
+  "e02": {
+    "bbox": "unchanged original XYXY",
+    "view_selection": "unchanged original manifest",
+    "sam_multimask_output": true,
+    "sam_mask_choice": "highest finite predicted quality; tie original index",
+    "sam_points": false,
+    "sam_text": false,
+    "sam_mask_feedback": false,
+    "sam_iterations": 1,
+    "sam_prompt_box": "same original float XYXY, no padding; SAM predictor handles coordinate transform",
+    "must_contain_original_target": false,
+    "clip_or_union_sam_mask": false
+  },
+  "c0": {
+    "model": "google/siglip2-so400m-patch14-384",
+    "revision": "f3b7a187cd133857ff43c0dccfe88f8268372549",
+    "vision_precision": "float32",
+    "text_prompt": "same raw class strings as existing S2",
+    "tokenizer": "own official tokenizer, not native tokenizer"
+  },
+  "e03": {
+    "repository": "nickormushev/OVRCOAT",
+    "commit": "9fd9450d22852d269d426b521663a127f3983a4b",
+    "model": "convnext_large_d_320",
+    "base_pretraining": "laion2b_s29b_b131k_ft_soup",
+    "config": "configs/coco/panoptic-segmentation/fcclip/ovrcoat_convnext_large_eval_ade20k.yaml",
+    "checkpoint_author_link": "https://drive.google.com/file/d/1raLz9TybKGxMCsWVjjdoBnbraUXDgmQ0/view",
+    "checkpoint_sha256": "BIND_FROM_AUTHENTICATED_OFFICIAL_DOWNLOAD_BEFORE_INFERENCE",
+    "mode": "region branch only; no segmentation-head inference, no COAT, no void class",
+    "mask": "same captured global target for both controls",
+    "mask_tensor": "nearest resized binary -> +1/-1; negative padding; bilinear to dense resolution; >0 pooling",
+    "image_resize": {
+      "short_edge": 800,
+      "max_edge": 1333,
+      "rounding": "int(x+0.5)",
+      "padding_multiple": 32
+    },
+    "pixel_mean": [
+      122.7709383,
+      116.7460125,
+      104.09373615
+    ],
+    "pixel_std": [
+      68.5005327,
+      66.6321579,
+      70.32316305
+    ],
+    "text_templates": "exact 14-entry VILD_PROMPT from pinned OVRCOAT; normalized mean per raw class name",
+    "score": "unit pooled visual projection dot unit class prototype BEFORE logit_scale and softmax",
+    "view_aggregation": "original area weighted mean of unit per-view region features, then unit normalize",
+    "matched_control": "same architecture/pooling/prototypes, original frozen pretraining weights",
+    "precision": "float32"
+  },
+  "sam2": {
+    "repository": "facebookresearch/sam2",
+    "commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+    "checkpoint": "sam2.1_hiera_large.pt",
+    "checkpoint_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt",
+    "config": "configs/sam2.1/sam2.1_hiera_l.yaml",
+    "precision": "bfloat16 autocast; returned arrays float32"
+  },
+  "e04": {
+    "repository": "facebookresearch/sam3",
+    "commit": "2345a4ad109ac29c569da749c91d84f10dc08c40",
+    "checkpoint_repo": "facebook/sam3",
+    "checkpoint": "sam3.pt",
+    "checkpoint_revision": "RESOLVE_AND_FREEZE_BEFORE_INFERENCE",
+    "not_sam31": true,
+    "image_input": "PIL RGB only",
+    "resolution": 1008,
+    "confidence_threshold": 0.0,
+    "binary_mask_threshold": 0.5,
+    "prompt": "exact raw class string; no descriptions or prompt search",
+    "reset_prompt_state_each_query": true,
+    "text_only_no_geometric_prompt": true,
+    "max_objects_per_scene": 64,
+    "max_views_per_object": 3,
+    "max_candidate_classes": 4,
+    "eligibility": "in frozen static target subset; >=2 genuine source labels; >=2 distinct labels; available original view",
+    "target_order": "SHA256(scene_id + |AW_E04| + owner_id); then owner ID",
+    "candidates": "positive top1 IDs from genuine original N0/Q/S2 plus A7_REFIT winner; sort by frozen vocabulary",
+    "candidate_generation_from": "unchanged baseline A7, never previous wave outputs",
+    "spatial_evidence": "original-area weighted mean over views of max_k(score_k * IoU(mask_k, original global target))",
+    "technical_failure": "remove that view for ALL candidate classes; no asymmetric zero fill",
+    "zero_evidence": "keep baseline A7; mark no localized support",
+    "distribution": "normalize nonnegative spatial evidence over fixed shortlist",
+    "mix_weight": 0.5,
+    "calibration": "none",
+    "select_on_ground_truth": false,
+    "precision": "bfloat16 autocast; score and overlap arithmetic float64"
+  },
+  "selection": {
+    "metric_order": [
+      "CAL_OOF_OFFICIAL_POOL_apall",
+      "CAL_OOF_OFFICIAL_POOL_miou",
+      "CAL_OOF_OFFICIAL_POOL_ap50"
+    ],
+    "ties": "within 1e-10 each metric, fewer unique required visual operations, registry order",
+    "no_replica_selection": true,
+    "all_executable_first_wave_methods_evaluated": true,
+    "deployment": "N0_UNCHANGED",
+    "all_seen_scenes_are_diagnostic": true
+  },
+  "composition": {
+    "method": "AW_COMBO_QR",
+    "max_methods": 1,
+    "q_candidates": [
+      "AW_E01_RAW_EQ",
+      "AW_E01_UNIT_EQ",
+      "AW_E01_GMED"
+    ],
+    "region_candidates": [
+      "AW_E02_GLOBAL",
+      "AW_E02_SAM2",
+      "AW_C0_SO400M",
+      "AW_E03_FC_FROZEN",
+      "AW_E03_OVR"
+    ],
+    "selection": "best available calibrated A7 member of each slot by CAL rule; require actual finite source-score difference",
+    "requires_individual_net_gain": false,
+    "reuses_features": true,
+    "e04_composition": false
+  },
+  "limits": {
+    "static_requests_per_encoder_max": 3840,
+    "e04_decoder_target_class_pairs_max": 7680,
+    "e01_new_image_forwards": 0,
+    "new_segmentation_for_geometry": 0,
+    "active_models_per_gpu": 1,
+    "optional_fp32_sam_fallback": "one fixed smoke-mode repair, pinned for whole leaf before batch; never per sample"
+  },
+  "reports": [
+    "A7_WAVE1_RESULTS.md",
+    "A7_WAVE1_HANDOFF.md",
+    "A7_WAVE1_SELECTION.md"
+  ],
+  "publish": {
+    "tracked_root": "artifacts/static_ovmap/a7_evidence_upgrade_wave1/attempt_001",
+    "docs_root": "docs/paper/static_ovmap",
+    "bundle_target_mib": 40,
+    "ordinary_push": true,
+    "remote_full_sha_check": true,
+    "force_push": false
+  },
+  "audit_scope": "package/spec review only; no GPU experiment has been run by the author of this pack"
+}

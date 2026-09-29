@@ -1,0 +1,171 @@
+{
+  "status": "AUTHORING_SPEC_CHECKS_PASS",
+  "date": "2026-09-29",
+  "checks": [
+    {
+      "check": "all_required_documents_exist",
+      "passed": true
+    },
+    {
+      "check": "base_is_verified_1074eb7",
+      "passed": true
+    },
+    {
+      "check": "first_wave_scope_is_explicit",
+      "passed": true
+    },
+    {
+      "check": "model_revisions_have_full_sha_format",
+      "passed": true
+    },
+    {
+      "check": "all_reviewed_blob_hashes_valid",
+      "passed": true
+    },
+    {
+      "check": "all_inline_source_ids_resolve",
+      "passed": true
+    },
+    {
+      "check": "source_variant_ids_unique",
+      "passed": true
+    },
+    {
+      "check": "method_registry_19_new_plus_5_controls",
+      "passed": true
+    },
+    {
+      "check": "all_variant_definitions_in_english",
+      "passed": true
+    },
+    {
+      "check": "all_method_ids_in_generated_registry",
+      "passed": true
+    },
+    {
+      "check": "scene_prediction_count",
+      "passed": true
+    },
+    {
+      "check": "dual_rank_record_count",
+      "passed": true
+    },
+    {
+      "check": "replica_pool_count",
+      "passed": true
+    },
+    {
+      "check": "requests_and_sam3_pair_budgets",
+      "passed": true
+    },
+    {
+      "check": "calibration_no_test_fitting",
+      "passed": true
+    },
+    {
+      "check": "native_geometry_and_policy_unchanged",
+      "passed": true
+    },
+    {
+      "check": "mask_shrink_and_sigmoid_domains_addressed",
+      "passed": true
+    },
+    {
+      "check": "normalization_control_and_one_composition",
+      "passed": true
+    },
+    {
+      "check": "no_fake_model_execution",
+      "passed": true
+    },
+    {
+      "check": "publish_branch_consistent",
+      "passed": true
+    },
+    {
+      "check": "test_scope_is_bounded",
+      "passed": true
+    },
+    {
+      "check": "no_unclosed_fences",
+      "passed": true
+    },
+    {
+      "check": "no_unresolved_editor_placeholders",
+      "passed": true
+    },
+    {
+      "check": "specified_median_iteration_has_finite_sanity_output",
+      "passed": true
+    },
+    {
+      "check": "shortlist_control_argmax_property",
+      "passed": true
+    }
+  ],
+  "check_count": 25,
+  "notes": [
+    "These are document/registry and one mathematical sanity checks, not Codex application tests.",
+    "No new model checkpoint was loaded; no benchmark was run; no remote branch was written.",
+    "External model access and runtime compatibility remain execution prerequisites; blocked leaves cannot be labeled measured.",
+    "The existing roadmap/paper index is retained as input provenance, not a new review of all24 repositories."
+  ],
+  "files": [
+    {
+      "path": "CODEX_FINAL_EXECUTION_EN.md",
+      "bytes": 51775,
+      "sha256": "5e3ee7d9f5c879a59d1195f0a5bdbe2641d8869a7c4c575ac473f333447883d8"
+    },
+    {
+      "path": "CODE_REVIEW_AND_AUDIT_ZH.md",
+      "bytes": 10408,
+      "sha256": "8001af40f23c60f0125acfdf3378dd38e808f8960676823c1a429d090e138efd"
+    },
+    {
+      "path": "EXPERIMENT_MATRIX.md",
+      "bytes": 1517,
+      "sha256": "ec53b8168938a349e8d321717c194dd39e2ea5b137e3d688a44f4094e6c06821"
+    },
+    {
+      "path": "PROTOCOL_SPEC.json",
+      "bytes": 12480,
+      "sha256": "7390639936e11758f01bf7a66e2f71f909c34ee0de4e68870cfa29174f129673"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2192,
+      "sha256": "e8b6a81af2c8697edcb727cf38e10a782ce2cb537f2faa40bdf22ec4cf3325f6"
+    },
+    {
+      "path": "SOURCES.md",
+      "bytes": 9293,
+      "sha256": "eb55abe8dd2856a31fb2b29f3cb04f525a825224ed8126bb380c8465286970fd"
+    },
+    {
+      "path": "SOURCE_BINDING.json",
+      "bytes": 14507,
+      "sha256": "860f00b7b6167b442d55024c9bdeb7a19783c75dd9cad975d268765d6324086b"
+    },
+    {
+      "path": "input_reference/OVIMAP_2026_论文与逐项实验路线.md",
+      "bytes": 26985,
+      "sha256": "2df251bf11f17b437307373c895d1f0db6009358c6fd158177a408d7cd7cf378"
+    },
+    {
+      "path": "input_reference/PAPERS_2026.csv",
+      "bytes": 10137,
+      "sha256": "32da1478b9f0fe484bb25e833ecfe607788fb2ede84d4d440bdaaf4aa4d6f46a"
+    }
+  ],
+  "maximum_matrix": {
+    "scenes": 10,
+    "reference_methods": 5,
+    "new_methods": 19,
+    "scene_method_records": 240,
+    "rank_modes": 2,
+    "scene_rank_records": 480,
+    "replica_pooled_records": 48,
+    "optional_combo_methods": 1,
+    "optional_combo_scene_rank_records": 20
+  }
+}

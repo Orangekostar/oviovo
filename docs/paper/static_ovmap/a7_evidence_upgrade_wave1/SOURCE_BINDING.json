@@ -1,0 +1,255 @@
+{
+  "date": "2026-09-29",
+  "method": "GitHub connector and supplied file evidence; no local source checkout or GPU execution",
+  "base_verified": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+  "sources": [
+    {
+      "id": "L01",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/m2_reviewer_study/aggregates.py",
+      "git_blob_sha": "81ec55b594c149d1dbf6accd6e17e940b624a8e2",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/m2_reviewer_study/aggregates.py",
+      "inspection": "Full read: retained Q raw six-crop features, original-area reconstruction, score parity; no query replay.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L02",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/module_validation/region_evidence.py",
+      "git_blob_sha": "2e3798fd1d1896956602a4eb029a24100b887d75",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/module_validation/region_evidence.py",
+      "inspection": "Lines 1–380 read in two windows: target cap, crop geometry, containment assertion, six vs nine crops. The encoder class here is not the repaired rgb_siglip import.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L03",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/module_validation/semantic_models.py",
+      "git_blob_sha": "1dd9bc5132b2adb976d3361fe289b03f1cd7bba1",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/module_validation/semantic_models.py",
+      "inspection": "Lines 1–240: original request loading and union check, model whitelist, repaired backend import, request records and crop normalization.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L04",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/module_validation/semantic_study.py",
+      "git_blob_sha": "ab78a310df7833d97244ae00c3641be2ab5f7d80",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/module_validation/semantic_study.py",
+      "inspection": "Current supplied full source: fixed target/view manifest, segment lineage, direct AREA/VOTE, genuine-success flags.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L05",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/m2_reviewer_study/scores.py",
+      "git_blob_sha": "7455234b553dcf84c99db342de1d13bbfc467531",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/m2_reviewer_study/scores.py",
+      "inspection": "Full read: SourceEvidence, read_scene, same FP32 aggregate to native cosine, score/label parity.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L06",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/m2_reviewer_study/evaluation.py",
+      "git_blob_sha": "9de419165c0f2e8333d524d51dfd9a87d129e9c4",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/m2_reviewer_study/evaluation.py",
+      "inspection": "Full source already present in the conversation: SceneEvaluator, separate current-class rank view and released dataset pool.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L07",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/m2_reviewer_study/core.py",
+      "git_blob_sha": "611d0ce9cafa9817596a0c4775a257530b92c03e",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/m2_reviewer_study/core.py",
+      "inspection": "Current supplied full source: A7 changes only N0 representation and selected scalar; locks before evaluating.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L08",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/m2_reviewer_study/fusion.py",
+      "git_blob_sha": "2790f29b10b3462f499f89f4d8fa2ebaa8f657ad",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/m2_reviewer_study/fusion.py",
+      "inspection": "Current supplied full source: selected source subsets, availability, ID alignment and equal probability fusion.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L09",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/module_validation/semantic_selector.py",
+      "git_blob_sha": "c0e5471c98b6952c708345df7b5d8d8ca34f584e",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/module_validation/semantic_selector.py",
+      "inspection": "Lines 1–180 newly read: area_readout retains raw per-view means, normalizes only final aggregate; vote semantics verified.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "L10",
+      "repository": "Orangekostar/oviovo",
+      "revision": "1074eb746808ca6882b30ccd827167474bb7eb8f",
+      "path": "src/static_ovmap/module_validation/rgb_siglip.py",
+      "git_blob_sha": "e7721efc2f6cdda2eddd6358670c8ac067848234",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/src/static_ovmap/module_validation/rgb_siglip.py",
+      "inspection": "Full newly read wrapper: processor=partial(processor,input_data_format=\"channels_last\").",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X01",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "configs/coco/panoptic-segmentation/fcclip/fcclip_convnext_large_eval_ade20k.yaml",
+      "git_blob_sha": "1dc4d37c681dba5c9ba0a371c8ca2aeff5691f1a",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/configs/coco/panoptic-segmentation/fcclip/fcclip_convnext_large_eval_ade20k.yaml",
+      "inspection": "Full read: ConvNeXt-L model/pretraining, channel mean/std, 768 embed setting and architecture.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X02",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "ovrcoat/modeling/transformer_decoder/fcclip_transformer_decoder.py",
+      "git_blob_sha": "d81c36bd4733231c50d2083ad28d3cbb03f66caa",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/ovrcoat/modeling/transformer_decoder/fcclip_transformer_decoder.py",
+      "inspection": "Lines 1–130: MaskPooling >0 mask rule, area normalization and logit_scale multiplication.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X03",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "ovrcoat/ovrcoat.py",
+      "git_blob_sha": "1bc42bfb22f97f9a021de58a0f55b7ffee0553b9",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/ovrcoat/ovrcoat.py",
+      "inspection": "Lines 1–90 newly checked; remaining relevant classification excerpt already provided: 14 prompts and region inference returns probabilities.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X04",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "ovrcoat/modeling/backbone/clip.py",
+      "git_blob_sha": "420feddd17bb8b07db3b297e9951d9211d0840d2",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/ovrcoat/modeling/backbone/clip.py",
+      "inspection": "Lines 1–270: original open_clip loading, train/frozen branches, ConvNeXt dense feature and visual projection chain, text method.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X05",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "GETTING_STARTED.md",
+      "git_blob_sha": "4bdbd11daf803bee50fc2dd87b011728b520fcd8",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/GETTING_STARTED.md",
+      "inspection": "Full read: intended config and checkpoint use. This does not establish local checkpoint availability.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X06",
+      "repository": "facebookresearch/sam2",
+      "revision": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+      "path": "sam2/sam2_image_predictor.py",
+      "git_blob_sha": "41ce53af5924504c07216df52b2d2eefaeec7ae9",
+      "url": "https://github.com/facebookresearch/sam2/blob/2b90b9f5ceec907a1c18123530e92e794ad901a4/sam2/sam2_image_predictor.py",
+      "inspection": "Lines 240–335: pixel XYXY box, returned masks, quality and multimask behavior.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X07",
+      "repository": "facebookresearch/sam3",
+      "revision": "2345a4ad109ac29c569da749c91d84f10dc08c40",
+      "path": "sam3/model/sam3_image_processor.py",
+      "git_blob_sha": "f8439f50c5ee9e862938ad75be8ae06440e0b44f",
+      "url": "https://github.com/facebookresearch/sam3/blob/2345a4ad109ac29c569da749c91d84f10dc08c40/sam3/model/sam3_image_processor.py",
+      "inspection": "Lines 1–260: PIL dimensions, text/reset APIs, presence product, post-sigmoid masks_logits and binary mask threshold.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X08",
+      "repository": "facebookresearch/sam2",
+      "revision": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+      "path": "README.md",
+      "git_blob_sha": "85a7eb958bced5495ff990c2bcbe7d99662c660f",
+      "url": "https://github.com/facebookresearch/sam2/blob/2b90b9f5ceec907a1c18123530e92e794ad901a4/README.md",
+      "inspection": "Lines 65–150: official SAM2.1 large checkpoint/config and BF16 image example.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X09",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "INSTALL.md",
+      "git_blob_sha": "db3bc9277e3b50cacc67ae2018f8ff6654292684",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/INSTALL.md",
+      "inspection": "Full read: inherited installation instructions contain fcclip paths; no need to build unused pixel decoder for region-only mode.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X10",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "configs/coco/panoptic-segmentation/Base-COCO-PanopticSegmentation.yaml",
+      "git_blob_sha": "216681d87b97b158cf9eaa91cb60f9db3c5378cf",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/configs/coco/panoptic-segmentation/Base-COCO-PanopticSegmentation.yaml",
+      "inspection": "Full read: RGB input; does not itself set test short-edge size. This pack explicitly specifies the region adapter resize instead of inventing it as a paper constant.",
+      "status": "REVIEWED_TEXT"
+    },
+    {
+      "id": "X11",
+      "repository": "nickormushev/OVRCOAT",
+      "revision": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "path": "configs/coco/panoptic-segmentation/fcclip/ovrcoat_convnext_large_eval_ade20k.yaml",
+      "git_blob_sha": "9f81856e2889b0174cda24e4820763a298382089",
+      "url": "https://github.com/nickormushev/OVRCOAT/blob/9fd9450d22852d269d426b521663a127f3983a4b/configs/coco/panoptic-segmentation/fcclip/ovrcoat_convnext_large_eval_ade20k.yaml",
+      "inspection": "Full read: trainable backbone and pretrained-seg-head option false; not necessary to load a head for region-only inference.",
+      "status": "REVIEWED_TEXT"
+    }
+  ],
+  "research_sources": [
+    {
+      "id": "R01",
+      "url": "input_reference/OVIMAP_2026_论文与逐项实验路线.md",
+      "inspection": "Uploaded 2026-09-29 roadmap read in full; E01–E04/C0 proposed scope and deferred E05–E12. It is a design artifact, not measured evidence."
+    },
+    {
+      "id": "R02",
+      "url": "https://openaccess.thecvf.com/content/CVPR2026/html/Kormushev_Mitigating_Objectness_Bias_and_Region-to-Text_Misalignment_for_Open-Vocabulary_Panoptic_Segmentation_CVPR_2026_paper.html",
+      "inspection": "Primary CVPR abstract verified; region alignment and objectness are distinct components."
+    },
+    {
+      "id": "R03",
+      "url": "https://huggingface.co/google/siglip2-so400m-patch14-384/tree/f3b7a187cd133857ff43c0dccfe88f8268372549",
+      "inspection": "Official pinned model file tree verified. Model.safetensors listed; not downloaded or executed in this environment."
+    },
+    {
+      "id": "R04",
+      "url": "https://github.com/Orangekostar/oviovo/blob/1074eb746808ca6882b30ccd827167474bb7eb8f/artifacts/static_ovmap/m2_reviewer_study_v1/attempt_001/table_A_core.md",
+      "inspection": "Complete current baseline table supplied in conversation; official pooled A7/N0 values motivate primary controls."
+    },
+    {
+      "id": "R05",
+      "url": "https://github.com/col14m/Zoo3D/blob/main/Zoo3D_0/semantics/open_voc.py",
+      "inspection": "Source excerpt provided in preceding turn: projected boxes and SAM2 refinement motivate E02; not copied as a full method or pinned dependency."
+    },
+    {
+      "id": "R06",
+      "url": "https://github.com/dfki-av/ReLaGS",
+      "inspection": "Literature motivation from uploaded roadmap. This wave implements its explicitly specified small-sample adaptation, not ROFA reproduction."
+    }
+  ],
+  "unknowns": [
+    "actual checkpoint bytes for new models",
+    "target-server new-model dependencies",
+    "measured new-module performance",
+    "new model training-data overlap beyond author disclosure"
+  ]
+}
