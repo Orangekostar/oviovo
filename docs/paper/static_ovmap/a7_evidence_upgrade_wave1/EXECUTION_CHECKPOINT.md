@@ -264,3 +264,51 @@ CAL freeze and real Replica continuation (supersedes the preceding NFS wait):
   and source/fallback/rank/selection audits; full cost/download/training-overlap
   ledger; four tables/three docs; <=40MiB real artifact bundle and verifiedpush.
   No goal completion or GitHub publication claim has been made.
+
+## Continuation: E02/C0 Replica complete, E03 running
+
+- Revalidated actual processes: no earlier family worker was live before C0.
+  E02 persisted phases/e02_replica.json confirms64 scene/rank rows and8 pools.
+  Official Replica GLOBAL_A7 APall9.177206%, SAM2_A7 APall9.124101%, both
+  below A7_REFIT9.217907%. SAM2 does not improve GLOBAL in this readout.
+- C0 Replica coordinator session19609 exited0 after all8 workers and scene
+  evaluations:32 scene/rank rows and4 released pools. Official SO400M_A7
+  APall9.474653%, AP5023.207496%, AP2536.517807%, mIoU28.517334%,
+  mAcc34.862261%. DIRECT APall9.347840%,mIoU23.113301%. This is a capacity
+  control result, not evidence of an algorithmic innovation. CAL nomination
+  remains frozen N0; no selection was changed using Replica.
+- E03 Replica launched only after C0 terminal success, runner session11310:
+  `--phase e03 --split replica --resume --gpus 0,1,2`. Revalidate this live
+  handle/process on continuation before restarting anything. This runs all
+  prescribed FC_FROZEN and OVR workers, then both rank modes and pools.
+- Source supplements now cover both CAL scenes/all8 variants and all8 Replica
+  scenes/E01,E02,C0 (64 contracts total). Actual reconstructed cosine errors
+  are <=1.12e-16. Original source/metric/selection files were not rewritten.
+- Added costs.py: complete required visual operation unions by model/kind for
+  all23 executable methods; completed worker physical counters, text calls,
+  load/wall/inference times and peaks kept separate, with explicit historical
+  frontend and interrupted-attempt omissions. Both CAL scene ledgers executed;
+  per-model/kind count conservation verified for46 method-scene entries.
+  Downloads/smokes/fitting/evaluation accounting still needs the final ledger.
+- Added comparisons.py: both rank modes, real released pools, separate scene
+  means, per-scene deltas/worst deltas, DIRECT/A7 matched E01/E02/E03 contrasts
+  and Q+region-Q-region+base interaction. CAL executed across23 methods. Its
+  official APall interaction is -0.507790pp, mIoU interaction -1.197986pp.
+  A pre-lint derived comparison is preserved as cal.before_lint_refactor.json;
+  refactored arithmetic verified identical. Exclude that redundant draft from
+  publication. All principal measurements/selection JSON remain unchanged.
+- Added audit.py whole-matrix verification, not yet run because E03/E04/combo
+  Replica rows are missing. Its separate real scalar provenance check passed:
+  all8 variants use22 original strict unique geometry matches, opposite CAL
+  scene folds and CAL-only final fits. No scalar was refitted by the audit.
+- Added model_cards.py; previously executed official pinned SO400M and FC
+  README capture at assets/model_cards/receipt.json. Cards document SO400M
+  Apache2.0/WebLI and FC MIT/LAION-2B English. Complete benchmark overlap remains
+  unresolved; do not call these training datasets clean or Replica untouched.
+- Nine compact tests passed (0.72s); Ruff passed for all four new modules after
+  local lint repairs. Full matrix/requirement/publication audit is still pending.
+- Next: finish E03; run E04 Replica SHORTLIST and explicit SAM3 blocked records;
+  frozen composition; remaining16 E03 contracts and all8 Replica diagnostics;
+  full cost ledger and comparisons; reporting.py/publication.py and fresh-run
+  asset/smoke prerequisites; four tables/three reports, <=40MiB bundle, normal
+  push and exact remote SHA verification. Goal remains active.
