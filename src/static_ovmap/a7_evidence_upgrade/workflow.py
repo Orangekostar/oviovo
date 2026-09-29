@@ -10,7 +10,7 @@ from pathlib import Path
 from src.static_ovmap.composition_study.io import read_json, write_once
 from src.static_ovmap.module_validation.contracts import canonical_digest
 
-from .calibration import fit_source
+from .calibration import fit_source, source_path
 from .decisions import compose, shortlist
 from .e01 import generate_sources
 from .evaluation import RANKS, evaluate_sources, pool_methods
@@ -114,6 +114,11 @@ def family(binding, name, split, environments, gpus, *, scene=None):
              "access_receipt": str(root / "e04/access_probe.json"), "split": split, "scene_metrics_created": False})
     else:
         if split == "cal":
+            missing = [str(source_path(binding, s, v)) for s in expected for v in variants
+                       if not source_path(binding, s, v).exists()]
+            if scene and missing:
+                return {"status": "CONTROLLED_SCENE_SOURCES_COMPLETE", "family": name, "split": split,
+                        "scene": scene, "waiting_for_other_CAL_sources": missing, "metrics_created": False}
             for variant in variants:
                 fit_source(binding, variant)
         for selected in scenes:

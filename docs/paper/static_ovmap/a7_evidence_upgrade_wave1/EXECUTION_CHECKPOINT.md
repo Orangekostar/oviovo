@@ -312,3 +312,72 @@ CAL freeze and real Replica continuation (supersedes the preceding NFS wait):
   full cost ledger and comparisons; reporting.py/publication.py and fresh-run
   asset/smoke prerequisites; four tables/three reports, <=40MiB bundle, normal
   push and exact remote SHA verification. Goal remains active.
+
+## Continuation: all executable experiment rows complete; report audit running
+
+- E03 Replica session11310 exited0:16 real FC_FROZEN/OVR workers on GPUs0,1,2,
+  all8 scene evaluations,64 rank rows,8 pools. Official percentages:
+  FC_DIRECT APall10.498388,mIoU24.091640;
+  FC_A7 APall10.491020,AP5024.323075,AP2537.728463,mIoU30.013672,mAcc36.694593;
+  OVR_DIRECT APall10.939594,mIoU26.180430;
+  OVR_A7 APall10.232525,AP5022.023194,AP2536.508624,mIoU28.623663,mAcc36.625030.
+  Thus tuned OVR improves DIRECT over matched FC but loses in A7 fusion.
+- E04 runner session90953 exited0 for CAL and Replica. SHORTLIST measured both
+  rank modes/all scenes; both split blocked records explicitly record SAM3
+  SPATIAL/MIX50 as asset-access-blocked without invented metrics.
+- Frozen Replica composition session18062 exited0. Official APall10.286507,
+  AP5022.283471,AP2536.612652,mIoU28.413136,mAcc36.427438. The CAL-selected
+  GMED+OVR pair and N0 research nomination are unchanged. No Replica pruning.
+- Direct file count/status check:460/460 scene/rank JSON COMPLETE,92/92 pool
+  JSON COMPLETE. This is matrix presence, not yet final semantic audit success.
+  All80 source contracts exported and reconstructed actual scores to<=1.12e-16.
+- **LIVE IMPORTANT:** report_data.collect launched in session41633,
+  PID1325166, with native coordinator python via stdin. It first runs the full
+  audit.validate_matrix on actual prediction arrays, then all remaining Replica
+  diagnostics/costs/comparisons and report/data.json. Last verified live after
+  10min13s,113% CPU,~1GB RSS,573MB rchar. audit/matrix.json not yet present;
+  no error output. This CPU-bound whole-matrix pass must not be restarted just
+  because polling yields no output. Poll session41633 or authoritative process.
+  Do not edit audit.py/report_data.py while it is collecting immutable outputs.
+- Added report_data.py and reporting.py: four actual-data table groups,
+  official/frozen pools, scene means/worst deltas, matched contrasts/interaction,
+  interventions/support/fallbacks, geometry corrections versus actual released
+  matcher changes, deterministic examples, logical unions/physical work and
+  download/fitting/evaluation timing boundaries. Three required MD documents
+  are not rendered yet: report requires root-authored review/interpretation.json
+  after inspecting the final object diagnostics. report reuses verified data.
+- Added publication.py: selected real principal JSON preserved byte-for-byte;
+  lossless gzip for bulky sources/derived contracts; original worker/smoke/load
+  receipts, configs, licenses and model cards; external file/capture manifests;
+  <=40MiB check; exact branch, scoped normal commit/push/full remote SHA check;
+  external publication receipt avoids recursive self-SHA. NOT EXECUTED yet.
+  Requires review/requirements.json with primary-reviewed prepublication items
+  VERIFIED or VERIFIED_EXTERNAL_BLOCK plus evidence. Publication itself is
+  checked after push in the external receipt, not preclaimed in that ledger.
+- Added prerequisites.py and runner --phase prepare; all now calls preparation
+  before family phases. Only original authorized pinned repos/weights, exact
+  hash/revision checks, actual cache-validated deterministic CAL smokes, existing
+  env snapshots, region architecture count and official small model cards.
+  Full prepare cache path sessions19856 and89106 both exited0 (second includes
+  metadata wiring). No new GPU inference, model redownload, environment upgrade,
+  dataset download or smoke stress loop occurred: complete receipts were reused.
+  Total verified new model/config/tokenizer bytes11,525,559,579 (~10.734GiB).
+- model_inventory.py counts exact CPU OpenCLIP architecture and compares its
+  full state shapes with both real strict543-key load audits, without image
+  inference:351,772,609 parameters per branch,199,770,816 visual,0 trained here.
+  Region inventory at environments/region_parameters.json. A field-name-only
+  earlier draft remains outside published folders as
+  region_parameters.before_field_name_fix.json; exclude it. The196,226,860
+  changed visual-trunk elements compare OVR versus original FC, regardless of
+  which branch's smoke audit stores that pairwise comparison.
+- Fixed controlled single-CAL-scene runner leaves: preserve generated sources
+  and return waiting-for-other-CAL-source status until opposite-fold source
+  exists; do not attempt missing fits or invent a complete metric phase.
+- Whole task Ruff passed; changed modules compile;9 relevant tests passed0.58s.
+  New report/publication modules still need actual end-to-end execution and
+  rendered/bundle inspection. The full requirement audit is not complete.
+- Next: wait for live session41633; fix only actual failures if any; inspect
+  final diagnostic tables and choose one evidence-based E05–E12 recommendation;
+  write review/interpretation.json, render/review three docs, finalize a concrete
+  prepublication requirement ledger; execute/inspect <=40MiB bundle, normalpush,
+  verify full SHA and external receipt. Do not claim goal complete beforehand.

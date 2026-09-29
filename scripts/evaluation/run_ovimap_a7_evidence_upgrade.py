@@ -17,7 +17,7 @@ def main():
     parser.add_argument("--spec", type=Path, default=ROOT / "docs/paper/static_ovmap/a7_evidence_upgrade_wave1/PROTOCOL_SPEC.json")
     parser.add_argument("--reviewer-binding", type=Path, default=Path("/mnt/shared/ww/ovimap-m2-reviewer-evidence-v1/attempt_001/source_binding.json"))
     parser.add_argument("--output-root", type=Path, default=Path("/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001"))
-    parser.add_argument("--phase", required=True, choices=("bind", "e01", "e02", "c0", "e03", "e04", "compose", "evaluate", "report", "publish", "all"))
+    parser.add_argument("--phase", required=True, choices=("bind", "prepare", "e01", "e02", "c0", "e03", "e04", "compose", "evaluate", "report", "publish", "all"))
     parser.add_argument("--split", choices=("cal", "replica", "all"), default="all")
     parser.add_argument("--scene")
     parser.add_argument("--resume", action="store_true")
@@ -25,7 +25,7 @@ def main():
     parser.add_argument("--sam2-python", type=Path, default=Path("/home/ww/miniconda3/envs/oviovo-ovo-official/bin/python"))
     parser.add_argument("--region-python", type=Path, default=Path("/home/ww/miniconda3/envs/oviovo-radseg/bin/python"))
     args = parser.parse_args()
-    if args.scene and (args.split == "all" or args.phase in {"all", "bind", "report", "publish"}):
+    if args.scene and (args.split == "all" or args.phase in {"all", "bind", "prepare", "report", "publish"}):
         parser.error("--scene is only a controlled single-split leaf/resume option")
     for key in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
         os.environ[key] = "8"
@@ -59,6 +59,10 @@ def main():
         gpus = args.gpus.split(",")
         splits = ("cal", "replica") if args.split == "all" else (args.split,)
         results = []
+        if args.phase in {"prepare", "all"}:
+            from src.static_ovmap.a7_evidence_upgrade.prerequisites import prepare
+
+            results.append(prepare(binding, environments, gpus))
         if args.phase in FAMILIES:
             for split in splits:
                 results.append(family(binding, args.phase, split, environments, gpus, scene=args.scene))
