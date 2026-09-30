@@ -14,6 +14,7 @@ import numpy as np
 
 from static_ovmap.m2_reviewer_study.evaluation import pool
 from static_ovmap.module_validation.contracts import atomic_write_json, canonical_digest
+from static_ovmap.module_validation.boundary_jobs import file_identity
 from static_ovmap.module_validation.native_capture import _array_digest
 from static_ovmap.released_loader import load_released_module
 from .binding import bind_inputs, read
@@ -81,7 +82,17 @@ class Study:
         self.available_gpu("prepare")
         trace = native_traces(binding, self.spec, self.native_build())
         sam_path = self.root / "prepare/sam2_preflight/receipt.json"
-        sam = read(sam_path) if sam_path.is_file() and read(sam_path)["status"] == "COMPLETE" else sam_preflight(binding, gpu=self.args.gpu)
+        cached_sam = read(sam_path) if sam_path.is_file() else None
+        worker = file_identity(Path(__file__).with_name("frontend_sam2.py"))
+        matching_worker = cached_sam and worker in cached_sam.get("inputs_and_outputs", [])
+        if cached_sam and not matching_worker:
+            number = 1
+            old_root = sam_path.parent
+            while old_root.with_name(f"{old_root.name}.previous_{number:03d}").exists():
+                number += 1
+            old_root.rename(old_root.with_name(f"{old_root.name}.previous_{number:03d}"))
+            cached_sam = None
+        sam = cached_sam if cached_sam and cached_sam["status"] == "COMPLETE" else sam_preflight(binding, gpu=self.args.gpu)
         if not trace["probe_read_only"] or len(sam["frames"]) != 3:
             raise ValueError("real native/SAM preflight evidence is incomplete")
         return {"native": trace, "SAM": sam}

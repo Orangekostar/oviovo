@@ -193,7 +193,7 @@ def run_paired_frontend(job):
                 first_crop = np.asarray(Image.open(capture_path.parent / chunk[0]["panoptic_path"]))
                 seeds = sorted((int(k) for k in np.unique(first_crop) if k > 0),
                                key=lambda k: spatial_key(first_crop == k))
-                seed_keys = {i + 1: mask_key(first_crop == group) for i, group in enumerate(seeds)}
+                seed_keys = {i + 1: spatial_key(first_crop == group) for i, group in enumerate(seeds)}
                 state = None
                 if seeds:
                     state = predictor.init_state(str(jpeg_root), offload_video_to_cpu=True, offload_state_to_cpu=True)
