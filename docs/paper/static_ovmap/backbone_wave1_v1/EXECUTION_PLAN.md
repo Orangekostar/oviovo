@@ -94,7 +94,8 @@ test run or historical-release-file audit is needed.
 - [x] Create isolated main and upstream worktrees at their exact pinned commits.
 - [x] Preserve the instruction package separately from executable study code.
 - [x] Bind actual runtime/model/data assets and write resolved inputs/matrix.
-- [ ] Implement and validate the real native/Python/SAM/source/evaluator paths.
+- [x] Implement and validate the real native/Python/SAM/source/evaluator paths.
+- [x] Complete the full BB00 scene0056_00 map/source/three-readout bridge.
 - [ ] Complete bridge, screening, composition and frozen transfer measurements.
 - [ ] Generate, review and actually publish the scientific deliverables.
 
@@ -110,4 +111,16 @@ read-only probes and no realized-owner discrepancies.
 The pinned SAM2 video predictor completed a real three-frame GPU preflight.
 The optional connected-components CUDA extension is unavailable; the official
 predictor fallback is recorded. Twelve new test functions (fourteen cases)
-passed. The full fresh-map/source/evaluator bridge remains the runtime gate.
+passed. The full fresh-map/source/evaluator bridge passed: every official metric
+for NATIVE_READOUT, FC_EQ and D2 differs from historical evidence by at most
+0.05 percentage points. The new native pickle is not byte-exact; measured
+eight-thread mapping variation is explicitly retained rather than hidden.
+
+The preflight was rerun after the seed-support-key correction, preserving the
+previous preflight receipt and its physical cost. The full paired frontends now
+cover all 200 scheduled frames of each development scene, with 800 actual image
+encodings shared between RAW and GEOM. Full seven-arm/four-scene screening is
+running with two CPU mapping jobs, eight mapping threads, three evaluator jobs,
+and one neural worker on GPU 2. GNU time records screening wall/user/system CPU
+time; earlier uninstrumented phase CPU and device-only GPU event time are
+explicitly disclosed as missing.
