@@ -440,7 +440,8 @@ def render(binding, spec):
             events.append({"scene": mapping["scene"], "map_id": mapping["map_id"], "frame_id": frame["frame_id"],
                 "namespaces": {"current_2D_groups": sorted(set(row["input_instance_label"] for row in state["segments"])),
                     "superpoint_labels": [row["registered_label"] for row in state["segments"]],
-                    "count_object_owners": sorted(set(row["instance_label"] for row in state["label_instances"]))},
+                    "raycast_count_owners_factor0": sorted(set(row["raycast_instance_label"] for row in state["label_instances"])),
+                    "native_surface_count_owners_factor0_1": sorted(set(row["instance_label"] for row in state["label_instances"]))},
                 "fragments": len(state["segments"]), "aliases": state["aliases"],
                 "assigned_superpoints": state["segments"], "realized_count_owners": state["label_instances"],
                 "association": {k: v for k, v in association.items() if k not in {"prior_owners", "alias_tokens"}},
@@ -504,7 +505,7 @@ def render(binding, spec):
         "failures.json": failures, "frontend_physical_costs.json": [{"scene": r["scene"], "status": r["status"],
             "counters": r["counters"], "elapsed_seconds": r["elapsed_seconds"],
             "peak_gpu_allocated_bytes": r["peak_gpu_allocated_bytes"], "identity": r["identity"]} for r in physical_frontends],
-        "per_class_confusions.json": per_class, "per_class_summaries.json": class_summaries,
+        "per_class_confusions.json.gz": per_class, "per_class_summaries.json.gz": class_summaries,
         "official_match_differences.json": official_match_differences, "external_artifacts.json": external,
         "completion.json": {"status": status, "implementation": "IMPLEMENTED_SCOPED_RUNTIME_VERIFIED",
             "experimental_coverage": {"successful_map_scenes": len(success), "expected": expected,
@@ -515,7 +516,11 @@ def render(binding, spec):
         if (root / leaf).is_file():
             outputs[leaf] = read(root / leaf)
     for name, data in outputs.items():
-        atomic_write_json(release / name, data)
+        if name.endswith(".gz"):
+            with gzip.open(release / name, "wt", encoding="utf-8") as stream:
+                json.dump(data, stream, sort_keys=True, allow_nan=False)
+        else:
+            atomic_write_json(release / name, data)
     with gzip.open(release / "native_event_ledger.json.gz", "wt", encoding="utf-8") as stream:
         json.dump(events, stream, sort_keys=True, allow_nan=False)
     with gzip.open(release / "frontend_intervention_evidence.json.gz", "wt", encoding="utf-8") as stream:
@@ -555,7 +560,7 @@ def render(binding, spec):
             "Supported implementation claims: the new native extension exposes a read-only prior probe and enforces object plans through candidate filtering, mode4 counts and compatible aliases; real short-trace receipts report realized ownership. Simultaneous fusion uses unchanged original depth support. Bounded SAM uses current-only forward outputs, five-frame resets and shared RAW-defined discoveries, with geometry checked against previous RAW support.\n\n" +
             "Scientific mechanism claims require the measured raw geometry ledgers and relevant simple-control comparisons. A class-conditioned rank or semantic coverage change alone does not establish stronger geometry. A stronger-backbone claim is not automatically authorized by AP gain. Mixed APall/mIoU signs are a tradeoff. Negative complete studies remain complete without a deployment change.\n\n" +
             "## Measured Mechanism Comparisons\n\n" + _comparison_table([r for r in comparisons if r["method"] == "D2"]) + "\n\n" +
-            "`semantic_differences.json` measures actual label/probability differences; `official_match_differences.json` records added/removed GT matches and released FP score-entry deltas. `per_class_summaries.json` and `secondary_rank_pools.json` preserve class and rank context. A map with zero changed target partition rows is recorded separately from any semantic intervention. No fixed gain sentence substitutes for these measured outputs.\n\n" +
+            "`semantic_differences.json` measures actual label/probability differences; `official_match_differences.json` records added/removed GT matches and released FP score-entry deltas. `per_class_summaries.json.gz` and `secondary_rank_pools.json` preserve class and rank context. `baseline_loss_paths.json` reports the initial depth-region gate and retained grouping. `spatially_aligned_availability_changes.json` distinguishes source/cap changes across predicted overlap associations. A map with zero changed target partition rows is recorded separately from any semantic intervention. No fixed gain sentence substitutes for these measured outputs.\n\n" +
             "Untested/out of scope: independent confirmation; B02/B04/B06-B12; full OVRCOAT wrapper; SAM3; new temperature/Q/quality-head fitting; deployment improvement. Four development and eight Replica scenes are historically exposed; extra visual inference is explicitly accounted. Numeric owner IDs are not correspondence across maps.\n"}
     for name, value in reports.items():
         (docs / name).write_text(value, encoding="utf-8")
@@ -588,7 +593,7 @@ def publish(binding, spec):
              "tests/evaluation/test_backbone_wave1_readouts.py"]
     subprocess.run(["git", "add", "--", *scope], cwd=repo, check=True)
     if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=repo).returncode:
-        subprocess.run(["git", "commit", "-m", "research: publish measured backbone-wave1 evidence"], cwd=repo, check=True)
+        subprocess.run(["git", "commit", "--only", "-m", "research: publish measured backbone-wave1 evidence", "--", *scope], cwd=repo, check=True)
     local = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
     receipt = {"branch": branch, "local_sha": local, "remote_sha": None, "status": "PUSH_PENDING",
                "study_status": completion["status"], "publication_does_not_imply_scientific_completion": True,

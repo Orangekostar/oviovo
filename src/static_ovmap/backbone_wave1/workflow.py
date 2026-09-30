@@ -252,7 +252,8 @@ class Study:
         relative = str(release.relative_to(self.repo))
         subprocess.run(["git", "add", "--", relative + "/candidate_freeze.json", relative + "/selection.json"], cwd=self.repo, check=True)
         if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=self.repo).returncode:
-            subprocess.run(["git", "commit", "-m", "research: freeze backbone development selection before Replica"], cwd=self.repo, check=True)
+            subprocess.run(["git", "commit", "--only", "-m", "research: freeze backbone development selection before Replica", "--",
+                relative + "/candidate_freeze.json", relative + "/selection.json"], cwd=self.repo, check=True)
         commit = git_value(self.repo, "rev-parse", "HEAD")
         freeze_path = self.root / "transfer_freeze_commit.json"
         if not freeze_path.is_file():
