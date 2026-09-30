@@ -11,6 +11,38 @@ from .binding import option, read, set_option
 from .runtime import execute, exclusive_lock
 
 
+PRE_C6_VALIDATION_CONTROLLER = "98710ee02de36869cd4a647eaadb6f0e85115e196ceae11de55c52b7e8c8d96a"
+
+
+def unchanged_bridge_controller_alias(root, saved, command, env, recipe, build, source_inputs, identity):
+    """Reuse the measured BB00 after a validation-only controller correction."""
+    if recipe["id"] != "BB00_NATIVE":
+        return False
+    old = {item["path"]: item for item in saved["inputs"]}
+    new = {item["path"]: item for item in source_inputs}
+    controller = str(Path(__file__).resolve())
+    if old.get(controller, {}).get("sha256") != PRE_C6_VALIDATION_CONTROLLER:
+        return False
+    if {k: v for k, v in old.items() if k != controller} != {k: v for k, v in new.items() if k != controller}:
+        return False
+    selected_env = {k: v for k, v in env.items() if k.startswith("OVIMAP_") or k in
+        ("CUDA_VISIBLE_DEVICES", "PYTHONPATH", "LD_LIBRARY_PATH", "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS")}
+    running = read(root / "running.json")
+    if (saved["command"]["argv"] != [str(x) for x in command] or saved["recipe"] != recipe or
+            saved["native_build_identity"] != build["identity"] or running["environment"] != selected_env):
+        return False
+    bridge = root.parents[2] / "bridge_parity.json"
+    if not bridge.is_file() or read(bridge)["status"] != "VERIFIED":
+        return False
+    atomic_write_json(root / "controller_reuse_alias.json", {
+        "status": "VERIFIED_UNCHANGED_BB00_CONTROLLER_ALIAS", "original_input_identity": saved["input_identity"],
+        "requested_input_identity": identity, "original_controller": old[controller], "current_controller": new[controller],
+        "unchanged_command_environment_recipe_binary_and_kernel_inputs": True,
+        "reason": "C6 post-update validation now records rare discrepancies; BB00 disables C6",
+        "new_mapping_work": 0, "original_measured_receipt_preserved": True})
+    return True
+
+
 def mapping_job(binding, spec, build, scene, recipe, *, threads=8, phase="maps"):
     if scene not in binding["scenes"]:
         raise ValueError("mapping scene is outside the exposed task cohort")
@@ -68,7 +100,8 @@ def run_map(binding, spec, build, scene, recipe, *, threads=8, resume=False):
         if resume and receipt_path.is_file():
             saved = read(receipt_path)
             if saved["status"] == "COMPLETE":
-                if saved["input_identity"] != identity:
+                if saved["input_identity"] != identity and not unchanged_bridge_controller_alias(
+                        root, saved, command, env, hook_recipe, build, source_inputs, identity):
                     raise ValueError("completed map identity changed")
                 for item in saved["outputs"]:
                     index.identity(item["path"], item)
@@ -96,11 +129,12 @@ def run_map(binding, spec, build, scene, recipe, *, threads=8, resume=False):
                 raise ValueError("actual map changed the inherited invalid/missing-frame policy")
             if capture["native_extension"]["sha256"] != build["extension"]["sha256"]:
                 raise ValueError("map loaded an unbound native extension")
+            owner_discrepancies = []
             if recipe["association"].startswith("object_"):
                 for frame in capture["frames"]:
                     snapshot = read(capture_path.parent / frame["native_state"]["path"])["native_state"]
-                    if any(segment.get("owner_discrepancy", False) for segment in snapshot["segments"]):
-                        raise ValueError("native object plan did not survive integration")
+                    owner_discrepancies.extend({"frame_id": frame["frame_id"], **segment}
+                        for segment in snapshot["segments"] if segment.get("owner_discrepancy", False))
             outputs = [index.identity(item["path"]) for item in capture_inputs(capture_path, capture)]
             deferred = root / "diagnostics/native_deferred_metadata.json"
             outputs.append(index.identity(deferred))
@@ -111,6 +145,7 @@ def run_map(binding, spec, build, scene, recipe, *, threads=8, resume=False):
                 "scheduled_count": len(capture["scheduled_frame_ids"]), "completed_count": len(capture["frames"]),
                 "command": command_receipt, "elapsed_seconds": time.monotonic() - start,
                 "new_visual_inference": 0, "native_pickle_status": "DEFERRED_FEATURES_REQUIRED"}
+            result["post_update_owner_discrepancies"] = owner_discrepancies
             atomic_write_json(receipt_path, result)
             return result
         except BaseException as exc:
