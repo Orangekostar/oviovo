@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 from types import SimpleNamespace
+import subprocess
 import time
 
 import numpy as np
@@ -56,6 +57,8 @@ def run_region(job):
         "physical_image_encodings": 0, "physical_region_poolings": 0, "physical_text_inputs": 0,
         "required_image_contents": {}, "required_dense_receipts": {}, "required_region_receipts": {},
         "requests": {}, "GT_input": False}
+    receipt["source_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"],
+        cwd=Path(__file__).resolve().parents[3], text=True).strip()
     cache = Path(job["cache_root"]) / physical_model_key
     with exclusive_lock(job["gpu_lock"]), torch.inference_mode():
         torch.cuda.reset_peak_memory_stats()

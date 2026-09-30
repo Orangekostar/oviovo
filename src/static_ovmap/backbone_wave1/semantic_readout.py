@@ -5,6 +5,7 @@ from dataclasses import asdict
 import pickle
 from pathlib import Path
 import sys
+import subprocess
 import time
 
 import numpy as np
@@ -63,6 +64,8 @@ def run_native_query(job):
     receipt = {"status": "RUNNING", "capture": file_identity(capture_path),
                "map_id": job["map_id"], "native_requests": [], "Q_budget": 200,
                "GT_input": False, "new_temperature_fit": False, "model_identity": model_identity}
+    receipt["source_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"],
+        cwd=Path(__file__).resolve().parents[3], text=True).strip()
     started = time.monotonic()
     with exclusive_lock(job["gpu_lock"]), torch.inference_mode():
         torch.cuda.reset_peak_memory_stats()
@@ -132,7 +135,6 @@ def run_native_query(job):
                 ids = arrays["valid_ids"]
             query_aliases = {}
             def paid_load(candidate):
-                count_before = encoder.physical_calls
                 encoder.last_call = None
                 payload = loader(candidate)
                 lineage_path = Path(loader.used_receipts[candidate.request_id]["path"])
@@ -156,7 +158,8 @@ def run_native_query(job):
                     "loader_elapsed_seconds": lineage_row["elapsed_seconds"]}
                 return AcquisitionPayload(payload.feature, payload.attempted_crop_inputs,
                                           payload.inference_seconds, payload.failure_reason,
-                                          physical_cache_hit=encoder.physical_calls == count_before)
+                                          physical_cache_hit=bool(payload.physical_cache_hit or
+                                              (content is not None and content["physical_cache_hit"])))
             store = FeatureStore(paid_load)
             result = replay_captured(replay_frames, "Q_GAIN", store, text, budget=200,
                                      predictor=predictor, standardizer=scaler)

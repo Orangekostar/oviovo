@@ -1,10 +1,13 @@
 """Measured compact release, four reports, and external verified-push receipt."""
 
 from datetime import datetime, timezone
+import gzip
 import json
 from pathlib import Path
 import shutil
 import subprocess
+
+import numpy as np
 
 from static_ovmap.m2_reviewer_study.binding import InputIndex
 from static_ovmap.module_validation.contracts import atomic_write_json, canonical_digest
@@ -13,7 +16,7 @@ from .binding import read
 
 def net_gain(metrics, baseline):
     da, dm = 100 * (metrics["apall"] - baseline["apall"]), 100 * (metrics["miou"] - baseline["miou"])
-    if da >= 0 and dm >= 0 and max(da, dm) > .05:
+    if da > 0 and dm > 0 and max(da, dm) > .05:
         return "MEASURED_NET_GAIN"
     if da * dm < 0:
         return "TRADEOFF"
@@ -69,7 +72,15 @@ def render(binding, spec):
         expected += 8 * len(selection["replica_recipes"]) + (4 if any(r["id"] == "BBX_COMPOSE" for r in selection["replica_recipes"]) else 0)
     success = [m for m in maps if m["status"] == "COMPLETE"]
     primary = [r for r in rows if r["rank_mode"] == "OFFICIAL_CURRENT_CLASS"]
-    complete = bool(selection) and len(success) == expected and len(primary) == 3 * expected and bridge["status"] == "VERIFIED"
+    expected_pairs = {(scene, recipe["id"]) for scene in spec["datasets"]["development"] for recipe in spec["map_variants"]}
+    if selection:
+        expected_pairs |= {(scene, recipe["id"]) for scene in spec["datasets"]["replica"] for recipe in selection["replica_recipes"]}
+        if any(r["id"] == "BBX_COMPOSE" for r in selection["replica_recipes"]):
+            expected_pairs |= {(scene, "BBX_COMPOSE") for scene in spec["datasets"]["development"]}
+    measured_pairs = {(m["scene"], m["map_id"]) for m in success}
+    expected_rows = {(scene, map_id, method) for scene, map_id in expected_pairs for method in spec["semantics"]["readouts"]}
+    measured_rows = {(r["scene"], r["map_id"], r["method"]) for r in primary}
+    complete = bool(selection) and measured_pairs == expected_pairs and measured_rows == expected_rows and bridge["status"] == "VERIFIED"
     baseline = next((r["metrics"] for r in pools if r["cohort"] == "replica" and r["map_id"] == "BB00_NATIVE" and r["method"] == "D2"), None)
     nominee = next((r["metrics"] for r in pools if selection and r["cohort"] == "replica" and r["map_id"] == selection["nominee"] and r["method"] == "D2"), None)
     conclusion = net_gain(nominee, baseline) if nominee and baseline else "NOT_MEASURED"
@@ -85,10 +96,65 @@ def render(binding, spec):
         "map_outputs": [{"scene": m["scene"], "map_id": m["map_id"], "capture": m.get("capture_manifest"),
                          "status": m["status"], "input_identity": m.get("input_identity")} for m in maps],
         "restore": "Restore the external map/capture/source/cache arrays at the recorded absolute paths and verify their receipts; weights/data are not in Git."}
+    events = []
+    for mapping in success:
+        capture_path = Path(mapping["capture_manifest"])
+        capture = read(capture_path)
+        for frame in capture["frames"]:
+            state = read(capture_path.parent / frame["native_state"]["path"])["native_state"]
+            association = state.get("association", {})
+            events.append({"scene": mapping["scene"], "map_id": mapping["map_id"], "frame_id": frame["frame_id"],
+                "namespaces": {"current_2D_groups": sorted(set(row["input_instance_label"] for row in state["segments"])),
+                    "superpoint_labels": [row["registered_label"] for row in state["segments"]],
+                    "count_object_owners": sorted(set(row["instance_label"] for row in state["label_instances"]))},
+                "fragments": len(state["segments"]), "aliases": state["aliases"],
+                "association": {k: v for k, v in association.items() if k not in {"prior_owners", "alias_tokens"}},
+                "realized_owner_discrepancies": [row for row in state["segments"] if row.get("owner_discrepancy")],
+                "native_selected_requests": len(frame["native_selected_request_ids"]),
+                "admissible_requests": len(frame["requests"]), "source_map_state_id": frame["map_state_id"]})
+    semantic_differences = []
+    from static_ovmap.module_validation.scannet_study import load_prediction, project_values
+    for path in (root / "readouts").glob("*/*/receipt.json"):
+        receipt = read(path)
+        anchor = load_prediction(receipt["predictions"]["NATIVE_READOUT"])
+        with np.load(path.parent / "projection/projection.npz", allow_pickle=False) as arrays:
+            nearest, matched = arrays["nearest"], arrays["matched"]
+        baseline_root = root / "readouts" / receipt["scene"] / "BB00_NATIVE"
+        for method, manifest in receipt["predictions"].items():
+            prediction = load_prediction(manifest)
+            changed = prediction.semantic_labels != anchor.semantic_labels
+            row = {"scene": receipt["scene"], "map_id": receipt["map_id"], "readout": method,
+                "same_map_semantic_changed_source_rows": int(changed.sum()),
+                "same_map_geometry_and_owners_exact": prediction.geometry == anchor.geometry and np.array_equal(prediction.owner_ids, anchor.owner_ids)}
+            if (baseline_root / "receipt.json").is_file():
+                base_receipt = read(baseline_root / "receipt.json")
+                base = load_prediction(base_receipt["predictions"][method])
+                with np.load(baseline_root / "projection/projection.npz", allow_pickle=False) as arrays:
+                    base_labels = project_values(base.semantic_labels, arrays["nearest"], arrays["matched"])
+                current_labels = project_values(prediction.semantic_labels, nearest, matched)
+                row["cross_map_same_readout_changed_target_labels"] = int(np.count_nonzero(current_labels != base_labels))
+            if method == "D2":
+                fc_decisions, d2_decisions = read(path.parent / "decisions/FC_EQ.json"), read(path.parent / "decisions/D2.json")
+                differences = [np.max(np.abs(np.asarray(fc_decisions[k]["probabilities"]) - np.asarray(value["probabilities"])))
+                               for k, value in d2_decisions.items() if value["probabilities"] is not None]
+                row["D2_vs_FC_EQ_max_probability_difference"] = float(max(differences, default=0.))
+                row["D2_vs_FC_EQ_changed_owner_labels"] = sum(value["label"] != fc_decisions[k]["label"] for k, value in d2_decisions.items())
+            semantic_differences.append(row)
+    physical_frontends = [read(path) for path in (root / "frontend").glob("*/SAM2_PAIRED/receipt.json")]
+    failures = [read(path) for path in (root / "execution").glob("*.json") if read(path).get("failures")]
+    provenance = {"base_commit": spec["base_commit"], "upstream_commit": spec["upstream_commit"],
+        "implementation_commits": sorted(set(read(path)["implementation_commit"] for path in (root / "execution").glob("*.json")
+                                      if "implementation_commit" in read(path))),
+        "consumed_code_and_model_identities": binding["inputs"], "map_source_and_output_identities": [
+            {"scene": m["scene"], "map_id": m["map_id"], "inputs": m["inputs"], "outputs": m["outputs"]} for m in success]}
     outputs = {"resolved_inputs.json": binding, "experiment_matrix.json": read(root / "matrix.json"),
         "bridge_parity.json": bridge, "scene_rows.json": primary, "secondary_rank_rows.json": [r for r in rows if r not in primary],
         "dataset_pools.json": pools, "intervention_summary.json": interventions,
         "raw_geometry_diagnostics.json": diagnostics, "costs.json": costs,
+        "semantic_differences.json": semantic_differences, "code_model_output_provenance.json": provenance,
+        "failures.json": failures, "frontend_physical_costs.json": [{"scene": r["scene"], "status": r["status"],
+            "counters": r["counters"], "elapsed_seconds": r["elapsed_seconds"],
+            "peak_gpu_allocated_bytes": r["peak_gpu_allocated_bytes"], "identity": r["identity"]} for r in physical_frontends],
         "per_class_confusions.json": per_class, "external_artifacts.json": external,
         "completion.json": {"status": status, "implementation": "IMPLEMENTED_SCOPED_RUNTIME_VERIFIED",
             "experimental_coverage": {"successful_map_scenes": len(success), "expected": expected,
@@ -100,6 +166,8 @@ def render(binding, spec):
             outputs[leaf] = read(root / leaf)
     for name, data in outputs.items():
         atomic_write_json(release / name, data)
+    with gzip.open(release / "native_event_ledger.json.gz", "wt", encoding="utf-8") as stream:
+        json.dump(events, stream, sort_keys=True, allow_nan=False)
     for leaf in ("native_trace/summary.json", "sam2_preflight/receipt.json"):
         path = root / "prepare" / leaf
         if path.is_file():
