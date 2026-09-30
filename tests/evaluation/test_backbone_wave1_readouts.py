@@ -67,6 +67,8 @@ def test_frozen_readouts_renormalize_available_groups_without_fake_sources():
 
 
 def test_raw_diagnostics_strict_threshold_all_gt_denominator_and_id_renaming():
+    from static_ovmap.backbone_wave1.reporting import geometric_pools
+
     gt = np.repeat([1001, 1002, 1003], 200)
     prediction = np.concatenate([np.full(100, 7), np.zeros(100), np.full(200, 8), np.zeros(200)])
     result = instance_diagnostics(prediction, gt, [1])
@@ -77,6 +79,16 @@ def test_raw_diagnostics_strict_threshold_all_gt_denominator_and_id_renaming():
     assert result["per_gt"][-1]["best_iou"] == 0
     np.testing.assert_array_equal(canonical_partition(prediction),
         canonical_partition(np.where(prediction == 7, 800, np.where(prediction == 8, 300, 0))))
+    mixed = np.concatenate([np.full(100, 7), np.zeros(100), np.full(100, 7), np.zeros(300)])
+    diagnostic = instance_diagnostics(mixed, gt, [1])
+    diagnostic.update(scene="fixture", map_id="mixed", surface={"predicted_rows": 2,
+        "valid_target_rows": 3, "precision_5cm": 1., "completeness_5cm": 1.})
+    pooled = geometric_pools({"datasets": {"development": ["fixture"], "replica": ["unused"]}}, [diagnostic])[0]
+    assert pooled["raw_recall"]["0.5"] == 0
+    assert pooled["substantial_fragment_contamination"] == .5
+    assert pooled["substantial_fragment_intersection_rows"] == 200
+    assert pooled["mean_gt_substantial_fragment_coverage"] == pytest.approx(1 / 3)
+    assert pooled["mean_substantial_fragments_per_gt"] == pytest.approx(2 / 3)
 
 
 def test_selection_uses_bands_before_standalone_cost_and_keeps_strict_ranking(tmp_path, monkeypatch):

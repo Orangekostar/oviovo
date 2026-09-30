@@ -45,6 +45,8 @@ def geometric_pools(spec, diagnostics):
                 continue
             eligible = sum(r["eligible_gt"] for r in selected)
             gt = [g for r in selected for g in r["per_gt"]]
+            fragments = [f for g in gt for f in g["intersections"]]
+            fragment_rows = sum(f["pixels"] for f in fragments)
             predicted_rows = sum(r["surface"]["predicted_rows"] for r in selected)
             target_rows = sum(r["surface"]["valid_target_rows"] for r in selected)
             precision = sum(r["surface"]["precision_5cm"] * r["surface"]["predicted_rows"] for r in selected) / predicted_rows
@@ -54,6 +56,12 @@ def geometric_pools(spec, diagnostics):
                     if eligible else None for t in (.25, .5, .75)},
                 "mean_best_gt_iou": float(np.mean([g["best_iou"] for g in gt])) if gt else None,
                 "mean_substantial_fragments_per_gt": float(np.mean([g["substantial_fragments"] for g in gt])) if gt else None,
+                "substantial_fragment_contamination": sum(f["pixels"] * (1 - f["purity"]) for f in fragments) / fragment_rows
+                    if fragment_rows else None,
+                "substantial_fragment_intersection_rows": fragment_rows,
+                "mean_gt_substantial_fragment_coverage": float(np.mean([
+                    sum(f["coverage"] for f in g["intersections"]) for g in gt])) if gt else None,
+                "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
                 "surface_precision_5cm": precision, "surface_completeness_5cm": completeness,
                 "surface_fscore_5cm": 2 * precision * completeness / (precision + completeness) if precision + completeness else 0.,
                 "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS"})
@@ -83,6 +91,8 @@ def metric_comparisons(pools, geometry):
                         if ga["raw_recall"][t] is not None and gb["raw_recall"][t] is not None else None for t in ga["raw_recall"]}
                     row["surface_fscore_delta_pp"] = 100 * (ga["surface_fscore_5cm"] - gb["surface_fscore_5cm"])
                     row["mean_best_gt_iou_delta"] = ga["mean_best_gt_iou"] - gb["mean_best_gt_iou"] if ga["mean_best_gt_iou"] is not None and gb["mean_best_gt_iou"] is not None else None
+                    for key in ("substantial_fragment_contamination", "mean_gt_substantial_fragment_coverage"):
+                        row[key + "_delta_pp"] = 100 * (ga[key] - gb[key]) if ga[key] is not None and gb[key] is not None else None
                 result.append(row)
     return result
 
@@ -98,13 +108,15 @@ def _comparison_table(rows):
 
 
 def _geometry_table(rows):
-    lines = ["| Cohort | Map | Eligible GT | Raw R25 | Raw R50 | Raw R75 | Best GT IoU | Fragments/GT | Surface P5 | Surface C5 | Surface F5 |",
-             "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
+    lines = ["| Cohort | Map | Eligible GT | Raw R25 | Raw R50 | Raw R75 | Best GT IoU | Fragments/GT | Substantial impurity | Substantial GT coverage | Surface P5 | Surface C5 | Surface F5 |",
+             "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for r in rows:
         values = [*[r["raw_recall"][str(t)] for t in (.25, .5, .75)], r["mean_best_gt_iou"]]
         lines.append("| " + " | ".join([r["cohort"], r["map_id"], str(r["eligible_gt"]),
             *[f"{100 * v:.3f}" if v is not None else "undefined" for v in values],
             f'{r["mean_substantial_fragments_per_gt"]:.3f}' if r["mean_substantial_fragments_per_gt"] is not None else "undefined",
+            *[f'{100 * r[k]:.3f}' if r[k] is not None else "undefined"
+              for k in ("substantial_fragment_contamination", "mean_gt_substantial_fragment_coverage")],
             *[f'{100 * r[k]:.3f}' for k in ("surface_precision_5cm", "surface_completeness_5cm", "surface_fscore_5cm")]]) + " |")
     return "\n".join(lines)
 
@@ -571,6 +583,7 @@ def render(binding, spec):
             "## Per-Scene Changes Against the Fresh BB00\n\n" + _scene_delta_table(scene_deltas) +
             f"\n\nNominee measurement label: `{conclusion}`. Bridge: `{bridge['status']}`. APall uses the actual released overlap vector in the evaluation contexts, .50 through .90; AP25 is separate. Pools use the released evaluator over complete ordered cohorts. Semantic metrics sum scene confusion matrices.\n\n" +
             "Raw numeric geometry and official native triangle-first-color paint are separate. Class-agnostic recall uses strict IoU > .25/.5/.75, maximum-cardinality one-to-one matches and every eligible GT in the denominator. Missed GT best-IoU is zero. Surface precision/completeness use every exported vertex and every valid target vertex at strict 5cm; duplicated native vertices are retained consistently. Detailed raw geometry, GT-indexed gains/losses and predicted overlap associations are in the compact release.\n\n" +
+            "Substantial-fragment impurity is the intersection-row-weighted mean of one minus fragment purity over the fixed intersections of at least 100 points and at least 1% GT coverage. It is conditional on those intersections and does not include unmatched predicted owners. Substantial GT coverage averages summed retained-fragment coverage over every eligible GT, including zero for missed GT.\n\n" +
             "## Actual Physical Work and Failures\n\n```json\n" + json.dumps(physical["totals"], indent=2) + "\n```\n\n" +
             f"Recorded failed command attempts: {sum(c['exit_code'] != 0 for c in physical['command_attempts'])}. Recorded failed worker receipts: {sum(w['status'] == 'FAILED' for w in physical['worker_attempts'])}. Phase failures: {len(failures)}. Details and retained logs are in `physical_work.json` and `failures.json`.\n\n" +
             "Costs distinguish actual forwards from content-deduplicated standalone obligations. Common SAM predictions are required by both RAW/GEOM. N/Q/FC costs are required by both fused readouts. Timing is measured stage attribution, not a cold end-to-end rerun; missing timing components are disclosed per job. GPU-worker wall time includes CPU preprocessing, loading and IO; device-only GPU time was not instrumented. Recorded phase CPU totals cover the phases listed in `physical_work.json`, including children, and exclude earlier uninstrumented preparation/bridge work. Concurrent stages overlap and their duration sum is not end-to-end elapsed time. No significance or independent-generalization claim is made.\n",
