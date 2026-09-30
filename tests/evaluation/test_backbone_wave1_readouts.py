@@ -6,7 +6,7 @@ import pytest
 from static_ovmap.backbone_wave1.diagnostics import canonical_partition, instance_diagnostics
 from static_ovmap.backbone_wave1.features import TensorEncoderCache
 from static_ovmap.backbone_wave1.readouts import fuse_readout
-from static_ovmap.backbone_wave1.selection import banded_rank
+from static_ovmap.backbone_wave1.selection import banded_rank, freeze_candidates
 from static_ovmap.backbone_wave1.semantic_readout import reconstruct_native
 from static_ovmap.module_validation.query_state import (
     AcquisitionPayload, FeatureStore, QueryPolicyState, dispatch_frame_batch,
@@ -79,7 +79,7 @@ def test_raw_diagnostics_strict_threshold_all_gt_denominator_and_id_renaming():
         canonical_partition(np.where(prediction == 7, 800, np.where(prediction == 8, 300, 0))))
 
 
-def test_selection_uses_bands_before_standalone_cost_and_keeps_strict_ranking():
+def test_selection_uses_bands_before_standalone_cost_and_keeps_strict_ranking(tmp_path, monkeypatch):
     rows = [{"id": "expensive", "metrics": {"apall": .1004, "miou": .3, "ap50": .4},
              "required_image_encodings": 100, "median_standalone_seconds": 1., "changed_blocks": 1},
             {"id": "cheap", "metrics": {"apall": .1, "miou": .3, "ap50": .4},
@@ -87,6 +87,21 @@ def test_selection_uses_bands_before_standalone_cost_and_keeps_strict_ranking():
     result = banded_rank(rows)
     assert result["strict_metric_ranking"] == ["expensive", "cheap"]
     assert result["banded_preference"] == ["cheap", "expensive"]
+    recipes = [("BB00_NATIVE", "control"), ("BB01_SYNC", "structural"),
+               ("BB05_RATIO_GATE", "structural"), ("BB05_FORWARD", "structural"),
+               ("BB05_BIDIR", "structural"), ("BB03_SAM2_RAW", "frontend"),
+               ("BB03_SAM2_GEOM", "frontend")]
+    inputs = [{"id": name, "recipe": {"id": name, "family": family}, "metrics": {
+        "apall": .9 if name == "BB05_RATIO_GATE" else .1, "ap50": .4, "miou": .3},
+        "required_image_encodings": 10, "median_standalone_seconds": 1.,
+        "changed_blocks": 1, "real_intervention": False} for name, family in recipes]
+    monkeypatch.setattr("static_ovmap.backbone_wave1.selection.selection_inputs", lambda *args: inputs)
+    freeze = freeze_candidates({"output_root": str(tmp_path), "identity": "bound-inputs"},
+        {"map_variants": [r["recipe"] for r in inputs]}, "a" * 40)
+    assert len(freeze["inputs"]) == 7
+    assert freeze["families"]["structural"]["chosen"]["id"] == "BB01_SYNC"
+    assert "BB05_RATIO_GATE" not in freeze["families"]["structural"]["ranking"]["banded_preference"]
+    assert freeze["composition_recipe"] is None
 
 
 def test_query_debits_full_batch_before_cache_and_failure_without_refund():

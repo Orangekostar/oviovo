@@ -78,6 +78,11 @@ TSDF maps restart from the beginning with prior attempts preserved.
 - native-v10 compiled global_segment_map_py.cpp adds raycast_instance_label at
   count-threshold factor 0 to the tracked capture patch. Include this exact
   source correction in the layered patch and retain the original old binary.
+- The ratio arm is structurally tagged in the matrix but is explicitly a simple
+  control in the mandatory scope. The normative noncontrol structural-champion
+  rule therefore permits BB01_SYNC/BB05_FORWARD/BB05_BIDIR only. All seven arms
+  remain measured and published. This eligibility correction was made before
+  any complete development pool or candidate freeze existed.
 
 ## Targeted Validation Budget
 

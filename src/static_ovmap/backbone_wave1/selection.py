@@ -7,6 +7,9 @@ from static_ovmap.module_validation.contracts import atomic_write_json, canonica
 from .binding import read
 
 
+STRUCTURAL_CHAMPION_IDS = {"BB01_SYNC", "BB05_FORWARD", "BB05_BIDIR"}
+
+
 def banded_rank(rows):
     if not rows:
         raise ValueError("selection requires complete candidate pools")
@@ -79,10 +82,11 @@ def freeze_candidates(binding, spec, implementation_commit):
         return saved
     families = {}
     for family in ("structural", "frontend"):
-        family_rows = [row for row in rows if row["recipe"]["family"] == family]
+        family_rows = [row for row in rows if row["recipe"]["family"] == family and
+                       (family != "structural" or row["id"] in STRUCTURAL_CHAMPION_IDS)]
         rank = banded_rank(family_rows)
         chosen = next(row for row in family_rows if row["id"] == rank["banded_preference"][0])
-        families[family] = {"chosen": chosen, "ranking": rank}
+        families[family] = {"chosen": chosen, "ranking": rank, "eligible_ids": [row["id"] for row in family_rows]}
     composition = None
     if all(families[name]["chosen"]["real_intervention"] for name in families):
         structural, frontend = families["structural"]["chosen"], families["frontend"]["chosen"]
@@ -92,6 +96,7 @@ def freeze_candidates(binding, spec, implementation_commit):
     result = {"status": "CANDIDATES_FROZEN", "implementation_commit": implementation_commit,
         "input_identity": binding["identity"], "selection_unit": "D2_DEVELOPMENT_RELEASED_POOL",
         "families": families, "inputs": rows, "composition_recipe": composition,
+        "structural_control_exclusions": {"BB05_RATIO_GATE": "MANDATORY_SIMPLE_CONTROL_NOT_NONCONTROL_STRUCTURAL_CHAMPION"},
         "composition_skip_reason": None if composition else "NO_REAL_RAW_PARTITION_INTERVENTION_IN_AT_LEAST_ONE_CHAMPION",
         "individual_net_gain_required": False, "Replica_results_read": False}
     return write_frozen(Path(binding["output_root"]) / "candidate_freeze.json", result)
