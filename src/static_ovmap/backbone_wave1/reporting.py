@@ -260,6 +260,63 @@ def frontend_interventions(binding, receipts):
     return result
 
 
+def baseline_loss_paths(binding, mappings):
+    from PIL import Image
+
+    result = []
+    for mapping in mappings:
+        if mapping["map_id"] != "BB00_NATIVE":
+            continue
+        path = Path(mapping["capture_manifest"])
+        capture = read(path)
+        for frame in capture["frames"]:
+            regions_path = Path(binding["scenes"][mapping["scene"]]["geometric_root"]) / f'{frame["frame_id"]:05d}_mask.png'
+            regions = np.asarray(Image.open(regions_path))
+            ids, counts = np.unique(regions, return_counts=True)
+            counts = counts[ids > 0]
+            fragments = frame["preinsert"]["segments"]
+            groups = {r["input_instance_label"] for r in fragments if r["is_thing"]}
+            result.append({"scene": mapping["scene"], "frame_id": frame["frame_id"],
+                "immutable_raw_depth_region_path": str(regions_path),
+                "raw_nonzero_regions_before_gate": len(counts),
+                "initial_min100_removed_regions": int(np.sum(counts < 100)),
+                "initial_min100_removed_pixels": int(np.sum(counts[counts < 100])),
+                "retained_preinsert_fragments": len(fragments), "retained_current_foreground_groups": len(groups),
+                "groups_with_multiple_fragments": sum(sum(r["is_thing"] and r["input_instance_label"] == group for r in fragments) > 1 for group in groups),
+                "retained_foreground_points": sum(r["point_count"] for r in fragments if r["is_thing"]),
+                "retained_background_points": sum(r["point_count"] for r in fragments if not r["is_thing"]),
+                "geometry_input_identity": "recorded_in_resolved_inputs;pre_gate_raster_is_immutable_original_input",
+                "GT_based_admission": False})
+    return result
+
+
+def availability_changes(root, interventions):
+    result = []
+    for intervention in interventions:
+        first = root / "readouts" / intervention["scene"] / "BB00_NATIVE"
+        second = root / "readouts" / intervention["scene"] / intervention["map_id"]
+        evidence = []
+        for directory in (first, second):
+            receipt = read(directory / "receipt.json")
+            sources = {name: read(path)["objects"] for name, path in receipt["sources"].items()}
+            cap = set(receipt["fc_target_cap_exclusions"])
+            def status(owner, sources=sources, cap=cap):
+                return {"native_eligible": str(owner) in sources["N"],
+                    **{name + "_available": bool(objects.get(str(owner), {}).get("available", False)) for name, objects in sources.items()},
+                    "FC_cap_excluded": f"owner:{owner}" in cap}
+            evidence.append(status)
+        aligned = []
+        for association in intervention["predicted_support_associations"]:
+            a, b = evidence[0](association["baseline_owner"]), evidence[1](association["variant_owner"])
+            if a != b:
+                aligned.append(dict(association, baseline_status=a, variant_status=b))
+        result.append({"scene": intervention["scene"], "map_id": intervention["map_id"],
+            "alignment": "published_predicted_support_maximum_overlap_assignment_without_GT_labels",
+            "changed_aligned_owner_statuses": aligned,
+            "same_support_FC_cap_changes": sum(r["iou"] == 1. and r["baseline_status"]["FC_cap_excluded"] != r["variant_status"]["FC_cap_excluded"] for r in aligned)})
+    return result
+
+
 def render(binding, spec):
     root, repo = Path(binding["output_root"]), Path(binding["repository_root"])
     release = repo / spec["publication"]["repo_artifacts"]
@@ -327,6 +384,19 @@ def render(binding, spec):
     comparisons = metric_comparisons(pools, geometry_pools)
     class_summaries, official_match_differences = per_class_and_matches(rows, pools + secondary_pools, spec)
     physical = physical_work_ledger(root, spec)
+    loss_paths = baseline_loss_paths(binding, success)
+    availability = availability_changes(root, interventions)
+    rank_lookup = {(r["cohort"], r["map_id"], r["method"]): r for r in secondary_pools}
+    rank_effects = []
+    for row in pools:
+        secondary = rank_lookup.get((row["cohort"], row["map_id"], row["method"]))
+        if secondary:
+            if any(row["metrics"][key] != secondary["metrics"][key] for key in ("miou", "macc")):
+                raise ValueError("within-map rank views changed semantic confusion")
+            rank_effects.append({"cohort": row["cohort"], "map_id": row["map_id"], "method": row["method"],
+                "official_minus_frozen_native_delta_pp": {key: 100 * (row["metrics"][key] - secondary["metrics"][key])
+                    if row["metrics"][key] is not None and secondary["metrics"][key] is not None else None for key in ("apall", "ap50", "ap25")},
+                "same_map_predictions_and_semantic_confusion": True, "interpretation": "rank_and_view_rule_effect;not_geometry"})
     scene_lookup = {(r["scene"], r["map_id"], r["method"], r["rank_mode"]): r for r in rows}
     scene_deltas = []
     for r in rows:
@@ -425,6 +495,8 @@ def render(binding, spec):
     outputs = {"resolved_inputs.json": binding, "experiment_matrix.json": read(root / "matrix.json"),
         "bridge_parity.json": bridge, "scene_rows.json": primary, "secondary_rank_rows.json": [r for r in rows if r not in primary],
         "dataset_pools.json": pools, "secondary_rank_pools.json": secondary_pools,
+        "within_map_rank_effects.json": rank_effects, "baseline_loss_paths.json": loss_paths,
+        "spatially_aligned_availability_changes.json": availability,
         "scene_deltas.json": scene_deltas, "control_comparisons.json": comparisons,
         "intervention_summary.json": interventions, "raw_geometry_pools.json": geometry_pools,
         "raw_geometry_diagnostics.json": diagnostics, "costs.json": costs, "physical_work.json": physical,
