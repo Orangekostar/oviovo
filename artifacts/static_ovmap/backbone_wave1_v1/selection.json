@@ -1,0 +1,6360 @@
+{
+  "Replica_results_read": false,
+  "candidate_freeze": "8aaa398d2edb6269c53fbf37b2045148d2b98dcc6b755b56ef6ee97e811fc10d",
+  "deployment": "N0_UNCHANGED",
+  "identity": "0226eb45b0cbbf262773c68080da9e31cb27cc0a8d23ccd523fa2ca980e30bb0",
+  "implementation_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+  "inputs": [
+    {
+      "changed_blocks": 0,
+      "config_hash": "fa1a3dbc2e0b814432a61cb7a62924f79fbb4ada2a45440de4d9612d12187479",
+      "id": "BB00_NATIVE",
+      "interventions": [],
+      "median_standalone_seconds": 964.073824521678,
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.23562289001024223,
+        "uap": 0.12581783824640966
+      },
+      "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+      "readout_identities": [
+        "6451362bc0c825dbeea5962bb9f4bd82ccb041932e477c3f2f67a083c1f3bde3",
+        "a1002fc5e16bdfbe21d0361ea6aeed054aa60b50af14005f459cbde8ae55db0b",
+        "e5805910cb0f89b7c28d48592e416aa191e74b895931d6ab918e628efe75be77",
+        "4774dddf58b77946babe19a2e8fda6cd298c025820bf1ec84c3e5bf93d69394c"
+      ],
+      "real_intervention": false,
+      "recipe": {
+        "association": "native",
+        "depth_fusion": "native",
+        "family": "control",
+        "frontend": "cropformer",
+        "id": "BB00_NATIVE"
+      },
+      "required_image_encodings": 18093
+    },
+    {
+      "changed_blocks": 1,
+      "config_hash": "1c63b1e4fcf9f745a89eaf46c19a84f0de1fa0bce0f4f83eeeb1900f01e2f2ce",
+      "id": "BB01_SYNC",
+      "interventions": [
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.34937857565594793,
+              "delta": -0.0002661496204449665,
+              "gt_id": 1000,
+              "variant_best_iou": 0.34911242603550297
+            },
+            {
+              "baseline_best_iou": 0.5536923573040955,
+              "delta": 0.0,
+              "gt_id": 1001,
+              "variant_best_iou": 0.5536923573040955
+            },
+            {
+              "baseline_best_iou": 0.1734669671450599,
+              "delta": 0.002642740541695776,
+              "gt_id": 1002,
+              "variant_best_iou": 0.17610970768675568
+            },
+            {
+              "baseline_best_iou": 0.5701861903928092,
+              "delta": -0.0001333698949540496,
+              "gt_id": 1003,
+              "variant_best_iou": 0.5700528204978551
+            },
+            {
+              "baseline_best_iou": 0.462401055408971,
+              "delta": 0.0,
+              "gt_id": 2000,
+              "variant_best_iou": 0.462401055408971
+            },
+            {
+              "baseline_best_iou": 0.40833088882370194,
+              "delta": 0.0,
+              "gt_id": 2001,
+              "variant_best_iou": 0.40833088882370194
+            },
+            {
+              "baseline_best_iou": 0.3885011021307862,
+              "delta": -0.00014267392659966793,
+              "gt_id": 2002,
+              "variant_best_iou": 0.38835842820418653
+            },
+            {
+              "baseline_best_iou": 0.6312972292191436,
+              "delta": 0.0,
+              "gt_id": 2003,
+              "variant_best_iou": 0.6312972292191436
+            },
+            {
+              "baseline_best_iou": 0.5977545489740612,
+              "delta": 0.0007742934572202431,
+              "gt_id": 2004,
+              "variant_best_iou": 0.5985288424312815
+            },
+            {
+              "baseline_best_iou": 0.2775817454716537,
+              "delta": -0.00013053456170780686,
+              "gt_id": 2005,
+              "variant_best_iou": 0.2774512109099459
+            },
+            {
+              "baseline_best_iou": 0.42874602786604743,
+              "delta": 0.0,
+              "gt_id": 2006,
+              "variant_best_iou": 0.42874602786604743
+            },
+            {
+              "baseline_best_iou": 0.5122963909294155,
+              "delta": 0.0,
+              "gt_id": 2007,
+              "variant_best_iou": 0.5122963909294155
+            },
+            {
+              "baseline_best_iou": 0.9695863746958637,
+              "delta": 0.0,
+              "gt_id": 2008,
+              "variant_best_iou": 0.9695863746958637
+            },
+            {
+              "baseline_best_iou": 0.4945899772209567,
+              "delta": 0.0,
+              "gt_id": 2009,
+              "variant_best_iou": 0.4945899772209567
+            },
+            {
+              "baseline_best_iou": 0.3708421797593772,
+              "delta": 0.0,
+              "gt_id": 2010,
+              "variant_best_iou": 0.3708421797593772
+            },
+            {
+              "baseline_best_iou": 0.4127025614218505,
+              "delta": 0.0,
+              "gt_id": 2011,
+              "variant_best_iou": 0.4127025614218505
+            },
+            {
+              "baseline_best_iou": 0.28036086051353226,
+              "delta": -4.038611047890717e-05,
+              "gt_id": 3000,
+              "variant_best_iou": 0.28032047440305335
+            },
+            {
+              "baseline_best_iou": 0.3310046573519627,
+              "delta": 8.566689841627007e-05,
+              "gt_id": 4000,
+              "variant_best_iou": 0.331090324250379
+            },
+            {
+              "baseline_best_iou": 0.3442201682762051,
+              "delta": -1.156202465052436e-05,
+              "gt_id": 4001,
+              "variant_best_iou": 0.3442086062515546
+            },
+            {
+              "baseline_best_iou": 0.4515602322206096,
+              "delta": 0.0,
+              "gt_id": 4002,
+              "variant_best_iou": 0.4515602322206096
+            },
+            {
+              "baseline_best_iou": 0.5481611208406305,
+              "delta": -0.00040414926579557253,
+              "gt_id": 5000,
+              "variant_best_iou": 0.5477569715748349
+            },
+            {
+              "baseline_best_iou": 0.6488349195930423,
+              "delta": 0.0,
+              "gt_id": 10000,
+              "variant_best_iou": 0.6488349195930423
+            },
+            {
+              "baseline_best_iou": 0.09603737670877315,
+              "delta": 0.0,
+              "gt_id": 16000,
+              "variant_best_iou": 0.09603737670877315
+            },
+            {
+              "baseline_best_iou": 0.4977631971368923,
+              "delta": 0.0,
+              "gt_id": 19000,
+              "variant_best_iou": 0.4977631971368923
+            },
+            {
+              "baseline_best_iou": 0.5529411764705883,
+              "delta": 0.0,
+              "gt_id": 19001,
+              "variant_best_iou": 0.5529411764705883
+            },
+            {
+              "baseline_best_iou": 0.3693329483107132,
+              "delta": 0.0,
+              "gt_id": 19002,
+              "variant_best_iou": 0.3693329483107132
+            },
+            {
+              "baseline_best_iou": 0.8980582524271845,
+              "delta": 0.0,
+              "gt_id": 19003,
+              "variant_best_iou": 0.8980582524271845
+            },
+            {
+              "baseline_best_iou": 0.0025247212286976647,
+              "delta": 7.438777927804008e-07,
+              "gt_id": 19004,
+              "variant_best_iou": 0.002525465106490445
+            },
+            {
+              "baseline_best_iou": 0.5688073394495413,
+              "delta": 0.0,
+              "gt_id": 19005,
+              "variant_best_iou": 0.5688073394495413
+            },
+            {
+              "baseline_best_iou": 0.8531524341580208,
+              "delta": 0.0,
+              "gt_id": 19006,
+              "variant_best_iou": 0.8531524341580208
+            },
+            {
+              "baseline_best_iou": 0.5223613595706619,
+              "delta": -0.0067084078711985295,
+              "gt_id": 23000,
+              "variant_best_iou": 0.5156529516994633
+            },
+            {
+              "baseline_best_iou": 0.015359628770301625,
+              "delta": 4.990827711650811e-06,
+              "gt_id": 46000,
+              "variant_best_iou": 0.015364619598013276
+            },
+            {
+              "baseline_best_iou": 0.13385826771653545,
+              "delta": 0.0,
+              "gt_id": 46001,
+              "variant_best_iou": 0.13385826771653545
+            },
+            {
+              "baseline_best_iou": 0.010125876724418226,
+              "delta": 3.2934270546864514e-06,
+              "gt_id": 46002,
+              "variant_best_iou": 0.010129170151472912
+            },
+            {
+              "baseline_best_iou": 0.20944164869398516,
+              "delta": 0.0001932478467194798,
+              "gt_id": 52000,
+              "variant_best_iou": 0.20963489654070463
+            },
+            {
+              "baseline_best_iou": 0.2073255010366275,
+              "delta": 0.004068095950189837,
+              "gt_id": 52001,
+              "variant_best_iou": 0.21139359698681734
+            },
+            {
+              "baseline_best_iou": 0.17098445595854922,
+              "delta": 0.0,
+              "gt_id": 56000,
+              "variant_best_iou": 0.17098445595854922
+            },
+            {
+              "baseline_best_iou": 0.32116596638655465,
+              "delta": 0.0,
+              "gt_id": 96000,
+              "variant_best_iou": 0.32116596638655465
+            },
+            {
+              "baseline_best_iou": 0.2130560528852775,
+              "delta": 0.0006097413012495501,
+              "gt_id": 141000,
+              "variant_best_iou": 0.21366579418652706
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 442,
+          "geometry_exact_identity": false,
+          "map_id": "BB01_SYNC",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 3040,
+              "iou": 0.9010077059869591,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 8613,
+              "iou": 0.9719025050778606,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 3180,
+              "iou": 0.9839108910891089,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 1413,
+              "iou": 1.0,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 1644,
+              "iou": 1.0,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 2697,
+              "iou": 1.0,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 19,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 2845,
+              "iou": 0.9670292318150918,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 9,
+              "intersection": 665,
+              "iou": 0.9984984984984985,
+              "variant_owner": 9
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 1687,
+              "iou": 1.0,
+              "variant_owner": 12
+            },
+            {
+              "baseline_owner": 14,
+              "intersection": 623,
+              "iou": 1.0,
+              "variant_owner": 14
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 16983,
+              "iou": 0.9970059880239521,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 17,
+              "intersection": 403,
+              "iou": 1.0,
+              "variant_owner": 17
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 21522,
+              "iou": 0.9996748571693994,
+              "variant_owner": 18
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 244,
+              "iou": 1.0,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 21,
+              "intersection": 7,
+              "iou": 1.0,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 22,
+              "intersection": 707,
+              "iou": 1.0,
+              "variant_owner": 22
+            },
+            {
+              "baseline_owner": 23,
+              "intersection": 2016,
+              "iou": 1.0,
+              "variant_owner": 23
+            },
+            {
+              "baseline_owner": 25,
+              "intersection": 1078,
+              "iou": 1.0,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 12,
+              "iou": 1.0,
+              "variant_owner": 28
+            },
+            {
+              "baseline_owner": 33,
+              "intersection": 2025,
+              "iou": 1.0,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 3081,
+              "iou": 1.0,
+              "variant_owner": 37
+            },
+            {
+              "baseline_owner": 38,
+              "intersection": 2316,
+              "iou": 0.9987063389391979,
+              "variant_owner": 38
+            },
+            {
+              "baseline_owner": 39,
+              "intersection": 28314,
+              "iou": 0.9994705072540506,
+              "variant_owner": 39
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 9,
+              "iou": 1.0,
+              "variant_owner": 40
+            },
+            {
+              "baseline_owner": 43,
+              "intersection": 2,
+              "iou": 1.0,
+              "variant_owner": 43
+            },
+            {
+              "baseline_owner": 44,
+              "intersection": 171,
+              "iou": 1.0,
+              "variant_owner": 44
+            },
+            {
+              "baseline_owner": 47,
+              "intersection": 1200,
+              "iou": 0.9975062344139651,
+              "variant_owner": 47
+            },
+            {
+              "baseline_owner": 58,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 58
+            },
+            {
+              "baseline_owner": 61,
+              "intersection": 5818,
+              "iou": 0.9987982832618025,
+              "variant_owner": 61
+            },
+            {
+              "baseline_owner": 66,
+              "intersection": 20489,
+              "iou": 0.9998048113990143,
+              "variant_owner": 66
+            },
+            {
+              "baseline_owner": 68,
+              "intersection": 555,
+              "iou": 1.0,
+              "variant_owner": 68
+            },
+            {
+              "baseline_owner": 73,
+              "intersection": 1069,
+              "iou": 1.0,
+              "variant_owner": 73
+            },
+            {
+              "baseline_owner": 78,
+              "intersection": 555,
+              "iou": 1.0,
+              "variant_owner": 78
+            },
+            {
+              "baseline_owner": 80,
+              "intersection": 220,
+              "iou": 1.0,
+              "variant_owner": 80
+            },
+            {
+              "baseline_owner": 85,
+              "intersection": 1153,
+              "iou": 0.9871575342465754,
+              "variant_owner": 85
+            },
+            {
+              "baseline_owner": 86,
+              "intersection": 744,
+              "iou": 1.0,
+              "variant_owner": 86
+            },
+            {
+              "baseline_owner": 87,
+              "intersection": 33,
+              "iou": 1.0,
+              "variant_owner": 87
+            },
+            {
+              "baseline_owner": 88,
+              "intersection": 626,
+              "iou": 1.0,
+              "variant_owner": 88
+            },
+            {
+              "baseline_owner": 89,
+              "intersection": 565,
+              "iou": 1.0,
+              "variant_owner": 89
+            },
+            {
+              "baseline_owner": 92,
+              "intersection": 707,
+              "iou": 0.997179125528914,
+              "variant_owner": 92
+            },
+            {
+              "baseline_owner": 93,
+              "intersection": 1782,
+              "iou": 1.0,
+              "variant_owner": 93
+            },
+            {
+              "baseline_owner": 94,
+              "intersection": 1207,
+              "iou": 1.0,
+              "variant_owner": 94
+            },
+            {
+              "baseline_owner": 95,
+              "intersection": 14,
+              "iou": 1.0,
+              "variant_owner": 95
+            },
+            {
+              "baseline_owner": 102,
+              "intersection": 11316,
+              "iou": 0.9996466431095407,
+              "variant_owner": 102
+            },
+            {
+              "baseline_owner": 103,
+              "intersection": 115,
+              "iou": 1.0,
+              "variant_owner": 103
+            },
+            {
+              "baseline_owner": 106,
+              "intersection": 3356,
+              "iou": 0.9994044073853484,
+              "variant_owner": 106
+            },
+            {
+              "baseline_owner": 107,
+              "intersection": 375,
+              "iou": 1.0,
+              "variant_owner": 107
+            },
+            {
+              "baseline_owner": 110,
+              "intersection": 822,
+              "iou": 1.0,
+              "variant_owner": 110
+            },
+            {
+              "baseline_owner": 111,
+              "intersection": 281,
+              "iou": 1.0,
+              "variant_owner": 111
+            },
+            {
+              "baseline_owner": 113,
+              "intersection": 4423,
+              "iou": 0.9990964535803026,
+              "variant_owner": 113
+            },
+            {
+              "baseline_owner": 115,
+              "intersection": 9,
+              "iou": 1.0,
+              "variant_owner": 115
+            },
+            {
+              "baseline_owner": 119,
+              "intersection": 1786,
+              "iou": 0.9988814317673378,
+              "variant_owner": 119
+            },
+            {
+              "baseline_owner": 121,
+              "intersection": 31,
+              "iou": 1.0,
+              "variant_owner": 121
+            },
+            {
+              "baseline_owner": 122,
+              "intersection": 2991,
+              "iou": 1.0,
+              "variant_owner": 122
+            },
+            {
+              "baseline_owner": 123,
+              "intersection": 102,
+              "iou": 1.0,
+              "variant_owner": 123
+            },
+            {
+              "baseline_owner": 126,
+              "intersection": 7,
+              "iou": 1.0,
+              "variant_owner": 126
+            },
+            {
+              "baseline_owner": 127,
+              "intersection": 15,
+              "iou": 1.0,
+              "variant_owner": 127
+            },
+            {
+              "baseline_owner": 128,
+              "intersection": 2005,
+              "iou": 1.0,
+              "variant_owner": 128
+            },
+            {
+              "baseline_owner": 129,
+              "intersection": 1084,
+              "iou": 1.0,
+              "variant_owner": 129
+            },
+            {
+              "baseline_owner": 130,
+              "intersection": 106,
+              "iou": 1.0,
+              "variant_owner": 130
+            },
+            {
+              "baseline_owner": 132,
+              "intersection": 17,
+              "iou": 1.0,
+              "variant_owner": 132
+            },
+            {
+              "baseline_owner": 133,
+              "intersection": 2239,
+              "iou": 0.9973273942093541,
+              "variant_owner": 133
+            },
+            {
+              "baseline_owner": 134,
+              "intersection": 1512,
+              "iou": 1.0,
+              "variant_owner": 134
+            },
+            {
+              "baseline_owner": 137,
+              "intersection": 2146,
+              "iou": 1.0,
+              "variant_owner": 137
+            },
+            {
+              "baseline_owner": 139,
+              "intersection": 260,
+              "iou": 1.0,
+              "variant_owner": 139
+            },
+            {
+              "baseline_owner": 140,
+              "intersection": 558,
+              "iou": 0.9893617021276596,
+              "variant_owner": 140
+            },
+            {
+              "baseline_owner": 141,
+              "intersection": 595,
+              "iou": 1.0,
+              "variant_owner": 141
+            },
+            {
+              "baseline_owner": 143,
+              "intersection": 1438,
+              "iou": 1.0,
+              "variant_owner": 143
+            },
+            {
+              "baseline_owner": 145,
+              "intersection": 824,
+              "iou": 1.0,
+              "variant_owner": 145
+            },
+            {
+              "baseline_owner": 146,
+              "intersection": 719,
+              "iou": 1.0,
+              "variant_owner": 146
+            },
+            {
+              "baseline_owner": 165,
+              "intersection": 5,
+              "iou": 1.0,
+              "variant_owner": 165
+            },
+            {
+              "baseline_owner": 175,
+              "intersection": 158,
+              "iou": 1.0,
+              "variant_owner": 175
+            },
+            {
+              "baseline_owner": 179,
+              "intersection": 285,
+              "iou": 1.0,
+              "variant_owner": 179
+            },
+            {
+              "baseline_owner": 183,
+              "intersection": 82,
+              "iou": 1.0,
+              "variant_owner": 183
+            },
+            {
+              "baseline_owner": 187,
+              "intersection": 3,
+              "iou": 1.0,
+              "variant_owner": 187
+            },
+            {
+              "baseline_owner": 188,
+              "intersection": 6,
+              "iou": 1.0,
+              "variant_owner": 188
+            },
+            {
+              "baseline_owner": 190,
+              "intersection": 181,
+              "iou": 1.0,
+              "variant_owner": 190
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0056_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": -1.0780436413559968e-06,
+            "precision_5cm": -1.8791489270197914e-06
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.22374636040116466,
+              "delta": -0.0003902048657041246,
+              "gt_id": 1000,
+              "variant_best_iou": 0.22335615553546054
+            },
+            {
+              "baseline_best_iou": 0.17434180765403057,
+              "delta": 0.06762713683581667,
+              "gt_id": 1001,
+              "variant_best_iou": 0.24196894448984724
+            },
+            {
+              "baseline_best_iou": 0.11828338357864869,
+              "delta": -0.00026568446360444864,
+              "gt_id": 1002,
+              "variant_best_iou": 0.11801769911504424
+            },
+            {
+              "baseline_best_iou": 0.1656441717791411,
+              "delta": 0.00044208592243941136,
+              "gt_id": 1003,
+              "variant_best_iou": 0.1660862577015805
+            },
+            {
+              "baseline_best_iou": 0.08133449629306586,
+              "delta": 0.0667989429444242,
+              "gt_id": 1004,
+              "variant_best_iou": 0.14813343923749006
+            },
+            {
+              "baseline_best_iou": 0.012001745708466686,
+              "delta": 0.009869940399698744,
+              "gt_id": 1005,
+              "variant_best_iou": 0.02187168610816543
+            },
+            {
+              "baseline_best_iou": 0.3922586555712486,
+              "delta": -0.0005261466968640716,
+              "gt_id": 3000,
+              "variant_best_iou": 0.39173250887438454
+            },
+            {
+              "baseline_best_iou": 0.8314855875831486,
+              "delta": -0.0002463661000247086,
+              "gt_id": 5000,
+              "variant_best_iou": 0.8312392214831239
+            },
+            {
+              "baseline_best_iou": 0.7194978422910946,
+              "delta": -0.07868722034839715,
+              "gt_id": 5001,
+              "variant_best_iou": 0.6408106219426974
+            },
+            {
+              "baseline_best_iou": 0.5930164888457808,
+              "delta": 0.001888217494164679,
+              "gt_id": 7000,
+              "variant_best_iou": 0.5949047063399455
+            },
+            {
+              "baseline_best_iou": 0.7131142840759218,
+              "delta": 5.7342737542209754e-05,
+              "gt_id": 8000,
+              "variant_best_iou": 0.713171626813464
+            },
+            {
+              "baseline_best_iou": 0.28049921996879873,
+              "delta": -0.00016231656856996457,
+              "gt_id": 8001,
+              "variant_best_iou": 0.28033690340022877
+            },
+            {
+              "baseline_best_iou": 0.28753328894806923,
+              "delta": 0.00019038978684543517,
+              "gt_id": 8002,
+              "variant_best_iou": 0.28772367873491467
+            },
+            {
+              "baseline_best_iou": 0.19078201737816397,
+              "delta": -0.0004496910941760579,
+              "gt_id": 16000,
+              "variant_best_iou": 0.1903323262839879
+            },
+            {
+              "baseline_best_iou": 0.0037805724866908415,
+              "delta": -2.916658298633863e-07,
+              "gt_id": 22000,
+              "variant_best_iou": 0.003780280820860978
+            },
+            {
+              "baseline_best_iou": 0.30669348939283103,
+              "delta": -0.0017730577118359458,
+              "gt_id": 35000,
+              "variant_best_iou": 0.3049204316809951
+            },
+            {
+              "baseline_best_iou": 0.3700623700623701,
+              "delta": 0.0,
+              "gt_id": 48000,
+              "variant_best_iou": 0.3700623700623701
+            },
+            {
+              "baseline_best_iou": 0.24073407700611732,
+              "delta": 0.0,
+              "gt_id": 56000,
+              "variant_best_iou": 0.24073407700611732
+            },
+            {
+              "baseline_best_iou": 0.5,
+              "delta": 0.014150943396226467,
+              "gt_id": 79000,
+              "variant_best_iou": 0.5141509433962265
+            },
+            {
+              "baseline_best_iou": 0.5348519362186788,
+              "delta": 0.0,
+              "gt_id": 97000,
+              "variant_best_iou": 0.5348519362186788
+            },
+            {
+              "baseline_best_iou": 0.2430939226519337,
+              "delta": 0.0,
+              "gt_id": 141000,
+              "variant_best_iou": 0.2430939226519337
+            },
+            {
+              "baseline_best_iou": 0.2085474709223695,
+              "delta": 0.0,
+              "gt_id": 154000,
+              "variant_best_iou": 0.2085474709223695
+            },
+            {
+              "baseline_best_iou": 0.2512834369089435,
+              "delta": -0.00027019724398807954,
+              "gt_id": 154001,
+              "variant_best_iou": 0.2510132396649554
+            },
+            {
+              "baseline_best_iou": 0.41832669322709165,
+              "delta": 0.035430532206434384,
+              "gt_id": 154002,
+              "variant_best_iou": 0.45375722543352603
+            },
+            {
+              "baseline_best_iou": 0.32962447844228093,
+              "delta": -0.005111943623339443,
+              "gt_id": 154003,
+              "variant_best_iou": 0.3245125348189415
+            },
+            {
+              "baseline_best_iou": 0.1465537520583392,
+              "delta": 3.4483235778454135e-05,
+              "gt_id": 161000,
+              "variant_best_iou": 0.14658823529411766
+            },
+            {
+              "baseline_best_iou": 0.1682403433476395,
+              "delta": 0.008116245799647342,
+              "gt_id": 161001,
+              "variant_best_iou": 0.17635658914728683
+            },
+            {
+              "baseline_best_iou": 0.5407166123778502,
+              "delta": 0.0,
+              "gt_id": 177000,
+              "variant_best_iou": 0.5407166123778502
+            },
+            {
+              "baseline_best_iou": 0.7446236559139785,
+              "delta": 0.0026881720430107503,
+              "gt_id": 180000,
+              "variant_best_iou": 0.7473118279569892
+            },
+            {
+              "baseline_best_iou": 0.7926829268292683,
+              "delta": 0.0,
+              "gt_id": 1163000,
+              "variant_best_iou": 0.7926829268292683
+            },
+            {
+              "baseline_best_iou": 0.5596899224806201,
+              "delta": -0.045280700578602784,
+              "gt_id": 1188000,
+              "variant_best_iou": 0.5144092219020173
+            },
+            {
+              "baseline_best_iou": 0.18375241779497098,
+              "delta": -0.0002572721639030051,
+              "gt_id": 1188001,
+              "variant_best_iou": 0.18349514563106797
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 7741,
+          "geometry_exact_identity": false,
+          "map_id": "BB01_SYNC",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 26966,
+              "iou": 0.9967472462482443,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 7119,
+              "iou": 0.9951076320939335,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 12861,
+              "iou": 0.9999222515938423,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 587,
+              "iou": 0.8907435508345979,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 2977,
+              "iou": 1.0,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 1165,
+              "iou": 0.9991423670668954,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 181,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 1,
+              "iou": 0.3333333333333333,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 10,
+              "intersection": 319,
+              "iou": 0.9845679012345679,
+              "variant_owner": 10
+            },
+            {
+              "baseline_owner": 11,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 11
+            },
+            {
+              "baseline_owner": 13,
+              "intersection": 669,
+              "iou": 1.0,
+              "variant_owner": 13
+            },
+            {
+              "baseline_owner": 14,
+              "intersection": 111,
+              "iou": 0.9736842105263158,
+              "variant_owner": 14
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 1282,
+              "iou": 0.9992205767731879,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 16,
+              "intersection": 429,
+              "iou": 0.858,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 17,
+              "intersection": 551,
+              "iou": 0.9945848375451264,
+              "variant_owner": 17
+            },
+            {
+              "baseline_owner": 19,
+              "intersection": 73,
+              "iou": 0.8588235294117647,
+              "variant_owner": 19
+            },
+            {
+              "baseline_owner": 25,
+              "intersection": 219,
+              "iou": 1.0,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 26,
+              "intersection": 153,
+              "iou": 0.9683544303797469,
+              "variant_owner": 26
+            },
+            {
+              "baseline_owner": 27,
+              "intersection": 184,
+              "iou": 1.0,
+              "variant_owner": 27
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 17,
+              "iou": 0.9444444444444444,
+              "variant_owner": 28
+            },
+            {
+              "baseline_owner": 30,
+              "intersection": 117,
+              "iou": 1.0,
+              "variant_owner": 30
+            },
+            {
+              "baseline_owner": 35,
+              "intersection": 3,
+              "iou": 1.0,
+              "variant_owner": 35
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 861,
+              "iou": 1.0,
+              "variant_owner": 40
+            },
+            {
+              "baseline_owner": 41,
+              "intersection": 233,
+              "iou": 0.9789915966386554,
+              "variant_owner": 41
+            },
+            {
+              "baseline_owner": 45,
+              "intersection": 206,
+              "iou": 1.0,
+              "variant_owner": 45
+            },
+            {
+              "baseline_owner": 46,
+              "intersection": 233,
+              "iou": 1.0,
+              "variant_owner": 46
+            },
+            {
+              "baseline_owner": 47,
+              "intersection": 1192,
+              "iou": 0.9762489762489762,
+              "variant_owner": 47
+            },
+            {
+              "baseline_owner": 48,
+              "intersection": 267,
+              "iou": 0.9709090909090909,
+              "variant_owner": 48
+            },
+            {
+              "baseline_owner": 49,
+              "intersection": 617,
+              "iou": 0.9951612903225806,
+              "variant_owner": 49
+            },
+            {
+              "baseline_owner": 51,
+              "intersection": 609,
+              "iou": 0.9950980392156863,
+              "variant_owner": 51
+            },
+            {
+              "baseline_owner": 54,
+              "intersection": 560,
+              "iou": 1.0,
+              "variant_owner": 54
+            },
+            {
+              "baseline_owner": 58,
+              "intersection": 46,
+              "iou": 1.0,
+              "variant_owner": 58
+            },
+            {
+              "baseline_owner": 60,
+              "intersection": 127,
+              "iou": 1.0,
+              "variant_owner": 60
+            },
+            {
+              "baseline_owner": 62,
+              "intersection": 2274,
+              "iou": 0.9755469755469756,
+              "variant_owner": 62
+            },
+            {
+              "baseline_owner": 63,
+              "intersection": 1229,
+              "iou": 1.0,
+              "variant_owner": 63
+            },
+            {
+              "baseline_owner": 65,
+              "intersection": 246,
+              "iou": 1.0,
+              "variant_owner": 65
+            },
+            {
+              "baseline_owner": 66,
+              "intersection": 655,
+              "iou": 0.9576023391812866,
+              "variant_owner": 66
+            },
+            {
+              "baseline_owner": 69,
+              "intersection": 2537,
+              "iou": 0.9988188976377953,
+              "variant_owner": 69
+            },
+            {
+              "baseline_owner": 73,
+              "intersection": 211,
+              "iou": 1.0,
+              "variant_owner": 73
+            },
+            {
+              "baseline_owner": 74,
+              "intersection": 1042,
+              "iou": 0.9990412272291467,
+              "variant_owner": 74
+            },
+            {
+              "baseline_owner": 77,
+              "intersection": 7294,
+              "iou": 0.5211488996856245,
+              "variant_owner": 90
+            },
+            {
+              "baseline_owner": 78,
+              "intersection": 12618,
+              "iou": 0.9996038976471521,
+              "variant_owner": 78
+            },
+            {
+              "baseline_owner": 81,
+              "intersection": 1,
+              "iou": 0.5,
+              "variant_owner": 81
+            },
+            {
+              "baseline_owner": 82,
+              "intersection": 516,
+              "iou": 1.0,
+              "variant_owner": 82
+            },
+            {
+              "baseline_owner": 84,
+              "intersection": 426,
+              "iou": 0.9976580796252927,
+              "variant_owner": 84
+            },
+            {
+              "baseline_owner": 85,
+              "intersection": 112,
+              "iou": 1.0,
+              "variant_owner": 85
+            },
+            {
+              "baseline_owner": 86,
+              "intersection": 121,
+              "iou": 0.9918032786885246,
+              "variant_owner": 86
+            },
+            {
+              "baseline_owner": 87,
+              "intersection": 93,
+              "iou": 0.96875,
+              "variant_owner": 87
+            },
+            {
+              "baseline_owner": 88,
+              "intersection": 98,
+              "iou": 0.98989898989899,
+              "variant_owner": 88
+            },
+            {
+              "baseline_owner": 89,
+              "intersection": 601,
+              "iou": 0.564319248826291,
+              "variant_owner": 89
+            },
+            {
+              "baseline_owner": 90,
+              "intersection": 2,
+              "iou": 0.0002698327037236913,
+              "variant_owner": 77
+            },
+            {
+              "baseline_owner": 92,
+              "intersection": 98,
+              "iou": 0.98989898989899,
+              "variant_owner": 92
+            },
+            {
+              "baseline_owner": 93,
+              "intersection": 2258,
+              "iou": 0.8782574873590043,
+              "variant_owner": 93
+            },
+            {
+              "baseline_owner": 95,
+              "intersection": 4965,
+              "iou": 0.9922062350119905,
+              "variant_owner": 95
+            },
+            {
+              "baseline_owner": 96,
+              "intersection": 344,
+              "iou": 0.9913544668587896,
+              "variant_owner": 96
+            },
+            {
+              "baseline_owner": 100,
+              "intersection": 522,
+              "iou": 1.0,
+              "variant_owner": 100
+            },
+            {
+              "baseline_owner": 103,
+              "intersection": 139,
+              "iou": 1.0,
+              "variant_owner": 103
+            },
+            {
+              "baseline_owner": 106,
+              "intersection": 2203,
+              "iou": 0.9963817277250113,
+              "variant_owner": 106
+            },
+            {
+              "baseline_owner": 107,
+              "intersection": 701,
+              "iou": 0.9971550497866287,
+              "variant_owner": 107
+            },
+            {
+              "baseline_owner": 111,
+              "intersection": 312,
+              "iou": 0.9968051118210862,
+              "variant_owner": 109
+            },
+            {
+              "baseline_owner": 113,
+              "intersection": 257,
+              "iou": 1.0,
+              "variant_owner": 110
+            },
+            {
+              "baseline_owner": 115,
+              "intersection": 12196,
+              "iou": 0.9986080406124621,
+              "variant_owner": 112
+            },
+            {
+              "baseline_owner": 119,
+              "intersection": 4028,
+              "iou": 0.9997517994539588,
+              "variant_owner": 116
+            },
+            {
+              "baseline_owner": 120,
+              "intersection": 1800,
+              "iou": 0.995575221238938,
+              "variant_owner": 117
+            },
+            {
+              "baseline_owner": 121,
+              "intersection": 147,
+              "iou": 1.0,
+              "variant_owner": 118
+            },
+            {
+              "baseline_owner": 122,
+              "intersection": 156,
+              "iou": 0.9811320754716981,
+              "variant_owner": 119
+            },
+            {
+              "baseline_owner": 123,
+              "intersection": 6900,
+              "iou": 0.9995654063450674,
+              "variant_owner": 120
+            },
+            {
+              "baseline_owner": 124,
+              "intersection": 74,
+              "iou": 0.961038961038961,
+              "variant_owner": 121
+            },
+            {
+              "baseline_owner": 125,
+              "intersection": 150,
+              "iou": 0.9868421052631579,
+              "variant_owner": 122
+            },
+            {
+              "baseline_owner": 126,
+              "intersection": 1153,
+              "iou": 0.9982683982683983,
+              "variant_owner": 123
+            },
+            {
+              "baseline_owner": 127,
+              "intersection": 715,
+              "iou": 1.0,
+              "variant_owner": 124
+            },
+            {
+              "baseline_owner": 128,
+              "intersection": 23,
+              "iou": 1.0,
+              "variant_owner": 125
+            },
+            {
+              "baseline_owner": 130,
+              "intersection": 139,
+              "iou": 1.0,
+              "variant_owner": 127
+            },
+            {
+              "baseline_owner": 131,
+              "intersection": 72,
+              "iou": 1.0,
+              "variant_owner": 128
+            },
+            {
+              "baseline_owner": 133,
+              "intersection": 57,
+              "iou": 0.9827586206896551,
+              "variant_owner": 130
+            },
+            {
+              "baseline_owner": 135,
+              "intersection": 1884,
+              "iou": 1.0,
+              "variant_owner": 132
+            },
+            {
+              "baseline_owner": 137,
+              "intersection": 456,
+              "iou": 1.0,
+              "variant_owner": 134
+            },
+            {
+              "baseline_owner": 138,
+              "intersection": 20,
+              "iou": 1.0,
+              "variant_owner": 135
+            },
+            {
+              "baseline_owner": 139,
+              "intersection": 1294,
+              "iou": 1.0,
+              "variant_owner": 136
+            },
+            {
+              "baseline_owner": 140,
+              "intersection": 636,
+              "iou": 1.0,
+              "variant_owner": 137
+            },
+            {
+              "baseline_owner": 141,
+              "intersection": 625,
+              "iou": 1.0,
+              "variant_owner": 138
+            },
+            {
+              "baseline_owner": 142,
+              "intersection": 203,
+              "iou": 1.0,
+              "variant_owner": 139
+            },
+            {
+              "baseline_owner": 143,
+              "intersection": 409,
+              "iou": 1.0,
+              "variant_owner": 140
+            },
+            {
+              "baseline_owner": 144,
+              "intersection": 201,
+              "iou": 1.0,
+              "variant_owner": 141
+            },
+            {
+              "baseline_owner": 145,
+              "intersection": 67,
+              "iou": 0.9436619718309859,
+              "variant_owner": 142
+            },
+            {
+              "baseline_owner": 146,
+              "intersection": 203,
+              "iou": 1.0,
+              "variant_owner": 143
+            },
+            {
+              "baseline_owner": 148,
+              "intersection": 152,
+              "iou": 1.0,
+              "variant_owner": 145
+            },
+            {
+              "baseline_owner": 149,
+              "intersection": 113,
+              "iou": 1.0,
+              "variant_owner": 146
+            },
+            {
+              "baseline_owner": 153,
+              "intersection": 337,
+              "iou": 1.0,
+              "variant_owner": 150
+            },
+            {
+              "baseline_owner": 160,
+              "intersection": 204,
+              "iou": 1.0,
+              "variant_owner": 157
+            },
+            {
+              "baseline_owner": 162,
+              "intersection": 3207,
+              "iou": 0.9910383189122374,
+              "variant_owner": 159
+            },
+            {
+              "baseline_owner": 164,
+              "intersection": 89,
+              "iou": 1.0,
+              "variant_owner": 161
+            },
+            {
+              "baseline_owner": 166,
+              "intersection": 28,
+              "iou": 0.875,
+              "variant_owner": 163
+            },
+            {
+              "baseline_owner": 167,
+              "intersection": 23,
+              "iou": 0.7666666666666667,
+              "variant_owner": 164
+            },
+            {
+              "baseline_owner": 168,
+              "intersection": 910,
+              "iou": 1.0,
+              "variant_owner": 165
+            },
+            {
+              "baseline_owner": 169,
+              "intersection": 231,
+              "iou": 1.0,
+              "variant_owner": 166
+            },
+            {
+              "baseline_owner": 170,
+              "intersection": 427,
+              "iou": 1.0,
+              "variant_owner": 167
+            },
+            {
+              "baseline_owner": 171,
+              "intersection": 1373,
+              "iou": 1.0,
+              "variant_owner": 168
+            },
+            {
+              "baseline_owner": 172,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 169
+            },
+            {
+              "baseline_owner": 173,
+              "intersection": 636,
+              "iou": 1.0,
+              "variant_owner": 170
+            },
+            {
+              "baseline_owner": 174,
+              "intersection": 241,
+              "iou": 0.9917695473251029,
+              "variant_owner": 171
+            },
+            {
+              "baseline_owner": 178,
+              "intersection": 127,
+              "iou": 1.0,
+              "variant_owner": 175
+            },
+            {
+              "baseline_owner": 179,
+              "intersection": 794,
+              "iou": 1.0,
+              "variant_owner": 176
+            },
+            {
+              "baseline_owner": 180,
+              "intersection": 4,
+              "iou": 1.0,
+              "variant_owner": 177
+            },
+            {
+              "baseline_owner": 182,
+              "intersection": 585,
+              "iou": 1.0,
+              "variant_owner": 179
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0534_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": 1.0413161878330968e-06,
+            "precision_5cm": 2.010522525242031e-06
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.23114496714543234,
+              "delta": 9.412535020467128e-05,
+              "gt_id": 1000,
+              "variant_best_iou": 0.231239092495637
+            },
+            {
+              "baseline_best_iou": 0.446241961414791,
+              "delta": -2.2418586355932302e-05,
+              "gt_id": 1001,
+              "variant_best_iou": 0.44621954282843507
+            },
+            {
+              "baseline_best_iou": 0.2703206357906276,
+              "delta": -1.4815336829510084e-05,
+              "gt_id": 1002,
+              "variant_best_iou": 0.2703058204537981
+            },
+            {
+              "baseline_best_iou": 0.10262595252453265,
+              "delta": -5.625805971090636e-06,
+              "gt_id": 1003,
+              "variant_best_iou": 0.10262032671856156
+            },
+            {
+              "baseline_best_iou": 0.3634574087329993,
+              "delta": -0.0004988641460622611,
+              "gt_id": 1004,
+              "variant_best_iou": 0.36295854458693705
+            },
+            {
+              "baseline_best_iou": 0.2862694300518135,
+              "delta": -0.0008644928495614157,
+              "gt_id": 5000,
+              "variant_best_iou": 0.2854049372022521
+            },
+            {
+              "baseline_best_iou": 0.8471649990190308,
+              "delta": 0.0,
+              "gt_id": 8000,
+              "variant_best_iou": 0.8471649990190308
+            },
+            {
+              "baseline_best_iou": 0.864199626548973,
+              "delta": 0.0,
+              "gt_id": 9000,
+              "variant_best_iou": 0.864199626548973
+            },
+            {
+              "baseline_best_iou": 0.6009952788056654,
+              "delta": 0.0,
+              "gt_id": 11000,
+              "variant_best_iou": 0.6009952788056654
+            },
+            {
+              "baseline_best_iou": 0.8228607802127853,
+              "delta": 0.0,
+              "gt_id": 21000,
+              "variant_best_iou": 0.8228607802127853
+            },
+            {
+              "baseline_best_iou": 0.663588241919135,
+              "delta": 0.0,
+              "gt_id": 36000,
+              "variant_best_iou": 0.663588241919135
+            },
+            {
+              "baseline_best_iou": 0.9272388059701493,
+              "delta": -0.010264636228451862,
+              "gt_id": 56000,
+              "variant_best_iou": 0.9169741697416974
+            },
+            {
+              "baseline_best_iou": 0.09910802775024777,
+              "delta": 0.0,
+              "gt_id": 96000,
+              "variant_best_iou": 0.09910802775024777
+            },
+            {
+              "baseline_best_iou": 0.8498326159732186,
+              "delta": 0.0,
+              "gt_id": 97000,
+              "variant_best_iou": 0.8498326159732186
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 30,
+          "geometry_exact_identity": false,
+          "map_id": "BB01_SYNC",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 6830,
+              "iou": 1.0,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 5084,
+              "iou": 1.0,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 18170,
+              "iou": 0.9999449672555171,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 18397,
+              "iou": 0.9999456462658984,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 4336,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 9142,
+              "iou": 1.0,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 1505,
+              "iou": 0.9881812212738017,
+              "variant_owner": 12
+            },
+            {
+              "baseline_owner": 13,
+              "intersection": 16563,
+              "iou": 0.9982521697203471,
+              "variant_owner": 13
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 1823,
+              "iou": 1.0,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 16,
+              "intersection": 5465,
+              "iou": 1.0,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 225,
+              "iou": 1.0,
+              "variant_owner": 18
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 1425,
+              "iou": 0.9923398328690808,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 26,
+              "intersection": 104,
+              "iou": 1.0,
+              "variant_owner": 26
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 1001,
+              "iou": 1.0,
+              "variant_owner": 38
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 126,
+              "iou": 1.0,
+              "variant_owner": 41
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0445_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": 2.0078872209339238e-07,
+            "precision_5cm": 3.924871695426546e-07
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.3551167830483987,
+              "delta": -9.631591620512525e-05,
+              "gt_id": 1000,
+              "variant_best_iou": 0.3550204671321936
+            },
+            {
+              "baseline_best_iou": 0.14848606376579104,
+              "delta": 3.72192163847207e-06,
+              "gt_id": 1001,
+              "variant_best_iou": 0.14848978568742952
+            },
+            {
+              "baseline_best_iou": 0.08848088928693729,
+              "delta": 2.330775230138804e-06,
+              "gt_id": 1002,
+              "variant_best_iou": 0.08848322006216743
+            },
+            {
+              "baseline_best_iou": 0.041143580546471145,
+              "delta": 1.0851531200423148e-06,
+              "gt_id": 1003,
+              "variant_best_iou": 0.04114466569959119
+            },
+            {
+              "baseline_best_iou": 0.7518796992481203,
+              "delta": 0.0,
+              "gt_id": 2000,
+              "variant_best_iou": 0.7518796992481203
+            },
+            {
+              "baseline_best_iou": 0.5154295246038365,
+              "delta": 0.0,
+              "gt_id": 2001,
+              "variant_best_iou": 0.5154295246038365
+            },
+            {
+              "baseline_best_iou": 0.8890483022477284,
+              "delta": 0.0,
+              "gt_id": 2002,
+              "variant_best_iou": 0.8890483022477284
+            },
+            {
+              "baseline_best_iou": 0.45367995264404104,
+              "delta": 0.0,
+              "gt_id": 3000,
+              "variant_best_iou": 0.45367995264404104
+            },
+            {
+              "baseline_best_iou": 0.7131348511383537,
+              "delta": 0.0003502626970227629,
+              "gt_id": 4000,
+              "variant_best_iou": 0.7134851138353765
+            },
+            {
+              "baseline_best_iou": 0.4517799352750809,
+              "delta": 0.0,
+              "gt_id": 4001,
+              "variant_best_iou": 0.4517799352750809
+            },
+            {
+              "baseline_best_iou": 0.6701902748414377,
+              "delta": 0.0,
+              "gt_id": 4002,
+              "variant_best_iou": 0.6701902748414377
+            },
+            {
+              "baseline_best_iou": 0.4409905163329821,
+              "delta": 0.0,
+              "gt_id": 4003,
+              "variant_best_iou": 0.4409905163329821
+            },
+            {
+              "baseline_best_iou": 0.9478565539983512,
+              "delta": 0.0,
+              "gt_id": 6000,
+              "variant_best_iou": 0.9478565539983512
+            },
+            {
+              "baseline_best_iou": 0.5410476935105551,
+              "delta": 0.0,
+              "gt_id": 19000,
+              "variant_best_iou": 0.5410476935105551
+            },
+            {
+              "baseline_best_iou": 0.9535951045385007,
+              "delta": 0.0,
+              "gt_id": 24000,
+              "variant_best_iou": 0.9535951045385007
+            },
+            {
+              "baseline_best_iou": 0.04610051993067591,
+              "delta": 0.0,
+              "gt_id": 46000,
+              "variant_best_iou": 0.04610051993067591
+            },
+            {
+              "baseline_best_iou": 0.013579304718545225,
+              "delta": -2.631648201268516e-05,
+              "gt_id": 52000,
+              "variant_best_iou": 0.01355298823653254
+            },
+            {
+              "baseline_best_iou": 0.005171423099023176,
+              "delta": 0.0,
+              "gt_id": 64000,
+              "variant_best_iou": 0.005171423099023176
+            },
+            {
+              "baseline_best_iou": 0.011487650775416428,
+              "delta": 0.0,
+              "gt_id": 64001,
+              "variant_best_iou": 0.011487650775416428
+            },
+            {
+              "baseline_best_iou": 0.004905136510874595,
+              "delta": 0.0,
+              "gt_id": 64002,
+              "variant_best_iou": 0.004905136510874595
+            },
+            {
+              "baseline_best_iou": 0.5925925925925926,
+              "delta": 0.0,
+              "gt_id": 64003,
+              "variant_best_iou": 0.5925925925925926
+            },
+            {
+              "baseline_best_iou": 0.0658682634730539,
+              "delta": -0.00013121168022521557,
+              "gt_id": 64004,
+              "variant_best_iou": 0.06573705179282868
+            },
+            {
+              "baseline_best_iou": 0.23536737235367372,
+              "delta": 0.0,
+              "gt_id": 80000,
+              "variant_best_iou": 0.23536737235367372
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 7,
+          "geometry_exact_identity": false,
+          "map_id": "BB01_SYNC",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 9881,
+              "iou": 0.9997976322978852,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 1954,
+              "iou": 1.0,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 11774,
+              "iou": 0.999490662139219,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 37914,
+              "iou": 0.9999208798164412,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 2082,
+              "iou": 0.99951992318771,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 1555,
+              "iou": 1.0,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 1302,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 9,
+              "intersection": 71,
+              "iou": 1.0,
+              "variant_owner": 9
+            },
+            {
+              "baseline_owner": 11,
+              "intersection": 2,
+              "iou": 1.0,
+              "variant_owner": 11
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 906,
+              "iou": 1.0,
+              "variant_owner": 12
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 450,
+              "iou": 1.0,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 18
+            },
+            {
+              "baseline_owner": 19,
+              "intersection": 2842,
+              "iou": 1.0,
+              "variant_owner": 19
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 1224,
+              "iou": 1.0,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 21,
+              "intersection": 1859,
+              "iou": 1.0,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 22,
+              "intersection": 960,
+              "iou": 1.0,
+              "variant_owner": 22
+            },
+            {
+              "baseline_owner": 24,
+              "intersection": 33,
+              "iou": 1.0,
+              "variant_owner": 24
+            },
+            {
+              "baseline_owner": 25,
+              "intersection": 79,
+              "iou": 1.0,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 873,
+              "iou": 1.0,
+              "variant_owner": 28
+            },
+            {
+              "baseline_owner": 29,
+              "intersection": 103,
+              "iou": 1.0,
+              "variant_owner": 29
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 37
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 9433,
+              "iou": 1.0,
+              "variant_owner": 40
+            },
+            {
+              "baseline_owner": 52,
+              "intersection": 9788,
+              "iou": 1.0,
+              "variant_owner": 52
+            },
+            {
+              "baseline_owner": 55,
+              "intersection": 335,
+              "iou": 1.0,
+              "variant_owner": 55
+            },
+            {
+              "baseline_owner": 57,
+              "intersection": 27,
+              "iou": 1.0,
+              "variant_owner": 57
+            },
+            {
+              "baseline_owner": 61,
+              "intersection": 808,
+              "iou": 1.0,
+              "variant_owner": 61
+            },
+            {
+              "baseline_owner": 62,
+              "intersection": 379,
+              "iou": 1.0,
+              "variant_owner": 62
+            },
+            {
+              "baseline_owner": 67,
+              "intersection": 552,
+              "iou": 0.9963898916967509,
+              "variant_owner": 67
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0626_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": -2.0572884573688555e-07,
+            "precision_5cm": -4.023545384645999e-07
+          }
+        }
+      ],
+      "median_standalone_seconds": 967.1575236946228,
+      "metrics": {
+        "ap25": 0.35032199546485265,
+        "ap50": 0.2545657596371882,
+        "apall": 0.13207886117409928,
+        "defined_classes": 36,
+        "macc": 0.34075451778153154,
+        "miou": 0.25178977041016365,
+        "uap": 0.13207886117409928
+      },
+      "pool_identity": "80d59bd88f86e62d20442b081cc5224e01063a61e20fddadb16a934e193f7bf8",
+      "readout_identities": [
+        "8e7c575689d49c8afb83119aecbc203d7b08b44a1e12a73b79ee27e96b263f54",
+        "06526a252bf0452ea9f3e5b79a5345fc9337d903e3a716c299b86a043d624d1c",
+        "71838efcbe3c104e1f81609fe2a9cd51f20bc76b288fcbb7036d788256824870",
+        "d9d55e8a3c35e9b1c80536a8925ac6108247fa4efdc7f40bc719301b634c548b"
+      ],
+      "real_intervention": true,
+      "recipe": {
+        "association": "native",
+        "depth_fusion": "simultaneous",
+        "family": "structural",
+        "frontend": "cropformer",
+        "id": "BB01_SYNC"
+      },
+      "required_image_encodings": 18141
+    },
+    {
+      "changed_blocks": 1,
+      "config_hash": "9260b7bffa21a07387986ef362487874eb420fdbf7bf8fc12861fe5ab070b288",
+      "id": "BB03_SAM2_RAW",
+      "interventions": [
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.34937857565594793,
+              "delta": 0.00187092850906595,
+              "gt_id": 1000,
+              "variant_best_iou": 0.3512495041650139
+            },
+            {
+              "baseline_best_iou": 0.5536923573040955,
+              "delta": 0.0,
+              "gt_id": 1001,
+              "variant_best_iou": 0.5536923573040955
+            },
+            {
+              "baseline_best_iou": 0.1734669671450599,
+              "delta": -0.006423664146220365,
+              "gt_id": 1002,
+              "variant_best_iou": 0.16704330299883954
+            },
+            {
+              "baseline_best_iou": 0.5701861903928092,
+              "delta": -0.004073272517563731,
+              "gt_id": 1003,
+              "variant_best_iou": 0.5661129178752454
+            },
+            {
+              "baseline_best_iou": 0.462401055408971,
+              "delta": 0.0,
+              "gt_id": 2000,
+              "variant_best_iou": 0.462401055408971
+            },
+            {
+              "baseline_best_iou": 0.40833088882370194,
+              "delta": 0.0,
+              "gt_id": 2001,
+              "variant_best_iou": 0.40833088882370194
+            },
+            {
+              "baseline_best_iou": 0.3885011021307862,
+              "delta": 0.0,
+              "gt_id": 2002,
+              "variant_best_iou": 0.3885011021307862
+            },
+            {
+              "baseline_best_iou": 0.6312972292191436,
+              "delta": 0.0,
+              "gt_id": 2003,
+              "variant_best_iou": 0.6312972292191436
+            },
+            {
+              "baseline_best_iou": 0.5977545489740612,
+              "delta": 0.0,
+              "gt_id": 2004,
+              "variant_best_iou": 0.5977545489740612
+            },
+            {
+              "baseline_best_iou": 0.2775817454716537,
+              "delta": 0.0,
+              "gt_id": 2005,
+              "variant_best_iou": 0.2775817454716537
+            },
+            {
+              "baseline_best_iou": 0.42874602786604743,
+              "delta": 0.0,
+              "gt_id": 2006,
+              "variant_best_iou": 0.42874602786604743
+            },
+            {
+              "baseline_best_iou": 0.5122963909294155,
+              "delta": 0.0,
+              "gt_id": 2007,
+              "variant_best_iou": 0.5122963909294155
+            },
+            {
+              "baseline_best_iou": 0.9695863746958637,
+              "delta": 0.0,
+              "gt_id": 2008,
+              "variant_best_iou": 0.9695863746958637
+            },
+            {
+              "baseline_best_iou": 0.4945899772209567,
+              "delta": 0.0,
+              "gt_id": 2009,
+              "variant_best_iou": 0.4945899772209567
+            },
+            {
+              "baseline_best_iou": 0.3708421797593772,
+              "delta": 0.0,
+              "gt_id": 2010,
+              "variant_best_iou": 0.3708421797593772
+            },
+            {
+              "baseline_best_iou": 0.4127025614218505,
+              "delta": 0.0,
+              "gt_id": 2011,
+              "variant_best_iou": 0.4127025614218505
+            },
+            {
+              "baseline_best_iou": 0.28036086051353226,
+              "delta": -0.01363094273997123,
+              "gt_id": 3000,
+              "variant_best_iou": 0.26672991777356103
+            },
+            {
+              "baseline_best_iou": 0.3310046573519627,
+              "delta": -0.08025007179356941,
+              "gt_id": 4000,
+              "variant_best_iou": 0.2507545855583933
+            },
+            {
+              "baseline_best_iou": 0.3442201682762051,
+              "delta": 0.05920723139179607,
+              "gt_id": 4001,
+              "variant_best_iou": 0.4034273996680012
+            },
+            {
+              "baseline_best_iou": 0.4515602322206096,
+              "delta": 0.0,
+              "gt_id": 4002,
+              "variant_best_iou": 0.4515602322206096
+            },
+            {
+              "baseline_best_iou": 0.5481611208406305,
+              "delta": -0.013255332579819923,
+              "gt_id": 5000,
+              "variant_best_iou": 0.5349057882608106
+            },
+            {
+              "baseline_best_iou": 0.6488349195930423,
+              "delta": -0.0813837140821353,
+              "gt_id": 10000,
+              "variant_best_iou": 0.567451205510907
+            },
+            {
+              "baseline_best_iou": 0.09603737670877315,
+              "delta": 0.0,
+              "gt_id": 16000,
+              "variant_best_iou": 0.09603737670877315
+            },
+            {
+              "baseline_best_iou": 0.4977631971368923,
+              "delta": 0.0,
+              "gt_id": 19000,
+              "variant_best_iou": 0.4977631971368923
+            },
+            {
+              "baseline_best_iou": 0.5529411764705883,
+              "delta": 0.0,
+              "gt_id": 19001,
+              "variant_best_iou": 0.5529411764705883
+            },
+            {
+              "baseline_best_iou": 0.3693329483107132,
+              "delta": 0.0,
+              "gt_id": 19002,
+              "variant_best_iou": 0.3693329483107132
+            },
+            {
+              "baseline_best_iou": 0.8980582524271845,
+              "delta": 0.0,
+              "gt_id": 19003,
+              "variant_best_iou": 0.8980582524271845
+            },
+            {
+              "baseline_best_iou": 0.0025247212286976647,
+              "delta": 0.010717388680814583,
+              "gt_id": 19004,
+              "variant_best_iou": 0.013242109909512249
+            },
+            {
+              "baseline_best_iou": 0.5688073394495413,
+              "delta": 0.0,
+              "gt_id": 19005,
+              "variant_best_iou": 0.5688073394495413
+            },
+            {
+              "baseline_best_iou": 0.8531524341580208,
+              "delta": 0.0,
+              "gt_id": 19006,
+              "variant_best_iou": 0.8531524341580208
+            },
+            {
+              "baseline_best_iou": 0.5223613595706619,
+              "delta": -0.02817531305903398,
+              "gt_id": 23000,
+              "variant_best_iou": 0.4941860465116279
+            },
+            {
+              "baseline_best_iou": 0.015359628770301625,
+              "delta": 0.3404355194776768,
+              "gt_id": 46000,
+              "variant_best_iou": 0.3557951482479784
+            },
+            {
+              "baseline_best_iou": 0.13385826771653545,
+              "delta": 0.42691521294644796,
+              "gt_id": 46001,
+              "variant_best_iou": 0.5607734806629834
+            },
+            {
+              "baseline_best_iou": 0.010125876724418226,
+              "delta": 0.037393923192213706,
+              "gt_id": 46002,
+              "variant_best_iou": 0.04751979991663193
+            },
+            {
+              "baseline_best_iou": 0.20944164869398516,
+              "delta": -0.002156721782890031,
+              "gt_id": 52000,
+              "variant_best_iou": 0.20728492691109512
+            },
+            {
+              "baseline_best_iou": 0.2073255010366275,
+              "delta": -0.06475521991212951,
+              "gt_id": 52001,
+              "variant_best_iou": 0.142570281124498
+            },
+            {
+              "baseline_best_iou": 0.17098445595854922,
+              "delta": 0.0,
+              "gt_id": 56000,
+              "variant_best_iou": 0.17098445595854922
+            },
+            {
+              "baseline_best_iou": 0.32116596638655465,
+              "delta": 0.0,
+              "gt_id": 96000,
+              "variant_best_iou": 0.32116596638655465
+            },
+            {
+              "baseline_best_iou": 0.2130560528852775,
+              "delta": 0.04288226324455707,
+              "gt_id": 141000,
+              "variant_best_iou": 0.2559383161298346
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 11225,
+          "geometry_exact_identity": false,
+          "map_id": "BB03_SAM2_RAW",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 208,
+              "iou": 0.0683311432325887,
+              "variant_owner": 206
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 8142,
+              "iou": 0.9161696860582874,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 3191,
+              "iou": 0.9716808769792935,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 1413,
+              "iou": 1.0,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 1644,
+              "iou": 1.0,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 2697,
+              "iou": 1.0,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 19,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 2924,
+              "iou": 0.4676903390914907,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 9,
+              "intersection": 665,
+              "iou": 1.0,
+              "variant_owner": 9
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 1687,
+              "iou": 1.0,
+              "variant_owner": 14
+            },
+            {
+              "baseline_owner": 14,
+              "intersection": 623,
+              "iou": 1.0,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 16925,
+              "iou": 0.9273972602739726,
+              "variant_owner": 17
+            },
+            {
+              "baseline_owner": 17,
+              "intersection": 403,
+              "iou": 1.0,
+              "variant_owner": 19
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 17827,
+              "iou": 0.8274693650204233,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 227,
+              "iou": 0.9153225806451613,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 21,
+              "intersection": 7,
+              "iou": 0.175,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 22,
+              "intersection": 707,
+              "iou": 1.0,
+              "variant_owner": 23
+            },
+            {
+              "baseline_owner": 23,
+              "intersection": 2016,
+              "iou": 1.0,
+              "variant_owner": 24
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 12,
+              "iou": 1.0,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 33,
+              "intersection": 2025,
+              "iou": 0.822502030869212,
+              "variant_owner": 41
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 3081,
+              "iou": 0.9799618320610687,
+              "variant_owner": 44
+            },
+            {
+              "baseline_owner": 38,
+              "intersection": 2294,
+              "iou": 0.9853951890034365,
+              "variant_owner": 45
+            },
+            {
+              "baseline_owner": 39,
+              "intersection": 27908,
+              "iou": 0.9831260788389051,
+              "variant_owner": 46
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 9,
+              "iou": 1.0,
+              "variant_owner": 49
+            },
+            {
+              "baseline_owner": 43,
+              "intersection": 2,
+              "iou": 1.0,
+              "variant_owner": 53
+            },
+            {
+              "baseline_owner": 44,
+              "intersection": 166,
+              "iou": 0.8783068783068783,
+              "variant_owner": 86
+            },
+            {
+              "baseline_owner": 47,
+              "intersection": 1195,
+              "iou": 0.9192307692307692,
+              "variant_owner": 54
+            },
+            {
+              "baseline_owner": 58,
+              "intersection": 1,
+              "iou": 0.14285714285714285,
+              "variant_owner": 66
+            },
+            {
+              "baseline_owner": 61,
+              "intersection": 5646,
+              "iou": 0.9682730234951124,
+              "variant_owner": 69
+            },
+            {
+              "baseline_owner": 66,
+              "intersection": 19262,
+              "iou": 0.9328748547074778,
+              "variant_owner": 81
+            },
+            {
+              "baseline_owner": 68,
+              "intersection": 555,
+              "iou": 1.0,
+              "variant_owner": 83
+            },
+            {
+              "baseline_owner": 73,
+              "intersection": 1069,
+              "iou": 1.0,
+              "variant_owner": 87
+            },
+            {
+              "baseline_owner": 78,
+              "intersection": 555,
+              "iou": 1.0,
+              "variant_owner": 91
+            },
+            {
+              "baseline_owner": 80,
+              "intersection": 220,
+              "iou": 1.0,
+              "variant_owner": 115
+            },
+            {
+              "baseline_owner": 85,
+              "intersection": 1105,
+              "iou": 0.9460616438356164,
+              "variant_owner": 95
+            },
+            {
+              "baseline_owner": 86,
+              "intersection": 744,
+              "iou": 1.0,
+              "variant_owner": 96
+            },
+            {
+              "baseline_owner": 87,
+              "intersection": 33,
+              "iou": 1.0,
+              "variant_owner": 97
+            },
+            {
+              "baseline_owner": 88,
+              "intersection": 626,
+              "iou": 1.0,
+              "variant_owner": 99
+            },
+            {
+              "baseline_owner": 89,
+              "intersection": 565,
+              "iou": 1.0,
+              "variant_owner": 100
+            },
+            {
+              "baseline_owner": 92,
+              "intersection": 709,
+              "iou": 1.0,
+              "variant_owner": 103
+            },
+            {
+              "baseline_owner": 93,
+              "intersection": 1782,
+              "iou": 1.0,
+              "variant_owner": 105
+            },
+            {
+              "baseline_owner": 94,
+              "intersection": 1207,
+              "iou": 1.0,
+              "variant_owner": 106
+            },
+            {
+              "baseline_owner": 95,
+              "intersection": 14,
+              "iou": 1.0,
+              "variant_owner": 107
+            },
+            {
+              "baseline_owner": 102,
+              "intersection": 11298,
+              "iou": 0.9984093319194062,
+              "variant_owner": 88
+            },
+            {
+              "baseline_owner": 103,
+              "intersection": 59,
+              "iou": 0.5130434782608696,
+              "variant_owner": 116
+            },
+            {
+              "baseline_owner": 106,
+              "intersection": 3356,
+              "iou": 1.0,
+              "variant_owner": 118
+            },
+            {
+              "baseline_owner": 107,
+              "intersection": 375,
+              "iou": 1.0,
+              "variant_owner": 119
+            },
+            {
+              "baseline_owner": 110,
+              "intersection": 822,
+              "iou": 1.0,
+              "variant_owner": 123
+            },
+            {
+              "baseline_owner": 111,
+              "intersection": 281,
+              "iou": 1.0,
+              "variant_owner": 124
+            },
+            {
+              "baseline_owner": 113,
+              "intersection": 4398,
+              "iou": 0.9938983050847457,
+              "variant_owner": 125
+            },
+            {
+              "baseline_owner": 115,
+              "intersection": 9,
+              "iou": 0.3333333333333333,
+              "variant_owner": 126
+            },
+            {
+              "baseline_owner": 119,
+              "intersection": 1786,
+              "iou": 1.0,
+              "variant_owner": 131
+            },
+            {
+              "baseline_owner": 121,
+              "intersection": 31,
+              "iou": 0.2052980132450331,
+              "variant_owner": 133
+            },
+            {
+              "baseline_owner": 122,
+              "intersection": 2991,
+              "iou": 1.0,
+              "variant_owner": 134
+            },
+            {
+              "baseline_owner": 123,
+              "intersection": 102,
+              "iou": 0.85,
+              "variant_owner": 128
+            },
+            {
+              "baseline_owner": 126,
+              "intersection": 7,
+              "iou": 1.0,
+              "variant_owner": 136
+            },
+            {
+              "baseline_owner": 127,
+              "intersection": 14,
+              "iou": 0.05622489959839357,
+              "variant_owner": 108
+            },
+            {
+              "baseline_owner": 128,
+              "intersection": 2005,
+              "iou": 1.0,
+              "variant_owner": 139
+            },
+            {
+              "baseline_owner": 129,
+              "intersection": 1084,
+              "iou": 1.0,
+              "variant_owner": 140
+            },
+            {
+              "baseline_owner": 130,
+              "intersection": 79,
+              "iou": 0.7452830188679245,
+              "variant_owner": 141
+            },
+            {
+              "baseline_owner": 132,
+              "intersection": 17,
+              "iou": 1.0,
+              "variant_owner": 142
+            },
+            {
+              "baseline_owner": 133,
+              "intersection": 2241,
+              "iou": 0.6344847112117781,
+              "variant_owner": 143
+            },
+            {
+              "baseline_owner": 134,
+              "intersection": 1512,
+              "iou": 1.0,
+              "variant_owner": 144
+            },
+            {
+              "baseline_owner": 137,
+              "intersection": 2146,
+              "iou": 1.0,
+              "variant_owner": 147
+            },
+            {
+              "baseline_owner": 139,
+              "intersection": 260,
+              "iou": 1.0,
+              "variant_owner": 148
+            },
+            {
+              "baseline_owner": 140,
+              "intersection": 564,
+              "iou": 1.0,
+              "variant_owner": 150
+            },
+            {
+              "baseline_owner": 141,
+              "intersection": 595,
+              "iou": 1.0,
+              "variant_owner": 151
+            },
+            {
+              "baseline_owner": 143,
+              "intersection": 1438,
+              "iou": 0.5715421303656598,
+              "variant_owner": 152
+            },
+            {
+              "baseline_owner": 145,
+              "intersection": 824,
+              "iou": 1.0,
+              "variant_owner": 157
+            },
+            {
+              "baseline_owner": 165,
+              "intersection": 5,
+              "iou": 1.0,
+              "variant_owner": 175
+            },
+            {
+              "baseline_owner": 175,
+              "intersection": 158,
+              "iou": 1.0,
+              "variant_owner": 196
+            },
+            {
+              "baseline_owner": 179,
+              "intersection": 285,
+              "iou": 1.0,
+              "variant_owner": 193
+            },
+            {
+              "baseline_owner": 183,
+              "intersection": 82,
+              "iou": 1.0,
+              "variant_owner": 197
+            },
+            {
+              "baseline_owner": 187,
+              "intersection": 3,
+              "iou": 1.0,
+              "variant_owner": 201
+            },
+            {
+              "baseline_owner": 188,
+              "intersection": 6,
+              "iou": 1.0,
+              "variant_owner": 202
+            },
+            {
+              "baseline_owner": 190,
+              "intersection": 181,
+              "iou": 0.9890710382513661,
+              "variant_owner": 207
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0056_00",
+          "surface_delta": {
+            "completeness_5cm": 4.532290302172726e-06,
+            "fscore_5cm": -4.20002933632091e-06,
+            "precision_5cm": -1.0728961117867364e-05
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.22374636040116466,
+              "delta": -0.011042576949918892,
+              "gt_id": 1000,
+              "variant_best_iou": 0.21270378345124577
+            },
+            {
+              "baseline_best_iou": 0.17434180765403057,
+              "delta": 0.02653943670547465,
+              "gt_id": 1001,
+              "variant_best_iou": 0.20088124435950522
+            },
+            {
+              "baseline_best_iou": 0.11828338357864869,
+              "delta": -0.0066092786828398226,
+              "gt_id": 1002,
+              "variant_best_iou": 0.11167410489580887
+            },
+            {
+              "baseline_best_iou": 0.1656441717791411,
+              "delta": -0.012829413315847055,
+              "gt_id": 1003,
+              "variant_best_iou": 0.15281475846329404
+            },
+            {
+              "baseline_best_iou": 0.08133449629306586,
+              "delta": 0.02585291374435858,
+              "gt_id": 1004,
+              "variant_best_iou": 0.10718741003742444
+            },
+            {
+              "baseline_best_iou": 0.012001745708466686,
+              "delta": 0.003849921118317827,
+              "gt_id": 1005,
+              "variant_best_iou": 0.015851666826784513
+            },
+            {
+              "baseline_best_iou": 0.3922586555712486,
+              "delta": -0.005191434133679451,
+              "gt_id": 3000,
+              "variant_best_iou": 0.38706722143756916
+            },
+            {
+              "baseline_best_iou": 0.8314855875831486,
+              "delta": 0.007560612118788779,
+              "gt_id": 5000,
+              "variant_best_iou": 0.8390461997019374
+            },
+            {
+              "baseline_best_iou": 0.7194978422910946,
+              "delta": 0.006551247178422481,
+              "gt_id": 5001,
+              "variant_best_iou": 0.7260490894695171
+            },
+            {
+              "baseline_best_iou": 0.5930164888457808,
+              "delta": -0.008822076293159342,
+              "gt_id": 7000,
+              "variant_best_iou": 0.5841944125526215
+            },
+            {
+              "baseline_best_iou": 0.7131142840759218,
+              "delta": -0.01803435412054699,
+              "gt_id": 8000,
+              "variant_best_iou": 0.6950799299553748
+            },
+            {
+              "baseline_best_iou": 0.28049921996879873,
+              "delta": -0.07443608839259289,
+              "gt_id": 8001,
+              "variant_best_iou": 0.20606313157620584
+            },
+            {
+              "baseline_best_iou": 0.28753328894806923,
+              "delta": 0.022449820661673836,
+              "gt_id": 8002,
+              "variant_best_iou": 0.30998310960974307
+            },
+            {
+              "baseline_best_iou": 0.19078201737816397,
+              "delta": 0.0,
+              "gt_id": 16000,
+              "variant_best_iou": 0.19078201737816397
+            },
+            {
+              "baseline_best_iou": 0.0037805724866908415,
+              "delta": 0.020615374512529733,
+              "gt_id": 22000,
+              "variant_best_iou": 0.024395946999220576
+            },
+            {
+              "baseline_best_iou": 0.30669348939283103,
+              "delta": -0.0008814307290613277,
+              "gt_id": 35000,
+              "variant_best_iou": 0.3058120586637697
+            },
+            {
+              "baseline_best_iou": 0.3700623700623701,
+              "delta": 0.0,
+              "gt_id": 48000,
+              "variant_best_iou": 0.3700623700623701
+            },
+            {
+              "baseline_best_iou": 0.24073407700611732,
+              "delta": 0.0,
+              "gt_id": 56000,
+              "variant_best_iou": 0.24073407700611732
+            },
+            {
+              "baseline_best_iou": 0.5,
+              "delta": 0.08878504672897192,
+              "gt_id": 79000,
+              "variant_best_iou": 0.5887850467289719
+            },
+            {
+              "baseline_best_iou": 0.5348519362186788,
+              "delta": 0.0,
+              "gt_id": 97000,
+              "variant_best_iou": 0.5348519362186788
+            },
+            {
+              "baseline_best_iou": 0.2430939226519337,
+              "delta": 0.0,
+              "gt_id": 141000,
+              "variant_best_iou": 0.2430939226519337
+            },
+            {
+              "baseline_best_iou": 0.2085474709223695,
+              "delta": -0.0010920414248006272,
+              "gt_id": 154000,
+              "variant_best_iou": 0.20745542949756887
+            },
+            {
+              "baseline_best_iou": 0.2512834369089435,
+              "delta": -0.014619478067892877,
+              "gt_id": 154001,
+              "variant_best_iou": 0.23666395884105063
+            },
+            {
+              "baseline_best_iou": 0.41832669322709165,
+              "delta": 0.07376191436784507,
+              "gt_id": 154002,
+              "variant_best_iou": 0.4920886075949367
+            },
+            {
+              "baseline_best_iou": 0.32962447844228093,
+              "delta": 0.1675900062373848,
+              "gt_id": 154003,
+              "variant_best_iou": 0.4972144846796657
+            },
+            {
+              "baseline_best_iou": 0.1465537520583392,
+              "delta": -0.005715315883115468,
+              "gt_id": 161000,
+              "variant_best_iou": 0.14083843617522374
+            },
+            {
+              "baseline_best_iou": 0.1682403433476395,
+              "delta": -0.008876082179254619,
+              "gt_id": 161001,
+              "variant_best_iou": 0.15936426116838487
+            },
+            {
+              "baseline_best_iou": 0.5407166123778502,
+              "delta": 0.0,
+              "gt_id": 177000,
+              "variant_best_iou": 0.5407166123778502
+            },
+            {
+              "baseline_best_iou": 0.7446236559139785,
+              "delta": 0.0,
+              "gt_id": 180000,
+              "variant_best_iou": 0.7446236559139785
+            },
+            {
+              "baseline_best_iou": 0.7926829268292683,
+              "delta": 0.0,
+              "gt_id": 1163000,
+              "variant_best_iou": 0.7926829268292683
+            },
+            {
+              "baseline_best_iou": 0.5596899224806201,
+              "delta": 0.03473732210142322,
+              "gt_id": 1188000,
+              "variant_best_iou": 0.5944272445820433
+            },
+            {
+              "baseline_best_iou": 0.18375241779497098,
+              "delta": 0.004802929296961467,
+              "gt_id": 1188001,
+              "variant_best_iou": 0.18855534709193245
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 18182,
+          "geometry_exact_identity": false,
+          "map_id": "BB03_SAM2_RAW",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 25957,
+              "iou": 0.8766887327749256,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 2447,
+              "iou": 0.279051203101836,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 12861,
+              "iou": 0.99968907889623,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 478,
+              "iou": 0.6780141843971631,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 2974,
+              "iou": 0.9799011532125206,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 1102,
+              "iou": 0.9451114922813036,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 1,
+              "iou": 0.3333333333333333,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 10,
+              "intersection": 296,
+              "iou": 0.7493670886075949,
+              "variant_owner": 10
+            },
+            {
+              "baseline_owner": 11,
+              "intersection": 1,
+              "iou": 0.1,
+              "variant_owner": 11
+            },
+            {
+              "baseline_owner": 13,
+              "intersection": 669,
+              "iou": 1.0,
+              "variant_owner": 13
+            },
+            {
+              "baseline_owner": 14,
+              "intersection": 111,
+              "iou": 0.8345864661654135,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 1282,
+              "iou": 0.7987538940809968,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 16,
+              "intersection": 438,
+              "iou": 0.9319148936170213,
+              "variant_owner": 17
+            },
+            {
+              "baseline_owner": 17,
+              "intersection": 232,
+              "iou": 0.42028985507246375,
+              "variant_owner": 18
+            },
+            {
+              "baseline_owner": 19,
+              "intersection": 81,
+              "iou": 0.375,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 25,
+              "intersection": 219,
+              "iou": 1.0,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 26,
+              "intersection": 79,
+              "iou": 0.5,
+              "variant_owner": 44
+            },
+            {
+              "baseline_owner": 27,
+              "intersection": 166,
+              "iou": 0.9021739130434783,
+              "variant_owner": 32
+            },
+            {
+              "baseline_owner": 30,
+              "intersection": 117,
+              "iou": 0.9140625,
+              "variant_owner": 29
+            },
+            {
+              "baseline_owner": 35,
+              "intersection": 3,
+              "iou": 1.0,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 861,
+              "iou": 0.8262955854126679,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 41,
+              "intersection": 233,
+              "iou": 0.643646408839779,
+              "variant_owner": 26
+            },
+            {
+              "baseline_owner": 45,
+              "intersection": 206,
+              "iou": 0.762962962962963,
+              "variant_owner": 43
+            },
+            {
+              "baseline_owner": 46,
+              "intersection": 233,
+              "iou": 1.0,
+              "variant_owner": 46
+            },
+            {
+              "baseline_owner": 47,
+              "intersection": 1117,
+              "iou": 0.4711092366090257,
+              "variant_owner": 47
+            },
+            {
+              "baseline_owner": 48,
+              "intersection": 255,
+              "iou": 0.7122905027932961,
+              "variant_owner": 48
+            },
+            {
+              "baseline_owner": 49,
+              "intersection": 242,
+              "iou": 0.3903225806451613,
+              "variant_owner": 49
+            },
+            {
+              "baseline_owner": 54,
+              "intersection": 326,
+              "iou": 0.5821428571428572,
+              "variant_owner": 59
+            },
+            {
+              "baseline_owner": 58,
+              "intersection": 36,
+              "iou": 0.060810810810810814,
+              "variant_owner": 27
+            },
+            {
+              "baseline_owner": 60,
+              "intersection": 127,
+              "iou": 1.0,
+              "variant_owner": 56
+            },
+            {
+              "baseline_owner": 62,
+              "intersection": 2187,
+              "iou": 0.42865542924343397,
+              "variant_owner": 58
+            },
+            {
+              "baseline_owner": 63,
+              "intersection": 1229,
+              "iou": 1.0,
+              "variant_owner": 60
+            },
+            {
+              "baseline_owner": 69,
+              "intersection": 2530,
+              "iou": 0.9206695778748181,
+              "variant_owner": 64
+            },
+            {
+              "baseline_owner": 74,
+              "intersection": 1042,
+              "iou": 0.9990412272291467,
+              "variant_owner": 65
+            },
+            {
+              "baseline_owner": 77,
+              "intersection": 9687,
+              "iou": 0.6695465855681504,
+              "variant_owner": 73
+            },
+            {
+              "baseline_owner": 78,
+              "intersection": 12349,
+              "iou": 0.9481726044226044,
+              "variant_owner": 68
+            },
+            {
+              "baseline_owner": 82,
+              "intersection": 516,
+              "iou": 1.0,
+              "variant_owner": 72
+            },
+            {
+              "baseline_owner": 84,
+              "intersection": 427,
+              "iou": 1.0,
+              "variant_owner": 75
+            },
+            {
+              "baseline_owner": 86,
+              "intersection": 121,
+              "iou": 1.0,
+              "variant_owner": 78
+            },
+            {
+              "baseline_owner": 87,
+              "intersection": 96,
+              "iou": 1.0,
+              "variant_owner": 79
+            },
+            {
+              "baseline_owner": 88,
+              "intersection": 99,
+              "iou": 1.0,
+              "variant_owner": 80
+            },
+            {
+              "baseline_owner": 89,
+              "intersection": 536,
+              "iou": 0.1063070210234034,
+              "variant_owner": 66
+            },
+            {
+              "baseline_owner": 90,
+              "intersection": 431,
+              "iou": 0.8041044776119403,
+              "variant_owner": 81
+            },
+            {
+              "baseline_owner": 92,
+              "intersection": 98,
+              "iou": 1.0,
+              "variant_owner": 83
+            },
+            {
+              "baseline_owner": 93,
+              "intersection": 2235,
+              "iou": 0.9898139946855624,
+              "variant_owner": 82
+            },
+            {
+              "baseline_owner": 95,
+              "intersection": 4969,
+              "iou": 0.9785348562426152,
+              "variant_owner": 86
+            },
+            {
+              "baseline_owner": 96,
+              "intersection": 346,
+              "iou": 1.0,
+              "variant_owner": 87
+            },
+            {
+              "baseline_owner": 100,
+              "intersection": 522,
+              "iou": 1.0,
+              "variant_owner": 90
+            },
+            {
+              "baseline_owner": 103,
+              "intersection": 139,
+              "iou": 1.0,
+              "variant_owner": 91
+            },
+            {
+              "baseline_owner": 106,
+              "intersection": 2207,
+              "iou": 1.0,
+              "variant_owner": 94
+            },
+            {
+              "baseline_owner": 107,
+              "intersection": 701,
+              "iou": 1.0,
+              "variant_owner": 95
+            },
+            {
+              "baseline_owner": 111,
+              "intersection": 228,
+              "iou": 0.7307692307692307,
+              "variant_owner": 98
+            },
+            {
+              "baseline_owner": 113,
+              "intersection": 257,
+              "iou": 1.0,
+              "variant_owner": 100
+            },
+            {
+              "baseline_owner": 115,
+              "intersection": 12036,
+              "iou": 0.9826910516002613,
+              "variant_owner": 102
+            },
+            {
+              "baseline_owner": 119,
+              "intersection": 3995,
+              "iou": 0.9905777336969998,
+              "variant_owner": 104
+            },
+            {
+              "baseline_owner": 120,
+              "intersection": 1674,
+              "iou": 0.9137554585152838,
+              "variant_owner": 105
+            },
+            {
+              "baseline_owner": 121,
+              "intersection": 147,
+              "iou": 1.0,
+              "variant_owner": 106
+            },
+            {
+              "baseline_owner": 122,
+              "intersection": 142,
+              "iou": 0.8930817610062893,
+              "variant_owner": 107
+            },
+            {
+              "baseline_owner": 123,
+              "intersection": 5711,
+              "iou": 0.7763730288200109,
+              "variant_owner": 108
+            },
+            {
+              "baseline_owner": 124,
+              "intersection": 71,
+              "iou": 0.4329268292682927,
+              "variant_owner": 110
+            },
+            {
+              "baseline_owner": 125,
+              "intersection": 123,
+              "iou": 0.7884615384615384,
+              "variant_owner": 111
+            },
+            {
+              "baseline_owner": 126,
+              "intersection": 1155,
+              "iou": 1.0,
+              "variant_owner": 112
+            },
+            {
+              "baseline_owner": 127,
+              "intersection": 715,
+              "iou": 1.0,
+              "variant_owner": 113
+            },
+            {
+              "baseline_owner": 128,
+              "intersection": 23,
+              "iou": 1.0,
+              "variant_owner": 116
+            },
+            {
+              "baseline_owner": 131,
+              "intersection": 72,
+              "iou": 1.0,
+              "variant_owner": 122
+            },
+            {
+              "baseline_owner": 133,
+              "intersection": 57,
+              "iou": 0.07364341085271318,
+              "variant_owner": 118
+            },
+            {
+              "baseline_owner": 135,
+              "intersection": 1884,
+              "iou": 1.0,
+              "variant_owner": 126
+            },
+            {
+              "baseline_owner": 137,
+              "intersection": 456,
+              "iou": 1.0,
+              "variant_owner": 127
+            },
+            {
+              "baseline_owner": 138,
+              "intersection": 16,
+              "iou": 0.34782608695652173,
+              "variant_owner": 128
+            },
+            {
+              "baseline_owner": 139,
+              "intersection": 1290,
+              "iou": 0.9923076923076923,
+              "variant_owner": 129
+            },
+            {
+              "baseline_owner": 140,
+              "intersection": 636,
+              "iou": 1.0,
+              "variant_owner": 130
+            },
+            {
+              "baseline_owner": 141,
+              "intersection": 625,
+              "iou": 1.0,
+              "variant_owner": 131
+            },
+            {
+              "baseline_owner": 142,
+              "intersection": 203,
+              "iou": 1.0,
+              "variant_owner": 132
+            },
+            {
+              "baseline_owner": 143,
+              "intersection": 409,
+              "iou": 1.0,
+              "variant_owner": 133
+            },
+            {
+              "baseline_owner": 144,
+              "intersection": 201,
+              "iou": 1.0,
+              "variant_owner": 134
+            },
+            {
+              "baseline_owner": 145,
+              "intersection": 67,
+              "iou": 0.2427536231884058,
+              "variant_owner": 135
+            },
+            {
+              "baseline_owner": 148,
+              "intersection": 152,
+              "iou": 1.0,
+              "variant_owner": 138
+            },
+            {
+              "baseline_owner": 153,
+              "intersection": 337,
+              "iou": 1.0,
+              "variant_owner": 142
+            },
+            {
+              "baseline_owner": 160,
+              "intersection": 204,
+              "iou": 1.0,
+              "variant_owner": 150
+            },
+            {
+              "baseline_owner": 162,
+              "intersection": 3200,
+              "iou": 0.9664753850800363,
+              "variant_owner": 151
+            },
+            {
+              "baseline_owner": 164,
+              "intersection": 89,
+              "iou": 1.0,
+              "variant_owner": 152
+            },
+            {
+              "baseline_owner": 166,
+              "intersection": 3,
+              "iou": 0.09090909090909091,
+              "variant_owner": 154
+            },
+            {
+              "baseline_owner": 167,
+              "intersection": 5,
+              "iou": 0.16666666666666666,
+              "variant_owner": 155
+            },
+            {
+              "baseline_owner": 168,
+              "intersection": 910,
+              "iou": 1.0,
+              "variant_owner": 157
+            },
+            {
+              "baseline_owner": 169,
+              "intersection": 231,
+              "iou": 1.0,
+              "variant_owner": 158
+            },
+            {
+              "baseline_owner": 170,
+              "intersection": 427,
+              "iou": 1.0,
+              "variant_owner": 159
+            },
+            {
+              "baseline_owner": 173,
+              "intersection": 636,
+              "iou": 1.0,
+              "variant_owner": 161
+            },
+            {
+              "baseline_owner": 174,
+              "intersection": 243,
+              "iou": 1.0,
+              "variant_owner": 162
+            },
+            {
+              "baseline_owner": 178,
+              "intersection": 127,
+              "iou": 1.0,
+              "variant_owner": 163
+            },
+            {
+              "baseline_owner": 179,
+              "intersection": 794,
+              "iou": 1.0,
+              "variant_owner": 165
+            },
+            {
+              "baseline_owner": 182,
+              "intersection": 585,
+              "iou": 1.0,
+              "variant_owner": 166
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0534_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": 2.6664017305222387e-06,
+            "precision_5cm": 5.148167467106113e-06
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.23114496714543234,
+              "delta": -0.11321805447557418,
+              "gt_id": 1000,
+              "variant_best_iou": 0.11792691266985816
+            },
+            {
+              "baseline_best_iou": 0.446241961414791,
+              "delta": -0.20859797344452488,
+              "gt_id": 1001,
+              "variant_best_iou": 0.23764398797026612
+            },
+            {
+              "baseline_best_iou": 0.2703206357906276,
+              "delta": -0.12123203508327293,
+              "gt_id": 1002,
+              "variant_best_iou": 0.14908860070735466
+            },
+            {
+              "baseline_best_iou": 0.10262595252453265,
+              "delta": -0.04587099364693226,
+              "gt_id": 1003,
+              "variant_best_iou": 0.05675495887760039
+            },
+            {
+              "baseline_best_iou": 0.3634574087329993,
+              "delta": -0.17754990963868703,
+              "gt_id": 1004,
+              "variant_best_iou": 0.18590749909431228
+            },
+            {
+              "baseline_best_iou": 0.2862694300518135,
+              "delta": -0.04000894117913928,
+              "gt_id": 5000,
+              "variant_best_iou": 0.2462604888726742
+            },
+            {
+              "baseline_best_iou": 0.8471649990190308,
+              "delta": 0.0,
+              "gt_id": 8000,
+              "variant_best_iou": 0.8471649990190308
+            },
+            {
+              "baseline_best_iou": 0.864199626548973,
+              "delta": 0.0,
+              "gt_id": 9000,
+              "variant_best_iou": 0.864199626548973
+            },
+            {
+              "baseline_best_iou": 0.6009952788056654,
+              "delta": 0.0,
+              "gt_id": 11000,
+              "variant_best_iou": 0.6009952788056654
+            },
+            {
+              "baseline_best_iou": 0.8228607802127853,
+              "delta": 0.0,
+              "gt_id": 21000,
+              "variant_best_iou": 0.8228607802127853
+            },
+            {
+              "baseline_best_iou": 0.663588241919135,
+              "delta": 0.0,
+              "gt_id": 36000,
+              "variant_best_iou": 0.663588241919135
+            },
+            {
+              "baseline_best_iou": 0.9272388059701493,
+              "delta": -0.0006218905472636926,
+              "gt_id": 56000,
+              "variant_best_iou": 0.9266169154228856
+            },
+            {
+              "baseline_best_iou": 0.09910802775024777,
+              "delta": 0.20316140730528096,
+              "gt_id": 96000,
+              "variant_best_iou": 0.3022694350555287
+            },
+            {
+              "baseline_best_iou": 0.8498326159732186,
+              "delta": 0.0,
+              "gt_id": 97000,
+              "variant_best_iou": 0.8498326159732186
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 17814,
+          "geometry_exact_identity": false,
+          "map_id": "BB03_SAM2_RAW",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 6830,
+              "iou": 1.0,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 5084,
+              "iou": 1.0,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 17021,
+              "iou": 0.4983457766066462,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 17758,
+              "iou": 0.9648989350141274,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 4336,
+              "iou": 1.0,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 9142,
+              "iou": 1.0,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 1504,
+              "iou": 0.9993355481727575,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 13,
+              "intersection": 566,
+              "iou": 0.03385369938393445,
+              "variant_owner": 22
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 1823,
+              "iou": 1.0,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 16,
+              "intersection": 5465,
+              "iou": 1.0,
+              "variant_owner": 23
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 216,
+              "iou": 0.9557522123893806,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 1436,
+              "iou": 0.7666844634276562,
+              "variant_owner": 26
+            },
+            {
+              "baseline_owner": 26,
+              "intersection": 104,
+              "iou": 1.0,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 1001,
+              "iou": 1.0,
+              "variant_owner": 39
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 126,
+              "iou": 1.0,
+              "variant_owner": 46
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0445_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": -1.7831752358032915e-06,
+            "precision_5cm": -3.485613802478582e-06
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.3551167830483987,
+              "delta": 3.420669296810841e-05,
+              "gt_id": 1000,
+              "variant_best_iou": 0.35515098974136683
+            },
+            {
+              "baseline_best_iou": 0.14848606376579104,
+              "delta": 0.08503908206425784,
+              "gt_id": 1001,
+              "variant_best_iou": 0.23352514583004888
+            },
+            {
+              "baseline_best_iou": 0.08848088928693729,
+              "delta": 0.14204549874408323,
+              "gt_id": 1002,
+              "variant_best_iou": 0.23052638803102052
+            },
+            {
+              "baseline_best_iou": 0.041143580546471145,
+              "delta": 0.06626484688398879,
+              "gt_id": 1003,
+              "variant_best_iou": 0.10740842743045993
+            },
+            {
+              "baseline_best_iou": 0.7518796992481203,
+              "delta": 0.0,
+              "gt_id": 2000,
+              "variant_best_iou": 0.7518796992481203
+            },
+            {
+              "baseline_best_iou": 0.5154295246038365,
+              "delta": 0.0,
+              "gt_id": 2001,
+              "variant_best_iou": 0.5154295246038365
+            },
+            {
+              "baseline_best_iou": 0.8890483022477284,
+              "delta": 0.0,
+              "gt_id": 2002,
+              "variant_best_iou": 0.8890483022477284
+            },
+            {
+              "baseline_best_iou": 0.45367995264404104,
+              "delta": 9.865824782950838e-05,
+              "gt_id": 3000,
+              "variant_best_iou": 0.45377861089187055
+            },
+            {
+              "baseline_best_iou": 0.7131348511383537,
+              "delta": -0.0021015761821365775,
+              "gt_id": 4000,
+              "variant_best_iou": 0.7110332749562172
+            },
+            {
+              "baseline_best_iou": 0.4517799352750809,
+              "delta": 0.0,
+              "gt_id": 4001,
+              "variant_best_iou": 0.4517799352750809
+            },
+            {
+              "baseline_best_iou": 0.6701902748414377,
+              "delta": 0.0004414988831195066,
+              "gt_id": 4002,
+              "variant_best_iou": 0.6706317737245572
+            },
+            {
+              "baseline_best_iou": 0.4409905163329821,
+              "delta": 0.0,
+              "gt_id": 4003,
+              "variant_best_iou": 0.4409905163329821
+            },
+            {
+              "baseline_best_iou": 0.9478565539983512,
+              "delta": -0.14293075020610058,
+              "gt_id": 6000,
+              "variant_best_iou": 0.8049258037922506
+            },
+            {
+              "baseline_best_iou": 0.5410476935105551,
+              "delta": 0.0,
+              "gt_id": 19000,
+              "variant_best_iou": 0.5410476935105551
+            },
+            {
+              "baseline_best_iou": 0.9535951045385007,
+              "delta": 0.013643585009081138,
+              "gt_id": 24000,
+              "variant_best_iou": 0.9672386895475819
+            },
+            {
+              "baseline_best_iou": 0.04610051993067591,
+              "delta": 0.0,
+              "gt_id": 46000,
+              "variant_best_iou": 0.04610051993067591
+            },
+            {
+              "baseline_best_iou": 0.013579304718545225,
+              "delta": 0.008400589641652424,
+              "gt_id": 52000,
+              "variant_best_iou": 0.02197989436019765
+            },
+            {
+              "baseline_best_iou": 0.005171423099023176,
+              "delta": -1.980250085783196e-06,
+              "gt_id": 64000,
+              "variant_best_iou": 0.005169442848937392
+            },
+            {
+              "baseline_best_iou": 0.011487650775416428,
+              "delta": -1.976086715954617e-05,
+              "gt_id": 64001,
+              "variant_best_iou": 0.011467889908256881
+            },
+            {
+              "baseline_best_iou": 0.004905136510874595,
+              "delta": -1.8152045557868687e-06,
+              "gt_id": 64002,
+              "variant_best_iou": 0.004903321306318808
+            },
+            {
+              "baseline_best_iou": 0.5925925925925926,
+              "delta": 0.0,
+              "gt_id": 64003,
+              "variant_best_iou": 0.5925925925925926
+            },
+            {
+              "baseline_best_iou": 0.0658682634730539,
+              "delta": 0.0,
+              "gt_id": 64004,
+              "variant_best_iou": 0.0658682634730539
+            },
+            {
+              "baseline_best_iou": 0.23536737235367372,
+              "delta": 0.0,
+              "gt_id": 80000,
+              "variant_best_iou": 0.23536737235367372
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 16017,
+          "geometry_exact_identity": false,
+          "map_id": "BB03_SAM2_RAW",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 9882,
+              "iou": 0.999797652772157,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 1906,
+              "iou": 0.9754350051177073,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 11776,
+              "iou": 0.999830191883172,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 23392,
+              "iou": 0.6169264446026849,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 2076,
+              "iou": 0.9971181556195965,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 1555,
+              "iou": 1.0,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 1302,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 1,
+              "iou": 0.02040816326530612,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 9,
+              "intersection": 71,
+              "iou": 1.0,
+              "variant_owner": 9
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 906,
+              "iou": 1.0,
+              "variant_owner": 13
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 450,
+              "iou": 1.0,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 1,
+              "iou": 0.14285714285714285,
+              "variant_owner": 10
+            },
+            {
+              "baseline_owner": 19,
+              "intersection": 2841,
+              "iou": 0.9992965177629265,
+              "variant_owner": 19
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 1224,
+              "iou": 1.0,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 21,
+              "intersection": 1859,
+              "iou": 1.0,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 22,
+              "intersection": 960,
+              "iou": 1.0,
+              "variant_owner": 22
+            },
+            {
+              "baseline_owner": 24,
+              "intersection": 33,
+              "iou": 1.0,
+              "variant_owner": 24
+            },
+            {
+              "baseline_owner": 25,
+              "intersection": 79,
+              "iou": 1.0,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 873,
+              "iou": 0.9965753424657534,
+              "variant_owner": 27
+            },
+            {
+              "baseline_owner": 29,
+              "intersection": 103,
+              "iou": 0.9903846153846154,
+              "variant_owner": 28
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 31
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 8046,
+              "iou": 0.8529630022262271,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 52,
+              "intersection": 9768,
+              "iou": 0.9955156950672646,
+              "variant_owner": 40
+            },
+            {
+              "baseline_owner": 55,
+              "intersection": 335,
+              "iou": 1.0,
+              "variant_owner": 44
+            },
+            {
+              "baseline_owner": 61,
+              "intersection": 808,
+              "iou": 1.0,
+              "variant_owner": 49
+            },
+            {
+              "baseline_owner": 62,
+              "intersection": 379,
+              "iou": 1.0,
+              "variant_owner": 50
+            },
+            {
+              "baseline_owner": 67,
+              "intersection": 552,
+              "iou": 1.0,
+              "variant_owner": 51
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0626_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": -6.480905328176689e-06,
+            "precision_5cm": -1.267494543533143e-05
+          }
+        }
+      ],
+      "median_standalone_seconds": 1072.0169172431924,
+      "metrics": {
+        "ap25": 0.33410910518053377,
+        "ap50": 0.20709920634920634,
+        "apall": 0.0979867724867725,
+        "defined_classes": 36,
+        "macc": 0.33535433796124325,
+        "miou": 0.2265452696996528,
+        "uap": 0.0979867724867725
+      },
+      "pool_identity": "6da2e548a39902657b02911cba0f21ce19a5044ddbbd4b4cc3e60907102cd671",
+      "readout_identities": [
+        "d7e219fcb135de807452cac3eeb6d79193a81ab1f8a642fcce588321a67efc26",
+        "3e1b92a3f6b4149e0a2a21039b88f7de3e27f047349ebff70cac1cd9d7640f93",
+        "0e0a313291ca4d8b07b60bba975eb2aa14447ae49d761a39121c4add37ae7655",
+        "c3376f6f9eae79150602070bd79b305bb7c5288868962030115028d84af3604f"
+      ],
+      "real_intervention": true,
+      "recipe": {
+        "association": "native",
+        "depth_fusion": "native",
+        "family": "frontend",
+        "frontend": "sam2_raw",
+        "id": "BB03_SAM2_RAW"
+      },
+      "required_image_encodings": 18798
+    },
+    {
+      "changed_blocks": 2,
+      "config_hash": "1bea5c5396a404419366f23fb88e077c4a2179e1b335550004e0e5b9cba284a2",
+      "id": "BBX_COMPOSE",
+      "interventions": [
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.34937857565594793,
+              "delta": 0.001602982940125841,
+              "gt_id": 1000,
+              "variant_best_iou": 0.3509815585960738
+            },
+            {
+              "baseline_best_iou": 0.5536923573040955,
+              "delta": 0.0,
+              "gt_id": 1001,
+              "variant_best_iou": 0.5536923573040955
+            },
+            {
+              "baseline_best_iou": 0.1734669671450599,
+              "delta": -0.006291301374231673,
+              "gt_id": 1002,
+              "variant_best_iou": 0.16717566577082824
+            },
+            {
+              "baseline_best_iou": 0.5701861903928092,
+              "delta": -0.0041611691511227455,
+              "gt_id": 1003,
+              "variant_best_iou": 0.5660250212416864
+            },
+            {
+              "baseline_best_iou": 0.462401055408971,
+              "delta": 0.0,
+              "gt_id": 2000,
+              "variant_best_iou": 0.462401055408971
+            },
+            {
+              "baseline_best_iou": 0.40833088882370194,
+              "delta": 0.0,
+              "gt_id": 2001,
+              "variant_best_iou": 0.40833088882370194
+            },
+            {
+              "baseline_best_iou": 0.3885011021307862,
+              "delta": -0.00014267392659966793,
+              "gt_id": 2002,
+              "variant_best_iou": 0.38835842820418653
+            },
+            {
+              "baseline_best_iou": 0.6312972292191436,
+              "delta": 0.0,
+              "gt_id": 2003,
+              "variant_best_iou": 0.6312972292191436
+            },
+            {
+              "baseline_best_iou": 0.5977545489740612,
+              "delta": 0.0007742934572202431,
+              "gt_id": 2004,
+              "variant_best_iou": 0.5985288424312815
+            },
+            {
+              "baseline_best_iou": 0.2775817454716537,
+              "delta": -0.00013053456170780686,
+              "gt_id": 2005,
+              "variant_best_iou": 0.2774512109099459
+            },
+            {
+              "baseline_best_iou": 0.42874602786604743,
+              "delta": 0.0,
+              "gt_id": 2006,
+              "variant_best_iou": 0.42874602786604743
+            },
+            {
+              "baseline_best_iou": 0.5122963909294155,
+              "delta": 0.0,
+              "gt_id": 2007,
+              "variant_best_iou": 0.5122963909294155
+            },
+            {
+              "baseline_best_iou": 0.9695863746958637,
+              "delta": 0.0,
+              "gt_id": 2008,
+              "variant_best_iou": 0.9695863746958637
+            },
+            {
+              "baseline_best_iou": 0.4945899772209567,
+              "delta": 0.0,
+              "gt_id": 2009,
+              "variant_best_iou": 0.4945899772209567
+            },
+            {
+              "baseline_best_iou": 0.3708421797593772,
+              "delta": 0.0,
+              "gt_id": 2010,
+              "variant_best_iou": 0.3708421797593772
+            },
+            {
+              "baseline_best_iou": 0.4127025614218505,
+              "delta": 0.0,
+              "gt_id": 2011,
+              "variant_best_iou": 0.4127025614218505
+            },
+            {
+              "baseline_best_iou": 0.28036086051353226,
+              "delta": -0.013659407388285194,
+              "gt_id": 3000,
+              "variant_best_iou": 0.26670145312524707
+            },
+            {
+              "baseline_best_iou": 0.3310046573519627,
+              "delta": -0.08024995497561782,
+              "gt_id": 4000,
+              "variant_best_iou": 0.2507547023763449
+            },
+            {
+              "baseline_best_iou": 0.3442201682762051,
+              "delta": 0.05916866906936841,
+              "gt_id": 4001,
+              "variant_best_iou": 0.4033888373455735
+            },
+            {
+              "baseline_best_iou": 0.4515602322206096,
+              "delta": 0.0,
+              "gt_id": 4002,
+              "variant_best_iou": 0.4515602322206096
+            },
+            {
+              "baseline_best_iou": 0.5481611208406305,
+              "delta": -0.013797558416881017,
+              "gt_id": 5000,
+              "variant_best_iou": 0.5343635624237495
+            },
+            {
+              "baseline_best_iou": 0.6488349195930423,
+              "delta": -0.0813837140821353,
+              "gt_id": 10000,
+              "variant_best_iou": 0.567451205510907
+            },
+            {
+              "baseline_best_iou": 0.09603737670877315,
+              "delta": 0.0,
+              "gt_id": 16000,
+              "variant_best_iou": 0.09603737670877315
+            },
+            {
+              "baseline_best_iou": 0.4977631971368923,
+              "delta": 0.0,
+              "gt_id": 19000,
+              "variant_best_iou": 0.4977631971368923
+            },
+            {
+              "baseline_best_iou": 0.5529411764705883,
+              "delta": 0.0,
+              "gt_id": 19001,
+              "variant_best_iou": 0.5529411764705883
+            },
+            {
+              "baseline_best_iou": 0.3693329483107132,
+              "delta": 0.0,
+              "gt_id": 19002,
+              "variant_best_iou": 0.3693329483107132
+            },
+            {
+              "baseline_best_iou": 0.8980582524271845,
+              "delta": 0.0,
+              "gt_id": 19003,
+              "variant_best_iou": 0.8980582524271845
+            },
+            {
+              "baseline_best_iou": 0.0025247212286976647,
+              "delta": 0.010708626808355711,
+              "gt_id": 19004,
+              "variant_best_iou": 0.013233348037053375
+            },
+            {
+              "baseline_best_iou": 0.5688073394495413,
+              "delta": 0.0,
+              "gt_id": 19005,
+              "variant_best_iou": 0.5688073394495413
+            },
+            {
+              "baseline_best_iou": 0.8531524341580208,
+              "delta": 0.0,
+              "gt_id": 19006,
+              "variant_best_iou": 0.8531524341580208
+            },
+            {
+              "baseline_best_iou": 0.5223613595706619,
+              "delta": -0.034883720930232565,
+              "gt_id": 23000,
+              "variant_best_iou": 0.4874776386404293
+            },
+            {
+              "baseline_best_iou": 0.015359628770301625,
+              "delta": 0.3404355194776768,
+              "gt_id": 46000,
+              "variant_best_iou": 0.3557951482479784
+            },
+            {
+              "baseline_best_iou": 0.13385826771653545,
+              "delta": 0.42691521294644796,
+              "gt_id": 46001,
+              "variant_best_iou": 0.5607734806629834
+            },
+            {
+              "baseline_best_iou": 0.010125876724418226,
+              "delta": 0.03777083297987165,
+              "gt_id": 46002,
+              "variant_best_iou": 0.04789670970428988
+            },
+            {
+              "baseline_best_iou": 0.20944164869398516,
+              "delta": -0.0019638185429905197,
+              "gt_id": 52000,
+              "variant_best_iou": 0.20747783015099464
+            },
+            {
+              "baseline_best_iou": 0.2073255010366275,
+              "delta": -0.06469793976704133,
+              "gt_id": 52001,
+              "variant_best_iou": 0.14262756126958617
+            },
+            {
+              "baseline_best_iou": 0.17098445595854922,
+              "delta": 0.0,
+              "gt_id": 56000,
+              "variant_best_iou": 0.17098445595854922
+            },
+            {
+              "baseline_best_iou": 0.32116596638655465,
+              "delta": 0.0,
+              "gt_id": 96000,
+              "variant_best_iou": 0.32116596638655465
+            },
+            {
+              "baseline_best_iou": 0.2130560528852775,
+              "delta": 0.04344351173718797,
+              "gt_id": 141000,
+              "variant_best_iou": 0.2564995646224655
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 11271,
+          "geometry_exact_identity": false,
+          "map_id": "BBX_COMPOSE",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 208,
+              "iou": 0.0683311432325887,
+              "variant_owner": 206
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 8140,
+              "iou": 0.9156355455568054,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 3191,
+              "iou": 0.9713850837138508,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 1413,
+              "iou": 1.0,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 1644,
+              "iou": 1.0,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 2697,
+              "iou": 1.0,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 19,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 2924,
+              "iou": 0.46791486637862056,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 9,
+              "intersection": 665,
+              "iou": 0.9984984984984985,
+              "variant_owner": 9
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 1687,
+              "iou": 1.0,
+              "variant_owner": 14
+            },
+            {
+              "baseline_owner": 14,
+              "intersection": 623,
+              "iou": 1.0,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 16925,
+              "iou": 0.9273972602739726,
+              "variant_owner": 17
+            },
+            {
+              "baseline_owner": 17,
+              "intersection": 403,
+              "iou": 1.0,
+              "variant_owner": 19
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 17822,
+              "iou": 0.8272372818418121,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 227,
+              "iou": 0.9153225806451613,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 21,
+              "intersection": 7,
+              "iou": 0.175,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 22,
+              "intersection": 707,
+              "iou": 1.0,
+              "variant_owner": 23
+            },
+            {
+              "baseline_owner": 23,
+              "intersection": 2016,
+              "iou": 1.0,
+              "variant_owner": 24
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 12,
+              "iou": 1.0,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 33,
+              "intersection": 2025,
+              "iou": 0.822502030869212,
+              "variant_owner": 41
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 3081,
+              "iou": 0.9799618320610687,
+              "variant_owner": 44
+            },
+            {
+              "baseline_owner": 38,
+              "intersection": 2295,
+              "iou": 0.9854014598540146,
+              "variant_owner": 45
+            },
+            {
+              "baseline_owner": 39,
+              "intersection": 27901,
+              "iou": 0.9827410094748336,
+              "variant_owner": 46
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 9,
+              "iou": 1.0,
+              "variant_owner": 49
+            },
+            {
+              "baseline_owner": 43,
+              "intersection": 2,
+              "iou": 1.0,
+              "variant_owner": 53
+            },
+            {
+              "baseline_owner": 44,
+              "intersection": 166,
+              "iou": 0.8783068783068783,
+              "variant_owner": 86
+            },
+            {
+              "baseline_owner": 47,
+              "intersection": 1195,
+              "iou": 0.9178187403993856,
+              "variant_owner": 54
+            },
+            {
+              "baseline_owner": 58,
+              "intersection": 1,
+              "iou": 0.14285714285714285,
+              "variant_owner": 66
+            },
+            {
+              "baseline_owner": 61,
+              "intersection": 5640,
+              "iou": 0.9669123949939996,
+              "variant_owner": 69
+            },
+            {
+              "baseline_owner": 66,
+              "intersection": 19262,
+              "iou": 0.9327845036319613,
+              "variant_owner": 81
+            },
+            {
+              "baseline_owner": 68,
+              "intersection": 555,
+              "iou": 1.0,
+              "variant_owner": 83
+            },
+            {
+              "baseline_owner": 73,
+              "intersection": 1069,
+              "iou": 1.0,
+              "variant_owner": 87
+            },
+            {
+              "baseline_owner": 78,
+              "intersection": 555,
+              "iou": 1.0,
+              "variant_owner": 91
+            },
+            {
+              "baseline_owner": 80,
+              "intersection": 220,
+              "iou": 1.0,
+              "variant_owner": 115
+            },
+            {
+              "baseline_owner": 85,
+              "intersection": 1090,
+              "iou": 0.9332191780821918,
+              "variant_owner": 95
+            },
+            {
+              "baseline_owner": 86,
+              "intersection": 744,
+              "iou": 1.0,
+              "variant_owner": 96
+            },
+            {
+              "baseline_owner": 87,
+              "intersection": 33,
+              "iou": 1.0,
+              "variant_owner": 97
+            },
+            {
+              "baseline_owner": 88,
+              "intersection": 626,
+              "iou": 1.0,
+              "variant_owner": 99
+            },
+            {
+              "baseline_owner": 89,
+              "intersection": 565,
+              "iou": 1.0,
+              "variant_owner": 100
+            },
+            {
+              "baseline_owner": 92,
+              "intersection": 707,
+              "iou": 0.997179125528914,
+              "variant_owner": 103
+            },
+            {
+              "baseline_owner": 93,
+              "intersection": 1782,
+              "iou": 1.0,
+              "variant_owner": 105
+            },
+            {
+              "baseline_owner": 94,
+              "intersection": 1207,
+              "iou": 1.0,
+              "variant_owner": 106
+            },
+            {
+              "baseline_owner": 95,
+              "intersection": 14,
+              "iou": 1.0,
+              "variant_owner": 107
+            },
+            {
+              "baseline_owner": 102,
+              "intersection": 11298,
+              "iou": 0.9980565371024736,
+              "variant_owner": 88
+            },
+            {
+              "baseline_owner": 103,
+              "intersection": 59,
+              "iou": 0.5130434782608696,
+              "variant_owner": 116
+            },
+            {
+              "baseline_owner": 106,
+              "intersection": 3356,
+              "iou": 0.9994044073853484,
+              "variant_owner": 118
+            },
+            {
+              "baseline_owner": 107,
+              "intersection": 375,
+              "iou": 1.0,
+              "variant_owner": 119
+            },
+            {
+              "baseline_owner": 110,
+              "intersection": 822,
+              "iou": 1.0,
+              "variant_owner": 123
+            },
+            {
+              "baseline_owner": 111,
+              "intersection": 281,
+              "iou": 1.0,
+              "variant_owner": 124
+            },
+            {
+              "baseline_owner": 113,
+              "intersection": 4396,
+              "iou": 0.9929975152473458,
+              "variant_owner": 125
+            },
+            {
+              "baseline_owner": 115,
+              "intersection": 9,
+              "iou": 0.3333333333333333,
+              "variant_owner": 126
+            },
+            {
+              "baseline_owner": 119,
+              "intersection": 1786,
+              "iou": 0.9988814317673378,
+              "variant_owner": 131
+            },
+            {
+              "baseline_owner": 121,
+              "intersection": 31,
+              "iou": 0.2052980132450331,
+              "variant_owner": 133
+            },
+            {
+              "baseline_owner": 122,
+              "intersection": 2991,
+              "iou": 1.0,
+              "variant_owner": 134
+            },
+            {
+              "baseline_owner": 123,
+              "intersection": 102,
+              "iou": 0.85,
+              "variant_owner": 128
+            },
+            {
+              "baseline_owner": 126,
+              "intersection": 7,
+              "iou": 1.0,
+              "variant_owner": 136
+            },
+            {
+              "baseline_owner": 127,
+              "intersection": 14,
+              "iou": 0.05622489959839357,
+              "variant_owner": 108
+            },
+            {
+              "baseline_owner": 128,
+              "intersection": 2005,
+              "iou": 1.0,
+              "variant_owner": 139
+            },
+            {
+              "baseline_owner": 129,
+              "intersection": 1084,
+              "iou": 1.0,
+              "variant_owner": 140
+            },
+            {
+              "baseline_owner": 130,
+              "intersection": 79,
+              "iou": 0.7452830188679245,
+              "variant_owner": 141
+            },
+            {
+              "baseline_owner": 132,
+              "intersection": 17,
+              "iou": 1.0,
+              "variant_owner": 142
+            },
+            {
+              "baseline_owner": 133,
+              "intersection": 2239,
+              "iou": 0.6332013574660633,
+              "variant_owner": 143
+            },
+            {
+              "baseline_owner": 134,
+              "intersection": 1512,
+              "iou": 1.0,
+              "variant_owner": 144
+            },
+            {
+              "baseline_owner": 137,
+              "intersection": 2146,
+              "iou": 1.0,
+              "variant_owner": 147
+            },
+            {
+              "baseline_owner": 139,
+              "intersection": 260,
+              "iou": 1.0,
+              "variant_owner": 148
+            },
+            {
+              "baseline_owner": 140,
+              "intersection": 558,
+              "iou": 0.9893617021276596,
+              "variant_owner": 150
+            },
+            {
+              "baseline_owner": 141,
+              "intersection": 595,
+              "iou": 1.0,
+              "variant_owner": 151
+            },
+            {
+              "baseline_owner": 143,
+              "intersection": 1438,
+              "iou": 0.5715421303656598,
+              "variant_owner": 152
+            },
+            {
+              "baseline_owner": 145,
+              "intersection": 824,
+              "iou": 1.0,
+              "variant_owner": 157
+            },
+            {
+              "baseline_owner": 165,
+              "intersection": 5,
+              "iou": 1.0,
+              "variant_owner": 175
+            },
+            {
+              "baseline_owner": 175,
+              "intersection": 158,
+              "iou": 1.0,
+              "variant_owner": 196
+            },
+            {
+              "baseline_owner": 179,
+              "intersection": 285,
+              "iou": 1.0,
+              "variant_owner": 193
+            },
+            {
+              "baseline_owner": 183,
+              "intersection": 82,
+              "iou": 1.0,
+              "variant_owner": 197
+            },
+            {
+              "baseline_owner": 187,
+              "intersection": 3,
+              "iou": 1.0,
+              "variant_owner": 201
+            },
+            {
+              "baseline_owner": 188,
+              "intersection": 6,
+              "iou": 1.0,
+              "variant_owner": 202
+            },
+            {
+              "baseline_owner": 190,
+              "intersection": 181,
+              "iou": 0.9890710382513661,
+              "variant_owner": 207
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0056_00",
+          "surface_delta": {
+            "completeness_5cm": 4.532290302172726e-06,
+            "fscore_5cm": -5.179145625366921e-06,
+            "precision_5cm": -1.2435630373230921e-05
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.22374636040116466,
+              "delta": -0.011642808471835187,
+              "gt_id": 1000,
+              "variant_best_iou": 0.21210355192932948
+            },
+            {
+              "baseline_best_iou": 0.17434180765403057,
+              "delta": 0.06239314191685211,
+              "gt_id": 1001,
+              "variant_best_iou": 0.23673494957088267
+            },
+            {
+              "baseline_best_iou": 0.11828338357864869,
+              "delta": -0.006990147477758876,
+              "gt_id": 1002,
+              "variant_best_iou": 0.11129323610088981
+            },
+            {
+              "baseline_best_iou": 0.1656441717791411,
+              "delta": -0.012654259373613475,
+              "gt_id": 1003,
+              "variant_best_iou": 0.15298991240552762
+            },
+            {
+              "baseline_best_iou": 0.08133449629306586,
+              "delta": 0.06707399177059462,
+              "gt_id": 1004,
+              "variant_best_iou": 0.14840848806366047
+            },
+            {
+              "baseline_best_iou": 0.012001745708466686,
+              "delta": 0.009910604889142877,
+              "gt_id": 1005,
+              "variant_best_iou": 0.021912350597609563
+            },
+            {
+              "baseline_best_iou": 0.3922586555712486,
+              "delta": -0.004709987734009158,
+              "gt_id": 3000,
+              "variant_best_iou": 0.38754866783723946
+            },
+            {
+              "baseline_best_iou": 0.8314855875831486,
+              "delta": 0.007560612118788779,
+              "gt_id": 5000,
+              "variant_best_iou": 0.8390461997019374
+            },
+            {
+              "baseline_best_iou": 0.7194978422910946,
+              "delta": -0.07508463076614724,
+              "gt_id": 5001,
+              "variant_best_iou": 0.6444132115249473
+            },
+            {
+              "baseline_best_iou": 0.5930164888457808,
+              "delta": -0.007659960457327419,
+              "gt_id": 7000,
+              "variant_best_iou": 0.5853565283884534
+            },
+            {
+              "baseline_best_iou": 0.7131142840759218,
+              "delta": -0.018090841721518647,
+              "gt_id": 8000,
+              "variant_best_iou": 0.6950234423544032
+            },
+            {
+              "baseline_best_iou": 0.28049921996879873,
+              "delta": -0.0743533866354654,
+              "gt_id": 8001,
+              "variant_best_iou": 0.20614583333333333
+            },
+            {
+              "baseline_best_iou": 0.28753328894806923,
+              "delta": 0.022394717451361956,
+              "gt_id": 8002,
+              "variant_best_iou": 0.3099280063994312
+            },
+            {
+              "baseline_best_iou": 0.19078201737816397,
+              "delta": -0.0004496910941760579,
+              "gt_id": 16000,
+              "variant_best_iou": 0.1903323262839879
+            },
+            {
+              "baseline_best_iou": 0.0037805724866908415,
+              "delta": 0.02061727613751993,
+              "gt_id": 22000,
+              "variant_best_iou": 0.024397848624210773
+            },
+            {
+              "baseline_best_iou": 0.30669348939283103,
+              "delta": -0.0016546597016625086,
+              "gt_id": 35000,
+              "variant_best_iou": 0.3050388296911685
+            },
+            {
+              "baseline_best_iou": 0.3700623700623701,
+              "delta": 0.0,
+              "gt_id": 48000,
+              "variant_best_iou": 0.3700623700623701
+            },
+            {
+              "baseline_best_iou": 0.24073407700611732,
+              "delta": 0.0,
+              "gt_id": 56000,
+              "variant_best_iou": 0.24073407700611732
+            },
+            {
+              "baseline_best_iou": 0.5,
+              "delta": -0.04744525547445255,
+              "gt_id": 79000,
+              "variant_best_iou": 0.45255474452554745
+            },
+            {
+              "baseline_best_iou": 0.5348519362186788,
+              "delta": 0.0,
+              "gt_id": 97000,
+              "variant_best_iou": 0.5348519362186788
+            },
+            {
+              "baseline_best_iou": 0.2430939226519337,
+              "delta": 0.0,
+              "gt_id": 141000,
+              "variant_best_iou": 0.2430939226519337
+            },
+            {
+              "baseline_best_iou": 0.2085474709223695,
+              "delta": -0.0010920414248006272,
+              "gt_id": 154000,
+              "variant_best_iou": 0.20745542949756887
+            },
+            {
+              "baseline_best_iou": 0.2512834369089435,
+              "delta": -0.014348695506289838,
+              "gt_id": 154001,
+              "variant_best_iou": 0.23693474140265366
+            },
+            {
+              "baseline_best_iou": 0.41832669322709165,
+              "delta": 0.11906461112073446,
+              "gt_id": 154002,
+              "variant_best_iou": 0.5373913043478261
+            },
+            {
+              "baseline_best_iou": 0.32962447844228093,
+              "delta": 0.17037552155771907,
+              "gt_id": 154003,
+              "variant_best_iou": 0.5
+            },
+            {
+              "baseline_best_iou": 0.1465537520583392,
+              "delta": -0.005715315883115468,
+              "gt_id": 161000,
+              "variant_best_iou": 0.14083843617522374
+            },
+            {
+              "baseline_best_iou": 0.1682403433476395,
+              "delta": 0.002368419738828148,
+              "gt_id": 161001,
+              "variant_best_iou": 0.17060876308646764
+            },
+            {
+              "baseline_best_iou": 0.5407166123778502,
+              "delta": 0.0,
+              "gt_id": 177000,
+              "variant_best_iou": 0.5407166123778502
+            },
+            {
+              "baseline_best_iou": 0.7446236559139785,
+              "delta": 0.0026881720430107503,
+              "gt_id": 180000,
+              "variant_best_iou": 0.7473118279569892
+            },
+            {
+              "baseline_best_iou": 0.7926829268292683,
+              "delta": 0.0,
+              "gt_id": 1163000,
+              "variant_best_iou": 0.7926829268292683
+            },
+            {
+              "baseline_best_iou": 0.5596899224806201,
+              "delta": -0.02145038424108192,
+              "gt_id": 1188000,
+              "variant_best_iou": 0.5382395382395382
+            },
+            {
+              "baseline_best_iou": 0.18375241779497098,
+              "delta": 0.0017466405854433265,
+              "gt_id": 1188001,
+              "variant_best_iou": 0.1854990583804143
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 21100,
+          "geometry_exact_identity": false,
+          "map_id": "BBX_COMPOSE",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 25985,
+              "iou": 0.8757414397411701,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 2407,
+              "iou": 0.2808307082020768,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 12861,
+              "iou": 0.9998445152763741,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 423,
+              "iou": 0.6034236804564908,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 2974,
+              "iou": 0.9799011532125206,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 1103,
+              "iou": 0.9459691252144082,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 1,
+              "iou": 0.25,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 10,
+              "intersection": 294,
+              "iou": 0.7557840616966581,
+              "variant_owner": 10
+            },
+            {
+              "baseline_owner": 11,
+              "intersection": 1,
+              "iou": 0.09090909090909091,
+              "variant_owner": 11
+            },
+            {
+              "baseline_owner": 13,
+              "intersection": 669,
+              "iou": 1.0,
+              "variant_owner": 13
+            },
+            {
+              "baseline_owner": 14,
+              "intersection": 111,
+              "iou": 0.581151832460733,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 1282,
+              "iou": 0.7962732919254658,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 16,
+              "intersection": 430,
+              "iou": 0.8365758754863813,
+              "variant_owner": 17
+            },
+            {
+              "baseline_owner": 17,
+              "intersection": 232,
+              "iou": 0.42028985507246375,
+              "variant_owner": 18
+            },
+            {
+              "baseline_owner": 19,
+              "intersection": 79,
+              "iou": 0.36574074074074076,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 25,
+              "intersection": 219,
+              "iou": 1.0,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 26,
+              "intersection": 78,
+              "iou": 0.4936708860759494,
+              "variant_owner": 44
+            },
+            {
+              "baseline_owner": 27,
+              "intersection": 166,
+              "iou": 0.9021739130434783,
+              "variant_owner": 32
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 2,
+              "iou": 0.0033444816053511705,
+              "variant_owner": 27
+            },
+            {
+              "baseline_owner": 30,
+              "intersection": 117,
+              "iou": 0.5467289719626168,
+              "variant_owner": 29
+            },
+            {
+              "baseline_owner": 35,
+              "intersection": 3,
+              "iou": 1.0,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 861,
+              "iou": 0.8262955854126679,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 41,
+              "intersection": 233,
+              "iou": 0.6401098901098901,
+              "variant_owner": 26
+            },
+            {
+              "baseline_owner": 45,
+              "intersection": 206,
+              "iou": 0.7686567164179104,
+              "variant_owner": 43
+            },
+            {
+              "baseline_owner": 46,
+              "intersection": 233,
+              "iou": 1.0,
+              "variant_owner": 46
+            },
+            {
+              "baseline_owner": 47,
+              "intersection": 1133,
+              "iou": 0.4772535804549284,
+              "variant_owner": 47
+            },
+            {
+              "baseline_owner": 48,
+              "intersection": 255,
+              "iou": 0.7306590257879656,
+              "variant_owner": 48
+            },
+            {
+              "baseline_owner": 49,
+              "intersection": 242,
+              "iou": 0.3903225806451613,
+              "variant_owner": 49
+            },
+            {
+              "baseline_owner": 54,
+              "intersection": 326,
+              "iou": 0.5821428571428572,
+              "variant_owner": 59
+            },
+            {
+              "baseline_owner": 58,
+              "intersection": 45,
+              "iou": 0.9375,
+              "variant_owner": 55
+            },
+            {
+              "baseline_owner": 60,
+              "intersection": 127,
+              "iou": 1.0,
+              "variant_owner": 56
+            },
+            {
+              "baseline_owner": 62,
+              "intersection": 2184,
+              "iou": 0.4297520661157025,
+              "variant_owner": 58
+            },
+            {
+              "baseline_owner": 63,
+              "intersection": 1229,
+              "iou": 1.0,
+              "variant_owner": 60
+            },
+            {
+              "baseline_owner": 69,
+              "intersection": 2530,
+              "iou": 0.9196655761541258,
+              "variant_owner": 64
+            },
+            {
+              "baseline_owner": 74,
+              "intersection": 1042,
+              "iou": 0.9971291866028709,
+              "variant_owner": 65
+            },
+            {
+              "baseline_owner": 77,
+              "intersection": 7208,
+              "iou": 0.512368495877168,
+              "variant_owner": 81
+            },
+            {
+              "baseline_owner": 78,
+              "intersection": 12347,
+              "iou": 0.9479462571976968,
+              "variant_owner": 68
+            },
+            {
+              "baseline_owner": 82,
+              "intersection": 516,
+              "iou": 1.0,
+              "variant_owner": 72
+            },
+            {
+              "baseline_owner": 84,
+              "intersection": 426,
+              "iou": 0.9976580796252927,
+              "variant_owner": 75
+            },
+            {
+              "baseline_owner": 86,
+              "intersection": 121,
+              "iou": 0.9918032786885246,
+              "variant_owner": 78
+            },
+            {
+              "baseline_owner": 87,
+              "intersection": 93,
+              "iou": 0.96875,
+              "variant_owner": 79
+            },
+            {
+              "baseline_owner": 88,
+              "intersection": 98,
+              "iou": 0.98989898989899,
+              "variant_owner": 80
+            },
+            {
+              "baseline_owner": 89,
+              "intersection": 611,
+              "iou": 0.1705750977107761,
+              "variant_owner": 73
+            },
+            {
+              "baseline_owner": 90,
+              "intersection": 2,
+              "iou": 0.0036968576709796672,
+              "variant_owner": 85
+            },
+            {
+              "baseline_owner": 92,
+              "intersection": 98,
+              "iou": 0.98989898989899,
+              "variant_owner": 83
+            },
+            {
+              "baseline_owner": 93,
+              "intersection": 2244,
+              "iou": 0.873491630984819,
+              "variant_owner": 82
+            },
+            {
+              "baseline_owner": 95,
+              "intersection": 4964,
+              "iou": 0.9739062193447126,
+              "variant_owner": 86
+            },
+            {
+              "baseline_owner": 96,
+              "intersection": 344,
+              "iou": 0.9913544668587896,
+              "variant_owner": 87
+            },
+            {
+              "baseline_owner": 100,
+              "intersection": 522,
+              "iou": 1.0,
+              "variant_owner": 90
+            },
+            {
+              "baseline_owner": 103,
+              "intersection": 139,
+              "iou": 1.0,
+              "variant_owner": 91
+            },
+            {
+              "baseline_owner": 106,
+              "intersection": 2203,
+              "iou": 0.9963817277250113,
+              "variant_owner": 94
+            },
+            {
+              "baseline_owner": 107,
+              "intersection": 701,
+              "iou": 0.9971550497866287,
+              "variant_owner": 95
+            },
+            {
+              "baseline_owner": 111,
+              "intersection": 228,
+              "iou": 0.7307692307692307,
+              "variant_owner": 96
+            },
+            {
+              "baseline_owner": 113,
+              "intersection": 257,
+              "iou": 1.0,
+              "variant_owner": 97
+            },
+            {
+              "baseline_owner": 115,
+              "intersection": 12037,
+              "iou": 0.9817306908082538,
+              "variant_owner": 99
+            },
+            {
+              "baseline_owner": 119,
+              "intersection": 3995,
+              "iou": 0.9905777336969998,
+              "variant_owner": 101
+            },
+            {
+              "baseline_owner": 120,
+              "intersection": 1663,
+              "iou": 0.9087431693989071,
+              "variant_owner": 102
+            },
+            {
+              "baseline_owner": 121,
+              "intersection": 147,
+              "iou": 1.0,
+              "variant_owner": 103
+            },
+            {
+              "baseline_owner": 122,
+              "intersection": 142,
+              "iou": 0.8930817610062893,
+              "variant_owner": 104
+            },
+            {
+              "baseline_owner": 123,
+              "intersection": 5711,
+              "iou": 0.7761620005436259,
+              "variant_owner": 105
+            },
+            {
+              "baseline_owner": 124,
+              "intersection": 71,
+              "iou": 0.42011834319526625,
+              "variant_owner": 107
+            },
+            {
+              "baseline_owner": 125,
+              "intersection": 125,
+              "iou": 0.7911392405063291,
+              "variant_owner": 108
+            },
+            {
+              "baseline_owner": 126,
+              "intersection": 1153,
+              "iou": 0.9982683982683983,
+              "variant_owner": 109
+            },
+            {
+              "baseline_owner": 127,
+              "intersection": 715,
+              "iou": 1.0,
+              "variant_owner": 110
+            },
+            {
+              "baseline_owner": 128,
+              "intersection": 23,
+              "iou": 1.0,
+              "variant_owner": 113
+            },
+            {
+              "baseline_owner": 131,
+              "intersection": 72,
+              "iou": 1.0,
+              "variant_owner": 119
+            },
+            {
+              "baseline_owner": 133,
+              "intersection": 57,
+              "iou": 0.07373868046571798,
+              "variant_owner": 115
+            },
+            {
+              "baseline_owner": 135,
+              "intersection": 1884,
+              "iou": 1.0,
+              "variant_owner": 123
+            },
+            {
+              "baseline_owner": 137,
+              "intersection": 456,
+              "iou": 1.0,
+              "variant_owner": 124
+            },
+            {
+              "baseline_owner": 138,
+              "intersection": 16,
+              "iou": 0.34782608695652173,
+              "variant_owner": 125
+            },
+            {
+              "baseline_owner": 139,
+              "intersection": 1290,
+              "iou": 0.9923076923076923,
+              "variant_owner": 126
+            },
+            {
+              "baseline_owner": 140,
+              "intersection": 636,
+              "iou": 1.0,
+              "variant_owner": 127
+            },
+            {
+              "baseline_owner": 141,
+              "intersection": 625,
+              "iou": 1.0,
+              "variant_owner": 128
+            },
+            {
+              "baseline_owner": 142,
+              "intersection": 203,
+              "iou": 1.0,
+              "variant_owner": 129
+            },
+            {
+              "baseline_owner": 143,
+              "intersection": 409,
+              "iou": 1.0,
+              "variant_owner": 130
+            },
+            {
+              "baseline_owner": 144,
+              "intersection": 201,
+              "iou": 1.0,
+              "variant_owner": 131
+            },
+            {
+              "baseline_owner": 145,
+              "intersection": 67,
+              "iou": 0.23843416370106763,
+              "variant_owner": 132
+            },
+            {
+              "baseline_owner": 148,
+              "intersection": 152,
+              "iou": 1.0,
+              "variant_owner": 135
+            },
+            {
+              "baseline_owner": 153,
+              "intersection": 337,
+              "iou": 1.0,
+              "variant_owner": 139
+            },
+            {
+              "baseline_owner": 160,
+              "intersection": 204,
+              "iou": 1.0,
+              "variant_owner": 146
+            },
+            {
+              "baseline_owner": 162,
+              "intersection": 3191,
+              "iou": 0.9675560946027896,
+              "variant_owner": 147
+            },
+            {
+              "baseline_owner": 164,
+              "intersection": 89,
+              "iou": 1.0,
+              "variant_owner": 148
+            },
+            {
+              "baseline_owner": 166,
+              "intersection": 3,
+              "iou": 0.09090909090909091,
+              "variant_owner": 150
+            },
+            {
+              "baseline_owner": 167,
+              "intersection": 5,
+              "iou": 0.16666666666666666,
+              "variant_owner": 151
+            },
+            {
+              "baseline_owner": 168,
+              "intersection": 910,
+              "iou": 1.0,
+              "variant_owner": 153
+            },
+            {
+              "baseline_owner": 169,
+              "intersection": 231,
+              "iou": 1.0,
+              "variant_owner": 154
+            },
+            {
+              "baseline_owner": 170,
+              "intersection": 427,
+              "iou": 1.0,
+              "variant_owner": 155
+            },
+            {
+              "baseline_owner": 173,
+              "intersection": 636,
+              "iou": 1.0,
+              "variant_owner": 157
+            },
+            {
+              "baseline_owner": 174,
+              "intersection": 241,
+              "iou": 0.9917695473251029,
+              "variant_owner": 158
+            },
+            {
+              "baseline_owner": 178,
+              "intersection": 127,
+              "iou": 1.0,
+              "variant_owner": 159
+            },
+            {
+              "baseline_owner": 179,
+              "intersection": 794,
+              "iou": 1.0,
+              "variant_owner": 160
+            },
+            {
+              "baseline_owner": 182,
+              "intersection": 585,
+              "iou": 1.0,
+              "variant_owner": 163
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0534_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": 3.0140521942723097e-06,
+            "precision_5cm": 5.8193973855313885e-06
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.23114496714543234,
+              "delta": -0.11330915290173861,
+              "gt_id": 1000,
+              "variant_best_iou": 0.11783581424369373
+            },
+            {
+              "baseline_best_iou": 0.446241961414791,
+              "delta": -0.20877314762481594,
+              "gt_id": 1001,
+              "variant_best_iou": 0.23746881378997506
+            },
+            {
+              "baseline_best_iou": 0.2703206357906276,
+              "delta": -0.12134911919292923,
+              "gt_id": 1002,
+              "variant_best_iou": 0.14897151659769836
+            },
+            {
+              "baseline_best_iou": 0.10262595252453265,
+              "delta": -0.04591557727527287,
+              "gt_id": 1003,
+              "variant_best_iou": 0.05671037524925977
+            },
+            {
+              "baseline_best_iou": 0.3634574087329993,
+              "delta": -0.1775526238419114,
+              "gt_id": 1004,
+              "variant_best_iou": 0.18590478489108792
+            },
+            {
+              "baseline_best_iou": 0.2862694300518135,
+              "delta": -0.040841485648009546,
+              "gt_id": 5000,
+              "variant_best_iou": 0.24542794440380394
+            },
+            {
+              "baseline_best_iou": 0.8471649990190308,
+              "delta": 0.0,
+              "gt_id": 8000,
+              "variant_best_iou": 0.8471649990190308
+            },
+            {
+              "baseline_best_iou": 0.864199626548973,
+              "delta": 0.0,
+              "gt_id": 9000,
+              "variant_best_iou": 0.864199626548973
+            },
+            {
+              "baseline_best_iou": 0.6009952788056654,
+              "delta": 0.0,
+              "gt_id": 11000,
+              "variant_best_iou": 0.6009952788056654
+            },
+            {
+              "baseline_best_iou": 0.8228607802127853,
+              "delta": 0.0,
+              "gt_id": 21000,
+              "variant_best_iou": 0.8228607802127853
+            },
+            {
+              "baseline_best_iou": 0.663588241919135,
+              "delta": 0.0,
+              "gt_id": 36000,
+              "variant_best_iou": 0.663588241919135
+            },
+            {
+              "baseline_best_iou": 0.9272388059701493,
+              "delta": -0.0006218905472636926,
+              "gt_id": 56000,
+              "variant_best_iou": 0.9266169154228856
+            },
+            {
+              "baseline_best_iou": 0.09910802775024777,
+              "delta": 0.1990526692487842,
+              "gt_id": 96000,
+              "variant_best_iou": 0.29816069699903197
+            },
+            {
+              "baseline_best_iou": 0.8498326159732186,
+              "delta": 0.0,
+              "gt_id": 97000,
+              "variant_best_iou": 0.8498326159732186
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 17845,
+          "geometry_exact_identity": false,
+          "map_id": "BBX_COMPOSE",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 6830,
+              "iou": 1.0,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 5084,
+              "iou": 1.0,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 17019,
+              "iou": 0.4978790626919814,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 17757,
+              "iou": 0.9648445990002174,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 4336,
+              "iou": 1.0,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 9142,
+              "iou": 1.0,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 1504,
+              "iou": 0.9993355481727575,
+              "variant_owner": 16
+            },
+            {
+              "baseline_owner": 13,
+              "intersection": 549,
+              "iou": 0.0328329645356139,
+              "variant_owner": 22
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 1823,
+              "iou": 1.0,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 16,
+              "intersection": 5465,
+              "iou": 1.0,
+              "variant_owner": 23
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 216,
+              "iou": 0.9557522123893806,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 1425,
+              "iou": 0.7608115323011212,
+              "variant_owner": 26
+            },
+            {
+              "baseline_owner": 26,
+              "intersection": 104,
+              "iou": 1.0,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 1001,
+              "iou": 1.0,
+              "variant_owner": 39
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 126,
+              "iou": 1.0,
+              "variant_owner": 46
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0445_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": -1.9839789937581287e-06,
+            "precision_5cm": -3.878128725265384e-06
+          }
+        },
+        {
+          "GT_indexed_best_iou_changes": [
+            {
+              "baseline_best_iou": 0.3551167830483987,
+              "delta": -6.21185008863323e-05,
+              "gt_id": 1000,
+              "variant_best_iou": 0.3550546645475124
+            },
+            {
+              "baseline_best_iou": 0.14848606376579104,
+              "delta": 0.0850482864766117,
+              "gt_id": 1001,
+              "variant_best_iou": 0.23353435024240274
+            },
+            {
+              "baseline_best_iou": 0.08848088928693729,
+              "delta": 0.14207714489523032,
+              "gt_id": 1002,
+              "variant_best_iou": 0.2305580341821676
+            },
+            {
+              "baseline_best_iou": 0.041143580546471145,
+              "delta": 0.06612714377189845,
+              "gt_id": 1003,
+              "variant_best_iou": 0.10727072431836959
+            },
+            {
+              "baseline_best_iou": 0.7518796992481203,
+              "delta": -0.0004035854531658778,
+              "gt_id": 2000,
+              "variant_best_iou": 0.7514761137949544
+            },
+            {
+              "baseline_best_iou": 0.5154295246038365,
+              "delta": 0.0,
+              "gt_id": 2001,
+              "variant_best_iou": 0.5154295246038365
+            },
+            {
+              "baseline_best_iou": 0.8890483022477284,
+              "delta": 0.0,
+              "gt_id": 2002,
+              "variant_best_iou": 0.8890483022477284
+            },
+            {
+              "baseline_best_iou": 0.45367995264404104,
+              "delta": 9.865824782950838e-05,
+              "gt_id": 3000,
+              "variant_best_iou": 0.45377861089187055
+            },
+            {
+              "baseline_best_iou": 0.7131348511383537,
+              "delta": -0.0017513134851138146,
+              "gt_id": 4000,
+              "variant_best_iou": 0.7113835376532399
+            },
+            {
+              "baseline_best_iou": 0.4517799352750809,
+              "delta": 0.0,
+              "gt_id": 4001,
+              "variant_best_iou": 0.4517799352750809
+            },
+            {
+              "baseline_best_iou": 0.6701902748414377,
+              "delta": 0.0004414988831195066,
+              "gt_id": 4002,
+              "variant_best_iou": 0.6706317737245572
+            },
+            {
+              "baseline_best_iou": 0.4409905163329821,
+              "delta": 0.0,
+              "gt_id": 4003,
+              "variant_best_iou": 0.4409905163329821
+            },
+            {
+              "baseline_best_iou": 0.9478565539983512,
+              "delta": -0.14293075020610058,
+              "gt_id": 6000,
+              "variant_best_iou": 0.8049258037922506
+            },
+            {
+              "baseline_best_iou": 0.5410476935105551,
+              "delta": 0.0,
+              "gt_id": 19000,
+              "variant_best_iou": 0.5410476935105551
+            },
+            {
+              "baseline_best_iou": 0.9535951045385007,
+              "delta": 0.013643585009081138,
+              "gt_id": 24000,
+              "variant_best_iou": 0.9672386895475819
+            },
+            {
+              "baseline_best_iou": 0.04610051993067591,
+              "delta": 0.0,
+              "gt_id": 46000,
+              "variant_best_iou": 0.04610051993067591
+            },
+            {
+              "baseline_best_iou": 0.013579304718545225,
+              "delta": 0.008357992947155916,
+              "gt_id": 52000,
+              "variant_best_iou": 0.02193729766570114
+            },
+            {
+              "baseline_best_iou": 0.005171423099023176,
+              "delta": -1.980250085783196e-06,
+              "gt_id": 64000,
+              "variant_best_iou": 0.005169442848937392
+            },
+            {
+              "baseline_best_iou": 0.011487650775416428,
+              "delta": -1.976086715954617e-05,
+              "gt_id": 64001,
+              "variant_best_iou": 0.011467889908256881
+            },
+            {
+              "baseline_best_iou": 0.004905136510874595,
+              "delta": -1.8152045557868687e-06,
+              "gt_id": 64002,
+              "variant_best_iou": 0.004903321306318808
+            },
+            {
+              "baseline_best_iou": 0.5925925925925926,
+              "delta": 0.0,
+              "gt_id": 64003,
+              "variant_best_iou": 0.5925925925925926
+            },
+            {
+              "baseline_best_iou": 0.0658682634730539,
+              "delta": -0.00013121168022521557,
+              "gt_id": 64004,
+              "variant_best_iou": 0.06573705179282868
+            },
+            {
+              "baseline_best_iou": 0.23536737235367372,
+              "delta": 0.0,
+              "gt_id": 80000,
+              "variant_best_iou": 0.23536737235367372
+            }
+          ],
+          "association_uses_GT_labels": false,
+          "changed_target_partition_rows": 16025,
+          "geometry_exact_identity": false,
+          "map_id": "BBX_COMPOSE",
+          "predicted_support_associations": [
+            {
+              "baseline_owner": 1,
+              "intersection": 9881,
+              "iou": 0.9995953464845726,
+              "variant_owner": 1
+            },
+            {
+              "baseline_owner": 2,
+              "intersection": 1906,
+              "iou": 0.9754350051177073,
+              "variant_owner": 2
+            },
+            {
+              "baseline_owner": 3,
+              "intersection": 11772,
+              "iou": 0.999320882852292,
+              "variant_owner": 3
+            },
+            {
+              "baseline_owner": 4,
+              "intersection": 23390,
+              "iou": 0.6168574291893032,
+              "variant_owner": 4
+            },
+            {
+              "baseline_owner": 5,
+              "intersection": 2076,
+              "iou": 0.9966394623139703,
+              "variant_owner": 5
+            },
+            {
+              "baseline_owner": 6,
+              "intersection": 1555,
+              "iou": 0.9993573264781491,
+              "variant_owner": 6
+            },
+            {
+              "baseline_owner": 7,
+              "intersection": 1302,
+              "iou": 1.0,
+              "variant_owner": 7
+            },
+            {
+              "baseline_owner": 8,
+              "intersection": 1,
+              "iou": 0.02040816326530612,
+              "variant_owner": 8
+            },
+            {
+              "baseline_owner": 9,
+              "intersection": 71,
+              "iou": 1.0,
+              "variant_owner": 9
+            },
+            {
+              "baseline_owner": 12,
+              "intersection": 906,
+              "iou": 1.0,
+              "variant_owner": 13
+            },
+            {
+              "baseline_owner": 15,
+              "intersection": 449,
+              "iou": 0.9977777777777778,
+              "variant_owner": 15
+            },
+            {
+              "baseline_owner": 18,
+              "intersection": 1,
+              "iou": 0.14285714285714285,
+              "variant_owner": 10
+            },
+            {
+              "baseline_owner": 19,
+              "intersection": 2841,
+              "iou": 0.9992965177629265,
+              "variant_owner": 19
+            },
+            {
+              "baseline_owner": 20,
+              "intersection": 1224,
+              "iou": 1.0,
+              "variant_owner": 20
+            },
+            {
+              "baseline_owner": 21,
+              "intersection": 1859,
+              "iou": 1.0,
+              "variant_owner": 21
+            },
+            {
+              "baseline_owner": 22,
+              "intersection": 960,
+              "iou": 1.0,
+              "variant_owner": 22
+            },
+            {
+              "baseline_owner": 24,
+              "intersection": 33,
+              "iou": 1.0,
+              "variant_owner": 24
+            },
+            {
+              "baseline_owner": 25,
+              "intersection": 79,
+              "iou": 1.0,
+              "variant_owner": 25
+            },
+            {
+              "baseline_owner": 28,
+              "intersection": 873,
+              "iou": 0.9965753424657534,
+              "variant_owner": 27
+            },
+            {
+              "baseline_owner": 29,
+              "intersection": 103,
+              "iou": 0.9903846153846154,
+              "variant_owner": 28
+            },
+            {
+              "baseline_owner": 37,
+              "intersection": 1,
+              "iou": 1.0,
+              "variant_owner": 31
+            },
+            {
+              "baseline_owner": 40,
+              "intersection": 8046,
+              "iou": 0.8529630022262271,
+              "variant_owner": 33
+            },
+            {
+              "baseline_owner": 52,
+              "intersection": 9768,
+              "iou": 0.9955156950672646,
+              "variant_owner": 40
+            },
+            {
+              "baseline_owner": 55,
+              "intersection": 335,
+              "iou": 1.0,
+              "variant_owner": 44
+            },
+            {
+              "baseline_owner": 61,
+              "intersection": 808,
+              "iou": 1.0,
+              "variant_owner": 49
+            },
+            {
+              "baseline_owner": 62,
+              "intersection": 379,
+              "iou": 1.0,
+              "variant_owner": 50
+            },
+            {
+              "baseline_owner": 67,
+              "intersection": 552,
+              "iou": 0.9963898916967509,
+              "variant_owner": 51
+            }
+          ],
+          "real_raw_partition_intervention": true,
+          "scene": "scene0626_00",
+          "surface_delta": {
+            "completeness_5cm": 0.0,
+            "fscore_5cm": -6.27514812034935e-06,
+            "precision_5cm": -1.2272541531910264e-05
+          }
+        }
+      ],
+      "median_standalone_seconds": 1060.3391825766885,
+      "metrics": {
+        "ap25": 0.34729591836734697,
+        "ap50": 0.2082301587301587,
+        "apall": 0.09761640211640212,
+        "defined_classes": 36,
+        "macc": 0.3256426192017966,
+        "miou": 0.2283855240531113,
+        "uap": 0.09761640211640212
+      },
+      "pool_identity": "66c2ec48af04a512730f77e2c6646d9e72fda40fc8a73c5e69c988102072151c",
+      "readout_identities": [
+        "16ec9c1c131eb0f4b9eaf106e70649be8c782590c287280f366264c8db014bf6",
+        "8c6cdaab0d6111024deaaabdaaccee44dbdb1035a9f3bfabc18bf458f0d81939",
+        "71e2fc9e9f62c4bdb5615016e095b7583c6148ec3a33cdfa237d4be9b9076938",
+        "3ccb6056185149c733eed12a95fbdf8cac2c31db8d20a8bb11e96e340aafb164"
+      ],
+      "real_intervention": true,
+      "recipe": {
+        "association": "native",
+        "constituents": {
+          "frontend": "BB03_SAM2_RAW",
+          "structural": "BB01_SYNC"
+        },
+        "depth_fusion": "simultaneous",
+        "family": "composition",
+        "frontend": "sam2_raw",
+        "id": "BBX_COMPOSE"
+      },
+      "required_image_encodings": 18828
+    }
+  ],
+  "nominee": "BB01_SYNC",
+  "ranking": {
+    "banded_preference": [
+      "BB01_SYNC",
+      "BB00_NATIVE",
+      "BBX_COMPOSE",
+      "BB03_SAM2_RAW"
+    ],
+    "steps": [
+      {
+        "cost_tie_order": [
+          "BB01_SYNC"
+        ],
+        "metric_bands": [
+          {
+            "band_width": 0.0005,
+            "maximum": 0.13207886117409928,
+            "metric": "apall",
+            "retained": [
+              "BB01_SYNC"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.25178977041016365,
+            "metric": "miou",
+            "retained": [
+              "BB01_SYNC"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.2545657596371882,
+            "metric": "ap50",
+            "retained": [
+              "BB01_SYNC"
+            ]
+          }
+        ],
+        "selected": "BB01_SYNC"
+      },
+      {
+        "cost_tie_order": [
+          "BB00_NATIVE"
+        ],
+        "metric_bands": [
+          {
+            "band_width": 0.0005,
+            "maximum": 0.12581783824640966,
+            "metric": "apall",
+            "retained": [
+              "BB00_NATIVE"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.23562289001024223,
+            "metric": "miou",
+            "retained": [
+              "BB00_NATIVE"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.2259943310657596,
+            "metric": "ap50",
+            "retained": [
+              "BB00_NATIVE"
+            ]
+          }
+        ],
+        "selected": "BB00_NATIVE"
+      },
+      {
+        "cost_tie_order": [
+          "BBX_COMPOSE"
+        ],
+        "metric_bands": [
+          {
+            "band_width": 0.0005,
+            "maximum": 0.0979867724867725,
+            "metric": "apall",
+            "retained": [
+              "BB03_SAM2_RAW",
+              "BBX_COMPOSE"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.2283855240531113,
+            "metric": "miou",
+            "retained": [
+              "BBX_COMPOSE"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.2082301587301587,
+            "metric": "ap50",
+            "retained": [
+              "BBX_COMPOSE"
+            ]
+          }
+        ],
+        "selected": "BBX_COMPOSE"
+      },
+      {
+        "cost_tie_order": [
+          "BB03_SAM2_RAW"
+        ],
+        "metric_bands": [
+          {
+            "band_width": 0.0005,
+            "maximum": 0.0979867724867725,
+            "metric": "apall",
+            "retained": [
+              "BB03_SAM2_RAW"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.2265452696996528,
+            "metric": "miou",
+            "retained": [
+              "BB03_SAM2_RAW"
+            ]
+          },
+          {
+            "band_width": 0.001,
+            "maximum": 0.20709920634920634,
+            "metric": "ap50",
+            "retained": [
+              "BB03_SAM2_RAW"
+            ]
+          }
+        ],
+        "selected": "BB03_SAM2_RAW"
+      }
+    ],
+    "strict_metric_ranking": [
+      "BB01_SYNC",
+      "BB00_NATIVE",
+      "BB03_SAM2_RAW",
+      "BBX_COMPOSE"
+    ]
+  },
+  "refit_after_Replica": false,
+  "replica_recipes": [
+    {
+      "association": "native",
+      "depth_fusion": "native",
+      "family": "control",
+      "frontend": "cropformer",
+      "id": "BB00_NATIVE"
+    },
+    {
+      "association": "native",
+      "depth_fusion": "simultaneous",
+      "family": "structural",
+      "frontend": "cropformer",
+      "id": "BB01_SYNC"
+    },
+    {
+      "association": "native",
+      "depth_fusion": "native",
+      "family": "frontend",
+      "frontend": "sam2_raw",
+      "id": "BB03_SAM2_RAW"
+    },
+    {
+      "association": "native",
+      "constituents": {
+        "frontend": "BB03_SAM2_RAW",
+        "structural": "BB01_SYNC"
+      },
+      "depth_fusion": "simultaneous",
+      "family": "composition",
+      "frontend": "sam2_raw",
+      "id": "BBX_COMPOSE"
+    }
+  ],
+  "replica_scene_order": [
+    "office0",
+    "office1",
+    "office2",
+    "office3",
+    "office4",
+    "room0",
+    "room1",
+    "room2"
+  ],
+  "status": "TRANSFER_FROZEN"
+}
