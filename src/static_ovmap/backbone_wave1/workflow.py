@@ -109,15 +109,23 @@ class Study:
             raise ValueError("authorized map-scene budget would be exceeded")
         if shutil.disk_usage(self.root).free < 8 * 1024 ** 3:
             raise RuntimeError("RESOURCE_BLOCK: fewer than 8GiB available for a fresh map")
+        failures, completed, evaluation_jobs = [], [], []
+        blocked_frontends = {}
         if any(recipe["frontend"] != "cropformer" for recipe in recipes):
             for scene in scenes:
-                ensure_frontend(binding, scene, gpu=self.args.gpu)
-        failures, completed, evaluation_jobs = [], [], []
+                try:
+                    ensure_frontend(binding, scene, gpu=self.args.gpu)
+                except Exception as exc:
+                    blocked_frontends[scene] = f"{type(exc).__name__}: {exc}"
+                    failures.extend({"scene": scene, "map_id": recipe["id"],
+                        "stage": "FRONTEND_PREREQUISITE", "error": blocked_frontends[scene]}
+                        for recipe in recipes if recipe["frontend"] != "cropformer")
         with ThreadPoolExecutor(max_workers=self.args.mapping_workers) as mapper, ProcessPoolExecutor(
                 max_workers=self.args.evaluation_workers, mp_context=multiprocessing.get_context("spawn")) as evaluator:
             jobs = {mapper.submit(run_map, binding, self.spec, build, scene, recipe,
                 threads=self.args.mapping_threads, resume=self.args.resume): (scene, recipe)
-                for scene in scenes for recipe in recipes}
+                for scene in scenes for recipe in recipes
+                if recipe["frontend"] == "cropformer" or scene not in blocked_frontends}
             for future in as_completed(jobs):
                 scene, recipe = jobs[future]
                 try:
@@ -281,6 +289,15 @@ class Study:
     def all(self):
         results = {}
         for phase in ("bind", "prepare", "bridge", "screen", "compose", "freeze", "transfer", "report", "publish"):
-            results[phase] = getattr(self, phase)()
+            try:
+                results[phase] = getattr(self, phase)()
+            except Exception as exc:
+                results[phase] = {"status": "FAILED_OR_DEPENDENCY_BLOCKED", "phase": phase,
+                    "failures": [{"stage": phase, "error": f"{type(exc).__name__}: {exc}"}],
+                    "automatic_retry": False}
+                atomic_write_json(self.root / "execution" / ("phase_failure_" + phase + f"_{time.time_ns()}.json"), results[phase])
             print(json.dumps({"phase": phase, "status": results[phase].get("status", "RECORDED")}), flush=True)
+            if phase == "bind" and results[phase]["status"] == "FAILED_OR_DEPENDENCY_BLOCKED":
+                break
+        atomic_write_json(self.root / "execution" / (f"all_{time.time_ns()}.json"), results)
         return results

@@ -504,8 +504,8 @@ def render(binding, spec):
 def publish(binding, spec):
     repo, root = Path(binding["repository_root"]), Path(binding["output_root"])
     completion = read(repo / spec["publication"]["repo_artifacts"] / "completion.json")
-    if not completion["status"].startswith("COMPLETE"):
-        raise ValueError("unfinished study cannot be published as completed")
+    if completion["status"] not in {"INCOMPLETE", "COMPLETE_NO_NET_GAIN", "COMPLETE_MEASURED_NET_GAIN"}:
+        raise ValueError("publication requires an explicit measured completion status")
     branch = subprocess.check_output(["git", "branch", "--show-current"], cwd=repo, text=True).strip()
     if branch != spec["publication"]["branch"]:
         raise ValueError("publication branch differs from the fixed study branch")
@@ -519,6 +519,7 @@ def publish(binding, spec):
         subprocess.run(["git", "commit", "-m", "research: publish measured backbone-wave1 evidence"], cwd=repo, check=True)
     local = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
     receipt = {"branch": branch, "local_sha": local, "remote_sha": None, "status": "PUSH_PENDING",
+               "study_status": completion["status"], "publication_does_not_imply_scientific_completion": True,
                "release_path": spec["publication"]["repo_artifacts"]}
     path = root / spec["publication"]["external_receipt"]
     try:
