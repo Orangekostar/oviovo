@@ -354,19 +354,21 @@ def render(binding, spec):
         native_seconds = mapping["elapsed_seconds"] + nq["model_load_seconds"] + native_cpu_seconds + sum(
             nq["required_content_encoder_seconds"][key] for key in native_contents) + (
                 0 if sam is None else sam["elapsed_seconds"])
+        shared_missing = ["source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"]
+        fused_missing = value["standalone_timing_missing_components"] + shared_missing
         per_readout = {"NATIVE_READOUT": {
             "required_image_encodings": sum(native_contents.values()) + sam_encodings,
             "attributable_standalone_seconds": native_seconds,
-            "timing_missing_components": ["native_metadata_reconstruction_and_readout_CPU_not_separately_attributed"]}}
+            "timing_missing_components": shared_missing}}
         for method in ("FC_EQ", "D2"):
             per_readout[method] = {
                 "required_image_encodings": value["required_image_encodings"],
                 "attributable_standalone_seconds": value["attributable_map_plus_readout_seconds"],
-                "timing_missing_components": value["standalone_timing_missing_components"]}
+                "timing_missing_components": fused_missing}
         costs.append({"scene": value["scene"], "map_id": value["map_id"],
             "required_image_encodings": value["required_image_encodings"],
             "attributable_standalone_seconds": value["attributable_map_plus_readout_seconds"],
-            "timing_missing_components": value["standalone_timing_missing_components"],
+            "timing_missing_components": fused_missing,
             "physical_native_crop_encodings": nq["physical_image_encodings"],
             "physical_N_crop_encodings": nq["native_physical_image_encodings"],
             "physical_Q_incremental_crop_encodings": nq["physical_image_encodings"] - nq["native_physical_image_encodings"],
