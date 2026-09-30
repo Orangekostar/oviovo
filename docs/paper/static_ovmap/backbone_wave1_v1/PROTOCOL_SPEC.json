@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "issued": "2026-09-30",
+  "task_id": "ovimap-backbone-wave1-v1",
+  "document_status": "EXECUTION_SPECIFICATION_NOT_AN_EXPERIMENT_RESULT",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "1ce806b22c63943843300006b5b1034ec9e1cb0b",
+  "branch": "research/ovimap-backbone-wave1-v1",
+  "worktree": "/home/ww/crove/ovimap-backbone-wave1",
+  "upstream_repository": "OVI-MAP/OVI-MAP",
+  "upstream_commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+  "upstream_worktree": "/home/ww/crove/ovimap-backbone-wave1-upstream",
+  "base_native_patch": "third_party_patches/ovimap/module_validation_v1/ovimap_module_validation_v1.patch",
+  "implementation_root": "src/static_ovmap/backbone_wave1",
+  "runner": "scripts/evaluation/run_ovimap_backbone_wave1.py",
+  "repository_spec_root": "docs/paper/static_ovmap/backbone_wave1_v1",
+  "output_root": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001",
+  "native_build_root": "/mnt/shared/ww/ovimap-backbone-wave1-v1/tooling/native",
+  "runtime_default": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "parent_wave1_binding": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/binding.json",
+  "parent_paired_binding": "/mnt/shared/ww/ovimap-paired-evidence-v1/attempt_001/binding.json",
+  "runtime_config": "configs/evaluation/ovimap_module_scannet_runtime.json",
+  "datasets": {
+    "development": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "parent_calibration": [
+      "scene0056_00",
+      "scene0534_00"
+    ],
+    "replica": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "development_vocabulary": "Scannet200",
+    "all_exposed": true,
+    "schedule": "EXACT_PARENT_SCHEDULE_AND_INVALID_POSE_POLICY",
+    "new_scenes": false,
+    "independent_confirmation": "NOT_RUN_OUT_OF_SCOPE",
+    "old_confirm_scenes_not_authorized": [
+      "scene0553_00",
+      "scene0064_00"
+    ]
+  },
+  "runtime": {
+    "mapping_workers": 2,
+    "mapping_threads_per_worker": 8,
+    "evaluation_workers": 3,
+    "evaluation_blas_threads": 4,
+    "neural_workers_per_gpu": 1,
+    "default_gpu": "2",
+    "gpu_wait_policy": "ONE_BOUNDED_CHECK_THEN_RESOURCE_BLOCK_NOT_POLL_FOREVER",
+    "fundamental_model_training": false,
+    "new_temperature_fit": false,
+    "new_Q_GAIN_training": false,
+    "new_visual_inference": true,
+    "baseline_network_weights_frozen": true,
+    "resource_retry_per_failure_signature": 1,
+    "whole_repo_or_all_historical_artifact_audit": false
+  },
+  "native_modes": {
+    "data_association": 2,
+    "inst_association": 4,
+    "seg_graph_confidence": 3,
+    "use_inst_label_connect": 1,
+    "connection_ratio_th": 0.2,
+    "other_parameters": "COPY_ACTUAL_BOUND_PARENT_COMMAND_AND_NATIVE_CONFIG"
+  },
+  "phases": [
+    "bind",
+    "prepare",
+    "bridge",
+    "diagnose",
+    "screen",
+    "compose",
+    "freeze",
+    "transfer",
+    "report",
+    "publish",
+    "all"
+  ],
+  "map_variants": [
+    {
+      "id": "BB00_NATIVE",
+      "family": "control",
+      "depth_fusion": "native",
+      "association": "native",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "BB01_SYNC",
+      "family": "structural",
+      "depth_fusion": "simultaneous",
+      "association": "native",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "BB05_RATIO_GATE",
+      "family": "structural",
+      "depth_fusion": "native",
+      "association": "native_ratio_gate",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "BB05_FORWARD",
+      "family": "structural",
+      "depth_fusion": "native",
+      "association": "object_forward",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "BB05_BIDIR",
+      "family": "structural",
+      "depth_fusion": "native",
+      "association": "object_bidirectional",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "BB03_SAM2_RAW",
+      "family": "frontend",
+      "depth_fusion": "native",
+      "association": "native",
+      "frontend": "sam2_raw"
+    },
+    {
+      "id": "BB03_SAM2_GEOM",
+      "family": "frontend",
+      "depth_fusion": "native",
+      "association": "native",
+      "frontend": "sam2_geom"
+    }
+  ],
+  "depth_fusion": {
+    "min_depth_segment_pixels": 100,
+    "split_candidate_coverage_strict_gt": 0.9,
+    "split_depth_fraction_strict_lt": 0.5,
+    "residual_label_fraction_ge": 0.2,
+    "canonical_order": "ROW_MAJOR_MASK_SUPPORT_THEN_CONTENT_DIGEST_NOT_INSTANCE_NUMBER",
+    "GT_use": false,
+    "threshold_search": false
+  },
+  "association": {
+    "ratio_control": "ENABLE_EXISTING_NATIVE_ratio_greater_than_min_WITH_NATIVE_CONFIG_VALUE",
+    "snapshot": "BEFORE_CURRENT_FRAME_INSERTION",
+    "owner_query_count_threshold_factor": 0.0,
+    "probe_label_confidence_ge": 0.5,
+    "probe_half_search_m": 0.2,
+    "probe_surface_band_in_voxels": 2.0,
+    "depth_tolerance_m": {
+      "absolute": 0.03,
+      "relative": 0.01
+    },
+    "min_intersection_pixels": 100,
+    "min_directional_coverage_strict_gt": 0.2,
+    "assignment": "POSITIVE_BENEFIT_HUNGARIAN_WITH_ZERO_DUMMY_UNMATCHED",
+    "forward_benefit": "intersection/local_valid_pixels - 0.2",
+    "backward_benefit": "intersection/global_visible_probe_pixels - 0.2",
+    "bidirectional_acceptance": "INTERSECTION_OF_FORWARD_PAIRS_AND_REVERSED_BACKWARD_PAIRS",
+    "new_instance_policy": "ONE_NATIVE_FRESH_INSTANCE_PER_UNMATCHED_LOCAL_OBJECT",
+    "superpoint_candidate_and_alias_filter": true,
+    "semantic_features_in_association": false,
+    "threshold_search": false
+  },
+  "frontend": {
+    "selected_family": "B03_SAM2",
+    "automatic_family_fallback": false,
+    "sam2_repo": "facebookresearch/sam2",
+    "sam2_commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+    "assets_receipt": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/attempt_001/assets/sam2/download_receipt.json",
+    "chunk_valid_frames": 5,
+    "seed": "ALL_NONZERO_CROPFORMER_MASKS_ON_FIRST_FRAME_OF_EACH_CHUNK",
+    "chunk_first_output": "EXACT_CROPFORMER_RASTER",
+    "propagation_reverse": false,
+    "max_frame_num_to_track": 0,
+    "raw_mask_logit_threshold_strict_gt": 0.0,
+    "new_candidate_raw_coverage_strict_lt": 0.2,
+    "geom_min_visible_warp_pixels": 100,
+    "geom_retained_visible_fraction_ge": 0.5,
+    "geom_fallback_cropformer_iou_ge": 0.3,
+    "geom_reference": "PREVIOUS_RAW_PREDICTION_NOT_PREVIOUS_GEOM_OUTPUT",
+    "raw_and_geom_share_neural_predictions": true,
+    "future_prompts": false,
+    "human_or_GT_prompts": false,
+    "no_seed_chunk": "COPY_CROPFORMER_ALL_CHUNK_MARK_NO_PROPAGATION",
+    "reconstruction_rgb_depth_changed": false,
+    "frontend_confidence_to_native": "KEEP_NATIVE_1.0_FOREGROUND",
+    "raw_logit_storage": "TRANSIENT_CHUNK_BUFFER_BY_DEFAULT_FINAL_RASTERS_AND_BITPACKED_MASKS_PERSISTED"
+  },
+  "semantics": {
+    "readouts": [
+      "NATIVE_READOUT",
+      "FC_EQ",
+      "D2"
+    ],
+    "source_models": [
+      "NATIVE_SIGLIP",
+      "Q_GAIN_NATIVE_SIGLIP",
+      "FC_FROZEN_CONVNEXT"
+    ],
+    "Q_budget_attempts_per_scene": 200,
+    "Q_model_and_standardizer": "EXACT_BOUND_PARENT_NO_REFIT",
+    "native_saved_max_views": 10,
+    "native_readout_last_views": 8,
+    "native_min_views": 2,
+    "FC_target_cap": 128,
+    "FC_views_per_target": 3,
+    "FC_view_selection": "ORIGINAL_STATIC_AREA_POLICY_ON_NEW_LINEAGE",
+    "FC_prompts": 14,
+    "FC_model": "convnext_large_d_320",
+    "temperature_policy": "PARENT_LOSO_ON_TWO_PARENT_CAL_SCENES_FINAL_ON_OTHER_SCENES",
+    "D2_all_present_weights": {
+      "N": 0.25,
+      "Q": 0.25,
+      "F": 0.5
+    },
+    "missing_sources": "AVAILABLE_GROUP_RENORMALIZATION_NOT_FAKE_FALLBACK_EXPERT",
+    "fresh_native_anchor_per_map": true,
+    "copy_old_owner_scores": false,
+    "main_export_rule": "PRESERVE_NATIVE_TRIANGLE_FIRST_COLOR_PAINT_AND_ELIGIBILITY",
+    "raw_numeric_owner_diagnostics_separate": true
+  },
+  "evaluation": {
+    "primary_rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "secondary_rank_mode": "FROZEN_NATIVE_OF_THE_SAME_NEW_MAP",
+    "official_pool": "RELEASED_DATASET_POOL",
+    "apall_overlap_vector": "READ_ACTUAL_RELEASED_0.50_TO_0.90_VECTOR",
+    "metrics": [
+      "apall",
+      "ap50",
+      "ap25",
+      "miou",
+      "macc"
+    ],
+    "nearest_neighbor": "OPEN3D_FLOAT32_1NN",
+    "projection_distance_strict_lt_m": 0.05,
+    "class_agnostic_recall_thresholds": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "surface_distance_strict_lt_m": 0.05,
+    "historical_bridge_warning_tolerance_pp": 0.05,
+    "ground_truth_only_after_predictions_locked": true
+  },
+  "selection": {
+    "unit": "MAP_CONFIGURATION_USING_D2_DEV_DATASET_POOL",
+    "threshold_grid": null,
+    "APall_band_pp": 0.05,
+    "mIoU_band_pp": 0.1,
+    "AP50_band_pp": 0.1,
+    "tie_order": [
+      "LOWER_STANDALONE_REQUIRED_IMAGE_ENCODINGS",
+      "LOWER_MEDIAN_ATTRIBUTABLE_STANDALONE_MAP_PLUS_READOUT_TIME",
+      "FEWER_CHANGED_BLOCKS",
+      "METHOD_ID"
+    ],
+    "structural_champion": "BEST_COMPLETE_NONCONTROL_STRUCTURAL_VARIANT",
+    "frontend_champion": "BEST_COMPLETE_FRONTEND_VARIANT",
+    "combination": "BBX_COMPOSE_FRONT_CHAMP_PLUS_STRUCTURAL_CHAMP",
+    "max_combinations": 1,
+    "require_individual_net_gain_for_combination": false,
+    "combination_trigger": "BOTH_CHAMPS_COMPLETE_AND_BOTH_HAVE_REAL_INTERVENTION",
+    "research_nominee_pool": "BASELINE_PLUS_TWO_CHAMPS_PLUS_OPTIONAL_COMBINATION",
+    "replica_variants": "BASELINE_PLUS_TWO_CHAMPS_PLUS_OPTIONAL_COMBINATION",
+    "max_replica_map_variants": 4,
+    "refit_after_replica": false,
+    "deployment": "N0_UNCHANGED",
+    "cost_accounting": "INCLUDE_SHARED_PREREQUISITES_FOR_EACH_STANDALONE_METHOD_NOT_ZERO_CACHE_HIT_COST"
+  },
+  "scope": {
+    "mandatory": [
+      "B00",
+      "B01",
+      "B05_RATIO_CONTROL",
+      "B05_FORWARD",
+      "B05_BIDIR",
+      "B03_RAW",
+      "B03_GEOM"
+    ],
+    "deferred": [
+      "B02",
+      "B04",
+      "B06",
+      "B07",
+      "B08",
+      "B09",
+      "B10",
+      "B11",
+      "B12",
+      "SAM3",
+      "CONDITIONAL_INFORMATION_QUERY"
+    ],
+    "maximum_successful_map_scene_jobs": 64,
+    "maximum_official_primary_rows": 192,
+    "row_accounting": "3_READOUTS_TIMES_DISTINCT_MAP_SCENE_JOBS_NOT_ALIASES_OR_EXTRA_RANK_VIEWS"
+  },
+  "publication": {
+    "branch": "research/ovimap-backbone-wave1-v1",
+    "normal_push_only": true,
+    "force_push": false,
+    "repo_artifacts": "artifacts/static_ovmap/backbone_wave1_v1",
+    "reports": [
+      "BACKBONE_WAVE1_RESULTS.md",
+      "BACKBONE_WAVE1_HANDOFF.md",
+      "BACKBONE_WAVE1_SELECTION.md",
+      "BACKBONE_WAVE1_CLAIMS.md"
+    ],
+    "full_local_remote_sha_equality_required": true,
+    "external_receipt": "publication/final.json",
+    "raw_data_weights_large_arrays_in_git": false,
+    "compact_release_soft_target_mib": 100,
+    "single_file_hard_limit_mib": 95
+  }
+}

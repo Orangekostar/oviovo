@@ -1,0 +1,446 @@
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
+index 7cb30d4..a6aab12 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
+@@ -146,6 +146,11 @@ bool integrateFrame();
+ 
+ pybind11::dict exportStudyFrameState();
+ 
++void configureBackboneAssociation(bool ratio_gate, bool object_association);
++pybind11::dict beginBackboneAssociation(
++    const std::vector<std::pair<InstanceLabel, InstanceLabel>>& plans);
++pybind11::dict exportAssociationProbe(pybind11::array &pose, pybind11::array &depth);
++
+ pybind11::dict exportStudyTsdfState();
+ 
+ pybind11::dict exportStudySurfaceLabels(
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h
+index 3da0711..df8cf4b 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h
+@@ -198,6 +198,28 @@ public:
+     int inst_association_ = 0;
+     int data_association_ = 0;
+     int seg_graph_confidence_ = 0;
++
++    void beginBackboneAssociation(
++        const std::vector<std::pair<InstanceLabel, InstanceLabel>>& plans);
++    bool backboneCandidateAllowed(const Segment* segment, Label label);
++    void tagBackboneFreshLabel(const Segment* segment, Label label);
++    bool backboneAliasCompatible(Label first, Label second) const;
++    void aggregateBackboneAlias(Label retained, Label removed);
++    void exportAssociationProbe(
++        const Transformation& pose, const cv::Mat& depth,
++        const CameraRayGenerator* rays, cv::Mat* labels, cv::Mat* owners,
++        cv::Mat* hit_depth, cv::Mat* validity) const;
++    std::map<std::string, double> backboneStateSummary() const;
++
++    bool backbone_ratio_gate_ = false;
++    bool backbone_object_association_ = false;
++    std::map<Label, InstanceLabel> backbone_prior_owners_;
++    std::map<InstanceLabel, InstanceLabel> backbone_planned_owners_;
++    std::map<Label, InstanceLabel> backbone_fresh_groups_;
++    std::map<Label, std::set<InstanceLabel>> backbone_alias_tokens_;
++    std::vector<InstanceLabel> backbone_allocated_owners_;
++    size_t backbone_candidate_vetoes_ = 0;
++    size_t backbone_alias_vetoes_ = 0;
+ };
+ 
+ 
+@@ -205,4 +227,3 @@ public:
+ 
+ #endif  // LABEL_TSDF_CONFIDENCE_INTEGRATOR_H_
+ 
+-
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
+index 459a38b..1594165 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
+@@ -455,6 +455,62 @@ bool GlobalSegmentMap_py::integrateFrame()
+ }
+ 
+ 
++void GlobalSegmentMap_py::configureBackboneAssociation(bool ratio_gate, bool object_association)
++{
++    CHECK(!(ratio_gate && object_association));
++    if (object_association) {
++        CHECK_EQ(inst_association_, 4);
++        CHECK_EQ(data_association_, 2);
++    }
++    integrator_->backbone_ratio_gate_ = ratio_gate;
++    integrator_->backbone_object_association_ = object_association;
++}
++
++pybind11::dict GlobalSegmentMap_py::beginBackboneAssociation(
++    const std::vector<std::pair<InstanceLabel, InstanceLabel>>& plans)
++{
++    std::lock_guard<std::mutex> lock(label_tsdf_layers_mutex_);
++    CHECK(segments_to_integrate_.empty());
++    integrator_->beginBackboneAssociation(plans);
++    pybind11::dict result;
++    result["planned_owners"] = integrator_->backbone_planned_owners_;
++    result["allocated_owners"] = integrator_->backbone_allocated_owners_;
++    result["prior_owners"] = integrator_->backbone_prior_owners_;
++    return result;
++}
++
++pybind11::dict GlobalSegmentMap_py::exportAssociationProbe(pybind11::array &pose, pybind11::array &depth)
++{
++    std::lock_guard<std::mutex> lock(label_tsdf_layers_mutex_);
++    CHECK(segments_to_integrate_.empty());
++    CHECK_NOTNULL(cam_ray_generator_);
++    const cv::Mat pose_mat = cvnp::nparray_to_mat(pose);
++    Eigen::Matrix<float, 4, 4> pose_eigen;
++    cv::cv2eigen(pose_mat, pose_eigen);
++    const Transformation transform(pose_eigen);
++    const cv::Mat depth_mat = cvnp::nparray_to_mat(depth);
++    CHECK_EQ(depth_mat.type(), CV_32F);
++    CHECK_EQ(depth_mat.rows, cam_ray_generator_->img_height_);
++    CHECK_EQ(depth_mat.cols, cam_ray_generator_->img_width_);
++    cv::Mat labels(depth_mat.size(), CV_16U, cv::Scalar(0));
++    cv::Mat owners(depth_mat.size(), CV_16U, cv::Scalar(0));
++    cv::Mat hit_depth(depth_mat.size(), CV_32F, cv::Scalar(0));
++    cv::Mat validity(depth_mat.size(), CV_8U, cv::Scalar(0));
++    const auto before = integrator_->backboneStateSummary();
++    integrator_->exportAssociationProbe(transform, depth_mat, cam_ray_generator_,
++                                        &labels, &owners, &hit_depth, &validity);
++    const auto after = integrator_->backboneStateSummary();
++    CHECK(before == after);
++    pybind11::dict result;
++    result["prior_label"] = cvnp::mat_to_nparray(labels.clone(), false);
++    result["prior_owner"] = cvnp::mat_to_nparray(owners.clone(), false);
++    result["hit_depth"] = cvnp::mat_to_nparray(hit_depth.clone(), false);
++    result["validity"] = cvnp::mat_to_nparray(validity.clone(), false);
++    result["state_before"] = before;
++    result["state_after"] = after;
++    return result;
++}
++
+ pybind11::dict GlobalSegmentMap_py::exportStudyFrameState()
+ {
+     pybind11::dict state;
+@@ -478,6 +534,13 @@ pybind11::dict GlobalSegmentMap_py::exportStudyFrameState()
+         row["semantic_label"] = segment->semantic_label_;
+         row["registered_label"] = segment->label_;
+         row["point_count"] = segment->points_C_.size();
++        if (integrator_->backbone_object_association_ && segment->instance_label_ != BackgroundLabel) {
++            const InstanceLabel planned = integrator_->backbone_planned_owners_.at(segment->instance_label_);
++            const InstanceLabel realized = fusion->getInstanceLabel(segment->label_, 0.0f);
++            row["planned_owner"] = planned;
++            row["realized_count_owner"] = realized;
++            row["owner_discrepancy"] = planned != realized;
++        }
+         segments.append(row);
+         registered_labels.emplace(segment->label_);
+     }
+@@ -503,6 +566,7 @@ pybind11::dict GlobalSegmentMap_py::exportStudyFrameState()
+         pybind11::dict row;
+         row["segment_label"] = segment_label;
+         row["instance_label"] = fusion->getInstanceLabel(segment_label, 0.1f);
++        row["raycast_instance_label"] = fusion->getInstanceLabel(segment_label, 0.0f);
+         row["semantic_label"] = fusion->getSemanticLabel(segment_label);
+         label_instances.append(row);
+     }
+@@ -513,6 +577,22 @@ pybind11::dict GlobalSegmentMap_py::exportStudyFrameState()
+     association["use_instance_label_connect"] = use_inst_label_connect_;
+     association["connection_ratio_threshold"] = connection_ratio_th_;
+     association["label_mapping_count_threshold_factor"] = 0.1f;
++    association["backbone_ratio_gate"] = integrator_->backbone_ratio_gate_;
++    association["native_label_register_min_overlap_ratio"] = integrator_->label_tsdf_config_.label_register_min_overlap_ratio;
++    association["backbone_object_association"] = integrator_->backbone_object_association_;
++    if (integrator_->backbone_object_association_) {
++        association["planned_owners"] = integrator_->backbone_planned_owners_;
++        association["allocated_owners"] = integrator_->backbone_allocated_owners_;
++        association["candidate_vetoes"] = integrator_->backbone_candidate_vetoes_;
++        association["alias_vetoes"] = integrator_->backbone_alias_vetoes_;
++        association["prior_owners"] = integrator_->backbone_prior_owners_;
++        pybind11::dict alias_tokens;
++        for (const auto& entry : integrator_->backbone_alias_tokens_) {
++            alias_tokens[pybind11::int_(entry.first)] =
++                std::vector<InstanceLabel>(entry.second.begin(), entry.second.end());
++        }
++        association["alias_tokens"] = alias_tokens;
++    }
+ 
+     state["integrated_frame_count"] = integrated_frames_count_;
+     state["segments"] = segments;
+@@ -1044,6 +1124,9 @@ PYBIND11_MODULE(consistent_gsm, m)
+         .def("insertSegmentsPoseConfidence", &GlobalSegmentMap_py::insertSegmentsPoseConfidence)
+         .def("integrateFrame", &GlobalSegmentMap_py::integrateFrame)
+         .def("exportStudyFrameState", &GlobalSegmentMap_py::exportStudyFrameState)
++        .def("configureBackboneAssociation", &GlobalSegmentMap_py::configureBackboneAssociation)
++        .def("beginBackboneAssociation", &GlobalSegmentMap_py::beginBackboneAssociation)
++        .def("exportAssociationProbe", &GlobalSegmentMap_py::exportAssociationProbe)
+         .def("exportStudyTsdfState", &GlobalSegmentMap_py::exportStudyTsdfState)
+         .def("exportStudySurfaceLabels", &GlobalSegmentMap_py::exportStudySurfaceLabels)
+         .def("LogSegmentsLabels", &GlobalSegmentMap_py::LogSegmentsLabels)
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/label_tsdf_confidence_integrator.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/label_tsdf_confidence_integrator.cpp
+index 3ece70e..a1432c5 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/label_tsdf_confidence_integrator.cpp
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/label_tsdf_confidence_integrator.cpp
+@@ -357,6 +357,10 @@ void LabelTsdfConfidenceIntegrator::computeSegmentLabelCandidatesConfidence(
+           tsdf_block_ptr->getVoxelByCoordinates(point_G);
+       Label label = 0u;
+       label = getNextUnassignedLabel(label_voxel, assigned_labels);
++      if (label != 0u && !backboneCandidateAllowed(segment, label)) {
++        ++backbone_candidate_vetoes_;
++        continue;
++      }
+       if (label != 0u && std::abs(tsdf_voxel.distance) <
+               label_tsdf_config_.label_propagation_td_factor * voxel_size_) {
+         // Do not consider allocated but unobserved voxels with label 0.
+@@ -408,6 +412,7 @@ void LabelTsdfConfidenceIntegrator::computeSegmentLabelCandidatesConfidence(
+   // Previously unobserved segment gets an unseen label.
+   if (!candidate_label_exists) {
+     Label fresh_label = getFreshLabel();
++    tagBackboneFreshLabel(segment, fresh_label);
+     std::map<Segment*, SegSegConfidence> map;
+     map.insert(std::pair<Segment*, SegSegConfidence>(
+         segment, segment->points_C_.size()));
+@@ -520,7 +525,19 @@ void LabelTsdfConfidenceIntegrator::decideLabelPointCloudsConfidence(
+ 
+   for (auto merge_candidates : *segment_merge_candidates) {
+     // increasePairwiseConfidenceCountSemantics(merge_candidates.second);
+-    increasePairwiseConfidenceCount(merge_candidates.second);
++    if (!backbone_object_association_) {
++      increasePairwiseConfidenceCount(merge_candidates.second);
++    } else {
++      const auto& labels = merge_candidates.second;
++      for (size_t i = 0; i < labels.size(); ++i) {
++        for (size_t j = i + 1; j < labels.size(); ++j) {
++          if (backboneAliasCompatible(labels[i], labels[j]))
++            increasePairwiseConfidenceCount({labels[i], labels[j]});
++          else
++            ++backbone_alias_vetoes_;
++        }
++      }
++    }
+   }
+   // For every segment that didn't get a label because
+   // its label counts were too few, assign it an unseen label.
+@@ -528,6 +545,7 @@ void LabelTsdfConfidenceIntegrator::decideLabelPointCloudsConfidence(
+        segment_it != segments_to_integrate->end(); ++segment_it) {
+     if (labeled_segments.find(*segment_it) == labeled_segments.end()) {
+       Label fresh = getFreshLabel();
++      tagBackboneFreshLabel(*segment_it, fresh);
+       (*segment_it)->label_ = fresh;
+       dynamic_cast<SegmentConfidence*>(*segment_it)->seg_label_confidence_ = 1;
+       labeled_segments.insert(*segment_it);
+@@ -1102,7 +1120,13 @@ void LabelTsdfConfidenceIntegrator::updateLabelClassInstanceConfidence(
+       // It's a segment with a current frame instance and class prediction.
+       auto global_instance_it =
+           current_to_global_instance_map_.find((*segment_it)->instance_label_);
+-      if (global_instance_it != current_to_global_instance_map_.end()) {
++      if (backbone_object_association_) {
++        const auto planned = backbone_planned_owners_.find((*segment_it)->instance_label_);
++        CHECK(planned != backbone_planned_owners_.end());
++        matched_instance_label = planned->second;
++        current_to_global_instance_map_[(*segment_it)->instance_label_] = matched_instance_label;
++        assigned_instances.emplace(matched_instance_label);
++      } else if (global_instance_it != current_to_global_instance_map_.end()) {
+         // If current frame instance maps to a global instance, use it.
+         matched_instance_label = global_instance_it->second;
+         // if(matched_instance_label!=BackgroundLabel)
+@@ -1264,7 +1288,8 @@ bool LabelTsdfConfidenceIntegrator::getNextSegmentLabelPairWithConfidence(
+       bool is_unlabelled =
+           labeled_segments.find(segment_it->first) == labeled_segments.end();
+ 
+-      if (count_greater_than_max && count_greater_than_min && is_unlabelled) {
++      if (count_greater_than_max && count_greater_than_min && is_unlabelled &&
++          (!backbone_ratio_gate_ || ratio_greater_than_min)) {
+         max_confidence = segment_it->second;
+         max_segment = segment_it->first;
+         max_label = label_it->first;
+@@ -1322,6 +1347,11 @@ bool LabelTsdfConfidenceIntegrator::mergeLabelConfidence(
+     Label new_label;
+     Label old_label;
+     while (getNextMergeConfidence(&new_label, &old_label)) {
++      if (!backboneAliasCompatible(new_label, old_label)) {
++        ++backbone_alias_vetoes_;
++        continue;
++      }
++      aggregateBackboneAlias(new_label, old_label);
+       semantic_instance_label_fusion_ptr_->checkLabelInFrameCount();
+       SemanticLabel new_label_semantic =
+           semantic_instance_label_fusion_ptr_->getSemanticLabel(new_label);
+@@ -1714,6 +1744,132 @@ void LabelTsdfConfidenceIntegrator::cleanStaleLabels() {
+ // }
+ 
+ 
++void LabelTsdfConfidenceIntegrator::beginBackboneAssociation(
++    const std::vector<std::pair<InstanceLabel, InstanceLabel>>& plans) {
++  CHECK(backbone_object_association_);
++  backbone_prior_owners_.clear();
++  backbone_planned_owners_.clear();
++  backbone_fresh_groups_.clear();
++  backbone_alias_tokens_.clear();
++  backbone_allocated_owners_.clear();
++  backbone_candidate_vetoes_ = 0;
++  backbone_alias_vetoes_ = 0;
++  for (const auto& entry : semantic_instance_label_fusion_ptr_->label_frames_count_) {
++    InstanceLabel owner = semantic_instance_label_fusion_ptr_->getInstanceLabel(entry.first, 0.0f);
++    backbone_prior_owners_.emplace(entry.first, owner);
++    if (owner != BackgroundLabel) backbone_alias_tokens_[entry.first].insert(owner);
++  }
++  for (const auto& plan : plans) {
++    CHECK_NE(plan.first, BackgroundLabel);
++    CHECK(backbone_planned_owners_.find(plan.first) == backbone_planned_owners_.end());
++    InstanceLabel owner = plan.second;
++    if (owner == BackgroundLabel) {
++      owner = getFreshInstance();
++      backbone_allocated_owners_.push_back(owner);
++    }
++    backbone_planned_owners_.emplace(plan.first, owner);
++  }
++}
++
++bool LabelTsdfConfidenceIntegrator::backboneCandidateAllowed(const Segment* segment, Label label) {
++  if (!backbone_object_association_ || segment->instance_label_ == BackgroundLabel) return true;
++  const auto planned = backbone_planned_owners_.find(segment->instance_label_);
++  CHECK(planned != backbone_planned_owners_.end());
++  const auto fresh = backbone_fresh_groups_.find(label);
++  if (fresh != backbone_fresh_groups_.end()) return fresh->second == segment->instance_label_;
++  const auto prior = backbone_prior_owners_.find(label);
++  const bool allowed = prior != backbone_prior_owners_.end() && prior->second == planned->second;
++  if (allowed) backbone_alias_tokens_[label].insert(planned->second);
++  return allowed;
++}
++
++void LabelTsdfConfidenceIntegrator::tagBackboneFreshLabel(const Segment* segment, Label label) {
++  if (!backbone_object_association_) return;
++  backbone_fresh_groups_[label] = segment->instance_label_;
++  if (segment->instance_label_ != BackgroundLabel) {
++    const auto planned = backbone_planned_owners_.find(segment->instance_label_);
++    CHECK(planned != backbone_planned_owners_.end());
++    backbone_alias_tokens_[label].insert(planned->second);
++  }
++}
++
++bool LabelTsdfConfidenceIntegrator::backboneAliasCompatible(Label first, Label second) const {
++  if (!backbone_object_association_) return true;
++  std::set<InstanceLabel> tokens;
++  for (const Label label : {first, second}) {
++    const auto it = backbone_alias_tokens_.find(label);
++    if (it != backbone_alias_tokens_.end()) tokens.insert(it->second.begin(), it->second.end());
++  }
++  return tokens.size() <= 1;
++}
++
++void LabelTsdfConfidenceIntegrator::aggregateBackboneAlias(Label retained, Label removed) {
++  if (!backbone_object_association_) return;
++  const auto it = backbone_alias_tokens_.find(removed);
++  if (it != backbone_alias_tokens_.end())
++    backbone_alias_tokens_[retained].insert(it->second.begin(), it->second.end());
++  backbone_alias_tokens_.erase(removed);
++}
++
++std::map<std::string, double> LabelTsdfConfidenceIntegrator::backboneStateSummary() const {
++  std::map<std::string, double> state;
++  state["highest_label"] = *highest_label_ptr_;
++  state["highest_instance"] = *highest_instance_ptr_;
++  state["known_labels"] = semantic_instance_label_fusion_ptr_->label_frames_count_.size();
++  state["allocated_tsdf_blocks"] = layer_->getNumberOfAllocatedBlocks();
++  state["allocated_label_blocks"] = label_layer_->getNumberOfAllocatedBlocks();
++  state["label_frame_count_sum"] = 0;
++  state["class_instance_count_sum"] = 0;
++  state["pairwise_confidence_sum"] = 0;
++  for (const auto& row : semantic_instance_label_fusion_ptr_->label_frames_count_)
++    state["label_frame_count_sum"] += row.second;
++  for (const auto& label : semantic_instance_label_fusion_ptr_->label_class_instance_count_)
++    for (const auto& semantic : label.second)
++      for (const auto& owner : semantic.second)
++        state["class_instance_count_sum"] += owner.second;
++  for (const auto& first : pairwise_confidence_)
++    for (const auto& second : first.second) state["pairwise_confidence_sum"] += second.second;
++  return state;
++}
++
++void LabelTsdfConfidenceIntegrator::exportAssociationProbe(
++    const Transformation& pose, const cv::Mat& depth, const CameraRayGenerator* rays,
++    cv::Mat* labels, cv::Mat* owners, cv::Mat* hit_depth, cv::Mat* validity) const {
++  CHECK_NOTNULL(rays);
++  const Transformation inverse = pose.inverse();
++  for (int row = 0; row < depth.rows; ++row) {
++    for (int col = 0; col < depth.cols; ++col) {
++      const float z = depth.at<float>(row, col);
++      if (!std::isfinite(z) || z <= 0.f || z >= 50.f) continue;
++      const float near_z = std::max(z - .2f, rays->getRangeMin());
++      const float far_z = std::min(z + .2f, rays->getRangeMax());
++      if (near_z <= 0.f || near_z > far_z) continue;
++      const cv::Vec3f near_ray = rays->getRayWithDepth(row, col, near_z);
++      const cv::Vec3f far_ray = rays->getRayWithDepth(row, col, far_z);
++      const Point near_G = pose * Point(near_ray[0], near_ray[1], near_ray[2]);
++      const Point far_G = pose * Point(far_ray[0], far_ray[1], far_ray[2]);
++      RayCaster caster(near_G * voxel_size_inv_, far_G * voxel_size_inv_);
++      GlobalIndex index;
++      while (caster.nextRayIndex(&index)) {
++        const LabelVoxel* label = label_layer_->getVoxelPtrByGlobalIndex(index);
++        const TsdfVoxel* tsdf = layer_->getVoxelPtrByGlobalIndex(index);
++        if (label == nullptr || tsdf == nullptr || label->label == 0 ||
++            label->label_confidence < .5f || tsdf->weight <= 0.f ||
++            std::abs(tsdf->distance) > 2.f * voxel_size_) continue;
++        const Point center_G = (index.cast<FloatingPoint>().array() + .5f).matrix() * voxel_size_;
++        const float camera_z = (inverse * center_G).z();
++        if (camera_z <= 0.f || std::abs(camera_z - z) > .03f + .01f * z) continue;
++        const InstanceLabel owner = semantic_instance_label_fusion_ptr_->getInstanceLabel(label->label, 0.0f);
++        labels->at<uint16_t>(row, col) = label->label;
++        owners->at<uint16_t>(row, col) = owner;
++        hit_depth->at<float>(row, col) = camera_z;
++        validity->at<uint8_t>(row, col) = 1;
++        break;
++      }
++    }
++  }
++}
++
+ void LabelTsdfConfidenceIntegrator::raycastInstancePredictions(
+     const Transformation& T_G_C, 
+     const cv::Mat& panoptic_mask,
+@@ -2341,4 +2497,4 @@ SegSegConfidence LabelTsdfConfidenceIntegrator::calculateSpatialConfidence(
+   }
+ }
+ 
+-}  // namespace voxblox
+\ No newline at end of file
++}  // namespace voxblox
+diff --git a/scripts/panoptic_mapping_.py b/scripts/panoptic_mapping_.py
+index 6bbdb15..4176075 100644
+--- a/scripts/panoptic_mapping_.py
++++ b/scripts/panoptic_mapping_.py
+@@ -281,6 +281,10 @@ def main(args):
+         0.9 # cos_sim_th, not used
+     )
+     gsm_node.outputLog(log_info)
++    backbone_hook = None
++    if os.environ.get("OVIMAP_BACKBONE_RECIPE"):
++        from static_ovmap.backbone_wave1.mapping_hooks import BackboneMappingHook
++        backbone_hook = BackboneMappingHook(os.environ["OVIMAP_BACKBONE_RECIPE"], gsm_node)
+ 
+     # ==========================================================
+     VLM_name = 'siglip-l-16-384'
+@@ -400,9 +404,13 @@ def main(args):
+             segments_generator.SegmentDepth(depth_scaled, rgb_img, f_i)
+         
+         # fuse the depth segments and panoptic segments
+-        segment_list: list[Segment] = segments_generator.frameToSegmentsCropFormer(
+-            depth_scaled, K_depth, pose, f_i, inst_seg
+-        )
++        if backbone_hook is not None:
++            inst_seg, inst_seg_f = backbone_hook.raster(f_i, inst_seg, inst_seg_f)
++            segment_list = backbone_hook.segments(segments_generator, depth_scaled, K_depth, pose, f_i, inst_seg)
++        else:
++            segment_list: list[Segment] = segments_generator.frameToSegmentsCropFormer(
++                depth_scaled, K_depth, pose, f_i, inst_seg
++            )
+         if len(segment_list) == 0:
+             logging.warning(f"[Skip] No segment found in frame {f_i}")
+             continue
+@@ -571,6 +579,8 @@ def main(args):
+         gsm_node=gsm_node,
+         instance_mesh_path=pjoin(exp_results, f'instance_mesh_{num_frames}.ply'),
+     )
++    if backbone_hook is not None:
++        backbone_hook.finalize(inst_dict, gsm_node, max_top_vis=max_top_vis, strategy=view_select_strategy)
+ 
+     if not args.skip_feature_extraction:
+         np.random.seed(0)

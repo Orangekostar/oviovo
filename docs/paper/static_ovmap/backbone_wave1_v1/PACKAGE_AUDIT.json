@@ -1,0 +1,181 @@
+{
+  "task_id": "ovimap-backbone-wave1-v1",
+  "issued": "2026-09-30",
+  "status": "PASS",
+  "scope": "INSTRUCTION_PACKAGE_AND_SYNTHETIC_MATHEMATICS_ONLY",
+  "not_performed": [
+    "native_C++_compilation",
+    "SAM_or_VLM_inference",
+    "server_cache_access",
+    "scene_reconstruction",
+    "benchmark_evaluation",
+    "remote_repository_write"
+  ],
+  "source_review": "Pinned GitHub source/hand-off/parameter reads and roadmap comparison; see SOURCE_EVIDENCE.md.",
+  "checks_total": 31,
+  "checks_passed": 31,
+  "checks": [
+    {
+      "name": "all_required_package_files_present",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "fixed_user_and_upstream_commits",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "seven_unique_primary_map_variants",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "variant_families_1_control_4_structural_2_frontend",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all_variant_ids_bound_in_instruction",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "four_dev_eight_replica_unique_disjoint",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no_confirmation_scenes_in_executable_cohort",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all_scenes_disclosed_as_exposed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "original_cal_folds_remain_in_dev",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "native_mode4_and_original_core_modes_fixed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ratio_is_separate_control_not_global_repair",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all_depth_thresholds_and_original_gate_position_fixed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "sam2_pinned_current_frame_only_and_bounded",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no_silent_model_family_substitution",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "real_new_inference_authorized_training_refit_disabled",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "three_frozen_readouts_and_d2_weights",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "native_and_fc_observation_rules_fixed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "fresh_geometry_anchor_and_projection_required",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "official_pool_and_actual_overlap_vector_fixed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "one_composition_no_individual_gain_gate",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "map_job_and_primary_row_upper_bounds",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "selection_is_development_only_frozen_for_transfer",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "shared_cache_cost_not_zero_standalone_cost",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all_phases_and_cli_agree",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "reports_and_real_normal_push_bound",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "production_and_package_validation_distinguished",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "source_registry_has_pinned_real_integration_files",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "eleven_inherited_2026_references_not_all_executed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no_unresolved_editorial_placeholders",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "python_fixture_and_audit_syntax",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "twelve_actual_synthetic_tests_passed",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "reference_tests": {
+    "run": 12,
+    "failures": 0,
+    "errors": 0,
+    "passed": true,
+    "log": "REFERENCE_TEST_LOG.txt"
+  }
+}
