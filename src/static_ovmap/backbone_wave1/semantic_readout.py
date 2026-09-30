@@ -56,6 +56,14 @@ def run_native_query(job):
     root, capture_path = Path(job["output_root"]), Path(job["capture_manifest"])
     root.mkdir(parents=True, exist_ok=True)
     capture, metadata = read(capture_path), read(job["deferred_metadata"])
+    replay_frames = CapturedFrames(capture_path)
+    loader = NativeQueryLoader(replay_frames, {"native_model": job["model"]["path"]}, root / "query_lineage_cache")
+    actual_files = {item["path"]: item for item in loader.inputs}
+    for expected_file in job["model"]["files"]:
+        if actual_files.get(expected_file["path"]) != expected_file:
+            raise ValueError("frozen native model file identity changed")
+    if file_identity(job["model"]["text"]["path"]) != job["model"]["text"]:
+        raise ValueError("frozen native text identity changed")
     sys.path.insert(0, str(Path(job["upstream"]) / "scripts"))
     import vl_models
     vl_models.siglip_model_list["siglip-l-16-384"] = job["model"]["path"]
@@ -118,8 +126,6 @@ def run_native_query(job):
             receipt["native_elapsed_seconds"] = time.monotonic() - started
 
             # The Q ranker sees only its current frame and debited acquisitions.
-            replay_frames = CapturedFrames(capture_path)
-            loader = NativeQueryLoader(replay_frames, {"native_model": job["model"]["path"]}, root / "query_lineage_cache")
             processor = AutoImageProcessor.from_pretrained(job["model"]["path"], local_files_only=True, use_fast=False)
             loader.backend = FrozenSiglipBackend(model=native_model.siglip_model,
                 processor=processor, tokenizer=None, device="cuda")
