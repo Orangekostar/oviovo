@@ -343,11 +343,35 @@ def render(binding, spec):
     for path in (root / "readouts").glob("*/*/receipt.json"):
         value = read(path)
         nq, fc = read(path.parent / "native_query/native_query_receipt.json"), read(path.parent / "fc/receipt.json")
+        mapping = read(root / "maps" / value["scene"] / value["map_id"] / "map_receipt.json")
+        sam = None if mapping["recipe"]["frontend"] == "cropformer" else read(
+            root / "frontend" / value["scene"] / "SAM2_PAIRED/receipt.json")
+        sam_encodings = 0 if sam is None else sam["counters"]["physical_image_encodings"]
+        native_contents = nq["native_required_content"]
+        native_cpu_seconds = sum(max(0., row["elapsed_seconds"] -
+            row.get("encoder_content", {}).get("call_elapsed_seconds", 0.))
+            for row in nq["native_requests"] if row["status"] == "COMPLETE")
+        native_seconds = mapping["elapsed_seconds"] + nq["model_load_seconds"] + native_cpu_seconds + sum(
+            nq["required_content_encoder_seconds"][key] for key in native_contents) + (
+                0 if sam is None else sam["elapsed_seconds"])
+        per_readout = {"NATIVE_READOUT": {
+            "required_image_encodings": sum(native_contents.values()) + sam_encodings,
+            "attributable_standalone_seconds": native_seconds,
+            "timing_missing_components": ["native_metadata_reconstruction_and_readout_CPU_not_separately_attributed"]}}
+        for method in ("FC_EQ", "D2"):
+            per_readout[method] = {
+                "required_image_encodings": value["required_image_encodings"],
+                "attributable_standalone_seconds": value["attributable_map_plus_readout_seconds"],
+                "timing_missing_components": value["standalone_timing_missing_components"]}
         costs.append({"scene": value["scene"], "map_id": value["map_id"],
             "required_image_encodings": value["required_image_encodings"],
             "attributable_standalone_seconds": value["attributable_map_plus_readout_seconds"],
             "timing_missing_components": value["standalone_timing_missing_components"],
             "physical_native_crop_encodings": nq["physical_image_encodings"],
+            "physical_N_crop_encodings": nq["native_physical_image_encodings"],
+            "physical_Q_incremental_crop_encodings": nq["physical_image_encodings"] - nq["native_physical_image_encodings"],
+            "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+            "standalone_by_readout": per_readout,
             "physical_FC_image_encodings": fc["physical_image_encodings"],
             "physical_FC_region_poolings": fc["physical_region_poolings"],
             "native_query_wall_seconds": nq["elapsed_seconds"], "FC_wall_seconds": fc["elapsed_seconds"],
