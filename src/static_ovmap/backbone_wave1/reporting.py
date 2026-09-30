@@ -573,6 +573,16 @@ def render(binding, spec):
     test_path = root / "review/scoped_tests.json"
     if test_path.is_file():
         atomic_write_json(release / "validation/scoped_tests.json", read(test_path))
+    review_path = root / "review/primary_review.json"
+    review_text = "Primary requirement review is pending; experimental coverage alone does not replace it.\n"
+    if review_path.is_file():
+        review = read(review_path)
+        atomic_write_json(release / "validation/primary_review.json", review)
+        review_text = (f"Primary requirement review: `{review['status']}`. "
+            "[Measured review and evidence paths](../../../artifacts/static_ovmap/backbone_wave1_v1/validation/primary_review.json).\n\n"
+            "| Contract | Review status | Evidence |\n| --- | --- | --- |\n" +
+            "\n".join("| " + " | ".join([row["contract"], row["status"],
+                "; ".join(f"`{path}`" for path in row["evidence"])]) + " |" for row in review["checks"]) + "\n")
     reports = {
         "BACKBONE_WAVE1_RESULTS.md": f"# Backbone wave-1 measured results\n\nStatus: `{status}`. Successful map-scene configurations: {len(success)}/{expected}; primary official rows: {len(primary)}/{3 * expected}. All data are exposed. Deployment: N0_UNCHANGED.\n\n## Development Official Pools (%)\n\n" + _table([r for r in pools if r["cohort"] == "development"]) +
             "\n\n## Replica Official Pools (%)\n\n" + _table([r for r in pools if r["cohort"] == "replica"]) +
@@ -592,7 +602,16 @@ def render(binding, spec):
             f"```bash\n{spec['runtime_default']} scripts/evaluation/run_ovimap_backbone_wave1.py --phase all --spec docs/paper/static_ovmap/backbone_wave1_v1/PROTOCOL_SPEC.json --output-root {root} --gpu 2 --mapping-workers 2 --mapping-threads 8 --evaluation-workers 3 --resume\n```\n\n" +
             "Report and publish never launch mapping/models. The coordinator, map outputs and GPU use real locks. Interrupted maps restart from frame zero with previous attempts retained. Restore external arrays/data/weights from external_artifacts.json and validate consumed receipts. Implementation and transfer-freeze commits are in execution/freeze receipts; the final publication SHA is external in publication/final.json.\n\n" +
             "Actual consumed implementation commits: " + ", ".join(f"`{c}`" for c in provenance["implementation_commits"]) + ".\n\n" +
-            "Every measured map's raw inputs/outputs are identified by path, bytes and SHA256 in `code_model_output_provenance.json`. The unchanged measured bridge retains its original receipt and explicitly records the validation-only C6 controller alias. Per-class summaries reconstruct the original released AP from locked matches and verify exact pooled AP agreement. Secondary ranks use each new map's own native rank table.\n",
+            "Every measured map's raw inputs/outputs are identified by path, bytes and SHA256 in `code_model_output_provenance.json`. The unchanged measured bridge retains its original receipt and explicitly records the validation-only C6 controller alias. Per-class summaries reconstruct the original released AP from locked matches and verify exact pooled AP agreement. Secondary ranks use each new map's own native rank table.\n\n" +
+            "## Production Acceptance\n\n" + review_text + "\n" +
+            f"Measured maps: {len(success)}/{expected}; primary official rows: {len(primary)}/{3 * expected}; bridge: `{bridge['status']}`. " +
+            "[Scope and scientific status](../../../artifacts/static_ovmap/backbone_wave1_v1/completion.json), " +
+            "[native trace](../../../artifacts/static_ovmap/backbone_wave1_v1/validation/native_trace.json), " +
+            "[scoped tests](../../../artifacts/static_ovmap/backbone_wave1_v1/validation/scoped_tests.json), " +
+            "[freeze chronology](../../../artifacts/static_ovmap/backbone_wave1_v1/transfer_freeze_commit.json), " +
+            "[physical work](../../../artifacts/static_ovmap/backbone_wave1_v1/physical_work.json), " +
+            "[external restoration](../../../artifacts/static_ovmap/backbone_wave1_v1/external_artifacts.json). " +
+            "Publication is verified separately after the normal push in the external `publication/final.json`; it is not inferred from this report or committed recursively.\n",
         "BACKBONE_WAVE1_SELECTION.md": "# Backbone wave-1 selection\n\n" +
             (f"Frozen nominee: `{selection['nominee']}`. Transfer map IDs: " + ", ".join(r["id"] for r in selection["replica_recipes"]) + ".\n\n" if selection else "Selection is incomplete; no Replica nominee is asserted.\n\n") +
             "Selection uses D2 four-scene official development pooling only. APall band .05pp, mIoU band .1pp, AP50 band .1pp, then required standalone image encodings, median attributable time, changed block count and method ID. The structural champion is selected from BB01_SYNC/BB05_FORWARD/BB05_BIDIR: BB05_RATIO_GATE remains a mandatory measured simple control and is excluded by the normative noncontrol-champion rule. Strict metric ranking, banded ranking and every tie step are frozen in candidate_freeze.json/selection.json before composition/Replica. Individual positive gain is not required for composition; both families require complete inputs and actual raw partition intervention. Replica results do not refit weights, temperatures or the Q model.\n",
