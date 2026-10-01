@@ -116,10 +116,10 @@ Consumes: genuine parent track bits, RAW winner/remap/seed correspondence and
 current CropFormer; S2 additionally owns its prior and last two snapshots.
 Produces: protected CropFormer completions, causal conflict diagnostics and S maps.
 
-- [ ] Round-trip actual raster winner labels to saved tracks; never infer logits.
-- [ ] Test mutual unique IoU/coverage attachment, standalone overlap and C preservation.
-- [ ] Construct full development S1 rasters; alias only actual canonical equivalents.
-- [ ] Implement S2 history capture, same-track visibility warp, stable factor0
+- [x] Round-trip actual raster winner labels to saved tracks; never infer logits.
+- [x] Test mutual unique IoU/coverage attachment, standalone overlap and C preservation.
+- [x] Construct full development S1 rasters; alias only actual canonical equivalents.
+- [x] Implement S2 history capture, same-track visibility warp, stable factor0
   owner evidence, q>.2 addition-only suppression and unknown/history abstention.
 - [ ] Run conditional complete S1/S2 four-scene maps where required by input gate.
 
@@ -130,7 +130,7 @@ Consumes: prediction-only locked raw maps, then separate diagnostic annotations.
 Produces: full raw diagnostics and actual standard NATIVE/FC_EQ/D2 readouts unless
 the complete four-scene aggregate meets the fixed catastrophe rule.
 
-- [ ] Test catastrophe fraction/pp/count units and full-cohort decision scope.
+- [x] Test catastrophe fraction/pp/count units and full-cohort decision scope.
 - [ ] Compare all-GT raw recall/IoU/fragments/coverage/F5 with parent definitions.
 - [ ] Generate fresh map-specific N/Q/F, own requests/projection and temperatures;
   parent cache is exact lookup only, every new miss remains task-local.
@@ -187,6 +187,14 @@ The isolated recovery_native_v2 extension passes exact serial3-frame old/new/off
 all-native TSDF, label, owner, alias and raster parity. Forty-one accepted real-frame
 pairs and a native two-group/one-owner follower fixture were verified. Its extension
 SHA is 48cfc80599c7ec7849749d18eff163680e6c1d937b9e1aa37d73b764f963af1b.
+All 800 development S1 frontend frames were checked against original binary tracks
+and RAW winner/remap evidence. The changed canonical frame counts are 159, 160,
+160 and 159; all positive CropFormer pixels and separate original groups remain.
+Five SAM tests, one full-cohort catastrophe test and two native cache/accounting
+tests pass. Own-map S2 history/probe/warp and addition-only conflict paths are
+implemented; full S maps remain pending. A1 has completed three scenes, with
+geometry diagnosis complete on those scenes. Fresh native/Q and FC worker adapters
+are implemented but still require actual post-screen own-map readout verification.
 The initial diagnostic build, failed follower traces and GPU self-occupancy failure
 remain preserved. A full A/S map screen, compositions, committed selection freeze,
 Replica transfer, complete reporting and publication are still pending.
