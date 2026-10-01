@@ -35,6 +35,45 @@ def _table(pools):
     return "\n".join(lines)
 
 
+def _selection_details(candidates, selection, freeze):
+    families = candidates["families"]
+    inputs = {row["id"]: row for row in candidates["inputs"]}
+    inputs.update({row["id"]: row for row in selection["inputs"]})
+    composition = candidates["composition_recipe"]
+    lines = ["\n## Frozen Candidates and Composition\n",
+        f'Structural champion: `{families["structural"]["chosen"]["id"]}`. '
+        f'Frontend champion: `{families["frontend"]["chosen"]["id"]}`.',
+        f'Only composition: `{composition["id"]}` with `{composition["constituents"]["structural"]}` '
+        f'and `{composition["constituents"]["frontend"]}`.' if composition else
+        f'Composition skipped: `{candidates["composition_skip_reason"]}`.',
+        f'Candidate identity: `{candidates["identity"]}`. Transfer selection identity: `{selection["identity"]}`.',
+        f'Recorded pre-Replica freeze commit: `{freeze["commit"] if freeze else "NOT_RECORDED"}`.',
+        "\n## Frozen Development Inputs\n",
+        "| Map | APall (%) | mIoU (%) | AP50 (%) | Required image encodings | Median attributable seconds | Changed blocks | Raw intervention |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
+    for key, row in sorted(inputs.items()):
+        lines.append("| " + " | ".join([key,
+            *[f'{100 * row["metrics"][metric]:.6f}' for metric in ("apall", "miou", "ap50")],
+            str(row["required_image_encodings"]), f'{row["median_standalone_seconds"]:.6f}',
+            str(row["changed_blocks"]), str(row["real_intervention"])]) + " |")
+    lines.append("\nThese are frozen four-scene D2 pools and standalone obligations. Attributable time is partially measured stage attribution, not a cold end-to-end benchmark. Both temporal arms include the full shared SAM prerequisite.")
+    groups = [(name.title(), families[name]["ranking"]) for name in ("structural", "frontend")]
+    groups.append(("Nominee", selection["ranking"]))
+    for name, ranking in groups:
+        lines.extend([f"\n## {name} Ranking Trace\n",
+            "Strict metric order: " + " > ".join(ranking["strict_metric_ranking"]) + ".",
+            "Frozen banded preference: " + " > ".join(ranking["banded_preference"]) + ".",
+            "\n| Step | Selected | APall band | mIoU band | AP50 band | Cost tie order |",
+            "| ---: | --- | --- | --- | --- | --- |"])
+        for index, step in enumerate(ranking["steps"], 1):
+            bands = [f'max {100 * band["maximum"]:.6f}%, width {100 * band["band_width"]:.6f}pp: '
+                     + ", ".join(band["retained"]) for band in step["metric_bands"]]
+            lines.append("| " + " | ".join([str(index), step["selected"], *bands,
+                " > ".join(step["cost_tie_order"])]) + " |")
+    lines.append("\nEvery metric filter and cost tie order above comes from the immutable freezes. Cost ties use required image encodings before median attributable time, changed blocks and method ID. Exact recipes, pool identities, readout identities and raw-intervention evidence are preserved in [candidate_freeze.json](../../../artifacts/static_ovmap/backbone_wave1_v1/candidate_freeze.json) and [selection.json](../../../artifacts/static_ovmap/backbone_wave1_v1/selection.json). Replica does not alter these nominations.")
+    return "\n".join(lines) + "\n"
+
+
 def geometric_pools(spec, diagnostics):
     result = []
     for cohort in ("development", "replica"):
@@ -618,7 +657,7 @@ def render(binding, spec):
             "Substantial-fragment impurity is the intersection-row-weighted mean of one minus fragment purity over the fixed intersections of at least 100 points and at least 1% GT coverage. It is conditional on those intersections and does not include unmatched predicted owners. Substantial GT coverage averages summed retained-fragment coverage over every eligible GT, including zero for missed GT.\n\n" +
             "## Actual Physical Work and Failures\n\n```json\n" + json.dumps(physical["totals"], indent=2) + "\n```\n\n" +
             f"Recorded failed command attempts: {sum(c['exit_code'] != 0 for c in physical['command_attempts'])}. Recorded failed worker receipts: {sum(w['status'] == 'FAILED' for w in physical['worker_attempts'])}. Phase failures: {len(failures)}. Details and retained logs are in `physical_work.json` and `failures.json`.\n\n" +
-            "Costs distinguish actual forwards from content-deduplicated standalone obligations. Common SAM predictions are required by both RAW/GEOM. N/Q/FC costs are required by both fused readouts. Timing is measured stage attribution, not a cold end-to-end rerun; missing timing components are disclosed per job. GPU-worker wall time includes CPU preprocessing, loading and IO; device-only GPU time was not instrumented. Recorded phase CPU totals cover the phases listed in `physical_work.json`, including children, and exclude earlier uninstrumented preparation/bridge work. Concurrent stages overlap and their duration sum is not end-to-end elapsed time. No significance or independent-generalization claim is made.\n",
+            "FC batch-call count was not separately recorded and remains null in its worker ledger; its actual image-input and region-pooling counts are recorded. The known encoder-call total includes N/Q and SAM only. Costs distinguish actual forwards from content-deduplicated standalone obligations. Common SAM predictions are required by both RAW/GEOM. N/Q/FC costs are required by both fused readouts. Timing is measured stage attribution, not a cold end-to-end rerun; missing timing components are disclosed per job. GPU-worker wall time includes CPU preprocessing, loading and IO; device-only GPU time was not instrumented. Recorded phase CPU totals cover the phases listed in `physical_work.json`, including children, and exclude earlier uninstrumented preparation/bridge work. Concurrent stages overlap and their duration sum is not end-to-end elapsed time. No significance or independent-generalization claim is made.\n",
         "BACKBONE_WAVE1_HANDOFF.md": "# Backbone wave-1 handoff\n\n" + f"Repository: `{repo}`\nExternal attempt: `{root}`\nIsolated upstream: `{spec['upstream_worktree']}`\nIsolated native build: `{spec['native_build_root']}`\n\n" +
             "Apply the original module_validation_v1 patch, then third_party_patches/ovimap/backbone_wave1_v1/backbone_wave1_v1.patch to the pinned upstream. The old native extension remains intact. SAM uses its pinned source checkout and historical environment; optional connected-components CUDA extension absence uses the official loader fallback and is recorded.\n\n" +
             f"```bash\n{spec['runtime_default']} scripts/evaluation/run_ovimap_backbone_wave1.py --phase all --spec docs/paper/static_ovmap/backbone_wave1_v1/PROTOCOL_SPEC.json --output-root {root} --gpu 2 --mapping-workers 2 --mapping-threads 8 --evaluation-workers 3 --resume\n```\n\n" +
@@ -636,7 +675,10 @@ def render(binding, spec):
             "Publication is verified separately after the normal push in the external `publication/final.json`; it is not inferred from this report or committed recursively.\n",
         "BACKBONE_WAVE1_SELECTION.md": "# Backbone wave-1 selection\n\n" +
             (f"Frozen nominee: `{selection['nominee']}`. Transfer map IDs: " + ", ".join(r["id"] for r in selection["replica_recipes"]) + ".\n\n" if selection else "Selection is incomplete; no Replica nominee is asserted.\n\n") +
-            "Selection uses D2 four-scene official development pooling only. APall band .05pp, mIoU band .1pp, AP50 band .1pp, then required standalone image encodings, median attributable time, changed block count and method ID. The structural champion is selected from BB01_SYNC/BB05_FORWARD/BB05_BIDIR: BB05_RATIO_GATE remains a mandatory measured simple control and is excluded by the normative noncontrol-champion rule. Strict metric ranking, banded ranking and every tie step are frozen in candidate_freeze.json/selection.json before composition/Replica. Individual positive gain is not required for composition; both families require complete inputs and actual raw partition intervention. Replica results do not refit weights, temperatures or the Q model.\n",
+            "Selection uses D2 four-scene official development pooling only. APall band .05pp, mIoU band .1pp, AP50 band .1pp, then required standalone image encodings, median attributable time, changed block count and method ID. The structural champion is selected from BB01_SYNC/BB05_FORWARD/BB05_BIDIR: BB05_RATIO_GATE remains a mandatory measured simple control and is excluded by the normative noncontrol-champion rule. Strict metric ranking, banded ranking and every tie step are frozen in candidate_freeze.json/selection.json before composition/Replica. Individual positive gain is not required for composition; both families require complete inputs and actual raw partition intervention. Replica results do not refit weights, temperatures or the Q model.\n" +
+            (_selection_details(read(root / "candidate_freeze.json"), selection,
+                read(root / "transfer_freeze_commit.json") if (root / "transfer_freeze_commit.json").is_file()
+                else None) if selection else ""),
         "BACKBONE_WAVE1_CLAIMS.md": "# Backbone wave-1 claims\n\n" + f"Completion status: `{status}`. Measured nominee label: `{conclusion}`.\n\n" +
             "Supported implementation claims: the new native extension exposes a read-only prior probe and enforces object plans through candidate filtering, mode4 counts and compatible aliases; real short-trace receipts report realized ownership. Simultaneous fusion uses unchanged original depth support. Bounded SAM uses current-only forward outputs, five-frame resets and shared RAW-defined discoveries, with geometry checked against previous RAW support.\n\n" +
             "Scientific mechanism claims require the measured raw geometry ledgers and relevant simple-control comparisons. A class-conditioned rank or semantic coverage change alone does not establish stronger geometry. A stronger-backbone claim is not automatically authorized by AP gain. Mixed APall/mIoU signs are a tradeoff. Negative complete studies remain complete without a deployment change.\n\n" +
