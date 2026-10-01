@@ -269,6 +269,28 @@ class Study:
             committed = git_value(self.repo, "show", f'{freeze["commit"]}:{self.spec["publication"]["repo_artifacts"]}/{leaf}')
             if json.loads(committed) != read(self.root / leaf):
                 raise ValueError("Replica configuration is not the committed selection")
+        binding = self.bound()
+        launch_binding = dict(binding, scenes=dict(binding["scenes"]))
+        corrections = []
+        for scene in selection["replica_scene_order"]:
+            data = binding["scenes"][scene]
+            parent = data["parent_command"]["command"]
+            if Path(parent[1]).name == "replica_isolated_mapper.py":
+                if not parent[2].startswith("replica_") or Path(parent[3]).name != "panoptic_mapping_.py":
+                    raise ValueError("unrecognized inherited Replica mapper wrapper")
+                # The inherited wrapper only isolates feature IPC, which deferred mapping disables.
+                command = [parent[0], *parent[3:]]
+                launch_binding["scenes"][scene] = dict(data,
+                    parent_command=dict(data["parent_command"], command=command))
+                corrections.append({"scene": scene, "original_command": parent, "normalized_command": command,
+                    "wrapper": file_identity(parent[1]), "inherited_IPC_namespace": parent[2]})
+        if corrections:
+            atomic_write_json(self.root / "replica_launch_correction.json", {
+                "status": "INHERITED_FEATURE_IPC_WRAPPER_UNWRAPPED", "binding_identity": binding["identity"],
+                "selection_identity": selection["identity"], "corrections": corrections,
+                "scientific_options_unchanged": True, "skip_feature_extraction_required": True,
+                "original_binding_preserved": True})
+            self.binding = launch_binding
         value = self.run_jobs(selection["replica_scene_order"], selection["replica_recipes"], "transfer")
         self.cohort_pools("replica", selection["replica_scene_order"], selection["replica_recipes"])
         return value

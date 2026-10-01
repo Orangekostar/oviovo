@@ -550,7 +550,8 @@ def render(binding, spec):
                 "primary_rows": len(primary), "expected_primary_rows": 3 * expected},
             "scientific": conclusion, "publication": "EXTERNAL_RECEIPT_REQUIRED",
             "all_scenes_exposed": True, "deployment": "N0_UNCHANGED"}}
-    for leaf in ("candidate_freeze.json", "selection.json", "bridge_diagnosis.json", "transfer_freeze_commit.json"):
+    for leaf in ("candidate_freeze.json", "selection.json", "bridge_diagnosis.json", "transfer_freeze_commit.json",
+                 "replica_launch_correction.json"):
         if (root / leaf).is_file():
             outputs[leaf] = read(root / leaf)
     for name, data in outputs.items():
@@ -573,6 +574,9 @@ def render(binding, spec):
     test_path = root / "review/scoped_tests.json"
     if test_path.is_file():
         atomic_write_json(release / "validation/scoped_tests.json", read(test_path))
+    launch_test_path = root / "review/transfer_launch_regression.json"
+    if launch_test_path.is_file():
+        atomic_write_json(release / "validation/transfer_launch_regression.json", read(launch_test_path))
     review_path = root / "review/primary_review.json"
     review_text = "Primary requirement review is pending; experimental coverage alone does not replace it.\n"
     if review_path.is_file():
