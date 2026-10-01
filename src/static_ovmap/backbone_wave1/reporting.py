@@ -151,8 +151,14 @@ def physical_work_ledger(root, spec):
                 "validation_only": stage == "SAM2_PREFLIGHT"})
     for directory in (root, Path(spec["native_build_root"])):
         for path in sorted(directory.rglob("*.commands.json")):
-            for attempt, row in enumerate(read(path), 1):
-                commands.append(dict(row, command_receipt=str(path), attempt=attempt))
+            attempts = read(path)
+            for attempt, row in enumerate(attempts, 1):
+                retained_log = path.parent / Path(row["log"]).name
+                if attempt < len(attempts):
+                    retained_log = retained_log.with_name(
+                        f"{retained_log.stem}.attempt_{attempt:03d}{retained_log.suffix}")
+                commands.append(dict(row, command_receipt=str(path), attempt=attempt,
+                    retained_log=str(retained_log), retained_log_exists=retained_log.is_file()))
     for path in sorted((root / "execution").glob("*.resources.json")):
         if path.stat().st_size:
             resources.append(dict(json.loads(path.read_text().splitlines()[-1]), receipt=str(path)))
