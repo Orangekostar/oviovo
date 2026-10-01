@@ -591,6 +591,10 @@ def render(binding, spec):
     launch_test_path = root / "review/transfer_launch_regression.json"
     if launch_test_path.is_file():
         atomic_write_json(release / "validation/transfer_launch_regression.json", read(launch_test_path))
+    measurement_audit = root / "review/full_measurement_audit.json"
+    if measurement_audit.is_file():
+        atomic_write_json(release / "validation/full_measurement_audit.json", read(measurement_audit))
+        shutil.copyfile(root / "review/full_measurement_audit.py", release / "validation/full_measurement_audit.py")
     review_path = root / "review/primary_review.json"
     review_text = "Primary requirement review is pending; experimental coverage alone does not replace it.\n"
     if review_path.is_file():
