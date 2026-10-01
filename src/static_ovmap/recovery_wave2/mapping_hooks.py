@@ -10,7 +10,7 @@ from static_ovmap.module_validation.contracts import atomic_write_json, canonica
 from static_ovmap.module_validation.native_capture import _write_npz
 
 from .association import plan_objects
-from .binding import read
+from .binding import ConsumptionIndex, read
 
 
 class RecoveryMappingHook(BackboneMappingHook):
@@ -30,6 +30,14 @@ class RecoveryMappingHook(BackboneMappingHook):
         if frontend not in {"S1", "S2"}:
             raise ValueError("unknown recovery frontend")
         path = Path(self.recipe["frontend_root"]) / f"{frame_id:06d}.png"
+        if not hasattr(self, "frontend_frames"):
+            receipt = read(self.recipe["frontend_receipt"])
+            if receipt["status"] != "COMPLETE" or receipt["identity"] != canonical_digest(
+                    {k: v for k, v in receipt.items() if k != "identity"}):
+                raise ValueError("locked SAM completion receipt changed")
+            self.frontend_frames = {row["frame_id"]: row for row in receipt["frames"]}
+            self.frontend_index = ConsumptionIndex(Path(self.recipe["frontend_receipt"]).parent / "input_verifications.json")
+        self.frontend_index.identity(path, self.frontend_frames[frame_id]["output"])
         raster = np.asarray(Image.open(path), np.int32)
         if raster.shape != original.shape or np.any(raster[original > 0] != original[original > 0]):
             raise ValueError("SAM completion changed a positive CropFormer pixel")

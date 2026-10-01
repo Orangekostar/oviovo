@@ -59,7 +59,7 @@ def _model_and_text(binding, data, index):
     from static_ovmap.a7_evidence_upgrade.region_adapter import operator_nodes
 
     resolver = PathResolver(binding["path_map"])
-    path = Path(data["fc_root"]) / "receipt.json"
+    path = Path(data.get("FC_model_reference_root", data["fc_root"])) / "receipt.json"
     index.identity(path)
     original = read(path)
     operators = [row for row in original["inputs"] if Path(row["path"]).name == "region_adapter.py"]
@@ -293,8 +293,13 @@ if __name__ == "__main__":
     parser.add_argument("--binding", required=True)
     parser.add_argument("--scene", action="append", required=True)
     parser.add_argument("--gpu", default="2")
+    parser.add_argument("--map-id", default="BB00_NATIVE")
+    parser.add_argument("--context")
     args = parser.parse_args()
+    if args.context and len(args.scene) != 1:
+        parser.error("a map-specific context requires exactly one scene")
     for scene in args.scene:
-        result = run_scene(read(args.binding), scene, gpu=args.gpu)
+        result = run_scene(read(args.binding), scene, gpu=args.gpu, map_id=args.map_id,
+                           context=read(args.context) if args.context else None)
         print(scene, result["status"], "images", result["physical_image_encodings"],
               "poolings", result["physical_region_poolings"], flush=True)

@@ -242,9 +242,10 @@ def filter_additions(additions, proposed, stable, owners, self_owner):
         raise ValueError("SAM additions must be an aligned subset of the actual proposed support")
     known = proposed & stable & (owners > 0)
     count = int(known.sum())
-    own = int((known & (owners == self_owner)).sum())
-    other = count - own
-    q = float(other / count) if count else None
+    resolved = self_owner is not None and self_owner > 0
+    own = int((known & (owners == self_owner)).sum()) if resolved else None
+    other = count - own if resolved else None
+    q = float(other / count) if count and resolved else None
     reject = self_owner is not None and self_owner > 0 and count >= 100 and q > .2
     kept = np.zeros_like(additions) if reject else additions.copy()
     return kept, {"known_proposed_pixels": count, "known_self": own, "known_other": other,
