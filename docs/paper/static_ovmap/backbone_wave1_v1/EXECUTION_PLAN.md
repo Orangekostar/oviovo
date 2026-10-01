@@ -49,23 +49,23 @@ TSDF maps restart from the beginning with prior attempts preserved.
 
 ## Acceptance Evidence
 
-| Requirement | Evidence Required | Initial Status |
+| Requirement | Evidence Required | Final Local Status |
 | --- | --- | --- |
-| C1 namespaces and exact DAG | resolved inputs, matrix and job identities | pending |
-| C2 simultaneous fusion and real order changes | scoped tests and first-three-frame diagnostics | pending |
-| C3 inherited ratio only | native config/trace with per-arm switch | pending |
-| C4 read-only preinsert probe | loaded binary and touched-state before/after trace | pending |
-| C5 actual directional/dummy matching | valid counterexample and real assignments | pending |
-| C6 actual mode4 enforcement | candidates/recomputation/count/alias/realized trace | pending |
-| C7 SAM2 current-frame video/raster intervention | actual predictor preflight and reconstructed outputs | pending |
-| C8 fresh anchors/features/lineage/native paint | each map capture/source DAG and bridge equivalence | pending |
-| C9 official pools and raw geometry diagnostics | complete ordered pools and valid GT denominators | pending |
-| C10 selection/composition/transfer locks | pre-composition and pre-Replica freezes | pending |
-| C11 true publication and bounded validation | scoped checks and full local/remote SHA equality | pending |
-| C12 physical and standalone costs | measured stage/forward/attribution ledgers | pending |
-| C13 bounded raw-logit storage | paired frontends and bitpacked track bundles | pending |
-| Production scope | up to 64 actual map jobs, 192 primary rows, exact blocks | pending |
-| Four reports and compact release | RESULTS/HANDOFF/SELECTION/CLAIMS with real receipt links | pending |
+| C1 namespaces and exact DAG | resolved inputs, matrix and job identities | verified, 64 exact schedules |
+| C2 simultaneous fusion and real order changes | scoped tests and first-three-frame diagnostics | verified; no real first-three-frame order change |
+| C3 inherited ratio only | native config/trace with per-arm switch | verified; inherited 0.0 is redundant |
+| C4 read-only preinsert probe | loaded binary and touched-state before/after trace | verified in actual native trace |
+| C5 actual directional/dummy matching | valid counterexample and real assignments | verified |
+| C6 actual mode4 enforcement | candidates/recomputation/count/alias/realized trace | verified; zero full directional-map discrepancies |
+| C7 SAM2 current-frame video/raster intervention | actual predictor preflight and reconstructed outputs | verified across all 12 scenes |
+| C8 fresh anchors/features/lineage/native paint | each map capture/source DAG and bridge equivalence | verified; Q 12800/12800 successes |
+| C9 official pools and raw geometry diagnostics | complete ordered pools and valid GT denominators | verified; 72 pools, 64 raw diagnostics |
+| C10 selection/composition/transfer locks | pre-composition and pre-Replica freezes | verified; original nominee preserved |
+| C11 true publication and bounded validation | scoped checks and full local/remote SHA equality | local checks verified; publication receipt external |
+| C12 physical and standalone costs | measured stage/forward/attribution ledgers | verified with explicit missing timing/call fields |
+| C13 bounded raw-logit storage | paired frontends and bitpacked track bundles | verified |
+| Production scope | up to 64 actual map jobs, 192 primary rows, exact blocks | complete: 64 maps, 192 primary and 192 secondary rows |
+| Four reports and compact release | RESULTS/HANDOFF/SELECTION/CLAIMS with real receipt links | generated and reviewed; 44 release entries verified |
 
 ## Input Corrections Discovered Before Measurement
 
@@ -101,8 +101,13 @@ test run or historical-release-file audit is needed.
 - [x] Bind actual runtime/model/data assets and write resolved inputs/matrix.
 - [x] Implement and validate the real native/Python/SAM/source/evaluator paths.
 - [x] Complete the full BB00 scene0056_00 map/source/three-readout bridge.
-- [ ] Complete bridge, screening, composition and frozen transfer measurements.
-- [ ] Generate, review and actually publish the scientific deliverables.
+- [x] Complete 28 screening, four composition and 32 frozen transfer maps.
+- [x] Generate four reports and personally review C1-C13 and the compact release.
+
+Publication is verified separately by the ordinary push and complete local/remote
+SHA comparison in external `publication/final.json`. The external
+`review/final_release_review.json` records the final artifact and publication
+checks; a local completion ledger is not proof of remote publication.
 
 ### Scoped Implementation Evidence
 
@@ -122,10 +127,26 @@ for NATIVE_READOUT, FC_EQ and D2 differs from historical evidence by at most
 eight-thread mapping variation is explicitly retained rather than hidden.
 
 The preflight was rerun after the seed-support-key correction, preserving the
-previous preflight receipt and its physical cost. The full paired frontends now
-cover all 200 scheduled frames of each development scene, with 800 actual image
-encodings shared between RAW and GEOM. Full seven-arm/four-scene screening is
-running with two CPU mapping jobs, eight mapping threads, three evaluator jobs,
-and one neural worker on GPU 2. GNU time records screening wall/user/system CPU
-time; earlier uninstrumented phase CPU and device-only GPU event time are
-explicitly disclosed as missing.
+previous preflight receipt and its physical cost. Paired frontends cover all 200
+scheduled frames of all 12 scenes: 2400 production image encodings and six
+validation encodings, shared between RAW and GEOM. The completed study used two
+CPU mapping jobs, eight native threads, three evaluator jobs and one neural
+worker on GPU 2. GNU time records screening/composition/transfer wall and CPU
+time; earlier uninstrumented phase CPU and device-only GPU event time remain
+explicitly missing. FC batch-call counts are null, while actual FC image inputs,
+region poolings and text inputs are recorded.
+
+Final scientific status is COMPLETE_NO_NET_GAIN. Development champions are
+BB01_SYNC and BB03_SAM2_RAW; the only composition is BBX_COMPOSE. The frozen
+nominee remains BB01_SYNC. Replica D2 versus fresh BB00 changes APall by
+-0.2019653pp and mIoU by +0.3401608pp. Raw R50 changes from 163/389 to 161/389;
+surface F5 remains approximately 89.6891 percent. All scenes were exposed and
+deployment remains N0_UNCHANGED.
+
+The inherited office commands used a feature IPC wrapper. Twenty initial
+launches failed before reconstruction. Transfer-only normalization removed the
+unused wrapper while preserving scientific options, original binding and all
+failed logs. The actual 32-launch red/green regression passed, and the single
+retry completed all 32 Replica configurations with zero failures. No unaffected
+map or neural prerequisite was restarted. Original and repaired phase costs are
+both retained.

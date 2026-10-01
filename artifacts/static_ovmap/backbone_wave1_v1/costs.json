@@ -1,0 +1,5005 @@
+[
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 24.12869988300372,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1777.9932003521826,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 238.1340387929231,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 54,
+    "physical_N_crop_encodings": 888,
+    "physical_Q_incremental_crop_encodings": 444,
+    "physical_native_crop_encodings": 1332,
+    "required_image_encodings": 4064,
+    "scene": "office4",
+    "source_availability": {
+      "F": 42,
+      "N": 42,
+      "Q": 42
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1777.9932003521826,
+        "required_image_encodings": 4064,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1777.9932003521826,
+        "required_image_encodings": 4064,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1683.7933940017829,
+        "required_image_encodings": 3158,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 80.85164706606884,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1610.0314910606248,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 320.3573461219203,
+    "physical_FC_image_encodings": 94,
+    "physical_FC_region_poolings": 123,
+    "physical_N_crop_encodings": 2982,
+    "physical_Q_incremental_crop_encodings": 756,
+    "physical_native_crop_encodings": 3738,
+    "required_image_encodings": 3832,
+    "scene": "office4",
+    "source_availability": {
+      "F": 42,
+      "N": 43,
+      "Q": 42
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1610.0314910606248,
+        "required_image_encodings": 3832,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1610.0314910606248,
+        "required_image_encodings": 3832,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1517.1857603400713,
+        "required_image_encodings": 2982,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 29.310245919972658,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1660.5141631441657,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 241.28603166504763,
+    "physical_FC_image_encodings": 2,
+    "physical_FC_region_poolings": 68,
+    "physical_N_crop_encodings": 1140,
+    "physical_Q_incremental_crop_encodings": 450,
+    "physical_native_crop_encodings": 1590,
+    "required_image_encodings": 3863,
+    "scene": "office4",
+    "source_availability": {
+      "F": 42,
+      "N": 43,
+      "Q": 42
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1660.5141631441657,
+        "required_image_encodings": 3863,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1660.5141631441657,
+        "required_image_encodings": 3863,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1570.5056526603876,
+        "required_image_encodings": 3006,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 33.77539929293562,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1798.6729879949708,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 302.0635113560129,
+    "physical_FC_image_encodings": 10,
+    "physical_FC_region_poolings": 108,
+    "physical_N_crop_encodings": 2562,
+    "physical_Q_incremental_crop_encodings": 768,
+    "physical_native_crop_encodings": 3330,
+    "required_image_encodings": 4094,
+    "scene": "office4",
+    "source_availability": {
+      "F": 42,
+      "N": 42,
+      "Q": 42
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1798.6729879949708,
+        "required_image_encodings": 4094,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1798.6729879949708,
+        "required_image_encodings": 4094,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1705.0703354808502,
+        "required_image_encodings": 3194,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 31.44925935997162,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1712.8835580542218,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 302.3920703009935,
+    "physical_FC_image_encodings": 6,
+    "physical_FC_region_poolings": 115,
+    "physical_N_crop_encodings": 2334,
+    "physical_Q_incremental_crop_encodings": 768,
+    "physical_native_crop_encodings": 3102,
+    "required_image_encodings": 3731,
+    "scene": "room1",
+    "source_availability": {
+      "F": 45,
+      "N": 45,
+      "Q": 43
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1712.8835580542218,
+        "required_image_encodings": 3731,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1712.8835580542218,
+        "required_image_encodings": 3731,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1631.9501829482615,
+        "required_image_encodings": 2840,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 32.58635404706001,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1549.3964168934617,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 261.7060497860657,
+    "physical_FC_image_encodings": 7,
+    "physical_FC_region_poolings": 85,
+    "physical_N_crop_encodings": 1404,
+    "physical_Q_incremental_crop_encodings": 498,
+    "physical_native_crop_encodings": 1902,
+    "required_image_encodings": 3701,
+    "scene": "room1",
+    "source_availability": {
+      "F": 45,
+      "N": 45,
+      "Q": 44
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1549.3964168934617,
+        "required_image_encodings": 3701,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1549.3964168934617,
+        "required_image_encodings": 3701,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1463.5923752788221,
+        "required_image_encodings": 2766,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 68.69467250490561,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1581.1582639615517,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 330.22299798298627,
+    "physical_FC_image_encodings": 91,
+    "physical_FC_region_poolings": 137,
+    "physical_N_crop_encodings": 2814,
+    "physical_Q_incremental_crop_encodings": 852,
+    "physical_native_crop_encodings": 3666,
+    "required_image_encodings": 3757,
+    "scene": "room1",
+    "source_availability": {
+      "F": 47,
+      "N": 47,
+      "Q": 46
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1581.1582639615517,
+        "required_image_encodings": 3757,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1581.1582639615517,
+        "required_image_encodings": 3757,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1493.8947300042491,
+        "required_image_encodings": 2814,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 30.94099976704456,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1745.421542903874,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 275.23066050291527,
+    "physical_FC_image_encodings": 3,
+    "physical_FC_region_poolings": 74,
+    "physical_N_crop_encodings": 1440,
+    "physical_Q_incremental_crop_encodings": 552,
+    "physical_native_crop_encodings": 1992,
+    "required_image_encodings": 3866,
+    "scene": "room1",
+    "source_availability": {
+      "F": 45,
+      "N": 45,
+      "Q": 43
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1745.421542903874,
+        "required_image_encodings": 3866,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1745.421542903874,
+        "required_image_encodings": 3866,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1661.8678207095945,
+        "required_image_encodings": 2966,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 27.582913580932654,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2111.3631192614557,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 267.452289787936,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 67,
+    "physical_N_crop_encodings": 1188,
+    "physical_Q_incremental_crop_encodings": 456,
+    "physical_native_crop_encodings": 1644,
+    "required_image_encodings": 4443,
+    "scene": "office2",
+    "source_availability": {
+      "F": 46,
+      "N": 49,
+      "Q": 47
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2111.3631192614557,
+        "required_image_encodings": 4443,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2111.3631192614557,
+        "required_image_encodings": 4443,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2022.058595399838,
+        "required_image_encodings": 3536,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 32.200705639086664,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1911.1315169890877,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 271.5765106739709,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 76,
+    "physical_N_crop_encodings": 1446,
+    "physical_Q_incremental_crop_encodings": 450,
+    "physical_native_crop_encodings": 1896,
+    "required_image_encodings": 4193,
+    "scene": "office2",
+    "source_availability": {
+      "F": 47,
+      "N": 51,
+      "Q": 50
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1911.1315169890877,
+        "required_image_encodings": 4193,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1911.1315169890877,
+        "required_image_encodings": 4193,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1823.3010657503037,
+        "required_image_encodings": 3270,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 72.66733579197899,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1904.0159161535557,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 344.463523006998,
+    "physical_FC_image_encodings": 83,
+    "physical_FC_region_poolings": 140,
+    "physical_N_crop_encodings": 3312,
+    "physical_Q_incremental_crop_encodings": 840,
+    "physical_native_crop_encodings": 4152,
+    "required_image_encodings": 4235,
+    "scene": "office2",
+    "source_availability": {
+      "F": 47,
+      "N": 51,
+      "Q": 50
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1904.0159161535557,
+        "required_image_encodings": 4235,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1904.0159161535557,
+        "required_image_encodings": 4235,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1816.1387132635573,
+        "required_image_encodings": 3312,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 37.57103986595757,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2119.6065224101767,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 330.34130159800407,
+    "physical_FC_image_encodings": 15,
+    "physical_FC_region_poolings": 127,
+    "physical_N_crop_encodings": 2976,
+    "physical_Q_incremental_crop_encodings": 828,
+    "physical_native_crop_encodings": 3804,
+    "required_image_encodings": 4473,
+    "scene": "office2",
+    "source_availability": {
+      "F": 46,
+      "N": 49,
+      "Q": 47
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2119.6065224101767,
+        "required_image_encodings": 4473,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2119.6065224101767,
+        "required_image_encodings": 4473,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2029.6482971204678,
+        "required_image_encodings": 3542,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "587d5f8a13376fd023a0c8c90e576e73e69bce07",
+    "FC_wall_seconds": 20.216623776010238,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1868.0560700570932,
+    "cap_exclusions": [],
+    "map_id": "BB05_RATIO_GATE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "587d5f8a13376fd023a0c8c90e576e73e69bce07",
+    "native_query_wall_seconds": 165.25606880604755,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 0,
+    "physical_N_crop_encodings": 0,
+    "physical_Q_incremental_crop_encodings": 0,
+    "physical_native_crop_encodings": 0,
+    "required_image_encodings": 6880,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 97,
+      "N": 99,
+      "Q": 96
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1868.0560700570932,
+        "required_image_encodings": 6880,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1868.0560700570932,
+        "required_image_encodings": 6880,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1777.8784905002685,
+        "required_image_encodings": 6474,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 27.03502787707839,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2018.5590844483813,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 219.1816915650852,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 100,
+    "physical_N_crop_encodings": 1488,
+    "physical_Q_incremental_crop_encodings": 102,
+    "physical_native_crop_encodings": 1590,
+    "required_image_encodings": 7396,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 105,
+      "N": 108,
+      "Q": 102
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2018.5590844483813,
+        "required_image_encodings": 7396,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2018.5590844483813,
+        "required_image_encodings": 7396,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1922.0497670540353,
+        "required_image_encodings": 6962,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "587d5f8a13376fd023a0c8c90e576e73e69bce07",
+    "FC_wall_seconds": 29.028225246001966,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1816.5858345928136,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "be946323908cb3392e3cf21f2bc0cc87b64e493a",
+    "native_query_wall_seconds": 203.8821021859767,
+    "physical_FC_image_encodings": 1,
+    "physical_FC_region_poolings": 93,
+    "physical_N_crop_encodings": 1284,
+    "physical_Q_incremental_crop_encodings": 120,
+    "physical_native_crop_encodings": 1404,
+    "required_image_encodings": 6899,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 98,
+      "N": 100,
+      "Q": 97
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1816.5858345928136,
+        "required_image_encodings": 6899,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1816.5858345928136,
+        "required_image_encodings": 6899,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1726.6538265225245,
+        "required_image_encodings": 6504,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "c45ed1ecc83faca64bdfda56341599aeb392e054",
+    "FC_wall_seconds": 43.01798466604669,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2670.1795573384734,
+    "cap_exclusions": [
+      "owner:455",
+      "owner:137",
+      "owner:67",
+      "owner:61",
+      "owner:87",
+      "owner:440",
+      "owner:343",
+      "owner:576",
+      "owner:52",
+      "owner:228",
+      "owner:564",
+      "owner:206",
+      "owner:156",
+      "owner:731",
+      "owner:700",
+      "owner:221",
+      "owner:227",
+      "owner:91",
+      "owner:232",
+      "owner:282",
+      "owner:212",
+      "owner:746",
+      "owner:157",
+      "owner:431",
+      "owner:477",
+      "owner:106",
+      "owner:698",
+      "owner:706",
+      "owner:202",
+      "owner:712",
+      "owner:749",
+      "owner:432",
+      "owner:709",
+      "owner:63",
+      "owner:447",
+      "owner:163",
+      "owner:254",
+      "owner:28",
+      "owner:235",
+      "owner:54",
+      "owner:225",
+      "owner:503",
+      "owner:718",
+      "owner:1",
+      "owner:549",
+      "owner:569",
+      "owner:265",
+      "owner:23",
+      "owner:266",
+      "owner:670",
+      "owner:370",
+      "owner:56",
+      "owner:454",
+      "owner:441",
+      "owner:6",
+      "owner:290",
+      "owner:188",
+      "owner:621",
+      "owner:384",
+      "owner:456",
+      "owner:259",
+      "owner:195",
+      "owner:128",
+      "owner:662",
+      "owner:745",
+      "owner:385",
+      "owner:675",
+      "owner:361",
+      "owner:381",
+      "owner:527",
+      "owner:363",
+      "owner:573",
+      "owner:60",
+      "owner:351",
+      "owner:737",
+      "owner:357",
+      "owner:103",
+      "owner:584",
+      "owner:722",
+      "owner:425",
+      "owner:24",
+      "owner:86",
+      "owner:152",
+      "owner:38",
+      "owner:751",
+      "owner:703",
+      "owner:552",
+      "owner:395",
+      "owner:14",
+      "owner:358",
+      "owner:50",
+      "owner:630",
+      "owner:360",
+      "owner:273",
+      "owner:412",
+      "owner:139",
+      "owner:292",
+      "owner:244",
+      "owner:368",
+      "owner:409",
+      "owner:369",
+      "owner:178",
+      "owner:407",
+      "owner:398",
+      "owner:34",
+      "owner:680",
+      "owner:129",
+      "owner:449",
+      "owner:13",
+      "owner:132",
+      "owner:610",
+      "owner:716",
+      "owner:475",
+      "owner:711",
+      "owner:27",
+      "owner:4",
+      "owner:367",
+      "owner:147",
+      "owner:565",
+      "owner:120",
+      "owner:99",
+      "owner:218",
+      "owner:479",
+      "owner:413",
+      "owner:595",
+      "owner:19",
+      "owner:35",
+      "owner:729",
+      "owner:334",
+      "owner:133",
+      "owner:349",
+      "owner:88",
+      "owner:213",
+      "owner:45",
+      "owner:248",
+      "owner:721",
+      "owner:534",
+      "owner:705",
+      "owner:49",
+      "owner:328",
+      "owner:460",
+      "owner:763",
+      "owner:12",
+      "owner:169",
+      "owner:338",
+      "owner:58",
+      "owner:755",
+      "owner:690",
+      "owner:599",
+      "owner:251",
+      "owner:100",
+      "owner:303",
+      "owner:750",
+      "owner:136",
+      "owner:32",
+      "owner:62",
+      "owner:463",
+      "owner:352",
+      "owner:177",
+      "owner:532",
+      "owner:72",
+      "owner:119",
+      "owner:442",
+      "owner:262",
+      "owner:333",
+      "owner:494",
+      "owner:467",
+      "owner:269",
+      "owner:95",
+      "owner:465",
+      "owner:372",
+      "owner:167",
+      "owner:622",
+      "owner:383",
+      "owner:575",
+      "owner:439",
+      "owner:65",
+      "owner:515",
+      "owner:239",
+      "owner:635",
+      "owner:445",
+      "owner:487",
+      "owner:155",
+      "owner:457",
+      "owner:340",
+      "owner:382",
+      "owner:7",
+      "owner:191",
+      "owner:183",
+      "owner:204",
+      "owner:253",
+      "owner:677",
+      "owner:504",
+      "owner:623",
+      "owner:80",
+      "owner:476",
+      "owner:470",
+      "owner:374",
+      "owner:85",
+      "owner:386",
+      "owner:238",
+      "owner:15",
+      "owner:596",
+      "owner:73",
+      "owner:194",
+      "owner:607",
+      "owner:403",
+      "owner:271",
+      "owner:600",
+      "owner:299",
+      "owner:101",
+      "owner:79",
+      "owner:140",
+      "owner:634",
+      "owner:236",
+      "owner:131",
+      "owner:26",
+      "owner:260",
+      "owner:587",
+      "owner:643",
+      "owner:240",
+      "owner:614",
+      "owner:159",
+      "owner:153",
+      "owner:175",
+      "owner:141",
+      "owner:17",
+      "owner:249",
+      "owner:168",
+      "owner:348",
+      "owner:375",
+      "owner:628",
+      "owner:112",
+      "owner:215",
+      "owner:179",
+      "owner:761",
+      "owner:459",
+      "owner:625",
+      "owner:190",
+      "owner:255",
+      "owner:478",
+      "owner:399",
+      "owner:18",
+      "owner:512",
+      "owner:498",
+      "owner:289",
+      "owner:392",
+      "owner:542",
+      "owner:275",
+      "owner:252",
+      "owner:30",
+      "owner:570",
+      "owner:231",
+      "owner:203",
+      "owner:44",
+      "owner:402",
+      "owner:519",
+      "owner:186",
+      "owner:200",
+      "owner:714",
+      "owner:521",
+      "owner:257",
+      "owner:53",
+      "owner:484",
+      "owner:258",
+      "owner:356",
+      "owner:281",
+      "owner:127",
+      "owner:602",
+      "owner:390",
+      "owner:696",
+      "owner:83",
+      "owner:278",
+      "owner:247",
+      "owner:124",
+      "owner:104",
+      "owner:344",
+      "owner:637",
+      "owner:285",
+      "owner:284",
+      "owner:508",
+      "owner:134",
+      "owner:387",
+      "owner:366",
+      "owner:81",
+      "owner:287",
+      "owner:618",
+      "owner:594",
+      "owner:69",
+      "owner:98",
+      "owner:224",
+      "owner:114",
+      "owner:408",
+      "owner:615",
+      "owner:578",
+      "owner:462",
+      "owner:43",
+      "owner:452",
+      "owner:55",
+      "owner:415",
+      "owner:471",
+      "owner:426",
+      "owner:474",
+      "owner:444",
+      "owner:233",
+      "owner:70",
+      "owner:608",
+      "owner:270",
+      "owner:394",
+      "owner:483",
+      "owner:110",
+      "owner:525",
+      "owner:592",
+      "owner:310",
+      "owner:118",
+      "owner:162",
+      "owner:223",
+      "owner:609",
+      "owner:182",
+      "owner:428",
+      "owner:123",
+      "owner:556",
+      "owner:154",
+      "owner:314",
+      "owner:544",
+      "owner:268",
+      "owner:93",
+      "owner:302",
+      "owner:196",
+      "owner:117",
+      "owner:753",
+      "owner:497",
+      "owner:448",
+      "owner:237",
+      "owner:2",
+      "owner:726",
+      "owner:148",
+      "owner:243",
+      "owner:187",
+      "owner:743",
+      "owner:762",
+      "owner:451"
+    ],
+    "map_id": "BB05_BIDIR",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "525e62f4049786590b1ad560abd8be9c54e26ca8",
+    "native_query_wall_seconds": 951.8405032720184,
+    "physical_FC_image_encodings": 13,
+    "physical_FC_region_poolings": 243,
+    "physical_N_crop_encodings": 16818,
+    "physical_Q_incremental_crop_encodings": 306,
+    "physical_native_crop_encodings": 17124,
+    "required_image_encodings": 22125,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 99,
+      "N": 470,
+      "Q": 193
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2670.1795573384734,
+        "required_image_encodings": 22125,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2670.1795573384734,
+        "required_image_encodings": 22125,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2570.230813114904,
+        "required_image_encodings": 21642,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "2b01092f0df6540c7dc323501dfe8db5c10727b8",
+    "FC_wall_seconds": 119.85579756402876,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1818.1859330319567,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "2b01092f0df6540c7dc323501dfe8db5c10727b8",
+    "native_query_wall_seconds": 360.4085251459619,
+    "physical_FC_image_encodings": 142,
+    "physical_FC_region_poolings": 276,
+    "physical_N_crop_encodings": 6474,
+    "physical_Q_incremental_crop_encodings": 264,
+    "physical_native_crop_encodings": 6738,
+    "required_image_encodings": 6880,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 97,
+      "N": 99,
+      "Q": 96
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1818.1859330319567,
+        "required_image_encodings": 6880,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1818.1859330319567,
+        "required_image_encodings": 6880,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1727.5180050290655,
+        "required_image_encodings": 6474,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "50587252b00f96cb340300a4f43df538b454590d",
+    "FC_wall_seconds": 37.43758426501881,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2067.4141255934956,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "c45ed1ecc83faca64bdfda56341599aeb392e054",
+    "native_query_wall_seconds": 358.0738785651047,
+    "physical_FC_image_encodings": 3,
+    "physical_FC_region_poolings": 243,
+    "physical_N_crop_encodings": 5652,
+    "physical_Q_incremental_crop_encodings": 264,
+    "physical_native_crop_encodings": 5916,
+    "required_image_encodings": 7375,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 104,
+      "N": 107,
+      "Q": 101
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2067.4141255934956,
+        "required_image_encodings": 7375,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2067.4141255934956,
+        "required_image_encodings": 7375,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1971.807107573375,
+        "required_image_encodings": 6956,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "525e62f4049786590b1ad560abd8be9c54e26ca8",
+    "FC_wall_seconds": 47.58838851703331,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2099.5460498817265,
+    "cap_exclusions": [
+      "owner:155",
+      "owner:7",
+      "owner:191",
+      "owner:183",
+      "owner:204",
+      "owner:80",
+      "owner:15",
+      "owner:73",
+      "owner:271",
+      "owner:140",
+      "owner:131",
+      "owner:26",
+      "owner:116",
+      "owner:159",
+      "owner:171",
+      "owner:175",
+      "owner:141",
+      "owner:168",
+      "owner:47",
+      "owner:92",
+      "owner:112",
+      "owner:179",
+      "owner:190",
+      "owner:274",
+      "owner:18",
+      "owner:30",
+      "owner:231",
+      "owner:102",
+      "owner:203",
+      "owner:216",
+      "owner:44",
+      "owner:186",
+      "owner:53",
+      "owner:66",
+      "owner:278",
+      "owner:124",
+      "owner:104",
+      "owner:211",
+      "owner:97",
+      "owner:134",
+      "owner:189",
+      "owner:138",
+      "owner:9",
+      "owner:69",
+      "owner:77",
+      "owner:98",
+      "owner:224",
+      "owner:114",
+      "owner:43",
+      "owner:233",
+      "owner:270",
+      "owner:110",
+      "owner:118",
+      "owner:162",
+      "owner:172",
+      "owner:182",
+      "owner:154",
+      "owner:93",
+      "owner:196",
+      "owner:117",
+      "owner:2",
+      "owner:276",
+      "owner:148"
+    ],
+    "map_id": "BB05_FORWARD",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "316aaf3cd4ce9512812c5e820da0a66d2949c658",
+    "native_query_wall_seconds": 461.5904962189961,
+    "physical_FC_image_encodings": 33,
+    "physical_FC_region_poolings": 216,
+    "physical_N_crop_encodings": 7224,
+    "physical_Q_incremental_crop_encodings": 174,
+    "physical_native_crop_encodings": 7398,
+    "required_image_encodings": 10394,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 103,
+      "N": 191,
+      "Q": 164
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2099.5460498817265,
+        "required_image_encodings": 10394,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2099.5460498817265,
+        "required_image_encodings": 10394,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2006.3749698038446,
+        "required_image_encodings": 10050,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 26.434515423025005,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2009.224936017068,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_GEOM",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "50587252b00f96cb340300a4f43df538b454590d",
+    "native_query_wall_seconds": 210.47321416798513,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 48,
+    "physical_N_crop_encodings": 1242,
+    "physical_Q_incremental_crop_encodings": 60,
+    "physical_native_crop_encodings": 1302,
+    "required_image_encodings": 7405,
+    "scene": "scene0056_00",
+    "source_availability": {
+      "F": 104,
+      "N": 107,
+      "Q": 101
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2009.224936017068,
+        "required_image_encodings": 7405,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2009.224936017068,
+        "required_image_encodings": 7405,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1912.5117831570096,
+        "required_image_encodings": 6974,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 26.47794310399331,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1444.7038652481278,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 205.00712392199785,
+    "physical_FC_image_encodings": 1,
+    "physical_FC_region_poolings": 55,
+    "physical_N_crop_encodings": 852,
+    "physical_Q_incremental_crop_encodings": 348,
+    "physical_native_crop_encodings": 1200,
+    "required_image_encodings": 3452,
+    "scene": "office1",
+    "source_availability": {
+      "F": 36,
+      "N": 38,
+      "Q": 38
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1444.7038652481278,
+        "required_image_encodings": 3452,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1444.7038652481278,
+        "required_image_encodings": 3452,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1361.089755548397,
+        "required_image_encodings": 2558,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 27.40616377396509,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1311.4802354677813,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 229.69602304394357,
+    "physical_FC_image_encodings": 1,
+    "physical_FC_region_poolings": 58,
+    "physical_N_crop_encodings": 1164,
+    "physical_Q_incremental_crop_encodings": 432,
+    "physical_native_crop_encodings": 1596,
+    "required_image_encodings": 3447,
+    "scene": "office1",
+    "source_availability": {
+      "F": 35,
+      "N": 36,
+      "Q": 36
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1311.4802354677813,
+        "required_image_encodings": 3447,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1311.4802354677813,
+        "required_image_encodings": 3447,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1229.9864024182316,
+        "required_image_encodings": 2574,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 61.994391174055636,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1322.518391431542,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 274.44743413105607,
+    "physical_FC_image_encodings": 68,
+    "physical_FC_region_poolings": 98,
+    "physical_N_crop_encodings": 2484,
+    "physical_Q_incremental_crop_encodings": 780,
+    "physical_native_crop_encodings": 3264,
+    "required_image_encodings": 3332,
+    "scene": "office1",
+    "source_availability": {
+      "F": 34,
+      "N": 35,
+      "Q": 35
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1322.518391431542,
+        "required_image_encodings": 3332,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1322.518391431542,
+        "required_image_encodings": 3332,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1243.3970348499715,
+        "required_image_encodings": 2484,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 36.111070955055766,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1448.4925511912443,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 268.97531317698304,
+    "physical_FC_image_encodings": 19,
+    "physical_FC_region_poolings": 97,
+    "physical_N_crop_encodings": 2136,
+    "physical_Q_incremental_crop_encodings": 828,
+    "physical_native_crop_encodings": 2964,
+    "required_image_encodings": 3451,
+    "scene": "office1",
+    "source_availability": {
+      "F": 35,
+      "N": 37,
+      "Q": 37
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1448.4925511912443,
+        "required_image_encodings": 3451,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1448.4925511912443,
+        "required_image_encodings": 3451,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1365.1844355036737,
+        "required_image_encodings": 2540,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 15.972399164922535,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 914.8076664273394,
+    "cap_exclusions": [],
+    "map_id": "BB05_RATIO_GATE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 98.4482118289452,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 0,
+    "physical_N_crop_encodings": 0,
+    "physical_Q_incremental_crop_encodings": 0,
+    "physical_native_crop_encodings": 0,
+    "required_image_encodings": 3050,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 28,
+      "N": 29,
+      "Q": 28
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 914.8076664273394,
+        "required_image_encodings": 3050,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 914.8076664273394,
+        "required_image_encodings": 3050,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 842.6855642602313,
+        "required_image_encodings": 2172,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 18.173049726057798,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1022.7068322085543,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 114.2772244910011,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 33,
+    "physical_N_crop_encodings": 462,
+    "physical_Q_incremental_crop_encodings": 222,
+    "physical_native_crop_encodings": 684,
+    "required_image_encodings": 3196,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 30,
+      "N": 31,
+      "Q": 30
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1022.7068322085543,
+        "required_image_encodings": 3196,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1022.7068322085543,
+        "required_image_encodings": 3196,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 950.3200107840821,
+        "required_image_encodings": 2282,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 18.37380253802985,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 941.4362320158398,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 114.05338898301125,
+    "physical_FC_image_encodings": 1,
+    "physical_FC_region_poolings": 29,
+    "physical_N_crop_encodings": 504,
+    "physical_Q_incremental_crop_encodings": 276,
+    "physical_native_crop_encodings": 780,
+    "required_image_encodings": 3056,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 28,
+      "N": 29,
+      "Q": 28
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 941.4362320158398,
+        "required_image_encodings": 3056,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 941.4362320158398,
+        "required_image_encodings": 3056,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 870.8301185818855,
+        "required_image_encodings": 2184,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 38.60871792898979,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1887.6647323979996,
+    "cap_exclusions": [
+      "owner:645",
+      "owner:13",
+      "owner:643",
+      "owner:364",
+      "owner:10",
+      "owner:28",
+      "owner:245",
+      "owner:189",
+      "owner:319",
+      "owner:461",
+      "owner:70",
+      "owner:210",
+      "owner:176",
+      "owner:292",
+      "owner:202",
+      "owner:252",
+      "owner:472",
+      "owner:65",
+      "owner:345",
+      "owner:506",
+      "owner:250",
+      "owner:147",
+      "owner:463",
+      "owner:320",
+      "owner:438",
+      "owner:453",
+      "owner:340",
+      "owner:503",
+      "owner:398",
+      "owner:186",
+      "owner:365",
+      "owner:162",
+      "owner:5",
+      "owner:351",
+      "owner:467",
+      "owner:178",
+      "owner:61",
+      "owner:283",
+      "owner:504",
+      "owner:353",
+      "owner:33",
+      "owner:332",
+      "owner:253",
+      "owner:242",
+      "owner:138",
+      "owner:257",
+      "owner:260",
+      "owner:172",
+      "owner:341",
+      "owner:369",
+      "owner:175",
+      "owner:439",
+      "owner:200",
+      "owner:284",
+      "owner:265",
+      "owner:486",
+      "owner:183",
+      "owner:83",
+      "owner:94",
+      "owner:37",
+      "owner:521",
+      "owner:426",
+      "owner:373",
+      "owner:64",
+      "owner:288",
+      "owner:72",
+      "owner:36",
+      "owner:299",
+      "owner:415",
+      "owner:89",
+      "owner:540",
+      "owner:128",
+      "owner:380",
+      "owner:224",
+      "owner:331",
+      "owner:48",
+      "owner:552",
+      "owner:291",
+      "owner:11",
+      "owner:139",
+      "owner:258",
+      "owner:334",
+      "owner:6",
+      "owner:381",
+      "owner:519",
+      "owner:339",
+      "owner:160",
+      "owner:557",
+      "owner:622",
+      "owner:308",
+      "owner:22",
+      "owner:163",
+      "owner:201",
+      "owner:518",
+      "owner:648",
+      "owner:547",
+      "owner:510",
+      "owner:171",
+      "owner:44",
+      "owner:462",
+      "owner:481",
+      "owner:249",
+      "owner:323",
+      "owner:51",
+      "owner:41",
+      "owner:204",
+      "owner:76",
+      "owner:378",
+      "owner:450",
+      "owner:424",
+      "owner:222",
+      "owner:410",
+      "owner:370",
+      "owner:268",
+      "owner:307",
+      "owner:490",
+      "owner:530",
+      "owner:391",
+      "owner:385",
+      "owner:68",
+      "owner:107",
+      "owner:119",
+      "owner:422",
+      "owner:338",
+      "owner:670",
+      "owner:348",
+      "owner:661",
+      "owner:3",
+      "owner:228",
+      "owner:67",
+      "owner:9",
+      "owner:164",
+      "owner:231",
+      "owner:239",
+      "owner:543",
+      "owner:236",
+      "owner:166",
+      "owner:130",
+      "owner:127",
+      "owner:207",
+      "owner:125",
+      "owner:639",
+      "owner:59",
+      "owner:264",
+      "owner:441",
+      "owner:474",
+      "owner:356",
+      "owner:262",
+      "owner:26",
+      "owner:19",
+      "owner:476",
+      "owner:411",
+      "owner:333",
+      "owner:294",
+      "owner:49",
+      "owner:480",
+      "owner:1",
+      "owner:15",
+      "owner:278",
+      "owner:404",
+      "owner:272",
+      "owner:346",
+      "owner:141",
+      "owner:82",
+      "owner:416",
+      "owner:305",
+      "owner:212",
+      "owner:485",
+      "owner:115",
+      "owner:63",
+      "owner:31",
+      "owner:298",
+      "owner:483",
+      "owner:270",
+      "owner:515",
+      "owner:316",
+      "owner:213",
+      "owner:100",
+      "owner:88",
+      "owner:405",
+      "owner:50",
+      "owner:25",
+      "owner:8",
+      "owner:295",
+      "owner:259",
+      "owner:74",
+      "owner:512",
+      "owner:522",
+      "owner:399",
+      "owner:165",
+      "owner:218",
+      "owner:40",
+      "owner:179",
+      "owner:104",
+      "owner:361",
+      "owner:550",
+      "owner:337",
+      "owner:78",
+      "owner:282",
+      "owner:669",
+      "owner:149",
+      "owner:407",
+      "owner:126",
+      "owner:29",
+      "owner:4",
+      "owner:53",
+      "owner:80",
+      "owner:312",
+      "owner:491",
+      "owner:246",
+      "owner:397",
+      "owner:455",
+      "owner:420",
+      "owner:466",
+      "owner:167",
+      "owner:471",
+      "owner:75",
+      "owner:73",
+      "owner:226",
+      "owner:219",
+      "owner:269",
+      "owner:34",
+      "owner:24",
+      "owner:39",
+      "owner:377",
+      "owner:342",
+      "owner:545",
+      "owner:35",
+      "owner:188",
+      "owner:560",
+      "owner:532",
+      "owner:221",
+      "owner:238",
+      "owner:103",
+      "owner:315",
+      "owner:146",
+      "owner:412",
+      "owner:620",
+      "owner:401",
+      "owner:469",
+      "owner:120",
+      "owner:109",
+      "owner:403",
+      "owner:117",
+      "owner:157",
+      "owner:256",
+      "owner:135",
+      "owner:153",
+      "owner:60",
+      "owner:488",
+      "owner:208",
+      "owner:527",
+      "owner:446",
+      "owner:489",
+      "owner:273",
+      "owner:363",
+      "owner:296",
+      "owner:32",
+      "owner:243",
+      "owner:428",
+      "owner:266",
+      "owner:134",
+      "owner:665",
+      "owner:448",
+      "owner:497",
+      "owner:492",
+      "owner:205",
+      "owner:290",
+      "owner:406",
+      "owner:79",
+      "owner:329",
+      "owner:664",
+      "owner:122",
+      "owner:196",
+      "owner:430",
+      "owner:318",
+      "owner:456",
+      "owner:513",
+      "owner:95",
+      "owner:131",
+      "owner:386",
+      "owner:657",
+      "owner:30",
+      "owner:479",
+      "owner:495",
+      "owner:551"
+    ],
+    "map_id": "BB05_BIDIR",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 968.4140469599515,
+    "physical_FC_image_encodings": 21,
+    "physical_FC_region_poolings": 178,
+    "physical_N_crop_encodings": 17760,
+    "physical_Q_incremental_crop_encodings": 300,
+    "physical_native_crop_encodings": 18060,
+    "required_image_encodings": 20565,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 70,
+      "N": 414,
+      "Q": 189
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1887.6647323979996,
+        "required_image_encodings": 20565,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1887.6647323979996,
+        "required_image_encodings": 20565,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1810.9008981871884,
+        "required_image_encodings": 20142,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 50.15813934605103,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 930.1024044757942,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 184.24192795692943,
+    "physical_FC_image_encodings": 62,
+    "physical_FC_region_poolings": 84,
+    "physical_N_crop_encodings": 2172,
+    "physical_Q_incremental_crop_encodings": 816,
+    "physical_native_crop_encodings": 2988,
+    "required_image_encodings": 3050,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 28,
+      "N": 29,
+      "Q": 28
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 930.1024044757942,
+        "required_image_encodings": 3050,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 930.1024044757942,
+        "required_image_encodings": 3050,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 856.6478413662408,
+        "required_image_encodings": 2172,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 24.693264825968072,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1040.8592811179115,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 171.55475766491145,
+    "physical_FC_image_encodings": 6,
+    "physical_FC_region_poolings": 66,
+    "physical_N_crop_encodings": 1824,
+    "physical_Q_incremental_crop_encodings": 786,
+    "physical_native_crop_encodings": 2610,
+    "required_image_encodings": 3220,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 30,
+      "N": 31,
+      "Q": 30
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1040.8592811179115,
+        "required_image_encodings": 3220,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1040.8592811179115,
+        "required_image_encodings": 3220,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 967.3445181689458,
+        "required_image_encodings": 2306,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 54.312004295992665,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1149.8880717268912,
+    "cap_exclusions": [],
+    "map_id": "BB05_FORWARD",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 259.56178327300586,
+    "physical_FC_image_encodings": 56,
+    "physical_FC_region_poolings": 178,
+    "physical_N_crop_encodings": 3414,
+    "physical_Q_incremental_crop_encodings": 444,
+    "physical_native_crop_encodings": 3858,
+    "required_image_encodings": 4975,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 71,
+      "N": 93,
+      "Q": 91
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1149.8880717268912,
+        "required_image_encodings": 4975,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1149.8880717268912,
+        "required_image_encodings": 4975,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1067.7709527234547,
+        "required_image_encodings": 4404,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 17.567566900979728,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1012.281902662362,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_GEOM",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 98.59814898099285,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 6,
+    "physical_N_crop_encodings": 252,
+    "physical_Q_incremental_crop_encodings": 174,
+    "physical_native_crop_encodings": 426,
+    "required_image_encodings": 3202,
+    "scene": "scene0626_00",
+    "source_availability": {
+      "F": 30,
+      "N": 31,
+      "Q": 30
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1012.281902662362,
+        "required_image_encodings": 3202,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1012.281902662362,
+        "required_image_encodings": 3202,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 940.9097399446182,
+        "required_image_encodings": 2312,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "5db5fde1aea2e91c131bd6f9895f8a49c4394616",
+    "FC_wall_seconds": 14.57740043499507,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 840.3457198319957,
+    "cap_exclusions": [],
+    "map_id": "BB05_RATIO_GATE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "5db5fde1aea2e91c131bd6f9895f8a49c4394616",
+    "native_query_wall_seconds": 80.87949533900246,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 0,
+    "physical_N_crop_encodings": 0,
+    "physical_Q_incremental_crop_encodings": 0,
+    "physical_native_crop_encodings": 0,
+    "required_image_encodings": 2196,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 14,
+      "N": 16,
+      "Q": 16
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 840.3457198319957,
+        "required_image_encodings": 2196,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 840.3457198319957,
+        "required_image_encodings": 2196,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 780.4782135941787,
+        "required_image_encodings": 1266,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 15.630113470018841,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 903.3687212517252,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 106.4691699979594,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 10,
+    "physical_N_crop_encodings": 294,
+    "physical_Q_incremental_crop_encodings": 396,
+    "physical_native_crop_encodings": 690,
+    "required_image_encodings": 2519,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 17,
+      "N": 18,
+      "Q": 18
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 903.3687212517252,
+        "required_image_encodings": 2519,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 903.3687212517252,
+        "required_image_encodings": 2519,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 842.1445281377528,
+        "required_image_encodings": 1628,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 18.543996283900924,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 831.280449456186,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 104.98493760090787,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 16,
+    "physical_N_crop_encodings": 366,
+    "physical_Q_incremental_crop_encodings": 450,
+    "physical_native_crop_encodings": 816,
+    "required_image_encodings": 2226,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 14,
+      "N": 16,
+      "Q": 16
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 831.280449456186,
+        "required_image_encodings": 2226,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 831.280449456186,
+        "required_image_encodings": 2226,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 769.4271549496334,
+        "required_image_encodings": 1278,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 64.85938274394721,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1643.3210850381292,
+    "cap_exclusions": [
+      "owner:59",
+      "owner:125",
+      "owner:421",
+      "owner:87",
+      "owner:172",
+      "owner:123",
+      "owner:221",
+      "owner:583",
+      "owner:538",
+      "owner:495",
+      "owner:424",
+      "owner:307",
+      "owner:106",
+      "owner:327",
+      "owner:411",
+      "owner:341",
+      "owner:542",
+      "owner:467",
+      "owner:79",
+      "owner:218",
+      "owner:243",
+      "owner:318",
+      "owner:178",
+      "owner:400",
+      "owner:433",
+      "owner:342",
+      "owner:128",
+      "owner:4",
+      "owner:566",
+      "owner:525",
+      "owner:228",
+      "owner:132",
+      "owner:17",
+      "owner:151",
+      "owner:26",
+      "owner:399",
+      "owner:210",
+      "owner:502",
+      "owner:152",
+      "owner:82",
+      "owner:182",
+      "owner:176",
+      "owner:11",
+      "owner:91",
+      "owner:246",
+      "owner:297",
+      "owner:273",
+      "owner:533",
+      "owner:114",
+      "owner:553",
+      "owner:423",
+      "owner:47",
+      "owner:426",
+      "owner:526",
+      "owner:204",
+      "owner:94",
+      "owner:112",
+      "owner:179",
+      "owner:382",
+      "owner:343",
+      "owner:516",
+      "owner:582",
+      "owner:140",
+      "owner:377",
+      "owner:134",
+      "owner:389",
+      "owner:380",
+      "owner:259",
+      "owner:574",
+      "owner:175",
+      "owner:163",
+      "owner:372",
+      "owner:558",
+      "owner:483",
+      "owner:103",
+      "owner:410",
+      "owner:69",
+      "owner:460",
+      "owner:186",
+      "owner:1",
+      "owner:100",
+      "owner:39",
+      "owner:353",
+      "owner:121",
+      "owner:375",
+      "owner:261",
+      "owner:220",
+      "owner:455",
+      "owner:90",
+      "owner:335",
+      "owner:40",
+      "owner:50",
+      "owner:427",
+      "owner:551",
+      "owner:539",
+      "owner:463",
+      "owner:41",
+      "owner:180",
+      "owner:499",
+      "owner:291",
+      "owner:101",
+      "owner:31",
+      "owner:169",
+      "owner:171",
+      "owner:187",
+      "owner:369",
+      "owner:19",
+      "owner:33",
+      "owner:275",
+      "owner:116",
+      "owner:580",
+      "owner:183",
+      "owner:407",
+      "owner:65",
+      "owner:451",
+      "owner:453",
+      "owner:512",
+      "owner:289",
+      "owner:119",
+      "owner:271",
+      "owner:13",
+      "owner:268",
+      "owner:321",
+      "owner:250",
+      "owner:368",
+      "owner:77",
+      "owner:225",
+      "owner:49",
+      "owner:2",
+      "owner:10",
+      "owner:264",
+      "owner:412",
+      "owner:142",
+      "owner:432",
+      "owner:107",
+      "owner:466",
+      "owner:338",
+      "owner:444",
+      "owner:545",
+      "owner:503",
+      "owner:541",
+      "owner:78",
+      "owner:96",
+      "owner:109",
+      "owner:450",
+      "owner:388",
+      "owner:161",
+      "owner:51",
+      "owner:300",
+      "owner:562",
+      "owner:74",
+      "owner:371",
+      "owner:462",
+      "owner:63",
+      "owner:115",
+      "owner:531",
+      "owner:484",
+      "owner:30",
+      "owner:469",
+      "owner:162",
+      "owner:226",
+      "owner:428",
+      "owner:475",
+      "owner:61",
+      "owner:68",
+      "owner:358",
+      "owner:449",
+      "owner:435",
+      "owner:214",
+      "owner:576",
+      "owner:86",
+      "owner:507",
+      "owner:403",
+      "owner:349",
+      "owner:555",
+      "owner:479",
+      "owner:16",
+      "owner:200",
+      "owner:447",
+      "owner:269",
+      "owner:57",
+      "owner:7",
+      "owner:524",
+      "owner:438",
+      "owner:333",
+      "owner:199",
+      "owner:480",
+      "owner:549",
+      "owner:347",
+      "owner:173",
+      "owner:279",
+      "owner:56",
+      "owner:547",
+      "owner:473",
+      "owner:415",
+      "owner:84",
+      "owner:313",
+      "owner:528",
+      "owner:36",
+      "owner:530",
+      "owner:165",
+      "owner:581",
+      "owner:299",
+      "owner:110",
+      "owner:385",
+      "owner:155",
+      "owner:111",
+      "owner:71",
+      "owner:97",
+      "owner:319",
+      "owner:177",
+      "owner:232",
+      "owner:548",
+      "owner:442",
+      "owner:304",
+      "owner:38",
+      "owner:487",
+      "owner:263",
+      "owner:223",
+      "owner:285",
+      "owner:472",
+      "owner:245",
+      "owner:188",
+      "owner:331",
+      "owner:470",
+      "owner:66",
+      "owner:520",
+      "owner:27",
+      "owner:464",
+      "owner:506",
+      "owner:384",
+      "owner:391",
+      "owner:92",
+      "owner:196",
+      "owner:135",
+      "owner:476",
+      "owner:60",
+      "owner:98",
+      "owner:295",
+      "owner:489",
+      "owner:207",
+      "owner:131",
+      "owner:141",
+      "owner:293",
+      "owner:37",
+      "owner:143",
+      "owner:254",
+      "owner:190",
+      "owner:216",
+      "owner:48",
+      "owner:310",
+      "owner:546",
+      "owner:366",
+      "owner:301",
+      "owner:374",
+      "owner:24",
+      "owner:398",
+      "owner:122",
+      "owner:262",
+      "owner:81",
+      "owner:21",
+      "owner:113",
+      "owner:356",
+      "owner:148",
+      "owner:535",
+      "owner:237",
+      "owner:211",
+      "owner:156",
+      "owner:43",
+      "owner:452",
+      "owner:185",
+      "owner:402",
+      "owner:32",
+      "owner:67",
+      "owner:62",
+      "owner:20",
+      "owner:418",
+      "owner:45",
+      "owner:571",
+      "owner:303",
+      "owner:434",
+      "owner:446",
+      "owner:468",
+      "owner:552",
+      "owner:230",
+      "owner:144",
+      "owner:345",
+      "owner:168",
+      "owner:3"
+    ],
+    "map_id": "BB05_BIDIR",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 843.3756710309535,
+    "physical_FC_image_encodings": 79,
+    "physical_FC_region_poolings": 182,
+    "physical_N_crop_encodings": 15552,
+    "physical_Q_incremental_crop_encodings": 354,
+    "physical_native_crop_encodings": 15906,
+    "required_image_encodings": 16853,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 66,
+      "N": 417,
+      "Q": 182
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1643.3210850381292,
+        "required_image_encodings": 16853,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1643.3210850381292,
+        "required_image_encodings": 16853,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1560.7779240210075,
+        "required_image_encodings": 16344,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 31.054429217008874,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 906.6368997754762,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 143.67186802788638,
+    "physical_FC_image_encodings": 36,
+    "physical_FC_region_poolings": 40,
+    "physical_N_crop_encodings": 1266,
+    "physical_Q_incremental_crop_encodings": 894,
+    "physical_native_crop_encodings": 2160,
+    "required_image_encodings": 2196,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 14,
+      "N": 16,
+      "Q": 16
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 906.6368997754762,
+        "required_image_encodings": 2196,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 906.6368997754762,
+        "required_image_encodings": 2196,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 847.4979913284769,
+        "required_image_encodings": 1266,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 21.51712309801951,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 909.0299216452986,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 144.51067215995863,
+    "physical_FC_image_encodings": 7,
+    "physical_FC_region_poolings": 39,
+    "physical_N_crop_encodings": 1224,
+    "physical_Q_incremental_crop_encodings": 792,
+    "physical_native_crop_encodings": 2016,
+    "required_image_encodings": 2537,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 17,
+      "N": 18,
+      "Q": 18
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 909.0299216452986,
+        "required_image_encodings": 2537,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 909.0299216452986,
+        "required_image_encodings": 2537,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 847.933787292568,
+        "required_image_encodings": 1628,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 28.537315007997677,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 953.704045677674,
+    "cap_exclusions": [],
+    "map_id": "BB05_FORWARD",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "5db5fde1aea2e91c131bd6f9895f8a49c4394616",
+    "native_query_wall_seconds": 145.39162325300276,
+    "physical_FC_image_encodings": 25,
+    "physical_FC_region_poolings": 43,
+    "physical_N_crop_encodings": 1278,
+    "physical_Q_incremental_crop_encodings": 606,
+    "physical_native_crop_encodings": 1884,
+    "required_image_encodings": 2671,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 21,
+      "N": 31,
+      "Q": 31
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 953.704045677674,
+        "required_image_encodings": 2671,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 953.704045677674,
+        "required_image_encodings": 2671,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 894.2126919596922,
+        "required_image_encodings": 1890,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 15.654117970960215,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 912.137757904944,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_GEOM",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 81.19760823098477,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 0,
+    "physical_N_crop_encodings": 6,
+    "physical_Q_incremental_crop_encodings": 6,
+    "physical_native_crop_encodings": 12,
+    "required_image_encodings": 2537,
+    "scene": "scene0445_00",
+    "source_availability": {
+      "F": 17,
+      "N": 18,
+      "Q": 18
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 912.137757904944,
+        "required_image_encodings": 2537,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 912.137757904944,
+        "required_image_encodings": 2537,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 851.3489947778871,
+        "required_image_encodings": 1628,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 42.06055727601051,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1655.1880538566038,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 320.92936547799036,
+    "physical_FC_image_encodings": 17,
+    "physical_FC_region_poolings": 106,
+    "physical_N_crop_encodings": 2700,
+    "physical_Q_incremental_crop_encodings": 804,
+    "physical_native_crop_encodings": 3504,
+    "required_image_encodings": 4112,
+    "scene": "office0",
+    "source_availability": {
+      "F": 43,
+      "N": 43,
+      "Q": 41
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1655.1880538566038,
+        "required_image_encodings": 4112,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1655.1880538566038,
+        "required_image_encodings": 4112,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1571.6223919516196,
+        "required_image_encodings": 3230,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 74.05203321808949,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1504.764511116664,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 334.6580019349931,
+    "physical_FC_image_encodings": 83,
+    "physical_FC_region_poolings": 133,
+    "physical_N_crop_encodings": 3480,
+    "physical_Q_incremental_crop_encodings": 804,
+    "physical_native_crop_encodings": 4284,
+    "required_image_encodings": 4367,
+    "scene": "office0",
+    "source_availability": {
+      "F": 46,
+      "N": 46,
+      "Q": 45
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1504.764511116664,
+        "required_image_encodings": 4367,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1504.764511116664,
+        "required_image_encodings": 4367,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1417.465120209963,
+        "required_image_encodings": 3480,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 28.017226545023732,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1501.5393536816118,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 276.9080657629529,
+    "physical_FC_image_encodings": 1,
+    "physical_FC_region_poolings": 71,
+    "physical_N_crop_encodings": 1620,
+    "physical_Q_incremental_crop_encodings": 570,
+    "physical_native_crop_encodings": 2190,
+    "required_image_encodings": 4283,
+    "scene": "office0",
+    "source_availability": {
+      "F": 45,
+      "N": 45,
+      "Q": 44
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1501.5393536816118,
+        "required_image_encodings": 4283,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1501.5393536816118,
+        "required_image_encodings": 4283,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1415.0416009653127,
+        "required_image_encodings": 3390,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 28.040016846964136,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1673.1729328806978,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 248.4072273389902,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 60,
+    "physical_N_crop_encodings": 1050,
+    "physical_Q_incremental_crop_encodings": 588,
+    "physical_native_crop_encodings": 1638,
+    "required_image_encodings": 4124,
+    "scene": "office0",
+    "source_availability": {
+      "F": 44,
+      "N": 44,
+      "Q": 42
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1673.1729328806978,
+        "required_image_encodings": 4124,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1673.1729328806978,
+        "required_image_encodings": 4124,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1589.9295376982773,
+        "required_image_encodings": 3200,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 26.558818139950745,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2325.3313433990115,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 288.0136360799661,
+    "physical_FC_image_encodings": 2,
+    "physical_FC_region_poolings": 48,
+    "physical_N_crop_encodings": 1116,
+    "physical_Q_incremental_crop_encodings": 324,
+    "physical_native_crop_encodings": 1440,
+    "required_image_encodings": 4805,
+    "scene": "office3",
+    "source_availability": {
+      "F": 44,
+      "N": 48,
+      "Q": 48
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2325.3313433990115,
+        "required_image_encodings": 4805,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2325.3313433990115,
+        "required_image_encodings": 4805,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2244.6352788652293,
+        "required_image_encodings": 4028,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 26.273610074073076,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2091.446988115553,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 279.8079284830019,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 53,
+    "physical_N_crop_encodings": 1296,
+    "physical_Q_incremental_crop_encodings": 354,
+    "physical_native_crop_encodings": 1650,
+    "required_image_encodings": 4664,
+    "scene": "office3",
+    "source_availability": {
+      "F": 45,
+      "N": 49,
+      "Q": 48
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2091.446988115553,
+        "required_image_encodings": 4664,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2091.446988115553,
+        "required_image_encodings": 4664,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2012.109250864014,
+        "required_image_encodings": 3870,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 69.61213085893542,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2076.9190194032853,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 380.2602009419352,
+    "physical_FC_image_encodings": 77,
+    "physical_FC_region_poolings": 134,
+    "physical_N_crop_encodings": 3864,
+    "physical_Q_incremental_crop_encodings": 732,
+    "physical_native_crop_encodings": 4596,
+    "required_image_encodings": 4673,
+    "scene": "office3",
+    "source_availability": {
+      "F": 47,
+      "N": 51,
+      "Q": 49
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2076.9190194032853,
+        "required_image_encodings": 4673,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2076.9190194032853,
+        "required_image_encodings": 4673,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1994.369442426134,
+        "required_image_encodings": 3864,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "FC_wall_seconds": 34.655279468977824,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2317.7115239860723,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+    "native_query_wall_seconds": 352.3886962289689,
+    "physical_FC_image_encodings": 8,
+    "physical_FC_region_poolings": 109,
+    "physical_N_crop_encodings": 3228,
+    "physical_Q_incremental_crop_encodings": 630,
+    "physical_native_crop_encodings": 3858,
+    "required_image_encodings": 4782,
+    "scene": "office3",
+    "source_availability": {
+      "F": 46,
+      "N": 51,
+      "Q": 51
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2317.7115239860723,
+        "required_image_encodings": 4782,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2317.7115239860723,
+        "required_image_encodings": 4782,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2237.808846254251,
+        "required_image_encodings": 4028,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 26.438558863010257,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1828.777504849364,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 257.81759395997506,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 57,
+    "physical_N_crop_encodings": 1320,
+    "physical_Q_incremental_crop_encodings": 588,
+    "physical_native_crop_encodings": 1908,
+    "required_image_encodings": 4389,
+    "scene": "room2",
+    "source_availability": {
+      "F": 49,
+      "N": 50,
+      "Q": 50
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1828.777504849364,
+        "required_image_encodings": 4389,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1828.777504849364,
+        "required_image_encodings": 4389,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1743.350038473378,
+        "required_image_encodings": 3536,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 46.55117102898657,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1607.247139073792,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 280.16327424393967,
+    "physical_FC_image_encodings": 4,
+    "physical_FC_region_poolings": 64,
+    "physical_N_crop_encodings": 1500,
+    "physical_Q_incremental_crop_encodings": 594,
+    "physical_native_crop_encodings": 2094,
+    "required_image_encodings": 4125,
+    "scene": "room2",
+    "source_availability": {
+      "F": 46,
+      "N": 49,
+      "Q": 47
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1607.247139073792,
+        "required_image_encodings": 4125,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1607.247139073792,
+        "required_image_encodings": 4125,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1516.7393076566514,
+        "required_image_encodings": 3216,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 93.47267140692566,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1594.891768821748,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 332.8133314870065,
+    "physical_FC_image_encodings": 84,
+    "physical_FC_region_poolings": 136,
+    "physical_N_crop_encodings": 3108,
+    "physical_Q_incremental_crop_encodings": 798,
+    "physical_native_crop_encodings": 3906,
+    "required_image_encodings": 3990,
+    "scene": "room2",
+    "source_availability": {
+      "F": 46,
+      "N": 49,
+      "Q": 47
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1594.891768821748,
+        "required_image_encodings": 3990,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1594.891768821748,
+        "required_image_encodings": 3990,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1505.9798701643012,
+        "required_image_encodings": 3108,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 34.543041039956734,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1814.5370440463303,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 346.1738742640009,
+    "physical_FC_image_encodings": 10,
+    "physical_FC_region_poolings": 116,
+    "physical_N_crop_encodings": 2850,
+    "physical_Q_incremental_crop_encodings": 732,
+    "physical_native_crop_encodings": 3582,
+    "required_image_encodings": 4377,
+    "scene": "room2",
+    "source_availability": {
+      "F": 50,
+      "N": 51,
+      "Q": 51
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1814.5370440463303,
+        "required_image_encodings": 4377,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1814.5370440463303,
+        "required_image_encodings": 4377,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1727.1929526246386,
+        "required_image_encodings": 3554,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 19.6405965910526,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1006.6164253198076,
+    "cap_exclusions": [],
+    "map_id": "BB05_RATIO_GATE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 153.46585680602584,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 0,
+    "physical_N_crop_encodings": 12,
+    "physical_Q_incremental_crop_encodings": 0,
+    "physical_native_crop_encodings": 12,
+    "required_image_encodings": 5967,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 91,
+      "N": 93,
+      "Q": 83
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1006.6164253198076,
+        "required_image_encodings": 5967,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1006.6164253198076,
+        "required_image_encodings": 5967,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 910.6487926944392,
+        "required_image_encodings": 5412,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "FC_wall_seconds": 27.03434178698808,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1097.9715329448227,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "452226757bc664b237dee9ac3e19c3cfcc03961d",
+    "native_query_wall_seconds": 214.4566376580624,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 137,
+    "physical_N_crop_encodings": 2052,
+    "physical_Q_incremental_crop_encodings": 258,
+    "physical_native_crop_encodings": 2310,
+    "required_image_encodings": 5717,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 89,
+      "N": 90,
+      "Q": 82
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1097.9715329448227,
+        "required_image_encodings": 5717,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1097.9715329448227,
+        "required_image_encodings": 5717,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1004.5436710807262,
+        "required_image_encodings": 5174,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 31.157003749045543,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 992.8788153734058,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 231.07495133695193,
+    "physical_FC_image_encodings": 2,
+    "physical_FC_region_poolings": 129,
+    "physical_N_crop_encodings": 2322,
+    "physical_Q_incremental_crop_encodings": 270,
+    "physical_native_crop_encodings": 2592,
+    "required_image_encodings": 5960,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 92,
+      "N": 94,
+      "Q": 83
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 992.8788153734058,
+        "required_image_encodings": 5960,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 992.8788153734058,
+        "required_image_encodings": 5960,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 895.683122137445,
+        "required_image_encodings": 5436,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 43.81787204393186,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1852.2342218381818,
+    "cap_exclusions": [
+      "owner:214",
+      "owner:557",
+      "owner:573",
+      "owner:396",
+      "owner:374",
+      "owner:40",
+      "owner:676",
+      "owner:233",
+      "owner:814",
+      "owner:642",
+      "owner:427",
+      "owner:488",
+      "owner:551",
+      "owner:339",
+      "owner:83",
+      "owner:683",
+      "owner:272",
+      "owner:343",
+      "owner:10",
+      "owner:247",
+      "owner:393",
+      "owner:204",
+      "owner:127",
+      "owner:81",
+      "owner:815",
+      "owner:271",
+      "owner:701",
+      "owner:244",
+      "owner:57",
+      "owner:370",
+      "owner:744",
+      "owner:46",
+      "owner:535",
+      "owner:260",
+      "owner:600",
+      "owner:542",
+      "owner:437",
+      "owner:460",
+      "owner:373",
+      "owner:5",
+      "owner:624",
+      "owner:628",
+      "owner:1",
+      "owner:49",
+      "owner:728",
+      "owner:675",
+      "owner:12",
+      "owner:402",
+      "owner:714",
+      "owner:656",
+      "owner:743",
+      "owner:482",
+      "owner:365",
+      "owner:54",
+      "owner:598",
+      "owner:324",
+      "owner:246",
+      "owner:137",
+      "owner:497",
+      "owner:661",
+      "owner:696",
+      "owner:321",
+      "owner:201",
+      "owner:605",
+      "owner:96",
+      "owner:242",
+      "owner:120",
+      "owner:671",
+      "owner:556",
+      "owner:574",
+      "owner:467",
+      "owner:474",
+      "owner:27",
+      "owner:225",
+      "owner:583",
+      "owner:632",
+      "owner:440",
+      "owner:298",
+      "owner:14",
+      "owner:456",
+      "owner:95",
+      "owner:205",
+      "owner:399",
+      "owner:730",
+      "owner:251",
+      "owner:519",
+      "owner:579",
+      "owner:645",
+      "owner:560",
+      "owner:568",
+      "owner:596",
+      "owner:335",
+      "owner:738",
+      "owner:407",
+      "owner:455",
+      "owner:823",
+      "owner:9",
+      "owner:297",
+      "owner:306",
+      "owner:451",
+      "owner:550",
+      "owner:313",
+      "owner:3",
+      "owner:342",
+      "owner:766",
+      "owner:533",
+      "owner:362",
+      "owner:553",
+      "owner:154",
+      "owner:269",
+      "owner:717",
+      "owner:415",
+      "owner:59",
+      "owner:697",
+      "owner:615",
+      "owner:193",
+      "owner:571",
+      "owner:509",
+      "owner:672",
+      "owner:703",
+      "owner:652",
+      "owner:227",
+      "owner:400",
+      "owner:684",
+      "owner:94",
+      "owner:93",
+      "owner:830",
+      "owner:559",
+      "owner:505",
+      "owner:443",
+      "owner:35",
+      "owner:700",
+      "owner:572",
+      "owner:483",
+      "owner:270",
+      "owner:472",
+      "owner:622",
+      "owner:575",
+      "owner:776",
+      "owner:707",
+      "owner:654",
+      "owner:257",
+      "owner:461",
+      "owner:782",
+      "owner:562",
+      "owner:445",
+      "owner:489",
+      "owner:113",
+      "owner:503",
+      "owner:82",
+      "owner:737",
+      "owner:641",
+      "owner:25",
+      "owner:149",
+      "owner:305",
+      "owner:290",
+      "owner:840",
+      "owner:540",
+      "owner:26",
+      "owner:304",
+      "owner:367",
+      "owner:547",
+      "owner:739",
+      "owner:372",
+      "owner:165",
+      "owner:816",
+      "owner:236",
+      "owner:63",
+      "owner:506",
+      "owner:378",
+      "owner:518",
+      "owner:299",
+      "owner:493",
+      "owner:662",
+      "owner:680",
+      "owner:511",
+      "owner:276",
+      "owner:469",
+      "owner:678",
+      "owner:333",
+      "owner:330",
+      "owner:529",
+      "owner:295",
+      "owner:555",
+      "owner:277",
+      "owner:394",
+      "owner:79",
+      "owner:102",
+      "owner:420",
+      "owner:386",
+      "owner:181",
+      "owner:266",
+      "owner:845",
+      "owner:548",
+      "owner:189",
+      "owner:449",
+      "owner:423",
+      "owner:414",
+      "owner:834",
+      "owner:45",
+      "owner:61",
+      "owner:231",
+      "owner:345",
+      "owner:759",
+      "owner:478",
+      "owner:479",
+      "owner:608",
+      "owner:174",
+      "owner:538",
+      "owner:103",
+      "owner:808",
+      "owner:314",
+      "owner:206",
+      "owner:255",
+      "owner:523",
+      "owner:665",
+      "owner:126",
+      "owner:208",
+      "owner:164",
+      "owner:810",
+      "owner:382",
+      "owner:261",
+      "owner:119",
+      "owner:698",
+      "owner:110",
+      "owner:549",
+      "owner:554",
+      "owner:576",
+      "owner:512",
+      "owner:754",
+      "owner:843",
+      "owner:792",
+      "owner:594",
+      "owner:471",
+      "owner:476",
+      "owner:444",
+      "owner:68",
+      "owner:602",
+      "owner:36",
+      "owner:584",
+      "owner:296",
+      "owner:157",
+      "owner:735",
+      "owner:470",
+      "owner:828",
+      "owner:160",
+      "owner:118",
+      "owner:387",
+      "owner:663",
+      "owner:218",
+      "owner:664",
+      "owner:278",
+      "owner:541",
+      "owner:465",
+      "owner:659",
+      "owner:288",
+      "owner:199",
+      "owner:34",
+      "owner:704",
+      "owner:752",
+      "owner:403",
+      "owner:60",
+      "owner:334",
+      "owner:151",
+      "owner:319",
+      "owner:228",
+      "owner:4",
+      "owner:761",
+      "owner:211",
+      "owner:152",
+      "owner:39",
+      "owner:2",
+      "owner:179",
+      "owner:210",
+      "owner:421",
+      "owner:711",
+      "owner:130",
+      "owner:376",
+      "owner:249",
+      "owner:623",
+      "owner:100",
+      "owner:308",
+      "owner:138",
+      "owner:279",
+      "owner:293",
+      "owner:480",
+      "owner:543",
+      "owner:397",
+      "owner:690",
+      "owner:182",
+      "owner:369",
+      "owner:364",
+      "owner:653",
+      "owner:392",
+      "owner:565",
+      "owner:589",
+      "owner:462",
+      "owner:200",
+      "owner:784",
+      "owner:614",
+      "owner:148",
+      "owner:660",
+      "owner:516",
+      "owner:417",
+      "owner:377",
+      "owner:463",
+      "owner:564",
+      "owner:348",
+      "owner:140",
+      "owner:530",
+      "owner:381",
+      "owner:213",
+      "owner:85",
+      "owner:494",
+      "owner:563",
+      "owner:643",
+      "owner:323",
+      "owner:627",
+      "owner:267",
+      "owner:709",
+      "owner:712",
+      "owner:300",
+      "owner:490",
+      "owner:380",
+      "owner:219",
+      "owner:726",
+      "owner:561",
+      "owner:688",
+      "owner:356",
+      "owner:209",
+      "owner:582",
+      "owner:666",
+      "owner:651",
+      "owner:457",
+      "owner:239",
+      "owner:104",
+      "owner:223",
+      "owner:689",
+      "owner:411",
+      "owner:16",
+      "owner:760",
+      "owner:11",
+      "owner:521",
+      "owner:434",
+      "owner:670",
+      "owner:448",
+      "owner:232",
+      "owner:168",
+      "owner:491",
+      "owner:729",
+      "owner:736",
+      "owner:17",
+      "owner:450",
+      "owner:513",
+      "owner:150",
+      "owner:6",
+      "owner:758",
+      "owner:136",
+      "owner:192",
+      "owner:439",
+      "owner:229",
+      "owner:70",
+      "owner:638",
+      "owner:558",
+      "owner:220",
+      "owner:294",
+      "owner:731",
+      "owner:336",
+      "owner:418",
+      "owner:405",
+      "owner:51",
+      "owner:134",
+      "owner:486",
+      "owner:477",
+      "owner:146",
+      "owner:117",
+      "owner:8",
+      "owner:212",
+      "owner:331",
+      "owner:252",
+      "owner:224",
+      "owner:466",
+      "owner:468",
+      "owner:256",
+      "owner:496",
+      "owner:419",
+      "owner:241",
+      "owner:262",
+      "owner:158",
+      "owner:655",
+      "owner:429",
+      "owner:587",
+      "owner:657",
+      "owner:629",
+      "owner:235",
+      "owner:526",
+      "owner:55",
+      "owner:77",
+      "owner:485",
+      "owner:534",
+      "owner:202",
+      "owner:718",
+      "owner:92",
+      "owner:84",
+      "owner:176",
+      "owner:87",
+      "owner:191",
+      "owner:796",
+      "owner:240",
+      "owner:767",
+      "owner:347",
+      "owner:302",
+      "owner:531",
+      "owner:303",
+      "owner:243",
+      "owner:508",
+      "owner:188",
+      "owner:286",
+      "owner:773",
+      "owner:248",
+      "owner:502",
+      "owner:765",
+      "owner:198",
+      "owner:517",
+      "owner:354",
+      "owner:237"
+    ],
+    "map_id": "BB05_BIDIR",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 955.6689664260484,
+    "physical_FC_image_encodings": 22,
+    "physical_FC_region_poolings": 255,
+    "physical_N_crop_encodings": 17202,
+    "physical_Q_incremental_crop_encodings": 294,
+    "physical_native_crop_encodings": 17496,
+    "required_image_encodings": 22900,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 104,
+      "N": 554,
+      "Q": 183
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1852.2342218381818,
+        "required_image_encodings": 22900,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1852.2342218381818,
+        "required_image_encodings": 22900,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1757.8744853009703,
+        "required_image_encodings": 22446,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 97.45640504604671,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 998.0452445675619,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 331.4085666050669,
+    "physical_FC_image_encodings": 141,
+    "physical_FC_region_poolings": 263,
+    "physical_N_crop_encodings": 5412,
+    "physical_Q_incremental_crop_encodings": 414,
+    "physical_native_crop_encodings": 5826,
+    "required_image_encodings": 5967,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 91,
+      "N": 93,
+      "Q": 83
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 998.0452445675619,
+        "required_image_encodings": 5967,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 998.0452445675619,
+        "required_image_encodings": 5967,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 900.8280292293057,
+        "required_image_encodings": 5412,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 33.38930626504589,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1103.1745533684734,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 286.0639338560868,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 220,
+    "physical_N_crop_encodings": 4272,
+    "physical_Q_incremental_crop_encodings": 408,
+    "physical_native_crop_encodings": 4680,
+    "required_image_encodings": 5666,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 88,
+      "N": 89,
+      "Q": 81
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1103.1745533684734,
+        "required_image_encodings": 5666,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1103.1745533684734,
+        "required_image_encodings": 5666,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1008.4515443061246,
+        "required_image_encodings": 5114,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 43.248983728000894,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1288.840372935054,
+    "cap_exclusions": [
+      "owner:118",
+      "owner:218",
+      "owner:278",
+      "owner:64",
+      "owner:288",
+      "owner:254",
+      "owner:60",
+      "owner:319",
+      "owner:228",
+      "owner:4",
+      "owner:211",
+      "owner:39",
+      "owner:2",
+      "owner:283",
+      "owner:53",
+      "owner:130",
+      "owner:100",
+      "owner:138",
+      "owner:279",
+      "owner:122",
+      "owner:123",
+      "owner:200",
+      "owner:309",
+      "owner:148",
+      "owner:128",
+      "owner:175",
+      "owner:140",
+      "owner:111",
+      "owner:213",
+      "owner:85",
+      "owner:132",
+      "owner:147",
+      "owner:209",
+      "owner:223",
+      "owner:11",
+      "owner:168",
+      "owner:17",
+      "owner:150",
+      "owner:6",
+      "owner:136",
+      "owner:229",
+      "owner:90",
+      "owner:30",
+      "owner:220",
+      "owner:294",
+      "owner:134",
+      "owner:146",
+      "owner:117",
+      "owner:8",
+      "owner:212",
+      "owner:52",
+      "owner:252",
+      "owner:65",
+      "owner:224",
+      "owner:241",
+      "owner:18",
+      "owner:262",
+      "owner:158",
+      "owner:55",
+      "owner:92",
+      "owner:226",
+      "owner:287",
+      "owner:84",
+      "owner:176",
+      "owner:87",
+      "owner:191",
+      "owner:243",
+      "owner:286",
+      "owner:145",
+      "owner:248",
+      "owner:198"
+    ],
+    "map_id": "BB05_FORWARD",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 461.4054044520017,
+    "physical_FC_image_encodings": 20,
+    "physical_FC_region_poolings": 248,
+    "physical_N_crop_encodings": 7518,
+    "physical_Q_incremental_crop_encodings": 270,
+    "physical_native_crop_encodings": 7788,
+    "required_image_encodings": 10011,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 106,
+      "N": 199,
+      "Q": 137
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1288.840372935054,
+        "required_image_encodings": 10011,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1288.840372935054,
+        "required_image_encodings": 10011,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1198.520067016012,
+        "required_image_encodings": 9588,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "FC_wall_seconds": 22.790648967958987,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1082.2371729617007,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_GEOM",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "26a6c4c698f8517f64e1f52c4933f58f90bd1ad7",
+    "native_query_wall_seconds": 151.166351191001,
+    "physical_FC_image_encodings": 0,
+    "physical_FC_region_poolings": 12,
+    "physical_N_crop_encodings": 354,
+    "physical_Q_incremental_crop_encodings": 72,
+    "physical_native_crop_encodings": 426,
+    "required_image_encodings": 5720,
+    "scene": "scene0534_00",
+    "source_availability": {
+      "F": 88,
+      "N": 89,
+      "Q": 82
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1082.2371729617007,
+        "required_image_encodings": 5720,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1082.2371729617007,
+        "required_image_encodings": 5720,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 987.6552671778481,
+        "required_image_encodings": 5168,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 30.322520414018072,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2123.223079503863,
+    "cap_exclusions": [],
+    "map_id": "BBX_COMPOSE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 297.9576926979935,
+    "physical_FC_image_encodings": 3,
+    "physical_FC_region_poolings": 82,
+    "physical_N_crop_encodings": 1320,
+    "physical_Q_incremental_crop_encodings": 468,
+    "physical_native_crop_encodings": 1788,
+    "required_image_encodings": 4982,
+    "scene": "room0",
+    "source_availability": {
+      "F": 53,
+      "N": 55,
+      "Q": 53
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2123.223079503863,
+        "required_image_encodings": 4982,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2123.223079503863,
+        "required_image_encodings": 4982,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2035.718829910038,
+        "required_image_encodings": 4136,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 79.7336854719324,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1790.059821907431,
+    "cap_exclusions": [],
+    "map_id": "BB01_SYNC",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 360.50618305802345,
+    "physical_FC_image_encodings": 91,
+    "physical_FC_region_poolings": 152,
+    "physical_N_crop_encodings": 3528,
+    "physical_Q_incremental_crop_encodings": 780,
+    "physical_native_crop_encodings": 4308,
+    "required_image_encodings": 4399,
+    "scene": "room0",
+    "source_availability": {
+      "F": 53,
+      "N": 54,
+      "Q": 54
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1790.059821907431,
+        "required_image_encodings": 4399,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1790.059821907431,
+        "required_image_encodings": 4399,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1701.1908652803395,
+        "required_image_encodings": 3528,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 31.34780922892969,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 1822.2900981269777,
+    "cap_exclusions": [],
+    "map_id": "BB00_NATIVE",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 297.532730855979,
+    "physical_FC_image_encodings": 6,
+    "physical_FC_region_poolings": 97,
+    "physical_N_crop_encodings": 1524,
+    "physical_Q_incremental_crop_encodings": 438,
+    "physical_native_crop_encodings": 1962,
+    "required_image_encodings": 4394,
+    "scene": "room0",
+    "source_availability": {
+      "F": 53,
+      "N": 54,
+      "Q": 54
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 1822.2900981269777,
+        "required_image_encodings": 4394,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 1822.2900981269777,
+        "required_image_encodings": 4394,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 1733.3389368896605,
+        "required_image_encodings": 3552,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  },
+  {
+    "FC_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "FC_wall_seconds": 35.596745596965775,
+    "Q_logical_attempts": 200,
+    "attributable_standalone_seconds": 2103.180896696169,
+    "cap_exclusions": [],
+    "map_id": "BB03_SAM2_RAW",
+    "native_crop_counter_scope": "legacy physical_native_crop_encodings field counts the N/Q worker union",
+    "native_query_source_commit": "247aacc227bbeb46e5c0d28fdbf079ef4c318a09",
+    "native_query_wall_seconds": 366.75528150296304,
+    "physical_FC_image_encodings": 12,
+    "physical_FC_region_poolings": 133,
+    "physical_N_crop_encodings": 3402,
+    "physical_Q_incremental_crop_encodings": 738,
+    "physical_native_crop_encodings": 4140,
+    "required_image_encodings": 4986,
+    "scene": "room0",
+    "source_availability": {
+      "F": 53,
+      "N": 55,
+      "Q": 53
+    },
+    "standalone_by_readout": {
+      "D2": {
+        "attributable_standalone_seconds": 2103.180896696169,
+        "required_image_encodings": 4986,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "FC_EQ": {
+        "attributable_standalone_seconds": 2103.180896696169,
+        "required_image_encodings": 4986,
+        "timing_missing_components": [
+          "causal_ranker_CPU_time_not_separately_instrumented",
+          "FC_text_and_CPU_preprocessing_not_separately_attributed",
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      },
+      "NATIVE_READOUT": {
+        "attributable_standalone_seconds": 2017.3257282872219,
+        "required_image_encodings": 4148,
+        "timing_missing_components": [
+          "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+        ]
+      }
+    },
+    "timing_missing_components": [
+      "causal_ranker_CPU_time_not_separately_instrumented",
+      "FC_text_and_CPU_preprocessing_not_separately_attributed",
+      "source_identity_checks_projection_reconstruction_fusion_and_evaluation_CPU_not_separately_attributed"
+    ]
+  }
+]

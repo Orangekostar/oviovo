@@ -1,0 +1,27 @@
+{
+  "checked_at_utc": "2026-10-01T00:10:57+00:00",
+  "command": "env PYTHONPATH=src:. /home/ww/miniconda3/envs/ovimap-map/bin/python /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/review/transfer_launch_regression.py",
+  "green": {
+    "exit_code": 0,
+    "validated_frozen_launches": 32
+  },
+  "implementation_commit": "2998d81003a98ebbc3ab2f9fa7aa840313166fa6",
+  "new_map_or_model_launches": 0,
+  "preserved": [
+    "original binding file",
+    "scene order",
+    "data paths",
+    "frame schedule",
+    "native modes",
+    "four frozen recipes"
+  ],
+  "red": {
+    "exit_code": 1,
+    "expected_failure": "office0 retains inherited IPC namespace and old mapper path as bare arguments"
+  },
+  "script": {
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/review/transfer_launch_regression.py",
+    "sha256": "ab40f36770b3ac1410e148e688aec1bf5d13bc8a8b7177510246ac8826a23167"
+  },
+  "status": "PASSED"
+}

@@ -1,0 +1,2583 @@
+{
+  "chunk_valid_frames": 5,
+  "code_commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+  "counters": {
+    "physical_encoder_calls": 3,
+    "physical_image_encodings": 3
+  },
+  "derived_jpeg": {
+    "quality": 100,
+    "subsampling": 0
+  },
+  "elapsed_seconds": 6.69375489000231,
+  "frames": [
+    {
+      "chunk": 0,
+      "current_index": 0,
+      "diagnostic": {
+        "state": "EXACT_CHUNK_FIRST",
+        "tracks": []
+      },
+      "elapsed_seconds": 0.0648246300406754,
+      "frame_id": 0,
+      "outputs": {
+        "geom": {
+          "bytes": 16497,
+          "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/geom/000000.png",
+          "sha256": "679a44da8ed1075565438255e145fa99e9e66753aeeb5cedb5e69921e6faa6fc"
+        },
+        "raw": {
+          "bytes": 16497,
+          "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/raw/000000.png",
+          "sha256": "679a44da8ed1075565438255e145fa99e9e66753aeeb5cedb5e69921e6faa6fc"
+        }
+      },
+      "tracks": {
+        "bytes": 25243,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/000000_tracks.npz",
+        "sha256": "4b81a52b4d07ee671c509909d5bea8341bb1a00d35a4a8942aed2116b96fb44f"
+      }
+    },
+    {
+      "chunk": 0,
+      "current_index": 1,
+      "diagnostic": {
+        "discovery_groups": [
+          43,
+          48,
+          47,
+          46
+        ],
+        "geom_discovery_groups": [
+          43,
+          48,
+          47,
+          46
+        ],
+        "geom_remap": [
+          {
+            "dense_group": 1,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              0,
+              "54d84ae0ff910cd1ce10a2bd3dd963e62a552373c6d56ec26341b6adb1f5e169"
+            ]
+          },
+          {
+            "dense_group": 2,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2,
+              "5f14e1ec8359112074a083603d88dc351bb5f041977d8d151687f46106870396"
+            ]
+          },
+          {
+            "dense_group": 3,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3,
+              "929a5be1e4ff7d8ed541634a4ddd1696f5abb3b16721cd08d5ff3724b9800615"
+            ]
+          },
+          {
+            "dense_group": 4,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              613,
+              "21cd88cf14834d29907ee7829b2a0e4a6fde4d68c63b5e1f3d50815f1b9def46"
+            ]
+          },
+          {
+            "dense_group": 5,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              614,
+              "b3c9e6f52ad8b2e60cbd4e4a8560a01e886a4c4e3d6a37cf4b28501e124ae210"
+            ]
+          },
+          {
+            "dense_group": 6,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              639,
+              "f0074ab12e58741ea29e0766dd1f65589a77abbd72334f50d965db73d43a32c7"
+            ]
+          },
+          {
+            "dense_group": 7,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              642,
+              "8f115e4d5722b6568d113024ab328a0ae67540b55d211e5b79f7a72c13f03bd9"
+            ]
+          },
+          {
+            "dense_group": 8,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              673,
+              "44da14eb3c8109b0e62676aaf780711fceb7951c128dd2e9f290c7dcddc8a9fd"
+            ]
+          },
+          {
+            "dense_group": 9,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              675,
+              "81f3f1390fbe45d20450c5ac133b6d82c7ea97d290bbde3592faf0205f5cbe60"
+            ]
+          },
+          {
+            "dense_group": 10,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1247,
+              "142509db07f11ae0c962093ed994ba3bfb6f577b53375bb48770f110463b06ca"
+            ]
+          },
+          {
+            "dense_group": 11,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1725,
+              "94254a5f9242603c767cdfbfec651b849407128540a6b60db496c3da669625eb"
+            ]
+          },
+          {
+            "dense_group": 12,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1726,
+              "985518f435f450087e73f1bf4cbb58feb9395dc660f38e2fd800813cf1ea4647"
+            ]
+          },
+          {
+            "dense_group": 13,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1729,
+              "0b95b38f6e0ca511c36e5ca5fb3d150a9dda867f006190bf56895d2db4313721"
+            ]
+          },
+          {
+            "dense_group": 14,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1745,
+              "274b0dd1ba53ab24982e120168ccf2e43d642f16175a5b6177bf4f476c5cfa78"
+            ]
+          },
+          {
+            "dense_group": 15,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2206,
+              "bbf602f81f0576be7966c875947342ed51dcf5078457cb70ab8d6f1ad1a3f5dd"
+            ]
+          },
+          {
+            "dense_group": 16,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2650,
+              "78b9fe6e500fa8f9634628206b833be4ceda8973294bf6922e8002acbf33ae1f"
+            ]
+          },
+          {
+            "dense_group": 17,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3117,
+              "04376566a90591bf05fe84a5ba55d4c32d8a423b06521112ad1e68243ee1c67a"
+            ]
+          },
+          {
+            "dense_group": 18,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3275,
+              "f05da9a268e6e98d18bb41efbf49779363cb3cdaac0c0ed9cb29f36a35c1a971"
+            ]
+          },
+          {
+            "dense_group": 19,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3287,
+              "c5b27ec7ae18eaf27c9cff5a0df27a5e39a8ad5cc6044cd3ca708e389ea4c319"
+            ]
+          },
+          {
+            "dense_group": 20,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3927,
+              "b21053d5d64527b8916c27b5b9f8567d9a8f6cfa64274a5f25831e813f277ec0"
+            ]
+          },
+          {
+            "dense_group": 21,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4556,
+              "a546cf70bd99aac06f7d8829c4a45cf722ba07d46a3ba3096b6ea934c4f4c482"
+            ]
+          },
+          {
+            "dense_group": 22,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4568,
+              "b4ef226927f6e23431f50787e8ae0a194e19ee7fb1fad0b70563a819faf37c24"
+            ]
+          },
+          {
+            "dense_group": 23,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              6488,
+              "cdb92c5346cfa944b3f63fb4f9cda1d619fbe6aec7717f759eaaef57b5cbe489"
+            ]
+          },
+          {
+            "dense_group": 24,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              7041,
+              "fc9f6ac4ef0bedc2dea96678e43d2b6972c777662be7356880532c0530b16a8c"
+            ]
+          },
+          {
+            "dense_group": 25,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              9675,
+              "d0c24fbc824ecf558df9210b6261b77ac1966de8ae188a049e75a79e0e2e3ce0"
+            ]
+          },
+          {
+            "dense_group": 26,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12236,
+              "a603b5e3214e3c84369422f7dfb9aeda1215b24e377a4fe3858285a44e931556"
+            ]
+          },
+          {
+            "dense_group": 27,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12888,
+              "157282b518894b3addf8981203980ab8f3522ac65a6662c646cc081313a29a87"
+            ]
+          },
+          {
+            "dense_group": 28,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              24553,
+              "bb5c22da13210546519de41e5ab084657778e3b096ff2bdc450561a3cb89d7f8"
+            ]
+          },
+          {
+            "dense_group": 29,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              29664,
+              "4f385a78fa9e4d267c9b2aa1c487970909660b21e68faa4f47e21306b377f027"
+            ]
+          },
+          {
+            "dense_group": 30,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              41644,
+              "592fed0bc5b83d2ca42b7df57b3f93e711c43dcb7d07607a4b300947e96bf8cd"
+            ]
+          },
+          {
+            "dense_group": 31,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              50600,
+              "bde464f9025f4fc7c5ff48aa2ac4a7793752f85f940d12a80793beb9eef7c0b6"
+            ]
+          },
+          {
+            "dense_group": 32,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              65998,
+              "2c21e40405600dd98ded6cb63da4c79ecc2a669ef5f61b71c1c8f097224b4f4b"
+            ]
+          },
+          {
+            "dense_group": 33,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              66721,
+              "e288329c07047a97c54b44b858a40631a94cfca7786b9d731861e1927d1d7f0a"
+            ]
+          },
+          {
+            "dense_group": 34,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67347,
+              "bb35bd0f5c57f08e116a4e8101a7ebfd19af0684118bc5c7dce34c4e3ac283f0"
+            ]
+          },
+          {
+            "dense_group": 35,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67997,
+              "627b3f0f9239fad5660537d4a908d1e6affd723a53c20f94350f57109b25bcd6"
+            ]
+          },
+          {
+            "dense_group": 36,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              68634,
+              "ae8d127326ed43fc26d43cf2b483b6a94ae1972a6711db478af086bf3eb1bdc3"
+            ]
+          },
+          {
+            "dense_group": 37,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69259,
+              "f891c073f4c29fbd14343f1e6fe2f267c31fd9f110d95d235cd98786c3fe2314"
+            ]
+          },
+          {
+            "dense_group": 38,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69273,
+              "0c28609ea36265ed7a03763e3e2f97031b4e08be13caa151c648a84f0e4f2fac"
+            ]
+          },
+          {
+            "dense_group": 39,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69845,
+              "cc716073260cec32d3b5a39a9ce8021aa7d49177e6e68831ba01c9092170ec3f"
+            ]
+          },
+          {
+            "dense_group": 40,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69946,
+              "3e18cc65d5a5a856661dc6552859802f9be5e24dbd90d26c6fdc6f19fec5a385"
+            ]
+          },
+          {
+            "dense_group": 41,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              70485,
+              "4556d50af1eca2e1ca085def88f40712ba63f1f764745571e1f082f55f64bd00"
+            ]
+          },
+          {
+            "dense_group": 42,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              71168,
+              "6725bfc804c570f2f1cf06d5bbfeefe878db5a7d1742da49fdc2cfba98dab459"
+            ]
+          },
+          {
+            "dense_group": 43,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              223657,
+              "00cd655d5c44c3af7c799a28e16c3829f8153ea172266a37f95c07afdefb16cc"
+            ]
+          },
+          {
+            "cropformer_group": 43,
+            "dense_group": 44,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 48,
+            "dense_group": 45,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 47,
+            "dense_group": 46,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 46,
+            "dense_group": 47,
+            "kind": "RAW_DISCOVERY"
+          }
+        ],
+        "raw_remap": [
+          {
+            "dense_group": 1,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              0,
+              "54d84ae0ff910cd1ce10a2bd3dd963e62a552373c6d56ec26341b6adb1f5e169"
+            ]
+          },
+          {
+            "dense_group": 2,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2,
+              "5f14e1ec8359112074a083603d88dc351bb5f041977d8d151687f46106870396"
+            ]
+          },
+          {
+            "dense_group": 3,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3,
+              "929a5be1e4ff7d8ed541634a4ddd1696f5abb3b16721cd08d5ff3724b9800615"
+            ]
+          },
+          {
+            "dense_group": 4,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              613,
+              "21cd88cf14834d29907ee7829b2a0e4a6fde4d68c63b5e1f3d50815f1b9def46"
+            ]
+          },
+          {
+            "dense_group": 5,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              614,
+              "b3c9e6f52ad8b2e60cbd4e4a8560a01e886a4c4e3d6a37cf4b28501e124ae210"
+            ]
+          },
+          {
+            "dense_group": 6,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              639,
+              "f0074ab12e58741ea29e0766dd1f65589a77abbd72334f50d965db73d43a32c7"
+            ]
+          },
+          {
+            "dense_group": 7,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              642,
+              "8f115e4d5722b6568d113024ab328a0ae67540b55d211e5b79f7a72c13f03bd9"
+            ]
+          },
+          {
+            "dense_group": 8,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              673,
+              "44da14eb3c8109b0e62676aaf780711fceb7951c128dd2e9f290c7dcddc8a9fd"
+            ]
+          },
+          {
+            "dense_group": 9,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              675,
+              "81f3f1390fbe45d20450c5ac133b6d82c7ea97d290bbde3592faf0205f5cbe60"
+            ]
+          },
+          {
+            "dense_group": 10,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1247,
+              "142509db07f11ae0c962093ed994ba3bfb6f577b53375bb48770f110463b06ca"
+            ]
+          },
+          {
+            "dense_group": 11,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1725,
+              "94254a5f9242603c767cdfbfec651b849407128540a6b60db496c3da669625eb"
+            ]
+          },
+          {
+            "dense_group": 12,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1726,
+              "985518f435f450087e73f1bf4cbb58feb9395dc660f38e2fd800813cf1ea4647"
+            ]
+          },
+          {
+            "dense_group": 13,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1729,
+              "0b95b38f6e0ca511c36e5ca5fb3d150a9dda867f006190bf56895d2db4313721"
+            ]
+          },
+          {
+            "dense_group": 14,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1745,
+              "274b0dd1ba53ab24982e120168ccf2e43d642f16175a5b6177bf4f476c5cfa78"
+            ]
+          },
+          {
+            "dense_group": 15,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1842,
+              "da6af888b7d291bad217660abfb1542b8a27d2e8af8e88f1c07859cd45dcf868"
+            ]
+          },
+          {
+            "dense_group": 16,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2206,
+              "bbf602f81f0576be7966c875947342ed51dcf5078457cb70ab8d6f1ad1a3f5dd"
+            ]
+          },
+          {
+            "dense_group": 17,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2650,
+              "78b9fe6e500fa8f9634628206b833be4ceda8973294bf6922e8002acbf33ae1f"
+            ]
+          },
+          {
+            "dense_group": 18,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3117,
+              "04376566a90591bf05fe84a5ba55d4c32d8a423b06521112ad1e68243ee1c67a"
+            ]
+          },
+          {
+            "dense_group": 19,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3275,
+              "f05da9a268e6e98d18bb41efbf49779363cb3cdaac0c0ed9cb29f36a35c1a971"
+            ]
+          },
+          {
+            "dense_group": 20,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3287,
+              "c5b27ec7ae18eaf27c9cff5a0df27a5e39a8ad5cc6044cd3ca708e389ea4c319"
+            ]
+          },
+          {
+            "dense_group": 21,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3927,
+              "b21053d5d64527b8916c27b5b9f8567d9a8f6cfa64274a5f25831e813f277ec0"
+            ]
+          },
+          {
+            "dense_group": 22,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4556,
+              "a546cf70bd99aac06f7d8829c4a45cf722ba07d46a3ba3096b6ea934c4f4c482"
+            ]
+          },
+          {
+            "dense_group": 23,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4568,
+              "b4ef226927f6e23431f50787e8ae0a194e19ee7fb1fad0b70563a819faf37c24"
+            ]
+          },
+          {
+            "dense_group": 24,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              6488,
+              "cdb92c5346cfa944b3f63fb4f9cda1d619fbe6aec7717f759eaaef57b5cbe489"
+            ]
+          },
+          {
+            "dense_group": 25,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              7041,
+              "fc9f6ac4ef0bedc2dea96678e43d2b6972c777662be7356880532c0530b16a8c"
+            ]
+          },
+          {
+            "dense_group": 26,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              9675,
+              "d0c24fbc824ecf558df9210b6261b77ac1966de8ae188a049e75a79e0e2e3ce0"
+            ]
+          },
+          {
+            "dense_group": 27,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12236,
+              "a603b5e3214e3c84369422f7dfb9aeda1215b24e377a4fe3858285a44e931556"
+            ]
+          },
+          {
+            "dense_group": 28,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12888,
+              "157282b518894b3addf8981203980ab8f3522ac65a6662c646cc081313a29a87"
+            ]
+          },
+          {
+            "dense_group": 29,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              24553,
+              "bb5c22da13210546519de41e5ab084657778e3b096ff2bdc450561a3cb89d7f8"
+            ]
+          },
+          {
+            "dense_group": 30,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              29664,
+              "4f385a78fa9e4d267c9b2aa1c487970909660b21e68faa4f47e21306b377f027"
+            ]
+          },
+          {
+            "dense_group": 31,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              41644,
+              "592fed0bc5b83d2ca42b7df57b3f93e711c43dcb7d07607a4b300947e96bf8cd"
+            ]
+          },
+          {
+            "dense_group": 32,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              50600,
+              "bde464f9025f4fc7c5ff48aa2ac4a7793752f85f940d12a80793beb9eef7c0b6"
+            ]
+          },
+          {
+            "dense_group": 33,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              65998,
+              "2c21e40405600dd98ded6cb63da4c79ecc2a669ef5f61b71c1c8f097224b4f4b"
+            ]
+          },
+          {
+            "dense_group": 34,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              66721,
+              "e288329c07047a97c54b44b858a40631a94cfca7786b9d731861e1927d1d7f0a"
+            ]
+          },
+          {
+            "dense_group": 35,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67347,
+              "bb35bd0f5c57f08e116a4e8101a7ebfd19af0684118bc5c7dce34c4e3ac283f0"
+            ]
+          },
+          {
+            "dense_group": 36,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67997,
+              "627b3f0f9239fad5660537d4a908d1e6affd723a53c20f94350f57109b25bcd6"
+            ]
+          },
+          {
+            "dense_group": 37,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              68634,
+              "ae8d127326ed43fc26d43cf2b483b6a94ae1972a6711db478af086bf3eb1bdc3"
+            ]
+          },
+          {
+            "dense_group": 38,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69259,
+              "f891c073f4c29fbd14343f1e6fe2f267c31fd9f110d95d235cd98786c3fe2314"
+            ]
+          },
+          {
+            "dense_group": 39,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69273,
+              "0c28609ea36265ed7a03763e3e2f97031b4e08be13caa151c648a84f0e4f2fac"
+            ]
+          },
+          {
+            "dense_group": 40,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69845,
+              "cc716073260cec32d3b5a39a9ce8021aa7d49177e6e68831ba01c9092170ec3f"
+            ]
+          },
+          {
+            "dense_group": 41,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69946,
+              "3e18cc65d5a5a856661dc6552859802f9be5e24dbd90d26c6fdc6f19fec5a385"
+            ]
+          },
+          {
+            "dense_group": 42,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              70485,
+              "4556d50af1eca2e1ca085def88f40712ba63f1f764745571e1f082f55f64bd00"
+            ]
+          },
+          {
+            "dense_group": 43,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              71168,
+              "6725bfc804c570f2f1cf06d5bbfeefe878db5a7d1742da49fdc2cfba98dab459"
+            ]
+          },
+          {
+            "dense_group": 44,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              223657,
+              "00cd655d5c44c3af7c799a28e16c3829f8153ea172266a37f95c07afdefb16cc"
+            ]
+          },
+          {
+            "cropformer_group": 43,
+            "dense_group": 45,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 48,
+            "dense_group": 46,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 47,
+            "dense_group": 47,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 46,
+            "dense_group": 48,
+            "kind": "RAW_DISCOVERY"
+          }
+        ],
+        "raw_union_pixels": 292616,
+        "tracks": [
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 3223,
+            "retention": 0.0,
+            "seed_key": [
+              0,
+              "54d84ae0ff910cd1ce10a2bd3dd963e62a552373c6d56ec26341b6adb1f5e169"
+            ],
+            "visible_past_pixels": 5
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 131,
+            "retention": 0.6204379562043796,
+            "seed_key": [
+              2,
+              "5f14e1ec8359112074a083603d88dc351bb5f041977d8d151687f46106870396"
+            ],
+            "visible_past_pixels": 137
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 4840,
+            "retention": 0.7903885480572597,
+            "seed_key": [
+              3,
+              "929a5be1e4ff7d8ed541634a4ddd1696f5abb3b16721cd08d5ff3724b9800615"
+            ],
+            "visible_past_pixels": 978
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 1548,
+            "retention": 0.0,
+            "seed_key": [
+              613,
+              "21cd88cf14834d29907ee7829b2a0e4a6fde4d68c63b5e1f3d50815f1b9def46"
+            ],
+            "visible_past_pixels": 68
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 117217,
+            "retention": 0.978557235079533,
+            "seed_key": [
+              614,
+              "b3c9e6f52ad8b2e60cbd4e4a8560a01e886a4c4e3d6a37cf4b28501e124ae210"
+            ],
+            "visible_past_pixels": 101153
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 27,
+            "retention": 0.23529411764705882,
+            "seed_key": [
+              639,
+              "f0074ab12e58741ea29e0766dd1f65589a77abbd72334f50d965db73d43a32c7"
+            ],
+            "visible_past_pixels": 68
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 160,
+            "retention": 0.6512820512820513,
+            "seed_key": [
+              642,
+              "8f115e4d5722b6568d113024ab328a0ae67540b55d211e5b79f7a72c13f03bd9"
+            ],
+            "visible_past_pixels": 195
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 536,
+            "retention": 0.8224101479915433,
+            "seed_key": [
+              673,
+              "44da14eb3c8109b0e62676aaf780711fceb7951c128dd2e9f290c7dcddc8a9fd"
+            ],
+            "visible_past_pixels": 473
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 421,
+            "retention": 0.8213256484149856,
+            "seed_key": [
+              675,
+              "81f3f1390fbe45d20450c5ac133b6d82c7ea97d290bbde3592faf0205f5cbe60"
+            ],
+            "visible_past_pixels": 347
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 6754,
+            "retention": 0.9534423872011505,
+            "seed_key": [
+              1247,
+              "142509db07f11ae0c962093ed994ba3bfb6f577b53375bb48770f110463b06ca"
+            ],
+            "visible_past_pixels": 5563
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 2703,
+            "retention": 0.43333333333333335,
+            "seed_key": [
+              1725,
+              "94254a5f9242603c767cdfbfec651b849407128540a6b60db496c3da669625eb"
+            ],
+            "visible_past_pixels": 90
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 44592,
+            "retention": 0.9870573747832424,
+            "seed_key": [
+              1726,
+              "985518f435f450087e73f1bf4cbb58feb9395dc660f38e2fd800813cf1ea4647"
+            ],
+            "visible_past_pixels": 39791
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 178,
+            "retention": 0.8557692307692307,
+            "seed_key": [
+              1729,
+              "0b95b38f6e0ca511c36e5ca5fb3d150a9dda867f006190bf56895d2db4313721"
+            ],
+            "visible_past_pixels": 104
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 60,
+            "retention": 0.6923076923076923,
+            "seed_key": [
+              1745,
+              "274b0dd1ba53ab24982e120168ccf2e43d642f16175a5b6177bf4f476c5cfa78"
+            ],
+            "visible_past_pixels": 65
+          },
+          {
+            "decision": "REJECT_NO_REPLACEMENT",
+            "raw_pixels": 51,
+            "retention": 0.4339622641509434,
+            "seed_key": [
+              1842,
+              "da6af888b7d291bad217660abfb1542b8a27d2e8af8e88f1c07859cd45dcf868"
+            ],
+            "visible_past_pixels": 106
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 396,
+            "retention": 0.8894472361809045,
+            "seed_key": [
+              2206,
+              "bbf602f81f0576be7966c875947342ed51dcf5078457cb70ab8d6f1ad1a3f5dd"
+            ],
+            "visible_past_pixels": 398
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 1710,
+            "retention": 0.9697377269670477,
+            "seed_key": [
+              2650,
+              "78b9fe6e500fa8f9634628206b833be4ceda8973294bf6922e8002acbf33ae1f"
+            ],
+            "visible_past_pixels": 1487
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 8381,
+            "retention": 0.9616998950682056,
+            "seed_key": [
+              3117,
+              "04376566a90591bf05fe84a5ba55d4c32d8a423b06521112ad1e68243ee1c67a"
+            ],
+            "visible_past_pixels": 7624
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 1417,
+            "retention": 0.9539622641509434,
+            "seed_key": [
+              3275,
+              "f05da9a268e6e98d18bb41efbf49779363cb3cdaac0c0ed9cb29f36a35c1a971"
+            ],
+            "visible_past_pixels": 1325
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 804,
+            "retention": 0.7751141552511416,
+            "seed_key": [
+              3287,
+              "c5b27ec7ae18eaf27c9cff5a0df27a5e39a8ad5cc6044cd3ca708e389ea4c319"
+            ],
+            "visible_past_pixels": 876
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 812,
+            "retention": 0.7312722948870393,
+            "seed_key": [
+              3927,
+              "b21053d5d64527b8916c27b5b9f8567d9a8f6cfa64274a5f25831e813f277ec0"
+            ],
+            "visible_past_pixels": 841
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 1047,
+            "retention": 0.8235858101629914,
+            "seed_key": [
+              4556,
+              "a546cf70bd99aac06f7d8829c4a45cf722ba07d46a3ba3096b6ea934c4f4c482"
+            ],
+            "visible_past_pixels": 1043
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 46069,
+            "retention": 0.9709299487429827,
+            "seed_key": [
+              4568,
+              "b4ef226927f6e23431f50787e8ae0a194e19ee7fb1fad0b70563a819faf37c24"
+            ],
+            "visible_past_pixels": 40970
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 6215,
+            "retention": 0.9578947368421052,
+            "seed_key": [
+              6488,
+              "cdb92c5346cfa944b3f63fb4f9cda1d619fbe6aec7717f759eaaef57b5cbe489"
+            ],
+            "visible_past_pixels": 5035
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 17,
+            "retention": 0.4117647058823529,
+            "seed_key": [
+              7041,
+              "fc9f6ac4ef0bedc2dea96678e43d2b6972c777662be7356880532c0530b16a8c"
+            ],
+            "visible_past_pixels": 34
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 1913,
+            "retention": 0.0,
+            "seed_key": [
+              9675,
+              "d0c24fbc824ecf558df9210b6261b77ac1966de8ae188a049e75a79e0e2e3ce0"
+            ],
+            "visible_past_pixels": 33
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 421,
+            "retention": 0.8944723618090452,
+            "seed_key": [
+              12236,
+              "a603b5e3214e3c84369422f7dfb9aeda1215b24e377a4fe3858285a44e931556"
+            ],
+            "visible_past_pixels": 398
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 23890,
+            "retention": 0.9835221421215242,
+            "seed_key": [
+              12888,
+              "157282b518894b3addf8981203980ab8f3522ac65a6662c646cc081313a29a87"
+            ],
+            "visible_past_pixels": 22333
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 202,
+            "retention": 0.7417840375586855,
+            "seed_key": [
+              24553,
+              "bb5c22da13210546519de41e5ab084657778e3b096ff2bdc450561a3cb89d7f8"
+            ],
+            "visible_past_pixels": 213
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 9916,
+            "retention": 0.9555917228551499,
+            "seed_key": [
+              29664,
+              "4f385a78fa9e4d267c9b2aa1c487970909660b21e68faa4f47e21306b377f027"
+            ],
+            "visible_past_pixels": 8602
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 2366,
+            "retention": 0.6140350877192983,
+            "seed_key": [
+              41644,
+              "592fed0bc5b83d2ca42b7df57b3f93e711c43dcb7d07607a4b300947e96bf8cd"
+            ],
+            "visible_past_pixels": 228
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 2618,
+            "retention": 0.9500723589001447,
+            "seed_key": [
+              50600,
+              "bde464f9025f4fc7c5ff48aa2ac4a7793752f85f940d12a80793beb9eef7c0b6"
+            ],
+            "visible_past_pixels": 1382
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 855,
+            "retention": 0.9238410596026491,
+            "seed_key": [
+              65998,
+              "2c21e40405600dd98ded6cb63da4c79ecc2a669ef5f61b71c1c8f097224b4f4b"
+            ],
+            "visible_past_pixels": 604
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 24,
+            "retention": 0.6333333333333333,
+            "seed_key": [
+              66721,
+              "e288329c07047a97c54b44b858a40631a94cfca7786b9d731861e1927d1d7f0a"
+            ],
+            "visible_past_pixels": 30
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 121,
+            "retention": 0.5934065934065934,
+            "seed_key": [
+              67347,
+              "bb35bd0f5c57f08e116a4e8101a7ebfd19af0684118bc5c7dce34c4e3ac283f0"
+            ],
+            "visible_past_pixels": 91
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 54,
+            "retention": 0.625,
+            "seed_key": [
+              67997,
+              "627b3f0f9239fad5660537d4a908d1e6affd723a53c20f94350f57109b25bcd6"
+            ],
+            "visible_past_pixels": 8
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 43,
+            "retention": 0.75,
+            "seed_key": [
+              68634,
+              "ae8d127326ed43fc26d43cf2b483b6a94ae1972a6711db478af086bf3eb1bdc3"
+            ],
+            "visible_past_pixels": 40
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 84,
+            "retention": 0.7948717948717948,
+            "seed_key": [
+              69259,
+              "f891c073f4c29fbd14343f1e6fe2f267c31fd9f110d95d235cd98786c3fe2314"
+            ],
+            "visible_past_pixels": 39
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 56,
+            "retention": 0.5915492957746479,
+            "seed_key": [
+              69273,
+              "0c28609ea36265ed7a03763e3e2f97031b4e08be13caa151c648a84f0e4f2fac"
+            ],
+            "visible_past_pixels": 71
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 891,
+            "retention": 0.6254545454545455,
+            "seed_key": [
+              69845,
+              "cc716073260cec32d3b5a39a9ce8021aa7d49177e6e68831ba01c9092170ec3f"
+            ],
+            "visible_past_pixels": 550
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 105,
+            "retention": 0.46875,
+            "seed_key": [
+              69946,
+              "3e18cc65d5a5a856661dc6552859802f9be5e24dbd90d26c6fdc6f19fec5a385"
+            ],
+            "visible_past_pixels": 32
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 353,
+            "retention": 0.9584905660377359,
+            "seed_key": [
+              70485,
+              "4556d50af1eca2e1ca085def88f40712ba63f1f764745571e1f082f55f64bd00"
+            ],
+            "visible_past_pixels": 265
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 57,
+            "retention": 0.7647058823529411,
+            "seed_key": [
+              71168,
+              "6725bfc804c570f2f1cf06d5bbfeefe878db5a7d1742da49fdc2cfba98dab459"
+            ],
+            "visible_past_pixels": 17
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 113,
+            "retention": 0.9066666666666666,
+            "seed_key": [
+              223657,
+              "00cd655d5c44c3af7c799a28e16c3829f8153ea172266a37f95c07afdefb16cc"
+            ],
+            "visible_past_pixels": 75
+          }
+        ]
+      },
+      "elapsed_seconds": 1.0882064889883623,
+      "frame_id": 9,
+      "outputs": {
+        "geom": {
+          "bytes": 12056,
+          "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/geom/000009.png",
+          "sha256": "287b2cda02b31c361db795df5eb3fd66cd2866745cfdbbad006b7f6996fdff44"
+        },
+        "raw": {
+          "bytes": 12091,
+          "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/raw/000009.png",
+          "sha256": "c3e928e3229712f3bad0a0d8c378637702f4a00ce34400b7949b3ce8009040bf"
+        }
+      },
+      "tracks": {
+        "bytes": 13496,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/000009_tracks.npz",
+        "sha256": "5b2645c4ddef4f94f25980eab49982edea3df76e6c13fa41b437f81d31b21934"
+      }
+    },
+    {
+      "chunk": 0,
+      "current_index": 2,
+      "diagnostic": {
+        "discovery_groups": [
+          28,
+          34
+        ],
+        "geom_discovery_groups": [
+          28,
+          34
+        ],
+        "geom_remap": [
+          {
+            "dense_group": 1,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              0,
+              "54d84ae0ff910cd1ce10a2bd3dd963e62a552373c6d56ec26341b6adb1f5e169"
+            ]
+          },
+          {
+            "dense_group": 2,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2,
+              "5f14e1ec8359112074a083603d88dc351bb5f041977d8d151687f46106870396"
+            ]
+          },
+          {
+            "dense_group": 3,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3,
+              "929a5be1e4ff7d8ed541634a4ddd1696f5abb3b16721cd08d5ff3724b9800615"
+            ]
+          },
+          {
+            "dense_group": 4,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              613,
+              "21cd88cf14834d29907ee7829b2a0e4a6fde4d68c63b5e1f3d50815f1b9def46"
+            ]
+          },
+          {
+            "dense_group": 5,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              614,
+              "b3c9e6f52ad8b2e60cbd4e4a8560a01e886a4c4e3d6a37cf4b28501e124ae210"
+            ]
+          },
+          {
+            "dense_group": 6,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              639,
+              "f0074ab12e58741ea29e0766dd1f65589a77abbd72334f50d965db73d43a32c7"
+            ]
+          },
+          {
+            "dense_group": 7,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              642,
+              "8f115e4d5722b6568d113024ab328a0ae67540b55d211e5b79f7a72c13f03bd9"
+            ]
+          },
+          {
+            "dense_group": 8,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              673,
+              "44da14eb3c8109b0e62676aaf780711fceb7951c128dd2e9f290c7dcddc8a9fd"
+            ]
+          },
+          {
+            "dense_group": 9,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              675,
+              "81f3f1390fbe45d20450c5ac133b6d82c7ea97d290bbde3592faf0205f5cbe60"
+            ]
+          },
+          {
+            "dense_group": 10,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1247,
+              "142509db07f11ae0c962093ed994ba3bfb6f577b53375bb48770f110463b06ca"
+            ]
+          },
+          {
+            "dense_group": 11,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1725,
+              "94254a5f9242603c767cdfbfec651b849407128540a6b60db496c3da669625eb"
+            ]
+          },
+          {
+            "dense_group": 12,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1726,
+              "985518f435f450087e73f1bf4cbb58feb9395dc660f38e2fd800813cf1ea4647"
+            ]
+          },
+          {
+            "dense_group": 13,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1729,
+              "0b95b38f6e0ca511c36e5ca5fb3d150a9dda867f006190bf56895d2db4313721"
+            ]
+          },
+          {
+            "dense_group": 14,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1745,
+              "274b0dd1ba53ab24982e120168ccf2e43d642f16175a5b6177bf4f476c5cfa78"
+            ]
+          },
+          {
+            "dense_group": 15,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1842,
+              "da6af888b7d291bad217660abfb1542b8a27d2e8af8e88f1c07859cd45dcf868"
+            ]
+          },
+          {
+            "dense_group": 16,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2206,
+              "bbf602f81f0576be7966c875947342ed51dcf5078457cb70ab8d6f1ad1a3f5dd"
+            ]
+          },
+          {
+            "dense_group": 17,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2650,
+              "78b9fe6e500fa8f9634628206b833be4ceda8973294bf6922e8002acbf33ae1f"
+            ]
+          },
+          {
+            "dense_group": 18,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3117,
+              "04376566a90591bf05fe84a5ba55d4c32d8a423b06521112ad1e68243ee1c67a"
+            ]
+          },
+          {
+            "dense_group": 19,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3275,
+              "f05da9a268e6e98d18bb41efbf49779363cb3cdaac0c0ed9cb29f36a35c1a971"
+            ]
+          },
+          {
+            "dense_group": 20,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3287,
+              "c5b27ec7ae18eaf27c9cff5a0df27a5e39a8ad5cc6044cd3ca708e389ea4c319"
+            ]
+          },
+          {
+            "dense_group": 21,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3927,
+              "b21053d5d64527b8916c27b5b9f8567d9a8f6cfa64274a5f25831e813f277ec0"
+            ]
+          },
+          {
+            "dense_group": 22,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4556,
+              "a546cf70bd99aac06f7d8829c4a45cf722ba07d46a3ba3096b6ea934c4f4c482"
+            ]
+          },
+          {
+            "dense_group": 23,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4568,
+              "b4ef226927f6e23431f50787e8ae0a194e19ee7fb1fad0b70563a819faf37c24"
+            ]
+          },
+          {
+            "dense_group": 24,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              6488,
+              "cdb92c5346cfa944b3f63fb4f9cda1d619fbe6aec7717f759eaaef57b5cbe489"
+            ]
+          },
+          {
+            "dense_group": 25,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              7041,
+              "fc9f6ac4ef0bedc2dea96678e43d2b6972c777662be7356880532c0530b16a8c"
+            ]
+          },
+          {
+            "dense_group": 26,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              9675,
+              "d0c24fbc824ecf558df9210b6261b77ac1966de8ae188a049e75a79e0e2e3ce0"
+            ]
+          },
+          {
+            "dense_group": 27,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12236,
+              "a603b5e3214e3c84369422f7dfb9aeda1215b24e377a4fe3858285a44e931556"
+            ]
+          },
+          {
+            "dense_group": 28,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12888,
+              "157282b518894b3addf8981203980ab8f3522ac65a6662c646cc081313a29a87"
+            ]
+          },
+          {
+            "dense_group": 29,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              24553,
+              "bb5c22da13210546519de41e5ab084657778e3b096ff2bdc450561a3cb89d7f8"
+            ]
+          },
+          {
+            "dense_group": 30,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              29664,
+              "4f385a78fa9e4d267c9b2aa1c487970909660b21e68faa4f47e21306b377f027"
+            ]
+          },
+          {
+            "dense_group": 31,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              41644,
+              "592fed0bc5b83d2ca42b7df57b3f93e711c43dcb7d07607a4b300947e96bf8cd"
+            ]
+          },
+          {
+            "dense_group": 32,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              50600,
+              "bde464f9025f4fc7c5ff48aa2ac4a7793752f85f940d12a80793beb9eef7c0b6"
+            ]
+          },
+          {
+            "dense_group": 33,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              65998,
+              "2c21e40405600dd98ded6cb63da4c79ecc2a669ef5f61b71c1c8f097224b4f4b"
+            ]
+          },
+          {
+            "dense_group": 34,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              66721,
+              "e288329c07047a97c54b44b858a40631a94cfca7786b9d731861e1927d1d7f0a"
+            ]
+          },
+          {
+            "dense_group": 35,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67347,
+              "bb35bd0f5c57f08e116a4e8101a7ebfd19af0684118bc5c7dce34c4e3ac283f0"
+            ]
+          },
+          {
+            "dense_group": 36,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67997,
+              "627b3f0f9239fad5660537d4a908d1e6affd723a53c20f94350f57109b25bcd6"
+            ]
+          },
+          {
+            "dense_group": 37,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              68634,
+              "ae8d127326ed43fc26d43cf2b483b6a94ae1972a6711db478af086bf3eb1bdc3"
+            ]
+          },
+          {
+            "dense_group": 38,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69259,
+              "f891c073f4c29fbd14343f1e6fe2f267c31fd9f110d95d235cd98786c3fe2314"
+            ]
+          },
+          {
+            "dense_group": 39,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69273,
+              "0c28609ea36265ed7a03763e3e2f97031b4e08be13caa151c648a84f0e4f2fac"
+            ]
+          },
+          {
+            "dense_group": 40,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69845,
+              "cc716073260cec32d3b5a39a9ce8021aa7d49177e6e68831ba01c9092170ec3f"
+            ]
+          },
+          {
+            "dense_group": 41,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69946,
+              "3e18cc65d5a5a856661dc6552859802f9be5e24dbd90d26c6fdc6f19fec5a385"
+            ]
+          },
+          {
+            "dense_group": 42,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              71168,
+              "6725bfc804c570f2f1cf06d5bbfeefe878db5a7d1742da49fdc2cfba98dab459"
+            ]
+          },
+          {
+            "dense_group": 43,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              223657,
+              "00cd655d5c44c3af7c799a28e16c3829f8153ea172266a37f95c07afdefb16cc"
+            ]
+          },
+          {
+            "cropformer_group": 28,
+            "dense_group": 44,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 34,
+            "dense_group": 45,
+            "kind": "RAW_DISCOVERY"
+          }
+        ],
+        "raw_remap": [
+          {
+            "dense_group": 1,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              0,
+              "54d84ae0ff910cd1ce10a2bd3dd963e62a552373c6d56ec26341b6adb1f5e169"
+            ]
+          },
+          {
+            "dense_group": 2,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2,
+              "5f14e1ec8359112074a083603d88dc351bb5f041977d8d151687f46106870396"
+            ]
+          },
+          {
+            "dense_group": 3,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3,
+              "929a5be1e4ff7d8ed541634a4ddd1696f5abb3b16721cd08d5ff3724b9800615"
+            ]
+          },
+          {
+            "dense_group": 4,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              613,
+              "21cd88cf14834d29907ee7829b2a0e4a6fde4d68c63b5e1f3d50815f1b9def46"
+            ]
+          },
+          {
+            "dense_group": 5,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              614,
+              "b3c9e6f52ad8b2e60cbd4e4a8560a01e886a4c4e3d6a37cf4b28501e124ae210"
+            ]
+          },
+          {
+            "dense_group": 6,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              639,
+              "f0074ab12e58741ea29e0766dd1f65589a77abbd72334f50d965db73d43a32c7"
+            ]
+          },
+          {
+            "dense_group": 7,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              642,
+              "8f115e4d5722b6568d113024ab328a0ae67540b55d211e5b79f7a72c13f03bd9"
+            ]
+          },
+          {
+            "dense_group": 8,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              673,
+              "44da14eb3c8109b0e62676aaf780711fceb7951c128dd2e9f290c7dcddc8a9fd"
+            ]
+          },
+          {
+            "dense_group": 9,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              675,
+              "81f3f1390fbe45d20450c5ac133b6d82c7ea97d290bbde3592faf0205f5cbe60"
+            ]
+          },
+          {
+            "dense_group": 10,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1247,
+              "142509db07f11ae0c962093ed994ba3bfb6f577b53375bb48770f110463b06ca"
+            ]
+          },
+          {
+            "dense_group": 11,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1725,
+              "94254a5f9242603c767cdfbfec651b849407128540a6b60db496c3da669625eb"
+            ]
+          },
+          {
+            "dense_group": 12,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1726,
+              "985518f435f450087e73f1bf4cbb58feb9395dc660f38e2fd800813cf1ea4647"
+            ]
+          },
+          {
+            "dense_group": 13,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1729,
+              "0b95b38f6e0ca511c36e5ca5fb3d150a9dda867f006190bf56895d2db4313721"
+            ]
+          },
+          {
+            "dense_group": 14,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1745,
+              "274b0dd1ba53ab24982e120168ccf2e43d642f16175a5b6177bf4f476c5cfa78"
+            ]
+          },
+          {
+            "dense_group": 15,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              1842,
+              "da6af888b7d291bad217660abfb1542b8a27d2e8af8e88f1c07859cd45dcf868"
+            ]
+          },
+          {
+            "dense_group": 16,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2206,
+              "bbf602f81f0576be7966c875947342ed51dcf5078457cb70ab8d6f1ad1a3f5dd"
+            ]
+          },
+          {
+            "dense_group": 17,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              2650,
+              "78b9fe6e500fa8f9634628206b833be4ceda8973294bf6922e8002acbf33ae1f"
+            ]
+          },
+          {
+            "dense_group": 18,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3117,
+              "04376566a90591bf05fe84a5ba55d4c32d8a423b06521112ad1e68243ee1c67a"
+            ]
+          },
+          {
+            "dense_group": 19,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3275,
+              "f05da9a268e6e98d18bb41efbf49779363cb3cdaac0c0ed9cb29f36a35c1a971"
+            ]
+          },
+          {
+            "dense_group": 20,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3287,
+              "c5b27ec7ae18eaf27c9cff5a0df27a5e39a8ad5cc6044cd3ca708e389ea4c319"
+            ]
+          },
+          {
+            "dense_group": 21,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              3927,
+              "b21053d5d64527b8916c27b5b9f8567d9a8f6cfa64274a5f25831e813f277ec0"
+            ]
+          },
+          {
+            "dense_group": 22,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4556,
+              "a546cf70bd99aac06f7d8829c4a45cf722ba07d46a3ba3096b6ea934c4f4c482"
+            ]
+          },
+          {
+            "dense_group": 23,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              4568,
+              "b4ef226927f6e23431f50787e8ae0a194e19ee7fb1fad0b70563a819faf37c24"
+            ]
+          },
+          {
+            "dense_group": 24,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              6488,
+              "cdb92c5346cfa944b3f63fb4f9cda1d619fbe6aec7717f759eaaef57b5cbe489"
+            ]
+          },
+          {
+            "dense_group": 25,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              7041,
+              "fc9f6ac4ef0bedc2dea96678e43d2b6972c777662be7356880532c0530b16a8c"
+            ]
+          },
+          {
+            "dense_group": 26,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              9675,
+              "d0c24fbc824ecf558df9210b6261b77ac1966de8ae188a049e75a79e0e2e3ce0"
+            ]
+          },
+          {
+            "dense_group": 27,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12236,
+              "a603b5e3214e3c84369422f7dfb9aeda1215b24e377a4fe3858285a44e931556"
+            ]
+          },
+          {
+            "dense_group": 28,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              12888,
+              "157282b518894b3addf8981203980ab8f3522ac65a6662c646cc081313a29a87"
+            ]
+          },
+          {
+            "dense_group": 29,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              24553,
+              "bb5c22da13210546519de41e5ab084657778e3b096ff2bdc450561a3cb89d7f8"
+            ]
+          },
+          {
+            "dense_group": 30,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              29664,
+              "4f385a78fa9e4d267c9b2aa1c487970909660b21e68faa4f47e21306b377f027"
+            ]
+          },
+          {
+            "dense_group": 31,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              41644,
+              "592fed0bc5b83d2ca42b7df57b3f93e711c43dcb7d07607a4b300947e96bf8cd"
+            ]
+          },
+          {
+            "dense_group": 32,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              50600,
+              "bde464f9025f4fc7c5ff48aa2ac4a7793752f85f940d12a80793beb9eef7c0b6"
+            ]
+          },
+          {
+            "dense_group": 33,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              65998,
+              "2c21e40405600dd98ded6cb63da4c79ecc2a669ef5f61b71c1c8f097224b4f4b"
+            ]
+          },
+          {
+            "dense_group": 34,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              66721,
+              "e288329c07047a97c54b44b858a40631a94cfca7786b9d731861e1927d1d7f0a"
+            ]
+          },
+          {
+            "dense_group": 35,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67347,
+              "bb35bd0f5c57f08e116a4e8101a7ebfd19af0684118bc5c7dce34c4e3ac283f0"
+            ]
+          },
+          {
+            "dense_group": 36,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              67997,
+              "627b3f0f9239fad5660537d4a908d1e6affd723a53c20f94350f57109b25bcd6"
+            ]
+          },
+          {
+            "dense_group": 37,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              68634,
+              "ae8d127326ed43fc26d43cf2b483b6a94ae1972a6711db478af086bf3eb1bdc3"
+            ]
+          },
+          {
+            "dense_group": 38,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69259,
+              "f891c073f4c29fbd14343f1e6fe2f267c31fd9f110d95d235cd98786c3fe2314"
+            ]
+          },
+          {
+            "dense_group": 39,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69273,
+              "0c28609ea36265ed7a03763e3e2f97031b4e08be13caa151c648a84f0e4f2fac"
+            ]
+          },
+          {
+            "dense_group": 40,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69845,
+              "cc716073260cec32d3b5a39a9ce8021aa7d49177e6e68831ba01c9092170ec3f"
+            ]
+          },
+          {
+            "dense_group": 41,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              69946,
+              "3e18cc65d5a5a856661dc6552859802f9be5e24dbd90d26c6fdc6f19fec5a385"
+            ]
+          },
+          {
+            "dense_group": 42,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              71168,
+              "6725bfc804c570f2f1cf06d5bbfeefe878db5a7d1742da49fdc2cfba98dab459"
+            ]
+          },
+          {
+            "dense_group": 43,
+            "kind": "SAM_TRACK",
+            "seed_key": [
+              223657,
+              "00cd655d5c44c3af7c799a28e16c3829f8153ea172266a37f95c07afdefb16cc"
+            ]
+          },
+          {
+            "cropformer_group": 28,
+            "dense_group": 44,
+            "kind": "RAW_DISCOVERY"
+          },
+          {
+            "cropformer_group": 34,
+            "dense_group": 45,
+            "kind": "RAW_DISCOVERY"
+          }
+        ],
+        "raw_union_pixels": 289240,
+        "tracks": [
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 1930,
+            "retention": 0.0,
+            "seed_key": [
+              0,
+              "54d84ae0ff910cd1ce10a2bd3dd963e62a552373c6d56ec26341b6adb1f5e169"
+            ],
+            "visible_past_pixels": 2
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 147,
+            "retention": 0.9279279279279279,
+            "seed_key": [
+              2,
+              "5f14e1ec8359112074a083603d88dc351bb5f041977d8d151687f46106870396"
+            ],
+            "visible_past_pixels": 111
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 4349,
+            "retention": 0.9957142857142857,
+            "seed_key": [
+              3,
+              "929a5be1e4ff7d8ed541634a4ddd1696f5abb3b16721cd08d5ff3724b9800615"
+            ],
+            "visible_past_pixels": 700
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 601,
+            "retention": null,
+            "seed_key": [
+              613,
+              "21cd88cf14834d29907ee7829b2a0e4a6fde4d68c63b5e1f3d50815f1b9def46"
+            ],
+            "visible_past_pixels": 0
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 127986,
+            "retention": 0.9805271835290333,
+            "seed_key": [
+              614,
+              "b3c9e6f52ad8b2e60cbd4e4a8560a01e886a4c4e3d6a37cf4b28501e124ae210"
+            ],
+            "visible_past_pixels": 99472
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 44,
+            "retention": 0.6666666666666666,
+            "seed_key": [
+              639,
+              "f0074ab12e58741ea29e0766dd1f65589a77abbd72334f50d965db73d43a32c7"
+            ],
+            "visible_past_pixels": 27
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 188,
+            "retention": 0.9375,
+            "seed_key": [
+              642,
+              "8f115e4d5722b6568d113024ab328a0ae67540b55d211e5b79f7a72c13f03bd9"
+            ],
+            "visible_past_pixels": 160
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 522,
+            "retention": 0.8782051282051282,
+            "seed_key": [
+              673,
+              "44da14eb3c8109b0e62676aaf780711fceb7951c128dd2e9f290c7dcddc8a9fd"
+            ],
+            "visible_past_pixels": 312
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 402,
+            "retention": 0.8553615960099751,
+            "seed_key": [
+              675,
+              "81f3f1390fbe45d20450c5ac133b6d82c7ea97d290bbde3592faf0205f5cbe60"
+            ],
+            "visible_past_pixels": 401
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 6518,
+            "retention": 0.9933146430882036,
+            "seed_key": [
+              1247,
+              "142509db07f11ae0c962093ed994ba3bfb6f577b53375bb48770f110463b06ca"
+            ],
+            "visible_past_pixels": 4637
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 598,
+            "retention": null,
+            "seed_key": [
+              1725,
+              "94254a5f9242603c767cdfbfec651b849407128540a6b60db496c3da669625eb"
+            ],
+            "visible_past_pixels": 0
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 51373,
+            "retention": 0.979488082953716,
+            "seed_key": [
+              1726,
+              "985518f435f450087e73f1bf4cbb58feb9395dc660f38e2fd800813cf1ea4647"
+            ],
+            "visible_past_pixels": 39733
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 257,
+            "retention": 0.96,
+            "seed_key": [
+              1729,
+              "0b95b38f6e0ca511c36e5ca5fb3d150a9dda867f006190bf56895d2db4313721"
+            ],
+            "visible_past_pixels": 150
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 74,
+            "retention": 0.9642857142857143,
+            "seed_key": [
+              1745,
+              "274b0dd1ba53ab24982e120168ccf2e43d642f16175a5b6177bf4f476c5cfa78"
+            ],
+            "visible_past_pixels": 56
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 76,
+            "retention": 0.7857142857142857,
+            "seed_key": [
+              1842,
+              "da6af888b7d291bad217660abfb1542b8a27d2e8af8e88f1c07859cd45dcf868"
+            ],
+            "visible_past_pixels": 28
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 389,
+            "retention": 0.8396946564885496,
+            "seed_key": [
+              2206,
+              "bbf602f81f0576be7966c875947342ed51dcf5078457cb70ab8d6f1ad1a3f5dd"
+            ],
+            "visible_past_pixels": 393
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 1672,
+            "retention": 0.952116585704372,
+            "seed_key": [
+              2650,
+              "78b9fe6e500fa8f9634628206b833be4ceda8973294bf6922e8002acbf33ae1f"
+            ],
+            "visible_past_pixels": 1441
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 8463,
+            "retention": 0.9894837476099426,
+            "seed_key": [
+              3117,
+              "04376566a90591bf05fe84a5ba55d4c32d8a423b06521112ad1e68243ee1c67a"
+            ],
+            "visible_past_pixels": 7322
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 1363,
+            "retention": 0.9618029029793735,
+            "seed_key": [
+              3275,
+              "f05da9a268e6e98d18bb41efbf49779363cb3cdaac0c0ed9cb29f36a35c1a971"
+            ],
+            "visible_past_pixels": 1309
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 767,
+            "retention": 0.9440654843110505,
+            "seed_key": [
+              3287,
+              "c5b27ec7ae18eaf27c9cff5a0df27a5e39a8ad5cc6044cd3ca708e389ea4c319"
+            ],
+            "visible_past_pixels": 733
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 775,
+            "retention": 0.9319620253164557,
+            "seed_key": [
+              3927,
+              "b21053d5d64527b8916c27b5b9f8567d9a8f6cfa64274a5f25831e813f277ec0"
+            ],
+            "visible_past_pixels": 632
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 1061,
+            "retention": 0.9630434782608696,
+            "seed_key": [
+              4556,
+              "a546cf70bd99aac06f7d8829c4a45cf722ba07d46a3ba3096b6ea934c4f4c482"
+            ],
+            "visible_past_pixels": 920
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 30902,
+            "retention": 0.9752642880740007,
+            "seed_key": [
+              4568,
+              "b4ef226927f6e23431f50787e8ae0a194e19ee7fb1fad0b70563a819faf37c24"
+            ],
+            "visible_past_pixels": 24216
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 6266,
+            "retention": 0.9698151950718685,
+            "seed_key": [
+              6488,
+              "cdb92c5346cfa944b3f63fb4f9cda1d619fbe6aec7717f759eaaef57b5cbe489"
+            ],
+            "visible_past_pixels": 4870
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 30,
+            "retention": 0.9411764705882353,
+            "seed_key": [
+              7041,
+              "fc9f6ac4ef0bedc2dea96678e43d2b6972c777662be7356880532c0530b16a8c"
+            ],
+            "visible_past_pixels": 17
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 215,
+            "retention": 1.0,
+            "seed_key": [
+              9675,
+              "d0c24fbc824ecf558df9210b6261b77ac1966de8ae188a049e75a79e0e2e3ce0"
+            ],
+            "visible_past_pixels": 1
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 374,
+            "retention": 0.8238213399503722,
+            "seed_key": [
+              12236,
+              "a603b5e3214e3c84369422f7dfb9aeda1215b24e377a4fe3858285a44e931556"
+            ],
+            "visible_past_pixels": 403
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 23710,
+            "retention": 0.9925338740897779,
+            "seed_key": [
+              12888,
+              "157282b518894b3addf8981203980ab8f3522ac65a6662c646cc081313a29a87"
+            ],
+            "visible_past_pixels": 21698
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 244,
+            "retention": 1.0,
+            "seed_key": [
+              24553,
+              "bb5c22da13210546519de41e5ab084657778e3b096ff2bdc450561a3cb89d7f8"
+            ],
+            "visible_past_pixels": 197
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 10479,
+            "retention": 0.9802477793361384,
+            "seed_key": [
+              29664,
+              "4f385a78fa9e4d267c9b2aa1c487970909660b21e68faa4f47e21306b377f027"
+            ],
+            "visible_past_pixels": 8556
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 2431,
+            "retention": 0.643312101910828,
+            "seed_key": [
+              41644,
+              "592fed0bc5b83d2ca42b7df57b3f93e711c43dcb7d07607a4b300947e96bf8cd"
+            ],
+            "visible_past_pixels": 157
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 3950,
+            "retention": 1.0,
+            "seed_key": [
+              50600,
+              "bde464f9025f4fc7c5ff48aa2ac4a7793752f85f940d12a80793beb9eef7c0b6"
+            ],
+            "visible_past_pixels": 2160
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 883,
+            "retention": 0.7422535211267606,
+            "seed_key": [
+              65998,
+              "2c21e40405600dd98ded6cb63da4c79ecc2a669ef5f61b71c1c8f097224b4f4b"
+            ],
+            "visible_past_pixels": 710
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 31,
+            "retention": 0.9166666666666666,
+            "seed_key": [
+              66721,
+              "e288329c07047a97c54b44b858a40631a94cfca7786b9d731861e1927d1d7f0a"
+            ],
+            "visible_past_pixels": 24
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 112,
+            "retention": 0.6565656565656566,
+            "seed_key": [
+              67347,
+              "bb35bd0f5c57f08e116a4e8101a7ebfd19af0684118bc5c7dce34c4e3ac283f0"
+            ],
+            "visible_past_pixels": 99
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 26,
+            "retention": 1.0,
+            "seed_key": [
+              67997,
+              "627b3f0f9239fad5660537d4a908d1e6affd723a53c20f94350f57109b25bcd6"
+            ],
+            "visible_past_pixels": 3
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 45,
+            "retention": 0.8780487804878049,
+            "seed_key": [
+              68634,
+              "ae8d127326ed43fc26d43cf2b483b6a94ae1972a6711db478af086bf3eb1bdc3"
+            ],
+            "visible_past_pixels": 41
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 67,
+            "retention": 0.7368421052631579,
+            "seed_key": [
+              69259,
+              "f891c073f4c29fbd14343f1e6fe2f267c31fd9f110d95d235cd98786c3fe2314"
+            ],
+            "visible_past_pixels": 38
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 79,
+            "retention": 0.8148148148148148,
+            "seed_key": [
+              69273,
+              "0c28609ea36265ed7a03763e3e2f97031b4e08be13caa151c648a84f0e4f2fac"
+            ],
+            "visible_past_pixels": 27
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 743,
+            "retention": 0.8959810874704491,
+            "seed_key": [
+              69845,
+              "cc716073260cec32d3b5a39a9ce8021aa7d49177e6e68831ba01c9092170ec3f"
+            ],
+            "visible_past_pixels": 423
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 95,
+            "retention": 0.95,
+            "seed_key": [
+              69946,
+              "3e18cc65d5a5a856661dc6552859802f9be5e24dbd90d26c6fdc6f19fec5a385"
+            ],
+            "visible_past_pixels": 40
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 0,
+            "retention": null,
+            "seed_key": [
+              70485,
+              "4556d50af1eca2e1ca085def88f40712ba63f1f764745571e1f082f55f64bd00"
+            ],
+            "visible_past_pixels": 0
+          },
+          {
+            "decision": "ABSTAIN_KEEP_RAW",
+            "raw_pixels": 51,
+            "retention": 0.7619047619047619,
+            "seed_key": [
+              71168,
+              "6725bfc804c570f2f1cf06d5bbfeefe878db5a7d1742da49fdc2cfba98dab459"
+            ],
+            "visible_past_pixels": 21
+          },
+          {
+            "decision": "ACCEPT",
+            "raw_pixels": 114,
+            "retention": 0.8807339449541285,
+            "seed_key": [
+              223657,
+              "00cd655d5c44c3af7c799a28e16c3829f8153ea172266a37f95c07afdefb16cc"
+            ],
+            "visible_past_pixels": 109
+          }
+        ]
+      },
+      "elapsed_seconds": 1.0706380340270698,
+      "frame_id": 18,
+      "outputs": {
+        "geom": {
+          "bytes": 11142,
+          "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/geom/000018.png",
+          "sha256": "3025def55efbdb6cf6de8190857ca8339d1a3c9dcf5b52d98988f898abf8d153"
+        },
+        "raw": {
+          "bytes": 11142,
+          "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/raw/000018.png",
+          "sha256": "3025def55efbdb6cf6de8190857ca8339d1a3c9dcf5b52d98988f898abf8d153"
+        }
+      },
+      "tracks": {
+        "bytes": 12410,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/000018_tracks.npz",
+        "sha256": "fa9be118199cb0edd8f76929cea93c0dc1fc7ba87016c9b8a513dd8610b3f3ba"
+      }
+    }
+  ],
+  "identity": "c931e5b408dbdcddb1941426944fdc574e13a7b45c898096e3e9847225752773",
+  "inputs_and_outputs": [
+    {
+      "bytes": 14584,
+      "path": "/home/ww/crove/ovimap-backbone-wave1/src/static_ovmap/backbone_wave1/frontend_sam2.py",
+      "sha256": "652f06625ff9c5a7c45c85c9b55e95da20f62d2309edd5028f561caa26673a99"
+    },
+    {
+      "bytes": 898083611,
+      "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/sam2/sam2.1_hiera_large.pt",
+      "sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318"
+    },
+    {
+      "bytes": 25243,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/000000_tracks.npz",
+      "sha256": "4b81a52b4d07ee671c509909d5bea8341bb1a00d35a4a8942aed2116b96fb44f"
+    },
+    {
+      "bytes": 13496,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/000009_tracks.npz",
+      "sha256": "5b2645c4ddef4f94f25980eab49982edea3df76e6c13fa41b437f81d31b21934"
+    },
+    {
+      "bytes": 12410,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/000018_tracks.npz",
+      "sha256": "fa9be118199cb0edd8f76929cea93c0dc1fc7ba87016c9b8a513dd8610b3f3ba"
+    },
+    {
+      "bytes": 349938,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/jpeg/00000.jpg",
+      "sha256": "662af116fdef90ad1c6e4fed313b7f5f35d8bff2b344c9924296c9a9e7cd864c"
+    },
+    {
+      "bytes": 280668,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/jpeg/00001.jpg",
+      "sha256": "a6d9b61b8ad009c8469418ee07683024f6945eef7a546a9ceded5018d806be55"
+    },
+    {
+      "bytes": 280477,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/chunks/000/jpeg/00002.jpg",
+      "sha256": "431d9fe504ecb10ddb3ccd20e9c842c419e3c0a5ad150ff2cf580beb6bcd5390"
+    },
+    {
+      "bytes": 16497,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/geom/000000.png",
+      "sha256": "679a44da8ed1075565438255e145fa99e9e66753aeeb5cedb5e69921e6faa6fc"
+    },
+    {
+      "bytes": 12056,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/geom/000009.png",
+      "sha256": "287b2cda02b31c361db795df5eb3fd66cd2866745cfdbbad006b7f6996fdff44"
+    },
+    {
+      "bytes": 11142,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/geom/000018.png",
+      "sha256": "3025def55efbdb6cf6de8190857ca8339d1a3c9dcf5b52d98988f898abf8d153"
+    },
+    {
+      "bytes": 16497,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/raw/000000.png",
+      "sha256": "679a44da8ed1075565438255e145fa99e9e66753aeeb5cedb5e69921e6faa6fc"
+    },
+    {
+      "bytes": 12091,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/raw/000009.png",
+      "sha256": "c3e928e3229712f3bad0a0d8c378637702f4a00ce34400b7949b3ce8009040bf"
+    },
+    {
+      "bytes": 11142,
+      "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight/raw/000018.png",
+      "sha256": "3025def55efbdb6cf6de8190857ca8339d1a3c9dcf5b52d98988f898abf8d153"
+    },
+    {
+      "bytes": 384427,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000000/depth.npz",
+      "sha256": "63b55eed725af5d50e0529a8356678d2b704aa0c0c1aaa43ccedeb7aac01a579"
+    },
+    {
+      "bytes": 16497,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000000/panoptic.png",
+      "sha256": "679a44da8ed1075565438255e145fa99e9e66753aeeb5cedb5e69921e6faa6fc"
+    },
+    {
+      "bytes": 481018,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000000/rgb.png",
+      "sha256": "c3affc313ec0c90fdfb8c35845c7390eac9be0d403df8a55a415d147102e1ecf"
+    },
+    {
+      "bytes": 389675,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000009/depth.npz",
+      "sha256": "1bca976194433b51e65511f2dfe7d6312e6f9e2e0834978e3addeb9f1cbddae4"
+    },
+    {
+      "bytes": 17360,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000009/panoptic.png",
+      "sha256": "f993f75b8e0a151771eb0b25a5929d3d878e0715beb745e61b1d3656c2a5bbcf"
+    },
+    {
+      "bytes": 389610,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000009/rgb.png",
+      "sha256": "80b5026648b562da7bb49642314e29f7ca962ad41ece759063bcc9ea3dab7546"
+    },
+    {
+      "bytes": 403196,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000018/depth.npz",
+      "sha256": "032d36c62b46ceabc5665ee45915b74c6377bfa0223423006ed2dd6bc921a5d2"
+    },
+    {
+      "bytes": 13354,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000018/panoptic.png",
+      "sha256": "9dc97a778d4a249ecb55c7b202a8982bb0c24ce15bd8c8573e80fc43aee6df50"
+    },
+    {
+      "bytes": 386367,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/frames/000018/rgb.png",
+      "sha256": "d9d3b5ac84951f36b1fe704761885c2ad50155fce9474224db6cb35cb0ea64c3"
+    },
+    {
+      "bytes": 5209272,
+      "path": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/manifest.json",
+      "sha256": "47467a2a8e963108f36cbf0e7a0a0f55c26e430984350bd4a2b51800de73ef19"
+    }
+  ],
+  "model_load_seconds": 2.5605862860102206,
+  "neural_predictions_shared": true,
+  "optional_connected_components_extension": "UNAVAILABLE_OFFICIAL_FALLBACK",
+  "output_root": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/sam2_preflight",
+  "peak_gpu_allocated_bytes": 2068329472,
+  "precision": "bfloat16_autocast",
+  "scene": "scene0056_00",
+  "source_capture": "/mnt/shared/ww/ovimap-module-validation-v1/scannet_runtime_v1/scene0056_00/capture/scene0056_00/manifest.json",
+  "standalone_sam_cost_per_arm": "FULL_SHARED_ACTUAL_COST",
+  "status": "COMPLETE"
+}

@@ -1,0 +1,175 @@
+[
+  {
+    "completed": [
+      {
+        "map_id": "BB01_SYNC",
+        "scene": "room0",
+        "source_identity": "10d336feb46b22aef9334492c8c57dec9ae6977a9ae07cfc1e0f1af2fde75c4b"
+      },
+      {
+        "map_id": "BB00_NATIVE",
+        "scene": "room0",
+        "source_identity": "a0a123ef287d2115a9f559201da08e4fdd4b29bf35f8ae250ab89ef38c43e5a2"
+      },
+      {
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "room0",
+        "source_identity": "cb33c588ef3f76cf700b3037a4e728bf0ba2c6ba406b8941a4251e195c2e4399"
+      },
+      {
+        "map_id": "BBX_COMPOSE",
+        "scene": "room0",
+        "source_identity": "67e5106258d4749e1689d11ac23be4a31f479be046eeaa594c78f9a0024f8d16"
+      },
+      {
+        "map_id": "BB00_NATIVE",
+        "scene": "room1",
+        "source_identity": "9804013f49b07e1a20bbefc21022cbe061591c9dacd16f60d973a1ab0892c42a"
+      },
+      {
+        "map_id": "BB01_SYNC",
+        "scene": "room1",
+        "source_identity": "58207aa6788aec0d7f84f43dab909253bf486ed0b55a0e35350c9035a1dbe227"
+      },
+      {
+        "map_id": "BBX_COMPOSE",
+        "scene": "room1",
+        "source_identity": "865a5132c5bd624f563b22da8cdefbc62aeaa6768fdf952bd6df184a9b12ffb8"
+      },
+      {
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "room1",
+        "source_identity": "220b0639e4361eff1135d7c2613ea8936d02459d4b1afdc3748ec7ca8859d694"
+      },
+      {
+        "map_id": "BB00_NATIVE",
+        "scene": "room2",
+        "source_identity": "1baba1437e64e4171c508c439aaac17a3cfd113941f80f85468e85ee428509fa"
+      },
+      {
+        "map_id": "BB01_SYNC",
+        "scene": "room2",
+        "source_identity": "8547b8806bb1e64e21e3b5c50236cfd062a5ce1a01eae8e956773f37ecbd2756"
+      },
+      {
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "room2",
+        "source_identity": "a0c85dc46447a44472043cb9e969e236c6c420babbac38483be63aabbe294269"
+      },
+      {
+        "map_id": "BBX_COMPOSE",
+        "scene": "room2",
+        "source_identity": "3af5f9a20c7f62d3474be31e7cd8761c7b87e657aad602dd064a2f33b4131c74"
+      }
+    ],
+    "evaluation_workers": 3,
+    "failures": [
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office0/BB01_SYNC/mapping.log",
+        "map_id": "BB01_SYNC",
+        "scene": "office0"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office0/BB00_NATIVE/mapping.log",
+        "map_id": "BB00_NATIVE",
+        "scene": "office0"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office0/BBX_COMPOSE/mapping.log",
+        "map_id": "BBX_COMPOSE",
+        "scene": "office0"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office0/BB03_SAM2_RAW/mapping.log",
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "office0"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office1/BB00_NATIVE/mapping.log",
+        "map_id": "BB00_NATIVE",
+        "scene": "office1"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office1/BB01_SYNC/mapping.log",
+        "map_id": "BB01_SYNC",
+        "scene": "office1"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office1/BB03_SAM2_RAW/mapping.log",
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "office1"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office1/BBX_COMPOSE/mapping.log",
+        "map_id": "BBX_COMPOSE",
+        "scene": "office1"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office2/BB00_NATIVE/mapping.log",
+        "map_id": "BB00_NATIVE",
+        "scene": "office2"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office2/BB01_SYNC/mapping.log",
+        "map_id": "BB01_SYNC",
+        "scene": "office2"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office2/BBX_COMPOSE/mapping.log",
+        "map_id": "BBX_COMPOSE",
+        "scene": "office2"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office2/BB03_SAM2_RAW/mapping.log",
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "office2"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office3/BB00_NATIVE/mapping.log",
+        "map_id": "BB00_NATIVE",
+        "scene": "office3"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office3/BB01_SYNC/mapping.log",
+        "map_id": "BB01_SYNC",
+        "scene": "office3"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office3/BBX_COMPOSE/mapping.log",
+        "map_id": "BBX_COMPOSE",
+        "scene": "office3"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office3/BB03_SAM2_RAW/mapping.log",
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "office3"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office4/BB00_NATIVE/mapping.log",
+        "map_id": "BB00_NATIVE",
+        "scene": "office4"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office4/BB01_SYNC/mapping.log",
+        "map_id": "BB01_SYNC",
+        "scene": "office4"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office4/BB03_SAM2_RAW/mapping.log",
+        "map_id": "BB03_SAM2_RAW",
+        "scene": "office4"
+      },
+      {
+        "error": "RuntimeError: command exited 2; inspect /mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office4/BBX_COMPOSE/mapping.log",
+        "map_id": "BBX_COMPOSE",
+        "scene": "office4"
+      }
+    ],
+    "implementation_commit": "c94a9f94980332d05dbc21cdef8d1a0ced6475ad",
+    "mapping_threads": 8,
+    "mapping_workers": 2,
+    "neural_workers_per_gpu": 1,
+    "phase": "transfer",
+    "status": "INCOMPLETE"
+  }
+]

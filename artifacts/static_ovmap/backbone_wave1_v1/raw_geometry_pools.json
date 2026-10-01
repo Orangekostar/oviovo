@@ -1,0 +1,330 @@
+[
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BB00_NATIVE",
+    "mean_best_gt_iou": 0.40265343040173707,
+    "mean_gt_substantial_fragment_coverage": 0.7480092846033523,
+    "mean_substantial_fragments_per_gt": 2.324074074074074,
+    "raw_recall": {
+      "0.25": 0.6018518518518519,
+      "0.5": 0.35185185185185186,
+      "0.75": 0.12962962962962962
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.3505130068556573,
+    "substantial_fragment_intersection_rows": 392812,
+    "surface_completeness_5cm": 0.8126535593318107,
+    "surface_fscore_5cm": 0.7793691524454647,
+    "surface_precision_5cm": 0.7487039724670409
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BB01_SYNC",
+    "mean_best_gt_iou": 0.4032362614146534,
+    "mean_gt_substantial_fragment_coverage": 0.7489678833278193,
+    "mean_substantial_fragments_per_gt": 2.324074074074074,
+    "raw_recall": {
+      "0.25": 0.6018518518518519,
+      "0.5": 0.3611111111111111,
+      "0.75": 0.12962962962962962
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.34112501662326994,
+    "substantial_fragment_intersection_rows": 392704,
+    "surface_completeness_5cm": 0.8126535593318107,
+    "surface_fscore_5cm": 0.7793692459061319,
+    "surface_precision_5cm": 0.7487041449684992
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BB03_SAM2_GEOM",
+    "mean_best_gt_iou": 0.4082763827554167,
+    "mean_gt_substantial_fragment_coverage": 0.7532081414968227,
+    "mean_substantial_fragments_per_gt": 2.3333333333333335,
+    "raw_recall": {
+      "0.25": 0.6018518518518519,
+      "0.5": 0.3611111111111111,
+      "0.75": 0.12962962962962962
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.3527807980073935,
+    "substantial_fragment_intersection_rows": 391444,
+    "surface_completeness_5cm": 0.8126553619358525,
+    "surface_fscore_5cm": 0.7793655205728847,
+    "surface_precision_5cm": 0.7486957390758512
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BB03_SAM2_RAW",
+    "mean_best_gt_iou": 0.4082760126441029,
+    "mean_gt_substantial_fragment_coverage": 0.7532076687720942,
+    "mean_substantial_fragments_per_gt": 2.3333333333333335,
+    "raw_recall": {
+      "0.25": 0.6018518518518519,
+      "0.5": 0.3611111111111111,
+      "0.75": 0.12962962962962962
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.35278152414024816,
+    "substantial_fragment_intersection_rows": 391443,
+    "surface_completeness_5cm": 0.8126553619358525,
+    "surface_fscore_5cm": 0.7793659840266337,
+    "surface_precision_5cm": 0.7486965944674476
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BB05_BIDIR",
+    "mean_best_gt_iou": 0.33578117526637175,
+    "mean_gt_substantial_fragment_coverage": 0.607698445955747,
+    "mean_substantial_fragments_per_gt": 5.481481481481482,
+    "raw_recall": {
+      "0.25": 0.5277777777777778,
+      "0.5": 0.23148148148148148,
+      "0.75": 0.08333333333333333
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.17617526671685507,
+    "substantial_fragment_intersection_rows": 314953,
+    "surface_completeness_5cm": 0.8126535593318107,
+    "surface_fscore_5cm": 0.7793695157689154,
+    "surface_precision_5cm": 0.7487046430576431
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BB05_FORWARD",
+    "mean_best_gt_iou": 0.3916548474354666,
+    "mean_gt_substantial_fragment_coverage": 0.7250100180539796,
+    "mean_substantial_fragments_per_gt": 2.759259259259259,
+    "raw_recall": {
+      "0.25": 0.6018518518518519,
+      "0.5": 0.32407407407407407,
+      "0.75": 0.12962962962962962
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.31443440732620925,
+    "substantial_fragment_intersection_rows": 378028,
+    "surface_completeness_5cm": 0.8126535593318107,
+    "surface_fscore_5cm": 0.7793693307751314,
+    "surface_precision_5cm": 0.748704301612248
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BB05_RATIO_GATE",
+    "mean_best_gt_iou": 0.40265343040173707,
+    "mean_gt_substantial_fragment_coverage": 0.7480092846033523,
+    "mean_substantial_fragments_per_gt": 2.324074074074074,
+    "raw_recall": {
+      "0.25": 0.6018518518518519,
+      "0.5": 0.35185185185185186,
+      "0.75": 0.12962962962962962
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.35051127623884387,
+    "substantial_fragment_intersection_rows": 392812,
+    "surface_completeness_5cm": 0.8126535593318107,
+    "surface_fscore_5cm": 0.7793685235118513,
+    "surface_precision_5cm": 0.7487028116378273
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "development",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 108,
+    "map_id": "BBX_COMPOSE",
+    "mean_best_gt_iou": 0.4069450132393911,
+    "mean_gt_substantial_fragment_coverage": 0.7544490734127012,
+    "mean_substantial_fragments_per_gt": 2.3333333333333335,
+    "raw_recall": {
+      "0.25": 0.6018518518518519,
+      "0.5": 0.3611111111111111,
+      "0.75": 0.12962962962962962
+    },
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "substantial_fragment_contamination": 0.3470936352939528,
+    "substantial_fragment_intersection_rows": 391349,
+    "surface_completeness_5cm": 0.8126553619358525,
+    "surface_fscore_5cm": 0.7793656598028598,
+    "surface_precision_5cm": 0.7486959960510193
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "replica",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 389,
+    "map_id": "BB00_NATIVE",
+    "mean_best_gt_iou": 0.4271281564794634,
+    "mean_gt_substantial_fragment_coverage": 0.7460716424071068,
+    "mean_substantial_fragments_per_gt": 1.6838046272493574,
+    "raw_recall": {
+      "0.25": 0.6246786632390745,
+      "0.5": 0.4190231362467866,
+      "0.75": 0.18251928020565553
+    },
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "substantial_fragment_contamination": 0.370629578059874,
+    "substantial_fragment_intersection_rows": 5056131,
+    "surface_completeness_5cm": 0.8338185500277931,
+    "surface_fscore_5cm": 0.8968912372165071,
+    "surface_precision_5cm": 0.9702868182694881
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "replica",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 389,
+    "map_id": "BB01_SYNC",
+    "mean_best_gt_iou": 0.42585899519035736,
+    "mean_gt_substantial_fragment_coverage": 0.7460091563646296,
+    "mean_substantial_fragments_per_gt": 1.6632390745501284,
+    "raw_recall": {
+      "0.25": 0.622107969151671,
+      "0.5": 0.4138817480719794,
+      "0.75": 0.18508997429305912
+    },
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "substantial_fragment_contamination": 0.3783822654282587,
+    "substantial_fragment_intersection_rows": 5055675,
+    "surface_completeness_5cm": 0.8338190400631689,
+    "surface_fscore_5cm": 0.8968915283990678,
+    "surface_precision_5cm": 0.9702868362817217
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "replica",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 389,
+    "map_id": "BB03_SAM2_RAW",
+    "mean_best_gt_iou": 0.42621427519421407,
+    "mean_gt_substantial_fragment_coverage": 0.7415754057497274,
+    "mean_substantial_fragments_per_gt": 1.7043701799485862,
+    "raw_recall": {
+      "0.25": 0.622107969151671,
+      "0.5": 0.4087403598971722,
+      "0.75": 0.18251928020565553
+    },
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "substantial_fragment_contamination": 0.35381118375547554,
+    "substantial_fragment_intersection_rows": 5055689,
+    "surface_completeness_5cm": 0.8338178966472923,
+    "surface_fscore_5cm": 0.8968907154132695,
+    "surface_precision_5cm": 0.9702864816264657
+  },
+  {
+    "aggregation": "SUM_MATCHED_AND_ALL_ELIGIBLE_GT;FULL_SURFACE_ROW_WEIGHTED_PRECISION_COMPLETENESS",
+    "cohort": "replica",
+    "contamination_scope": "INTERSECTION_ROW_WEIGHTED_IMPURITY_OF_FIXED_SUBSTANTIAL_FRAGMENTS_NOT_ALL_PREDICTED_OWNERS",
+    "eligible_gt": 389,
+    "map_id": "BBX_COMPOSE",
+    "mean_best_gt_iou": 0.4231081897932053,
+    "mean_gt_substantial_fragment_coverage": 0.7431004581450751,
+    "mean_substantial_fragments_per_gt": 1.6915167095115682,
+    "raw_recall": {
+      "0.25": 0.6169665809768637,
+      "0.5": 0.40102827763496146,
+      "0.75": 0.18766066838046272
+    },
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "substantial_fragment_contamination": 0.3640716092088412,
+    "substantial_fragment_intersection_rows": 5056303,
+    "surface_completeness_5cm": 0.8338193667534193,
+    "surface_fscore_5cm": 0.8968915979389258,
+    "surface_precision_5cm": 0.9702865566783576
+  }
+]

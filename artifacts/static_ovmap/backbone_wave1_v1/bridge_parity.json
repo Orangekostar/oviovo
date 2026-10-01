@@ -1,0 +1,149 @@
+{
+  "8_thread_fusion_parallel_variation": {
+    "old_native__new_native": {
+      "block_indices": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "color": {
+        "different_elements": 13820,
+        "max_absolute_difference": 182.0
+      },
+      "distance": {
+        "different_elements": 52750,
+        "max_absolute_difference": 0.0038959719240665436
+      },
+      "voxel_size": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "voxels_per_side": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "weight": {
+        "different_elements": 27741,
+        "max_absolute_difference": 1.52587890625e-05
+      }
+    },
+    "old_native__old_native_repeat": {
+      "block_indices": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "color": {
+        "different_elements": 14060,
+        "max_absolute_difference": 180.0
+      },
+      "distance": {
+        "different_elements": 51746,
+        "max_absolute_difference": 0.003578122705221176
+      },
+      "voxel_size": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "voxels_per_side": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "weight": {
+        "different_elements": 26779,
+        "max_absolute_difference": 1.52587890625e-05
+      }
+    }
+  },
+  "comparisons": {
+    "D2": {
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": -0.0012865489632057914,
+        "miou": -0.0022021235015184937
+      },
+      "historical": {
+        "ap25": 0.19883786848072563,
+        "ap50": 0.025127551020408156,
+        "apall": 0.009660808767951624,
+        "defined_classes": 14,
+        "macc": 0.15463548908089145,
+        "miou": 0.1442226474241391,
+        "uap": 0.009660808767951624
+      },
+      "new": {
+        "ap25": 0.19883786848072563,
+        "ap50": 0.025127551020408156,
+        "apall": 0.009660808767951624,
+        "defined_classes": 14,
+        "macc": 0.1546226235912594,
+        "miou": 0.1442006261891239,
+        "uap": 0.009660808767951624
+      },
+      "within_0.05pp": true
+    },
+    "FC_EQ": {
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.04449893046480913,
+        "miou": 0.02914577424678877
+      },
+      "historical": {
+        "ap25": 0.2799319727891157,
+        "ap50": 0.0969812925170068,
+        "apall": 0.017987055933484503,
+        "defined_classes": 14,
+        "macc": 0.22151821594019847,
+        "miou": 0.1967617780498267,
+        "uap": 0.017987055933484503
+      },
+      "new": {
+        "ap25": 0.2799319727891157,
+        "ap50": 0.0969812925170068,
+        "apall": 0.017987055933484503,
+        "defined_classes": 14,
+        "macc": 0.22196320524484656,
+        "miou": 0.19705323579229458,
+        "uap": 0.017987055933484503
+      },
+      "within_0.05pp": true
+    },
+    "NATIVE_READOUT": {
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": -0.024092970521542856,
+        "apall": -0.0053539934492315144,
+        "macc": 0.0346239931641068,
+        "miou": 0.022406953472145497
+      },
+      "historical": {
+        "ap25": 0.2181302824159967,
+        "ap50": 0.09853574005359719,
+        "apall": 0.018188546462355983,
+        "defined_classes": 14,
+        "macc": 0.18601009643628194,
+        "miou": 0.15376646817117665,
+        "uap": 0.018188546462355983
+      },
+      "new": {
+        "ap25": 0.2181302824159967,
+        "ap50": 0.09829481034838176,
+        "apall": 0.018135006527863668,
+        "defined_classes": 14,
+        "macc": 0.186356336367923,
+        "miou": 0.1539905377058981,
+        "uap": 0.018135006527863668
+      },
+      "within_0.05pp": true
+    }
+  },
+  "deferred_request_attempts": 1079,
+  "historical_import_eligible": false,
+  "metadata_observations": 1079,
+  "native_deferred_pickle_exact": false,
+  "new_temperature_fit": false,
+  "scene": "scene0056_00",
+  "status": "VERIFIED"
+}

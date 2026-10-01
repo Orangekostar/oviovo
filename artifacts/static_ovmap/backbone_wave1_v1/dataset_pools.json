@@ -1,0 +1,1250 @@
+[
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4528182198991999,
+    "identity": "5b74416d2c1092871ec7f75c71ccf288b521b9d60d2e0660287ea612d41caa00",
+    "map_id": "BB05_RATIO_GATE",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.3282708204493919,
+      "ap50": 0.2130504019789734,
+      "apall": 0.11260748070271878,
+      "defined_classes": 36,
+      "macc": 0.34013061528987737,
+      "miou": 0.23991611598802598,
+      "uap": 0.11260748070271878
+    },
+    "ordered_inputs": [
+      "24a34e667cb36b724b9ae3f50053678d6792252f5bd0b5c37704b93579eecf5b",
+      "666abf89893d03d957083200cdb9a54bc90f7f41082e556c2375999afa531270",
+      "ae98e4733253bedc13cb8cb4e034e737c38bf9c52ae6cfa75e6be6f877aace0a",
+      "a08233eead32a6ec118cdfdecd1e14f9483eca98aba283b5c9912e4058cd5d8b"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.46831779403146356,
+    "identity": "c628a6318cf40dcf6f0c3408b3734dcf77a4605fbb9113fd2d5e629e52ea63ca",
+    "map_id": "BB05_RATIO_GATE",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.31709688723974444,
+      "ap50": 0.22691496598639457,
+      "apall": 0.12583194759385236,
+      "defined_classes": 36,
+      "macc": 0.32477567663638546,
+      "miou": 0.2358297171470301,
+      "uap": 0.12583194759385236
+    },
+    "ordered_inputs": [
+      "17957ac0fef6e5e0ffb85d4d03346adc933af1ea1290e5952377fdb36b718e86",
+      "3de105509a77534cc10e15523f328375811cce58c1ad9cd1e4fa13b498e1e88f",
+      "8a25e1961d249be2c569d16a9c4c7be1dafaffaa6ce971637dd830a6259ee0cc",
+      "f25aeba3598d218fee9c458ea3ccb65bb4073b0e5c88b7a7f3f05bd86d6ab3c2"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.8712034979835153,
+    "identity": "a11f64f7579b344393610c80e7d9dbcc0fe007459c30b04adb9fd5c606bf2e6e",
+    "map_id": "BB05_RATIO_GATE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.3385256679983571,
+      "ap50": 0.23353305160448018,
+      "apall": 0.11209342479977401,
+      "defined_classes": 36,
+      "macc": 0.34402227056011503,
+      "miou": 0.24206754350800155,
+      "uap": 0.11209342479977401
+    },
+    "ordered_inputs": [
+      "dbd1bcc9eaabd090c2874e3cd6d07c6fc0d9180df75915ed39dc92d7cb7a1b94",
+      "914ce9720308bbcbd0226955ae6a1b7b886b5fb0ea028762cdc0e51cc376b827",
+      "619ac90802c82b0b621f3fca20769a4cdc4d1ee8c3cc6b10f504a5e5cc5ce1cb",
+      "6a4f3caf0fcb0196e9966ca80be7fb8368988257de8e635d6ec37f349d9b9c30"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.46135924209374934,
+    "identity": "878e02f7bfc6e27b7561f7a889db47b09e5901790057a7ff803fece98cd61439",
+    "map_id": "BBX_COMPOSE",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.36959970452827595,
+      "ap50": 0.2248898165326737,
+      "apall": 0.09767554227078036,
+      "defined_classes": 36,
+      "macc": 0.3525384326852745,
+      "miou": 0.2508157418561112,
+      "uap": 0.09767554227078036
+    },
+    "ordered_inputs": [
+      "696abd5716102f31a7e619fc5bb21a807b9eadaa774bac21ae2bd41d1a6378de",
+      "72f4fb81534f54a5704a24b0f15a2c7c0d90b10a50a509cffd2c8a4417b47e30",
+      "9e6b4df32510912b7adccad9e0aa5eb4bedac33663ec4c8d7c1207635928e70c",
+      "558fb680ac5947cb82b117e7c967258aa720d8a9599a730a2bccca93f674a861"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4552556650014594,
+    "identity": "66c2ec48af04a512730f77e2c6646d9e72fda40fc8a73c5e69c988102072151c",
+    "map_id": "BBX_COMPOSE",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.34729591836734697,
+      "ap50": 0.2082301587301587,
+      "apall": 0.09761640211640212,
+      "defined_classes": 36,
+      "macc": 0.3256426192017966,
+      "miou": 0.2283855240531113,
+      "uap": 0.09761640211640212
+    },
+    "ordered_inputs": [
+      "a3ffefe00a6bbaed09b31aee89f3a543b38332e9eb6cd3094175bdd414e88621",
+      "11f644e8a6ebfb55948d8c66700a29718c35aa97edba2a4e85b8062e314236e3",
+      "b39728ab8cd933ea72e845bb08aa5ec8546eeb2769741908d5fa655b6623ec9a",
+      "7d298a7365b1efa1e992956c717f6b540a75a3037f92d847825f2d19c925537a"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.8968036660226062,
+    "identity": "d205ae7bb3ae728f66f4791956e10824440ac9ef9a7b998152cfd85b8e95d2a4",
+    "map_id": "BBX_COMPOSE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.33866649355935063,
+      "ap50": 0.22869534565963134,
+      "apall": 0.104467031351952,
+      "defined_classes": 36,
+      "macc": 0.3454942949704276,
+      "miou": 0.24319023443687282,
+      "uap": 0.104467031351952
+    },
+    "ordered_inputs": [
+      "972cb075dac843a54ba436488200394ad1bc9bfb0718143b5c360b95ee012bc4",
+      "1dd534940f931e837eaba1ba658a52c853692055cd359924621f5848b7d24ccf",
+      "7f387cda03a7ef883f7067c278536235ac68dcc83150c239a762799e8d91ee36",
+      "5d7262356863fcb8887ee2b4af0a346345438345addb6ea23feac6e5bae1d980"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.44947735604364425,
+    "identity": "e4b213400077c16ed3bc7cb64f8750adfadb7841daef3aa87c91c0b88bbc3ee5",
+    "map_id": "BB01_SYNC",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.3347067614924758,
+      "ap50": 0.23566944959802102,
+      "apall": 0.11617890927414735,
+      "defined_classes": 36,
+      "macc": 0.34473342574730403,
+      "miou": 0.2440060434803766,
+      "uap": 0.11617890927414735
+    },
+    "ordered_inputs": [
+      "8769a072a3feead925d924381148118dae308daffe08ed1e0b7327db718b3127",
+      "4d931aa6f1b4423bab2c3378066efbb33afd8fff9983c0904f400b7f6e7f11ce",
+      "bea207e511cb54c23846df2d90443bb41933ba766b1027a94389837c13495248",
+      "76d185e3db24f4225997cf1cbe634ba15ee4ba4d9889491b9da84039730d0b33"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4534311700845137,
+    "identity": "80d59bd88f86e62d20442b081cc5224e01063a61e20fddadb16a934e193f7bf8",
+    "map_id": "BB01_SYNC",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.35032199546485265,
+      "ap50": 0.2545657596371882,
+      "apall": 0.13207886117409928,
+      "defined_classes": 36,
+      "macc": 0.34075451778153154,
+      "miou": 0.25178977041016365,
+      "uap": 0.13207886117409928
+    },
+    "ordered_inputs": [
+      "fc80a0cc479b4d069fb61ee012a523e9cad5370af94a498ccef84169b71f11e8",
+      "087179596e6bbd02e14fea9cf4ab32628e5b6bb8f20fbfc680d116b6b2202943",
+      "e42afa04b47d306e81cebcb59cad18f993ef2dbb892ce19fe4b5609fb3977d25",
+      "a1100f8054b53e1b12f88c648031157ef755402d8c497a459f5fe221b782a892"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.8943281440297142,
+    "identity": "22fce6d9d4e943cd5402114a4f6013286287eec6b06fbd29fc2e2aab143de038",
+    "map_id": "BB01_SYNC",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.33863771281628424,
+      "ap50": 0.23282501889644744,
+      "apall": 0.11202212983959016,
+      "defined_classes": 36,
+      "macc": 0.3453523774294202,
+      "miou": 0.24499310039857825,
+      "uap": 0.11202212983959016
+    },
+    "ordered_inputs": [
+      "32eb4c11850cceb737590eaf6c4370849710ec427dec0e710d2589942c24cf20",
+      "ad0d35a1206a09b233ef90b404690266805458e2c36b1a4154aebe5dfa5a21d3",
+      "25503b6ffe5ddcdeb9e8335563283b27fa2f7b7dbfbcecfa42dff795021e35da",
+      "ac331954bbd74b4801b256a9d898d94829e74a49453189b9abfc03ff9b2633ee"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.9035989800468087,
+    "identity": "4792ddf38e716a791280fb8aa1dad566959f5b2569b29e1a4b4dce3950971a54",
+    "map_id": "BB05_BIDIR",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.3052988127172087,
+      "ap50": 0.1381409384266527,
+      "apall": 0.060371449244465115,
+      "defined_classes": 36,
+      "macc": 0.3325308737508046,
+      "miou": 0.22849285672096176,
+      "uap": 0.060371449244465115
+    },
+    "ordered_inputs": [
+      "3b2b5a4a75e208171a2ad36bbe9f03640d803d8a0b439e52040902b8a5ee2546",
+      "85edea5ce99bafda250691e6fb07ff9237997f28789f974de34fb5a18491634f",
+      "a7e35972eba584f10515581eac9f64f64b5d5b2997c1b85d66c1a1432ad642a8",
+      "5cff99c79262383f97fd33910a786a5cadf69d458bd04f53853afd5d2ece7c54"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.8807618949795142,
+    "identity": "0132fdb202f4a17e8e82e88b241f0572c82a75064d26969000cb90801fd961fb",
+    "map_id": "BB05_BIDIR",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.3270037710161934,
+      "ap50": 0.13906514913657772,
+      "apall": 0.060935362521076814,
+      "defined_classes": 36,
+      "macc": 0.3319754297466793,
+      "miou": 0.2297334874471461,
+      "uap": 0.060935362521076814
+    },
+    "ordered_inputs": [
+      "5666904987e08525f35b6a9c9847aaa8b43b9f4ff7e4ee26b4c9b793c0b156e1",
+      "b8c4053d26b04d596ea437b6524c22c66b71128d81952e466c6f661b5b9997af",
+      "bce091e341bafc2a526425f45af7fe329e4581c900db0305add49619eec7eec4",
+      "4a3450a1a58d90a4d7a3ee56461e06be9efb2c9d769deea45d1cc9e536300507"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 2.5151855290168896,
+    "identity": "8f90491a9276f73e35bb6794a78964bacff3e7052efbdb36d0b30fa7456bb608",
+    "map_id": "BB05_BIDIR",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.313643444614313,
+      "ap50": 0.1470397019206543,
+      "apall": 0.06730119214510749,
+      "defined_classes": 36,
+      "macc": 0.33680910015973153,
+      "miou": 0.2320370799948267,
+      "uap": 0.06730119214510749
+    },
+    "ordered_inputs": [
+      "348f9e316f1e5bdc02a59e676b8e879969c626a63e1eabb4b90310a5b8b28336",
+      "fb3b3635f47181ff9fa013fd367707596055343c544728eb21013991faf1e00e",
+      "6d2c07bc2725c11037758d5fa44c35c9a9b0e9daf2d49aeedb6d09e8d889a92c",
+      "e841ee8ccafe93654928a06f22ee4816eabe5bf73df14054e69075e94ee736e3"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.45923213893547654,
+    "identity": "a95f64937d1a7bc694002be9472d32dfc6f7b3cc1a4d4613e63145b96e1e7ba8",
+    "map_id": "BB00_NATIVE",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.3282708204493919,
+      "ap50": 0.2118599257884972,
+      "apall": 0.11261710071233881,
+      "defined_classes": 36,
+      "macc": 0.33955890763773416,
+      "miou": 0.2397691679655738,
+      "uap": 0.11261710071233881
+    },
+    "ordered_inputs": [
+      "3b86eab8308bac85c99de34854cc94ecd3e5da72142455d8ea30c7db0d22be1f",
+      "95f75297ab61c468224c3b26af5c493d2bca93b14a12b6ba1e5edd1e28128a06",
+      "4ae621e9d4f4213a7402b3170167db3dadd113dbcca23324a14b6cb9de95a926",
+      "98efdf7d67003fb851632d3e86ac9ce261ace39a64f1c49d0beec55a0ac6e86e"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4485214529559016,
+    "identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+    "map_id": "BB00_NATIVE",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.31709688723974444,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32417107678455026,
+      "miou": 0.23562289001024223,
+      "uap": 0.12581783824640966
+    },
+    "ordered_inputs": [
+      "8ce3c8fd0e1255c70ea79fc33b75128906981438c4d19d3557f2b63cf942c537",
+      "34983edcd843ec85c9465ad85e9c3a2d5081581812f303bee871ebcce174ca13",
+      "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+      "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.8562813709722832,
+    "identity": "0acc6807e25e7d5fe1437bb4c9f51471c00c666912d771df99e8beb2fc150527",
+    "map_id": "BB00_NATIVE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.3385256679983571,
+      "ap50": 0.23273940081082936,
+      "apall": 0.1121423665987158,
+      "defined_classes": 36,
+      "macc": 0.34340187318386106,
+      "miou": 0.24188874303254673,
+      "uap": 0.1121423665987158
+    },
+    "ordered_inputs": [
+      "d2b6951d18718c3ec7e5b69daeb89569fddf6db426dc95a6fe9df0af8a9481d5",
+      "7c5c3176841937d84260476fa38c4ac91224f55c051d6649b8c783766aa5aee3",
+      "79a951cc1b40a48b877e4e903f44166d0b56ca18fe35abd82b237ce2f11a361b",
+      "62fe2200c208f9b56491980957ed613783eac61e56ad8629b611a956116bec83"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5730369520606473,
+    "identity": "c99008c5c9f32f067e02bbe0622835bd3d87090f02035968e41441dcdf944507",
+    "map_id": "BB03_SAM2_RAW",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.33996535078677936,
+      "ap50": 0.22132539076236554,
+      "apall": 0.09578556405727276,
+      "defined_classes": 36,
+      "macc": 0.36323973047129365,
+      "miou": 0.24731337420558694,
+      "uap": 0.09578556405727276
+    },
+    "ordered_inputs": [
+      "25b0a4cf08b32c17f6b530374a65ce85eb8114de0019f8fff619a5129c80f55f",
+      "dcee9cff60b3057f998c0a1764c94808ad0942a74d29ab4971d0c3988d26cff8",
+      "689c414ffcb7d363752d772296f41df0ba187a17b037936785bb7bb4bc29a3fc",
+      "a38e378c53add6fe4fbea705ae0eb34c73fa27831de2cb1a93070a70ff9e3f8b"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.6961188309360296,
+    "identity": "6da2e548a39902657b02911cba0f21ce19a5044ddbbd4b4cc3e60907102cd671",
+    "map_id": "BB03_SAM2_RAW",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.33410910518053377,
+      "ap50": 0.20709920634920634,
+      "apall": 0.0979867724867725,
+      "defined_classes": 36,
+      "macc": 0.33535433796124325,
+      "miou": 0.2265452696996528,
+      "uap": 0.0979867724867725
+    },
+    "ordered_inputs": [
+      "7c6ba4514ed0e5fb199986e961ba8d4ceb1e35f830d1f123df37a6ed4862b585",
+      "9b097402446582fecda8da73958d4a15de83458dcafb3585597b3ca9cd30eb7b",
+      "67569fca3e16df2c49c1413becd2877230a61acdf54e53b84147dad566639bb8",
+      "067683416fb155e0b9dd5e7fc93940268c59232e06d6ec855214b4cb1e7a46c4"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5945638949051499,
+    "identity": "e13f709c2374a3d0e5882c80d1305a7b912cdb773b85f153e413ae169c7ab71f",
+    "map_id": "BB03_SAM2_RAW",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.32367216249359104,
+      "ap50": 0.2283739170882028,
+      "apall": 0.10449480912972976,
+      "defined_classes": 36,
+      "macc": 0.34507781903530155,
+      "miou": 0.2385763001458026,
+      "uap": 0.10449480912972976
+    },
+    "ordered_inputs": [
+      "e157fc7487e3a25ff26e9bb237b74a3c2b3bd87e5552f05c86f596ee35d21d77",
+      "530cf105cd555e5a12bc7e85e9347465d279af9d2bc23bebc1c132da95801f17",
+      "a2cc253ca458d8400f03c6c3c2100c3ae7fbfdbceef69bbbe5d55a5b3a94482b",
+      "fcb7f3474c204a292cd54704178994401013f2c3b57ca37a33f3ed1d81044165"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5795416629407555,
+    "identity": "1b2f9c3a3dbf6ed699683cf80b1c67770729cecf676441048712564a9e934994",
+    "map_id": "BB05_FORWARD",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.3141117295403009,
+      "ap50": 0.16721323914181058,
+      "apall": 0.08697891350272302,
+      "defined_classes": 36,
+      "macc": 0.30363138736224604,
+      "miou": 0.23223814856508737,
+      "uap": 0.08697891350272302
+    },
+    "ordered_inputs": [
+      "d27715efa5fe009de2e98b4ac8656dc2b7e5ac16bc26dccf54ce117eba8fcaad",
+      "bba38c3c4d118429aaf9efdd942ce8eea6d7f94e58035d52cba4a8a9e4f64b34",
+      "54c61848682638e545ae7465b21823ae75d2feaf870f835c146b21cb3c2d9781",
+      "4603f1d429de72b0e283a71cf8249986c57fc5318901baf3328017169132458e"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5060024799313396,
+    "identity": "625edfea4064400d2e37285d765587624fb83224b5125baf97dc41a90f495b61",
+    "map_id": "BB05_FORWARD",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.30081519274376417,
+      "ap50": 0.15714172335600907,
+      "apall": 0.08346233308138071,
+      "defined_classes": 36,
+      "macc": 0.2929120868332017,
+      "miou": 0.22134065603416067,
+      "uap": 0.08346233308138071
+    },
+    "ordered_inputs": [
+      "88907147ad13c3d7d5a154ee31edba1909def58fffe43f3ca546c937c6ea36d5",
+      "5962f2eea500d214f4b94c945323512463479fbebfcf89d880f73e525446110a",
+      "aeaef397af51a71d9525984a5a83b72cf1c2a9f5df08cf392d08ae65e79f28ba",
+      "850896350db412f37926c754c1b9cc46f34d0e281241ad6329608ee419f13a5d"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 1.1224635979160666,
+    "identity": "d070e1511b8a9259bd9b266584b9da25c5c95a98d701fbc098459294a93b2af0",
+    "map_id": "BB05_FORWARD",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.35904209282780714,
+      "ap50": 0.2105805279376708,
+      "apall": 0.09411439941598672,
+      "defined_classes": 36,
+      "macc": 0.3324475236566953,
+      "miou": 0.26415332647426476,
+      "uap": 0.09411439941598672
+    },
+    "ordered_inputs": [
+      "eac45be3c034dde10ee928b4c34c8c94c413a0faf778d9aec1299747c67e74e5",
+      "6f7aa06e459289a09c762094c142ab1e8ec19d59c06126a2dcf234583a408164",
+      "8d2130a1b4406ae9da1ad18da7337a92e6dbb690f00515df241a71a6ae9d18ee",
+      "d9ddd397892299464018076d5d271ad92316ad0af355e38c3a3e81fb0bb267f2"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5554125759517774,
+    "identity": "3068650b0dd4a833efea83acdeee65b46dff802e33c13277638e59c2e2dca192",
+    "map_id": "BB03_SAM2_GEOM",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.34004384372241514,
+      "ap50": 0.22143743558029272,
+      "apall": 0.09594750795941272,
+      "defined_classes": 36,
+      "macc": 0.36319926956206733,
+      "miou": 0.24722845110022426,
+      "uap": 0.09594750795941272
+    },
+    "ordered_inputs": [
+      "b43281fc2e8f35811b90594d3acb89f69448345ac088ad7a9bf5e1dbe038b9e6",
+      "80870cf7494a5899a1f7ba5a9520fe869d15422d7a4f1dcc6969f55b8c37bd6d",
+      "7edf74a7af9f4913bbc84db69bb9ab79deaa0d2778763b38954ef3016988986d",
+      "98f668ceadae2a92317d1a8044f4d45714720e4d59e764e77730afd2829666b8"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.6741128480061889,
+    "identity": "72e51d0a0fd372b5df2379bade1bcdbe9941c279fab521e50237f002802cf1c4",
+    "map_id": "BB03_SAM2_GEOM",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.33420068027210886,
+      "ap50": 0.20722675736961452,
+      "apall": 0.0981310153691106,
+      "defined_classes": 36,
+      "macc": 0.33527199250123546,
+      "miou": 0.2264043769224885,
+      "uap": 0.0981310153691106
+    },
+    "ordered_inputs": [
+      "ed6ab813a8a5e3010875ca1857ea530d3b2887507db2514da9b9b63bc4e04f31",
+      "b7c31919c83968000e8fedf548375cc7984318b02b2dc2e38030122e8ce626b9",
+      "14179eb813f266ea3584969709ddebf3f46057e66a04e0925a91943e349dc206",
+      "fee5fe2afe6cc7378eed77b287909d571fbe88524a67d9e065b7d3a2b231a68e"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.653256802004762,
+    "identity": "ce962509f73924ddd122bd00ec9f94a27f210220af039d50efad86eca498c8bd",
+    "map_id": "BB03_SAM2_GEOM",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.31850567484590037,
+      "ap50": 0.22190422011850583,
+      "apall": 0.10233332874982287,
+      "defined_classes": 36,
+      "macc": 0.3465306135882903,
+      "miou": 0.2388634625918347,
+      "uap": 0.10233332874982287
+    },
+    "ordered_inputs": [
+      "afec40651059dc6ec2d936c79ee8e1d599c803ad54c09236a64d4c32e5355be9",
+      "28a43b212c41313cfd5242b263bcceedc2eed068f564869377dd75dc001c83a4",
+      "24020d9fb4df7c543a2b1f14a438d75c869c2a09f4625ab2875cc2f38be8e2f2",
+      "80d9264c1a01ecb7bbdd379b7d3ec0f2e2660be9753eab6316d5d17821595a8c"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0571940710069612,
+    "identity": "97a2565fef22e2c8466cff79b6592660a72a85b1c606e4bac2f5eaf6c3cabde8",
+    "map_id": "BBX_COMPOSE",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.3686661227031423,
+      "ap50": 0.221961422923842,
+      "apall": 0.10968355338443282,
+      "defined_classes": 51,
+      "macc": 0.3599852918045768,
+      "miou": 0.29773089880901527,
+      "uap": 0.10968355338443282
+    },
+    "ordered_inputs": [
+      "4bb3c8a183156c8092b732c7c08782eeec0f4d28e49126bd1bdd26e020b00f56",
+      "d4cda2160681caf0915cbfb8f2179833268dd55ff9a2be0f3d4dc2787d7eab01",
+      "bec0329527326251db8bc580b3b57fbcc01547a4efb2fdb05879ccbe9939fff8",
+      "0129ef0804bec57565c973530c2ef452dfce4f6448a607259eac4100bd155c46",
+      "c7ba7f032af24d7cc33239d40ed81713954aa72a2303d18a5167bf270a5ff466",
+      "ba0d16195797a81106e9e263a0428fdd4d486050655b1d048b148f53b6a0cac5",
+      "4a5fcdc0e6816c6b6b405285f13282a100b6065f8c56f467b5f3a3220d587eaf",
+      "26368e61ee99e57bc88edeae2a7364a5e512531775bcecf812ba55f6350ee73d"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0596872490132228,
+    "identity": "788d148ba9e2b4bb284cba403ae289ead39482366de14e2755fd0259c7ef8e81",
+    "map_id": "BBX_COMPOSE",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.36331245252970795,
+      "ap50": 0.21961523171674524,
+      "apall": 0.1112154139844028,
+      "defined_classes": 51,
+      "macc": 0.37178965165279126,
+      "miou": 0.30431560897927257,
+      "uap": 0.1112154139844028
+    },
+    "ordered_inputs": [
+      "7f040c689cec9ba69b9122619ecec1040f2deb0985d7b0afdc924cb974e53a8a",
+      "8307d95509c001f22e1c762f1358940dbacaabddbb90111c29f5e046bffcf428",
+      "be0d2f2b1006d10ea4130edb47655c4499dbf517d4ac56de528abd2f2b6b7f0e",
+      "8aeb75ef9153b2dccaeadefb5a622ae7c39b70b6ba046e0a155f1e89d9bdd8a2",
+      "36d7e83d06c93a9fd2c92950a8876a3a6c7f8e0d859785645ea1d06bdaa73ade",
+      "51b46be15f28077208af18740129ae1e54b77d7f670a96ece4841537eb104acc",
+      "5eef5857de99d0a8e03b124e2e737c6b2fa874892aee6213a1b85c1bf1d1e6d7",
+      "d8d3e6ac3dea5b421565c0e6dcee66c36ffa32654fcabfc922566435891ffd00"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.5022618389921263,
+    "identity": "6cba7cf9f6a7bee58cba88d06963dd45760f1be9c48e1efe3f4825ea2c0c89fe",
+    "map_id": "BBX_COMPOSE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.2996248311619748,
+      "ap50": 0.17153064789235292,
+      "apall": 0.07825006506955522,
+      "defined_classes": 51,
+      "macc": 0.31098981117098445,
+      "miou": 0.24778196346504583,
+      "uap": 0.07825006506955522
+    },
+    "ordered_inputs": [
+      "b66a6318b4fcc9ab635476ab5740d320b49f1a97f8b7f4c5aebf05c8f63888a2",
+      "fb146c1629027885d853b58c2bfa2adb0eeac71b16658f4837d7f45ce480de33",
+      "79e39a0b10ce1296c1bad2f11a920d4db9f32c52b199bd2d69e419f44719c2a8",
+      "bef8811d2586e8572190e1117fc6e8b16ffcc1a80c4b18b7a6bb631e2380c77b",
+      "36359cfb8f407685cf9b4c886a3ccfd81c7bc4765431e2b3fce5bf38c773dc79",
+      "73eb3cafa34ebce005df8e5a74bf9f955041ec31eb285662b734d12a0a214317",
+      "2c2130af6f65fca50c91fe8140bb1fa30f1e711201703f50534765b3ebe10496",
+      "655538d98409796ee725fdf7a2a61ecbc5be639fcad3566aad5c6d097849fc84"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.050669113988988,
+    "identity": "7900e734acc32f7335706d2e5967d97da93c1af3dcc2f1be7c18eda877713ce4",
+    "map_id": "BB01_SYNC",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.38744853178069033,
+      "ap50": 0.24342541046901556,
+      "apall": 0.10403430272892555,
+      "defined_classes": 51,
+      "macc": 0.3733422923448406,
+      "miou": 0.31028782447005593,
+      "uap": 0.10403430272892555
+    },
+    "ordered_inputs": [
+      "9dc109c8eb51caf3174d9d837cf20995714d2816a0a61fdf5091bca942312919",
+      "130e44fc252626d984077690c1edbbea584fe9c1facc408988ce3d20d1b729df",
+      "dfcefc4dafbe02bc2aaff2b60785149017aeb316cfc9ae639cab10bff04ebe44",
+      "90f2d50fb4402f2a1491d0d796d7006b024d1ff7264dfe9714e6b9af65df6ff3",
+      "4944f4c486ebf3eebb8a424b2466c9af422e6d1b0f218e93b535183b02100d0a",
+      "85698c9b64d6223568a9bb15a104218de8b75f9747385322111af5376ae1e90b",
+      "340910a3c15f3771fbf8c7932ac1fc6fe6fcb7138d708b5d55862718bdb7a859",
+      "2ddfbd0cb0b7b5fc0b7c9fb14d885f7c374f5fba7fb597dbfbf343c64ab2077c"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0584007239667699,
+    "identity": "edc88e9d9b83aed8ba54bdff4eb9706247b7db404f35823a8559a618e3a4bfa0",
+    "map_id": "BB01_SYNC",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.37925778559880746,
+      "ap50": 0.23745143668688207,
+      "apall": 0.11539372941049732,
+      "defined_classes": 51,
+      "macc": 0.37609083578545555,
+      "miou": 0.3003124569697004,
+      "uap": 0.11539372941049732
+    },
+    "ordered_inputs": [
+      "67318a6157257847591628f9e4f989917cd944eeefa74be4b350bed4fa69b364",
+      "f9d970c5f6c1538f4459614bea943aefc9a162124d1f824b285278634c53bcb6",
+      "8d1e2ffa9a96ac5f5890d471eacc9856c5f929287c66d2affa592cefb2894118",
+      "6173337dbb7e4c225f50f47b9540a9fc755c3a6a6d14cef9aa6c54265e758556",
+      "f0d56117a0c29d5936253e36ce412a019650a72f858172494d88219462a9bed3",
+      "15e6922515361aed9fd700cd5017bb8c4685747b12d0938a611cf17a6f0e13bd",
+      "4c982c6bdaa58c5b150d7bf552c6c6bb27b6afa2e123560aa7a2099496c10b64",
+      "0ebedc841fd73d4d1fa61060022fb1a5d86d34e58c355ce875f942bc65705ce7"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.5242073419503868,
+    "identity": "e53a34f6425dadf5d956a6b30998fa41f586bc8450fcb7cd2750188fd939fff8",
+    "map_id": "BB01_SYNC",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.34459770796941847,
+      "ap50": 0.21351186322814608,
+      "apall": 0.08562974894945227,
+      "defined_classes": 51,
+      "macc": 0.32136602348037524,
+      "miou": 0.264741979488457,
+      "uap": 0.08562974894945227
+    },
+    "ordered_inputs": [
+      "74a6f261c7e5e927a01b034486a476081e775a85466edb8e32ac1cb90d342488",
+      "aa9f97e682566af5abe1f3db5b3a4f9f1d8f367e388ed0a44d03722f1d6f66a7",
+      "0a0fc2bea42dd8d1299cbafec197e563e66bc8dae6e4e4677f8e9dbdf39b55ed",
+      "160fd49b936cc7eec59ad99a30d24e5d63327de83582066071470fc03c432d30",
+      "edb49d80cd3cd1aa3038d3457d26f74fdbb6e1c83f995b251db599dc70f41dfe",
+      "96d240e7c8bab1ad4e8b2a3bbf703a207298a8f212b32376cc4ca3de722562f6",
+      "63aef2188255c301f4f505d6b2795e56cc02da3dfea9a38d795b380ab6d6baa7",
+      "48d2f8e500502aed209a73bb6540dce5fc5a22ab41e9952c480f1d3a741e1f03"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0613163789967075,
+    "identity": "e9b4f0719a9b3d7f3509d4d3652af59b8046f7c5ce2d1184895c12cdbb48c0a4",
+    "map_id": "BB00_NATIVE",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.37728462854752537,
+      "ap50": 0.24323074806446643,
+      "apall": 0.1040678619443932,
+      "defined_classes": 51,
+      "macc": 0.36624965252600244,
+      "miou": 0.29980400252880446,
+      "uap": 0.1040678619443932
+    },
+    "ordered_inputs": [
+      "7de7115ea9f3d2412c1898dfb131e7a9629db9bc0f55325ea8432dad272ae1b6",
+      "31e2f120d9926dad47cd5718759f7dcb1330154074753b812f0c3fea3bd4a8e0",
+      "8ac093737608678743bb2c0b4dbda869a94199457880fd4bb15fa4fa9f1fb4d8",
+      "ab6f5e5ee2a8865e25351e02fd96eea5e3eec77a5e8dbca5da571c8db8b6cf42",
+      "3873ff3bca45c6c1bf14fa78595f888df94c2afc972447a32c855132e595b8cc",
+      "cc4b68d589f74f1779a2fb558ef6f52617f0afb42f79bc5815b7db9a2cb01014",
+      "d9169a39da01b6401da7affc0784658bbbe8c9e58984e95e0d49fbe1fbfbd424",
+      "48fdc8f796916c7d8758f83a1679ae4721ab7066a8ff8a4b5647b945c3da5ac6"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0638271159259602,
+    "identity": "964cb458f5aa047072b0eb6020144196199613bf0adf5835e28a64d976e3fb81",
+    "map_id": "BB00_NATIVE",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.3797458622016501,
+      "ap50": 0.24495210428669076,
+      "apall": 0.11741338226305202,
+      "defined_classes": 51,
+      "macc": 0.37427869483346954,
+      "miou": 0.296910848924658,
+      "uap": 0.11741338226305202
+    },
+    "ordered_inputs": [
+      "91f812bc0594310de3842d5b41f0ea04271c5cb502e696b38efee716d93d0ec7",
+      "a524a7e20235e0036fa467213986e9fc50b4b72c5699a9299ffe6829a6396785",
+      "df26f654121ed4ebb582bf8ad6d6d2e6c51de70c0d687b98b026d75c3348a39d",
+      "96b74cbf7aa28fb0a1ef785b62e0950be5c15074923448e57555a26a61cce7f7",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "59fbd2ca73b9c0a78a0f0e1134cc5cfba66462a6b10e394f5d09ceeceb8f914b",
+      "e203d7eeccff1efd38b16f9aadce583f86146788d667ba6b2822f5e11db4e05b",
+      "d343c35759ece2f315723ebbc6e0286b8f2d8e734098d8315510513c9c1eb480"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.6132466299459338,
+    "identity": "8631a0f96f7b675f50be07de7f47369b60ca2172beca048cd9a18996c5c85e3c",
+    "map_id": "BB00_NATIVE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.345853789368729,
+      "ap50": 0.2147686335604373,
+      "apall": 0.08626543924081388,
+      "defined_classes": 51,
+      "macc": 0.326694541946634,
+      "miou": 0.2724018686568009,
+      "uap": 0.08626543924081388
+    },
+    "ordered_inputs": [
+      "89e57bc68f96d1facd908c42fcb3ce3acc6cf237091d56ae0cef744ea700d9de",
+      "48ad7c78b77444ab0d452b50b5e651a6dd646e2308638ee6e4686218fb971c68",
+      "5081757766b4946e7060585e1d5baef9531c806a34e48a930a888c023e20e2c3",
+      "32a755de63e2b414c3d6df7a729981b2f27f4e88f8e9b6323f988318b21a8fc5",
+      "55c41523394c35b49fd742e5f2c38480d9129ca9536880349854f5f1f9fb0cd0",
+      "15a8fff847f243841565668e1c41f34653a3d10d450efd99c1ff65f60a23fc0a",
+      "3188378cd2829ffa1983b9bd2a487ea33dec44f4fd97b6c41bf75f385f3f6e61",
+      "0a9e5235f25850016bc2849f0ec834f3443675578c994668fb34b0d9327dc8f3"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0631355569930747,
+    "identity": "d4cfe38abfe3847675c450a0a15f0a6e7d989074267d118d8c1299d0b89188b1",
+    "map_id": "BB03_SAM2_RAW",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.37237876165883677,
+      "ap50": 0.2256740618795365,
+      "apall": 0.11222487985274618,
+      "defined_classes": 51,
+      "macc": 0.3638278472757889,
+      "miou": 0.2973035448736212,
+      "uap": 0.11222487985274618
+    },
+    "ordered_inputs": [
+      "c5d769b8a487e9e6b97981bdc0cc87960da93a88eb3d475e3d5324cf6f4c969d",
+      "dc1466890d447ae080327aeacc90adcab668cff9eca457a563e67a02f64dcd4f",
+      "5fe26fe3896a20f3ea4fdde756d8598691cccf38643e9039c95c6b23da139e06",
+      "98b882b0257b9c9e9e130fc087f218f28e89b11d214d203092ad587838d4d122",
+      "2c90ad1952d55ae32384f05c05035a4dd08ab50907467c6a494b91ac41c0ea83",
+      "22e10ba36d7cd5217d00381f5b35a248c0e057a9ca57bcd0194b3bfdd87a0598",
+      "f691396c49c0626308c32cc7ac6ac12a07974a037e3b7c27330d98b881ea5046",
+      "40fefa6dd455a6e1d9f069fa8c1b5932d17ba1d6776157baabf39b7ed64e3be4"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0771955460077152,
+    "identity": "8a6704f2698918978523a517975fa68a97db00a22e1a5ed92fb844dc60ec691b",
+    "map_id": "BB03_SAM2_RAW",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.3621859646981762,
+      "ap50": 0.223021191112288,
+      "apall": 0.11368805940168555,
+      "defined_classes": 51,
+      "macc": 0.3709284678363652,
+      "miou": 0.30056442005790596,
+      "uap": 0.11368805940168555
+    },
+    "ordered_inputs": [
+      "53d9f87792b38d1b30633812c795d0a9aff198f42e69a24bc3eb229bcbd363e4",
+      "f544c18ae3ee5f56132a94c1eac6258c6e8628d5bbd6d66cf10ab3e5f3ceb868",
+      "5b41ed1dbfdf0b59b29c69741ed65d9d2e64b4e25611d700e292860197ef12cf",
+      "6c28b4544c78c33eae80df42b5b197f7a2660c5e671d8b0428be6e46f868fca3",
+      "34062198805cb1f8a9fabae03e84aaa0f290e94bee754589a37298c7385da66d",
+      "5fe42413f6deb46c93cd33bfb5837e65e605bd1c7af65934458d8b7119aab815",
+      "4516eb1a3ad9b5fc09e01a348b17f55070bf74069d894b22998a41c44385501d",
+      "d9fa59bdbee09228cae2568743df0a9fb82125c3076f27243b410edab803cafb"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.5759405049029738,
+    "identity": "ce4da175eb84894fa448e9d9c603a3c0b0f4a9eca194b6c6729cceabcf61561c",
+    "map_id": "BB03_SAM2_RAW",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.3057536937795527,
+      "ap50": 0.1784955306818885,
+      "apall": 0.08198506674340716,
+      "defined_classes": 51,
+      "macc": 0.31024432673067215,
+      "miou": 0.25125680852754395,
+      "uap": 0.08198506674340716
+    },
+    "ordered_inputs": [
+      "7bd3e5f765a98103ed828d4df5ce8003d2126012d8936767e2b0e8cbfc12f548",
+      "ae1589159ec656bec2a8b53ca8fae14f271414a984f8842e3bc311fec5709261",
+      "717748368c439207dbc6fe297847b0bbf00c5c601ce72267ccbbdf161ee02e00",
+      "b795a5d0f98fab122ec7b69925cce635264d8163154bdd55697706d37da8a2f3",
+      "c17811cedda175a3b666b1ea7bbab125e41ebc75fbd9ffc371296be08a6cca2e",
+      "77e57893aa77163cc8b1c23e06e6f0995e828e08f7ebdf1cfd817ecd15bc6815",
+      "7dfbf362bf66d1e08611b373a25433c58d6d1d420bd7b1d97b3d639d8998d3bb",
+      "2100d9992f4ffc858e67b9e5d448f5048f62f6739ec3dffe894b3c32c685c090"
+    ],
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  }
+]

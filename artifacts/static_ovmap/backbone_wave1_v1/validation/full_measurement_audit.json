@@ -1,0 +1,161 @@
+{
+  "Q_logical_totals": {
+    "attempts": 12800,
+    "failures": 0,
+    "successes": 12800
+  },
+  "SAM2_production_image_encodings": 2400,
+  "all_scenes_exposed": true,
+  "checked_at_utc": "2026-10-01T07:11:30.899810+00:00",
+  "frontends": [
+    {
+      "identity": "05daea1f5c690c0a1892920ea2a1757fd537acadb8c0327998ae0e2a69c7602f",
+      "image_encodings": 200,
+      "scene": "scene0056_00"
+    },
+    {
+      "identity": "701d00a1afdde0d5593ce85899a93c25724041590a5fb415d419a5419fae2640",
+      "image_encodings": 200,
+      "scene": "scene0534_00"
+    },
+    {
+      "identity": "10051cb8a7fd7338ff587a8b02e5a9ccf5c1666de4706effbeb30a104fc7e7fb",
+      "image_encodings": 200,
+      "scene": "scene0445_00"
+    },
+    {
+      "identity": "bca08c54d302a6689fc0392e93efb4c1140786e51e68ac450b568352c86554c7",
+      "image_encodings": 200,
+      "scene": "scene0626_00"
+    },
+    {
+      "identity": "971cddfbb0843701a63a3dbeff820a17eac01110ecb67fa29d764f04eba06739",
+      "image_encodings": 200,
+      "scene": "office0"
+    },
+    {
+      "identity": "cf367c6f25a298113f5eda9ae2f942703f601f18116584799f1998ae8f7af082",
+      "image_encodings": 200,
+      "scene": "office1"
+    },
+    {
+      "identity": "6d3718df899a55a2005a16f321c2c5d68dabec272e4b91dfa3d387b7bc9a82b4",
+      "image_encodings": 200,
+      "scene": "office2"
+    },
+    {
+      "identity": "4bdbc453ab03879b229548595f2a3e18b98237874aee2703252f661e6788ab50",
+      "image_encodings": 200,
+      "scene": "office3"
+    },
+    {
+      "identity": "6943f43f44a8a4fa5c4daf704ec9d4641cf1b35614056ce31441dcce39c0e025",
+      "image_encodings": 200,
+      "scene": "office4"
+    },
+    {
+      "identity": "eaa0490fdf732a774fdef194f1e22a45499e5870d9ddd99a4523b3db27494753",
+      "image_encodings": 200,
+      "scene": "room0"
+    },
+    {
+      "identity": "376fc43bd4ecb3fe4bebea940a23c1186bd79fee8d36dffac0c3b0b277ec9bdb",
+      "image_encodings": 200,
+      "scene": "room1"
+    },
+    {
+      "identity": "24bd99b8ddee0d71a7ec9f6fdb5c97e8975726a011e9411724a326779dc20343",
+      "image_encodings": 200,
+      "scene": "room2"
+    }
+  ],
+  "implementation_commit": "66b4a077f9d86359380a742fa184a3c7f5ab922e",
+  "loaded_native_extensions": {
+    "/mnt/shared/ww/ovimap-backbone-wave1-v1/tooling/native/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so": "dbf37faaaf6ea8bc49d4dd9cb7008935947cfde649adf66cb543c94e9b52a9da"
+  },
+  "ordered_official_and_secondary_pools": 72,
+  "pools": [
+    "pools/development/BB00_NATIVE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB00_NATIVE/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BB00_NATIVE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB00_NATIVE/FC_EQ/FROZEN_N0.json",
+    "pools/development/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB00_NATIVE/D2/FROZEN_N0.json",
+    "pools/development/BB01_SYNC/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB01_SYNC/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BB01_SYNC/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB01_SYNC/FC_EQ/FROZEN_N0.json",
+    "pools/development/BB01_SYNC/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB01_SYNC/D2/FROZEN_N0.json",
+    "pools/development/BB05_RATIO_GATE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_RATIO_GATE/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BB05_RATIO_GATE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_RATIO_GATE/FC_EQ/FROZEN_N0.json",
+    "pools/development/BB05_RATIO_GATE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_RATIO_GATE/D2/FROZEN_N0.json",
+    "pools/development/BB05_FORWARD/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_FORWARD/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BB05_FORWARD/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_FORWARD/FC_EQ/FROZEN_N0.json",
+    "pools/development/BB05_FORWARD/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_FORWARD/D2/FROZEN_N0.json",
+    "pools/development/BB05_BIDIR/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_BIDIR/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BB05_BIDIR/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_BIDIR/FC_EQ/FROZEN_N0.json",
+    "pools/development/BB05_BIDIR/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB05_BIDIR/D2/FROZEN_N0.json",
+    "pools/development/BB03_SAM2_RAW/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB03_SAM2_RAW/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BB03_SAM2_RAW/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB03_SAM2_RAW/FC_EQ/FROZEN_N0.json",
+    "pools/development/BB03_SAM2_RAW/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB03_SAM2_RAW/D2/FROZEN_N0.json",
+    "pools/development/BB03_SAM2_GEOM/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB03_SAM2_GEOM/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BB03_SAM2_GEOM/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB03_SAM2_GEOM/FC_EQ/FROZEN_N0.json",
+    "pools/development/BB03_SAM2_GEOM/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BB03_SAM2_GEOM/D2/FROZEN_N0.json",
+    "pools/development/BBX_COMPOSE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BBX_COMPOSE/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/development/BBX_COMPOSE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BBX_COMPOSE/FC_EQ/FROZEN_N0.json",
+    "pools/development/BBX_COMPOSE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/development/BBX_COMPOSE/D2/FROZEN_N0.json",
+    "pools/replica/BB00_NATIVE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB00_NATIVE/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/replica/BB00_NATIVE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB00_NATIVE/FC_EQ/FROZEN_N0.json",
+    "pools/replica/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB00_NATIVE/D2/FROZEN_N0.json",
+    "pools/replica/BB01_SYNC/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB01_SYNC/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/replica/BB01_SYNC/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB01_SYNC/FC_EQ/FROZEN_N0.json",
+    "pools/replica/BB01_SYNC/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB01_SYNC/D2/FROZEN_N0.json",
+    "pools/replica/BB03_SAM2_RAW/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB03_SAM2_RAW/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/replica/BB03_SAM2_RAW/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB03_SAM2_RAW/FC_EQ/FROZEN_N0.json",
+    "pools/replica/BB03_SAM2_RAW/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BB03_SAM2_RAW/D2/FROZEN_N0.json",
+    "pools/replica/BBX_COMPOSE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BBX_COMPOSE/NATIVE_READOUT/FROZEN_N0.json",
+    "pools/replica/BBX_COMPOSE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BBX_COMPOSE/FC_EQ/FROZEN_N0.json",
+    "pools/replica/BBX_COMPOSE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "pools/replica/BBX_COMPOSE/D2/FROZEN_N0.json"
+  ],
+  "primary_rows": 192,
+  "publication_verification_is_external": true,
+  "raw_geometry_diagnostics": 64,
+  "review_owner": "primary_agent",
+  "script_sha256": "3c7919840a8d568a44cb08643a6c50f4f307b11474102d20399132e8c9e46d39",
+  "secondary_rows": 192,
+  "selection_freeze_commit": "c94a9f94980332d05dbc21cdef8d1a0ced6475ad",
+  "selection_identity": "0226eb45b0cbbf262773c68080da9e31cb27cc0a8d23ccd523fa2ca980e30bb0",
+  "status": "FULL_MEASUREMENTS_VERIFIED_PUBLICATION_PENDING",
+  "successful_maps": 64
+}

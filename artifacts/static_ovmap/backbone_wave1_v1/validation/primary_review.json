@@ -1,0 +1,200 @@
+{
+  "all_scenes_exposed": true,
+  "checked_at_utc": "2026-10-01T07:50:27+00:00",
+  "checks": [
+    {
+      "contract": "C1",
+      "evidence": [
+        "resolved_inputs.json",
+        "matrix.json",
+        "maps/*/*/map_receipt.json",
+        "readouts/*/*/receipt.json",
+        "replica_launch_correction.json",
+        "review/transfer_launch_regression.json",
+        "review/full_measurement_audit.json"
+      ],
+      "finding": "All 64 maps use the exact 200 parent slots and completed-frame order, the actual new binary dbf37faaaf6ea8bc49d4dd9cb7008935947cfde649adf66cb543c94e9b52a9da, task-local owner/projection roots and locked geometry. Raycast factor0 owners and native surface factor0.1 owners remain separate.",
+      "status": "VERIFIED_FULL_STUDY"
+    },
+    {
+      "contract": "C2",
+      "evidence": [
+        "tests/evaluation/test_backbone_wave1_kernels.py",
+        "maps/scene*/BB00_NATIVE/diagnostics/*/order_diagnostic.json",
+        "readouts/scene*/BB01_SYNC/intervention.json"
+      ],
+      "finding": "Original-support simultaneous splitting preserves .9/.5/.2, the initial 100-pixel gate and small carved intersections. All 12 first-three-frame real order diagnostics show no physical change under reversal or ID renaming; the synthetic counterexample is not presented as observed real-scene failure. Full-map SYNC changes 442/7741/30/7 target partition rows in the four ordered development scenes.",
+      "status": "VERIFIED_IMPLEMENTATION_AND_DEVELOPMENT"
+    },
+    {
+      "contract": "C3",
+      "evidence": [
+        "resolved_inputs.json",
+        "third_party_patches/ovimap/backbone_wave1_v1/backbone_wave1_v1.patch",
+        "pools/development/BB05_RATIO_GATE/*/OFFICIAL_CURRENT_CLASS.json"
+      ],
+      "finding": "Only RATIO_GATE enables the inherited predicate. Its actual bound threshold is 0.0, making it redundant for accepted positive-count candidates. Small eight-thread map differences cannot establish effective ratio gating.",
+      "status": "VERIFIED_REDUNDANT_BOUND_CONTROL"
+    },
+    {
+      "contract": "C4",
+      "evidence": [
+        "prepare/native_trace/summary.json",
+        "prepare/native_trace/forward/receipt.json",
+        "prepare/native_trace/bidir/receipt.json"
+      ],
+      "finding": "The loaded C++ depth-conditioned near-to-far probe runs before insertion, uses count membership at factor0 and leaves touched TSDF/count/ID state unchanged. Native-off partition parity and exact single-thread TSDF parity passed; eight-thread variation is explicitly retained.",
+      "status": "VERIFIED_ACTUAL_NATIVE_TRACE"
+    },
+    {
+      "contract": "C5",
+      "evidence": [
+        "tests/evaluation/test_backbone_wave1_kernels.py",
+        "maps/scene*/BB05_FORWARD/diagnostics/*/association_plan.json",
+        "maps/scene*/BB05_BIDIR/diagnostics/*/association_plan.json"
+      ],
+      "finding": "Forward and reverse use different full-support denominators, positive-benefit dummy assignments and native fresh IDs for unmatched local objects. The valid directional counterexample and support-outside-foreground test passed.",
+      "status": "VERIFIED_DIRECTIONAL_AND_UNMATCHED"
+    },
+    {
+      "contract": "C6",
+      "evidence": [
+        "prepare/native_trace/summary.json",
+        "maps/scene*/BB05_FORWARD/map_receipt.json",
+        "maps/scene*/BB05_BIDIR/map_receipt.json",
+        "third_party_patches/ovimap/backbone_wave1_v1/backbone_wave1_v1.patch"
+      ],
+      "finding": "Candidate filtering applies during recomputation, ordinary mode4 count updates use plans, and queued alias endpoints/token sets are updated transitively. Both short directional traces exercise 37917 vetoes. All eight complete directional development maps report zero post-update owner discrepancies. The original bridge receipt is preserved with its validation-only controller alias.",
+      "status": "VERIFIED_ACTUAL_MODE4_INTEGRATION"
+    },
+    {
+      "contract": "C7",
+      "evidence": [
+        "prepare/sam2_preflight/receipt.json",
+        "frontend/*/SAM2_PAIRED/receipt.json",
+        "tests/evaluation/test_backbone_wave1_frontend.py",
+        "review/full_measurement_audit.json"
+      ],
+      "finding": "Pinned real SAM2 video predictor, five-valid-frame resets and current-only max_frame_num_to_track=0 feed actual maps. RAW/GEOM share neural outputs and RAW-defined discoveries; GEOM uses past RAW support. First chunk frames preserve CropFormer exactly. Optional CUDA connected-components fallback is recorded.",
+      "status": "VERIFIED_FULL_STUDY"
+    },
+    {
+      "contract": "C8",
+      "evidence": [
+        "bridge_parity.json",
+        "readouts/*/*/native_query/native_query_receipt.json",
+        "readouts/*/*/fc/receipt.json",
+        "readouts/*/*/receipt.json",
+        "review/scoped_tests.json",
+        "review/full_measurement_audit.json"
+      ],
+      "finding": "All 15 bridge metric deltas satisfy .05pp. New anchors, triangle-first painting, N top10/last8, exact tensor caches, causal lineage, frozen Q and original FC recipe are used. Full-study Q attempts/successes are 12800/12800 with GT_input=false and new_temperature_fit=false. SYNC has no development FC cap exclusions. Native feature pickle is not byte-exact under measured parallel variation.",
+      "status": "VERIFIED_FULL_STUDY"
+    },
+    {
+      "contract": "C9",
+      "evidence": [
+        "pools/*/*/*/OFFICIAL_CURRENT_CLASS.json",
+        "pools/*/*/*/FROZEN_N0.json",
+        "readouts/*/*/raw_geometry_diagnostics.json",
+        "readouts/*/*/evaluation_rows.json",
+        "review/full_measurement_audit.json"
+      ],
+      "finding": "Full study has 192 primary and 192 secondary scene rows, 72 released ordered pools and 64 raw geometric diagnostics. Raw recall uses strict thresholds and all eligible GT; missing best IoU is zero. The raw diagnostic denominator is 108 development GT and 389 Replica GT, independent of source-paired coverage. Surface diagnostics retain all duplicated native vertices. Conditional substantial-fragment impurity and all-GT coverage are separated.",
+      "status": "VERIFIED_FULL_ORDERED_POOLS_AND_RAW_DIAGNOSTICS"
+    },
+    {
+      "contract": "C10",
+      "evidence": [
+        "candidate_freeze.json",
+        "selection.json",
+        "transfer_freeze_commit.json",
+        "execution/compose_1790810686395531140.json"
+      ],
+      "finding": "Candidate freeze predates every composition launch. Structural SYNC and frontend RAW produce the sole composition. Final nominee SYNC and the four exact transfer recipes are identically committed before Replica, with no Replica results read or refit. RATIO is measured but excluded from the normative noncontrol structural champion. Strict and banded rankings remain preserved.",
+      "status": "VERIFIED_FROZEN_CHRONOLOGY"
+    },
+    {
+      "contract": "C11",
+      "evidence": [
+        "review/scoped_tests.json",
+        "prepare/native_trace/summary.json",
+        "bridge_parity.json",
+        "review/full_measurement_audit.json",
+        "report/render_receipt.json",
+        "publication/final.json (required after normal push)"
+      ],
+      "finding": "Twelve new test functions/fourteen cases pass; actual native trace, complete bridge, scoped compilation, functional report rendering and complete measurement acceptance pass. No broad historical audit was run. Final generated-release inspection and publication verification are recorded externally after rendering and normal push to avoid a recursive commit receipt; no PUSH_VERIFIED claim is made here.",
+      "status": "LOCAL_VALIDATION_VERIFIED_PUBLICATION_CHECK_EXTERNAL"
+    },
+    {
+      "contract": "C12",
+      "evidence": [
+        "execution/screen.resources.json",
+        "execution/compose.resources.json",
+        "execution/transfer.resources.json",
+        "execution/transfer_retry_001.resources.json",
+        "readouts/*/*/native_query/native_query_receipt.json",
+        "readouts/*/*/fc/receipt.json",
+        "frontend/*/SAM2_PAIRED/receipt.json"
+      ],
+      "finding": "Actual physical requests, encoder batches, FC poolings, retries and shared SAM prerequisites are distinct from content-deduplicated standalone obligations. N-only and fused readout costs are separate. GNU phase CPU includes child work. Device-only GPU event time, earlier uninstrumented CPU and unattributed source/projection/fusion/evaluation CPU are disclosed as missing; attributable timing is not a cold rerun.",
+      "status": "VERIFIED_FULL_STUDY_WITH_EXPLICIT_TIMING_LIMITS"
+    },
+    {
+      "contract": "C13",
+      "evidence": [
+        "frontend/*/SAM2_PAIRED/chunks/*",
+        "frontend/*/SAM2_PAIRED/receipt.json",
+        "src/static_ovmap/backbone_wave1/frontend_sam2.py",
+        "review/full_measurement_audit.json"
+      ],
+      "finding": "Paired preprocessing saves exclusive rasters, bitpacked per-track masks, filter decisions and shared job identities. Floating logits remain bounded in memory; no scene-wide float logit dumps are required.",
+      "status": "VERIFIED_FULL_STUDY"
+    }
+  ],
+  "coverage": {
+    "expected_maps": 64,
+    "expected_primary_rows": 192,
+    "intervention_diagnostics": 52,
+    "ordered_pools": 72,
+    "primary_rows": 192,
+    "raw_geometry_diagnostics": 64,
+    "secondary_rows": 192,
+    "successful_maps": 64
+  },
+  "deployment": "N0_UNCHANGED",
+  "implementation_commit_reviewed": "89bea59da661887fefb3b2ff87dd618fbe3e626f",
+  "normative_sources": [
+    "CODEX_FINAL_EXECUTION_EN.md",
+    "PROTOCOL_SPEC.json",
+    "IMPLEMENTATION_CONTRACTS.md",
+    "ACCEPTANCE_AND_AUDIT.md"
+  ],
+  "publication_verification_is_external": true,
+  "review_owner": "primary_agent",
+  "runtime_repairs": [
+    {
+      "affected": "20 office map launches; all failed before reconstruction with zero GPU inference",
+      "implementation_commit": "2998d81003a98ebbc3ab2f9fa7aa840313166fa6",
+      "repair": "Transfer-only launch normalization strips the known wrapper and unused feature IPC namespace; all scientific flags and original binding remain unchanged.",
+      "retry_execution": "execution/transfer_1790838614273228398.json",
+      "retry_status": "COMPLETE_ALL_32_REPLICA_CONFIGURATIONS_ZERO_FAILURES_20_INITIAL_LOGS_PRESERVED",
+      "root_cause": "Five inherited office commands contain a feature IPC wrapper, unlike direct ScanNet/room commands; positional replacement left wrapper arguments behind.",
+      "signature": "argparse unrecognized inherited Replica IPC namespace and mapper path",
+      "validation": "The actual 32-launch no-map/model regression fails on the original command and passes after the correction. Room/controller/native/source code paths are unchanged."
+    }
+  ],
+  "scientific_limits": [
+    "All four development and eight Replica scenes were historically exposed; no independent generalization or significance claim is supported.",
+    "Development SYNC D2 gains APall 0.6261023pp and mIoU 1.6166880pp, concentrated in scene0534_00. Raw R50 improves only one GT among 108; native-readout APall slightly declines. Semantic gains cannot all be assigned to geometric improvement.",
+    "BIDIR lowers conditional substantial-fragment impurity while increasing fragmentation and lowering one-to-one recall/AP; this is not evidence of a stronger instance map.",
+    "RAW/GEOM remain within metric preference bands; RAW wins the frozen frontend preference by fewer required image encodings before timing.",
+    "The sole composition loses to SYNC and BB00 on development D2. Replica cannot alter the nominee or frozen recipes.",
+    "Replica SYNC D2 APall changes by -0.2019653pp and mIoU by +0.3401608pp against the fresh BB00 D2 baseline: a tradeoff, not net gain. Native-readout APall and mIoU both decline.",
+    "Replica raw R50 changes from 163/389 to 161/389 for SYNC, 159/389 for RAW and 156/389 for COMPOSE. Surface F5 remains approximately 89.6891 percent for all four maps; tiny floating differences do not support stronger surface geometry.",
+    "No deployment replacement, new-scene confirmation, training or out-of-scope backbone family is authorized."
+  ],
+  "status": "LOCAL_REQUIREMENTS_VERIFIED_PUBLICATION_EXTERNAL",
+  "transfer_freeze_commit": "c94a9f94980332d05dbc21cdef8d1a0ced6475ad"
+}

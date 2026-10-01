@@ -1,0 +1,104 @@
+{
+  "acquired_frame_count": 3,
+  "candidate_vetoes": {
+    "bidir": 37917,
+    "forward": 37917
+  },
+  "native_off_partition_parity": true,
+  "native_off_tsdf_comparison": {
+    "block_indices": {
+      "exact": true
+    },
+    "color": {
+      "exact": true
+    },
+    "distance": {
+      "exact": true
+    },
+    "voxel_size": {
+      "exact": true
+    },
+    "voxels_per_side": {
+      "exact": true
+    },
+    "weight": {
+      "exact": true
+    }
+  },
+  "native_parallel_variation": {
+    "old_native__new_native": {
+      "block_indices": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "color": {
+        "different_elements": 13820,
+        "max_absolute_difference": 182.0
+      },
+      "distance": {
+        "different_elements": 52750,
+        "max_absolute_difference": 0.0038959719240665436
+      },
+      "voxel_size": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "voxels_per_side": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "weight": {
+        "different_elements": 27741,
+        "max_absolute_difference": 1.52587890625e-05
+      }
+    },
+    "old_native__old_native_repeat": {
+      "block_indices": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "color": {
+        "different_elements": 14060,
+        "max_absolute_difference": 180.0
+      },
+      "distance": {
+        "different_elements": 51746,
+        "max_absolute_difference": 0.003578122705221176
+      },
+      "voxel_size": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "voxels_per_side": {
+        "different_elements": 0,
+        "max_absolute_difference": 0.0
+      },
+      "weight": {
+        "different_elements": 26779,
+        "max_absolute_difference": 1.52587890625e-05
+      }
+    }
+  },
+  "probe_read_only": true,
+  "production_mapping_threads": 8,
+  "receipts": {
+    "bidir": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/native_trace/bidir/receipt.json",
+    "forward": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/native_trace/forward/receipt.json",
+    "new_native": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/native_trace/new_native/receipt.json",
+    "new_native_serial": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/native_trace/new_native_serial/receipt.json",
+    "old_native": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/native_trace/old_native/receipt.json",
+    "old_native_repeat": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/native_trace/old_native_repeat/receipt.json",
+    "old_native_serial": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/prepare/native_trace/old_native_serial/receipt.json"
+  },
+  "serial_diagnostic_threads": 1,
+  "status": "COMPLETE",
+  "variants": [
+    "old_native",
+    "new_native",
+    "forward",
+    "bidir",
+    "old_native_repeat",
+    "old_native_serial",
+    "new_native_serial"
+  ]
+}
