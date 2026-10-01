@@ -74,10 +74,11 @@ Consumes: native pickle/request/content receipts, final Q scores/retained reques
 FC dense/region/text receipts and original effective operators.
 Produces: U1/UQ/U2/U3 scores, request proofs, deterministic budget and cost receipts.
 
-- [ ] Test single-view canonical FP32 classifier against duplicated-view old reader.
-- [ ] Validate exact saved native observation/request and final reconciled Q lineage.
-- [ ] Select U2 exact U1 request; U3 top3 lawful captured requests, no substitutions.
-- [ ] Freeze initial dense inventory and U2-then-U3 union allowance before inference.
+- [x] Test single-view canonical FP32 classifier against duplicated-view old reader.
+- [ ] Validate exact saved native observation/request and final reconciled Q lineage
+  on actual candidates (production proof functions and their scoped tests pass).
+- [x] Select U2 exact U1 request; U3 top3 lawful captured requests, no substitutions.
+- [x] Freeze initial dense inventory and U2-then-U3 union allowance before inference.
 - [ ] Reuse verified parent text/dense/region content; new pooling/misses stay local.
 - [ ] Track attempted/used/unavailable/cap exclusions and physical/standalone cost.
 
@@ -174,7 +175,10 @@ to record actual commands, statuses and immutable prerequisite identities.
 
 Current status: specification/source inspection, 12-scene binding and
 W/registry/expanded-payload primitives complete; 8 scoped production tests pass.
-Complete real experiments remain pending. Binding found 0 missing artifacts and
+Complete real experiments remain pending. Four actual development registries have
+14 candidates and 10 with lawful captured views; no target or annotation labels
+were opened to create them. Source restoration/budget primitives pass 4 further
+scoped tests. Binding found 0 missing artifacts and
 indexed 1455 parent dense image contents, 6420 pooled regions and 2 text spaces.
 Worktree moved to shared storage after a local-disk
 write failure; the original /home/ww/crove/ovimap-recovery-wave2 entry is a symlink.
