@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "task_id": "ovimap-recovery-wave2-v1",
+  "issued": "2026-10-01",
+  "status": "EXECUTION_SPECIFICATION_NOT_EXPERIMENT_RESULT",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "c21297413954ecb7d706d1050a8e07822938ea6f",
+  "branch": "research/ovimap-recovery-wave2-v1",
+  "upstream": {
+    "repository": "OVI-MAP/OVI-MAP",
+    "commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+    "patch_stack": [
+      "existing module_validation_v1 capture patch",
+      "third_party_patches/ovimap/backbone_wave1_v1/backbone_wave1_v1.patch",
+      "third_party_patches/ovimap/recovery_wave2_v1/recovery_wave2_v1.patch (new)"
+    ],
+    "inst_association": 4,
+    "data_association": 2,
+    "inherited_ratio_threshold": 0.0
+  },
+  "parent_root": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001",
+  "output_root": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001",
+  "worktree_hint": "/home/ww/crove/ovimap-recovery-wave2",
+  "upstream_worktree_hint": "/home/ww/crove/ovimap-recovery-wave2-upstream",
+  "runner": "scripts/evaluation/run_ovimap_recovery_wave2.py",
+  "implementation_root": "src/static_ovmap/recovery_wave2",
+  "default_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "phases": [
+    "bind",
+    "cache-screen",
+    "association-screen",
+    "sam-screen",
+    "compose",
+    "freeze",
+    "transfer",
+    "report",
+    "publish",
+    "all"
+  ],
+  "datasets": {
+    "development": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "replica": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "all_exposed": true,
+    "new_confirmation_authorized": false,
+    "schedule": "exact parent scheduled/completed frame lists, poses, intrinsics, depth and vocabulary"
+  },
+  "baseline": {
+    "map": "BB00_NATIVE",
+    "readout": "D2",
+    "second_readout": "FC_EQ",
+    "source": "same parent map/receipt, not rounded historical table values"
+  },
+  "fixed": {
+    "visual_models": "parent native SigLIP and FC_FROZEN; same weights/preprocessing/templates",
+    "refit_temperatures": false,
+    "retrain_query": false,
+    "query_attempt_budget": 200,
+    "new_SAM_forward": false,
+    "new_CropFormer_forward": false,
+    "new_text_forward": false,
+    "new_depth_or_pose": false,
+    "full_history_rerun": false
+  },
+  "light_methods": [
+    {
+      "id": "RW_B_D2",
+      "family": "control",
+      "gamma": 0.5,
+      "recovery": "none"
+    },
+    {
+      "id": "RW_B_FCEQ",
+      "family": "control",
+      "gamma": 0.3333333333333333,
+      "recovery": "none"
+    },
+    {
+      "id": "RW_W040",
+      "family": "W",
+      "gamma": 0.4,
+      "recovery": "none"
+    },
+    {
+      "id": "RW_W045",
+      "family": "W",
+      "gamma": 0.45,
+      "recovery": "none"
+    },
+    {
+      "id": "RW_U1_NATIVE_SINGLE",
+      "family": "U",
+      "gamma": 0.5,
+      "recovery": "one_successful_native_request"
+    },
+    {
+      "id": "RW_UQ_PAID_QUERY",
+      "family": "U",
+      "gamma": 0.5,
+      "recovery": "already_acquired_query_scores"
+    },
+    {
+      "id": "RW_U2_FC_MATCHED_SINGLE",
+      "family": "U",
+      "gamma": 0.5,
+      "recovery": "FC_on_exact_U1_request"
+    },
+    {
+      "id": "RW_U3_FC_CAPTURED",
+      "family": "U",
+      "gamma": 0.5,
+      "recovery": "FC_on_up_to_three_valid_captured_requests"
+    }
+  ],
+  "weight_rule": {
+    "full_three_source": "(1-gamma)*(pN+pQ)/2+gamma*pF",
+    "partial_sources": "exact inherited available-source behavior, independent of gamma",
+    "equivalent_interpolation": "(1-t)*pFC_EQ+t*pD2, t=6*gamma-2; exact copies at endpoints",
+    "gamma_candidates": [
+      0.3333333333333333,
+      0.4,
+      0.45,
+      0.5
+    ]
+  },
+  "recovery": {
+    "base_geometry_and_existing_owner_masks_immutable": true,
+    "fill_only": "raw_owner==candidate AND baseline_painted_owner==0",
+    "whole_raw_registry_swap": false,
+    "missing_owner_only": true,
+    "candidate_cap_per_scene": 128,
+    "minimum_residual_source_rows": 100,
+    "order": "descending residual source-row count, then canonical world-coordinate support digest",
+    "candidate_selection_uses_target_coordinates_or_GT": false,
+    "max_views": 3,
+    "new_views_from_final_mesh_projection": false,
+    "request_proof": "all recorded segments converge to exactly one active final RAW owner using captured aliases",
+    "U1": "exactly one successful retained native observation, with matching physical request and final-owner proof",
+    "UQ": "frozen query_scores availability plus final-lineage receipt; no extra query acquisition",
+    "U2": "same candidate/request as U1; one FC view, no alternate-view substitution",
+    "U3": "all capped candidates with legal captured requests; top three by area then frame and physical request key",
+    "U3_failure": "omit recovered owner, no fallback masquerading as FC",
+    "FC_additional_image_encoder_input_cap_per_scene": 32,
+    "FC_frame_budget_assignment": "rank candidate requests before inference; skip uncached frames beyond cap, no lower-ranked substitute",
+    "paired_evaluation": "U1/U2 common successful subset plus full pipeline coverage separately",
+    "cache_inventory": "freeze before the recovery comparison; new admissions shared, no retroactive cap expansion"
+  },
+  "map_variants": [
+    {
+      "id": "RW_A1_NATIVE_FALLBACK",
+      "association": "forward_1to1_with_native_fallback",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "RW_A2_MULTI_FREE",
+      "association": "rowwise_best_with_native_fallback",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "RW_A3_MULTI_UNION",
+      "association": "rowwise_specific_union_with_native_fallback",
+      "frontend": "cropformer"
+    },
+    {
+      "id": "RW_S1_CROP_PRIORITY",
+      "association": "native",
+      "frontend": "cached_SAM_crop_priority"
+    },
+    {
+      "id": "RW_S2_CONFLICT",
+      "association": "native",
+      "frontend": "cached_SAM_crop_priority_with_causal_conflict"
+    }
+  ],
+  "association": {
+    "minimum_intersection_pixels": 100,
+    "forward_threshold_strict": 0.2,
+    "A1": "reuse old forward eligible/benefit solve exactly; unmatched => USE_NATIVE",
+    "A2": "same eligible forward edges; rowwise best, no global capacity constraint; unmatched => USE_NATIVE",
+    "A3_dominance_min": 0.8,
+    "A3_forward_margin_min": 0.1,
+    "A3_union_reverse_threshold_strict": 0.2,
+    "actions": [
+      "USE_NATIVE",
+      "ASSIGN_EXISTING",
+      "CREATE_NEW"
+    ],
+    "experimental_explicit_CREATE_NEW": false,
+    "native_fallback_at_all_layers": true,
+    "all_native_action_parity_required": true,
+    "many_to_one_means": "several local groups may share one existing owner; no forced existing-owner merges"
+  },
+  "sam": {
+    "inputs": "cached per-track binary masks + recorded RAW winner raster + current CropFormer; no full logits assumed",
+    "chunk_valid_frames": 5,
+    "same_original_seed_and_frame_schedule": true,
+    "replacement_coverage_min": 0.8,
+    "replacement_iou_min": 0.5,
+    "match_rule": "mutual unique best IoU; tied maxima => unattached; spatial order is for output determinism only",
+    "protect": "all currently CropFormer-labeled pixels and their separate groups",
+    "attached_completion": "recorded RAW winner pixels only on CropFormer-background, attached to matched CropFormer group",
+    "unattached_track_crop_overlap_max_strict": 0.2,
+    "S2_min_known_pixels": 100,
+    "S2_self_purity_min": 0.8,
+    "S2_min_owner_stable_previous_snapshots": 2,
+    "S2_conflict_max": 0.2,
+    "S2_known_owner_depth_tolerance": "abs(hit_z-depth)<=0.03+0.01*depth",
+    "S2_reject_action": "drop only offending SAM-origin additions; retain original CropFormer pixels",
+    "S2_uncertain_action": "KEEP_S1",
+    "S2_state": "own current preinsert map plus two past snapshots; never final/other experimental map for online decisions"
+  },
+  "screening": {
+    "always_run_light_development": true,
+    "always_run_A_development": true,
+    "S1_gate": "at least one changed canonical frontend raster over all development frames; otherwise equivalent input control",
+    "S2_gate": "S1 has a real intervention and cached tracks are available; implement/run own-map conditional path",
+    "geometric_catastrophe": {
+      "mean_best_iou_drop_pp": 3.0,
+      "min_R50_count_loss": 2,
+      "fragment_factor": 1.75,
+      "alternative_min_R50_count_loss": 1,
+      "rule": "(bestIoU_drop>=3pp AND R50_loss>=2) OR (fragments>=1.75*base AND R50_loss>=1)",
+      "action": "SCREENED_OUT_GEOMETRY; publish full geometry; do not spend N/Q/FC on that arm"
+    },
+    "relative_baseline": "same frozen BB00 native map, not failed prior FORWARD/BIDIR",
+    "raw_geometry_only": false
+  },
+  "selection": {
+    "metrics_internal_scale": "fractions; convert pp by /100",
+    "feasible_vs_B": {
+      "apall_min_delta_pp": -0.05,
+      "ap50_min_delta_pp": -0.1,
+      "miou_min_delta_pp": -0.1
+    },
+    "net_gain": {
+      "apall_min_delta_pp": 0.2,
+      "ap50_min_delta_pp": -0.1,
+      "miou_min_delta_pp": -0.1
+    },
+    "bands_pp": {
+      "apall": 0.05,
+      "miou": 0.1,
+      "ap50": 0.1
+    },
+    "tie": "standalone new encoder inputs, changed blocks, parameter distance to baseline, fixed method ID",
+    "map_transfer_gate": "candidate has NET_GAIN on four development scenes under fixed D2 and is not geometric-catastrophe",
+    "max_map_finalists": 1,
+    "deploy": "N0_UNCHANGED",
+    "replica_results_change_selection": false,
+    "leave_one_scene_out": "sensitivity table, not extra tuning"
+  },
+  "composition": {
+    "light": "one selected gamma x one selected recovery rule; additionally compare each component",
+    "geometry": "one qualifying map finalist x frozen light package; no A/S Cartesian product",
+    "freeze_before_replica": true,
+    "no_nomination_after_replica": true
+  },
+  "limits": {
+    "new_full_map_scene_successes": 28,
+    "development_maps_max": 20,
+    "replica_new_maps_max": 8,
+    "new_neural_model_training": 0,
+    "native_trace_valid_frames": 3,
+    "mapping_workers": 2,
+    "mapping_threads": 8,
+    "evaluation_workers": 3,
+    "blas_threads": 4,
+    "concurrent_model_workers_per_gpu": 1,
+    "new_full_baseline_maps": 0,
+    "new_recovery_FC_encoder_inputs_total_max": 1280,
+    "new_recovery_targets_total_max": 5120,
+    "note": "recovery cap covers at most 40 scene/applications (parent12 + new28); actual usually much lower"
+  },
+  "evaluation": {
+    "primary": "OFFICIAL_CURRENT_CLASS + RELEASED_DATASET_POOL",
+    "overlaps": "read actual pinned evaluator vector, no assumed COCO .95 endpoint",
+    "expanded_registry_supported": true,
+    "projection": "same coordinates reuse; changed geometry recompute",
+    "rank": "recompute for all exported owners after recovery, including old owners",
+    "geometry_diagnostics": [
+      "raw_R25_R50_R75",
+      "best_GT_IoU",
+      "fragments",
+      "coverage",
+      "surface_F5"
+    ],
+    "semantic_new_owner_diagnostics": [
+      "added_TP_FP",
+      "existing_GT_match_losses",
+      "rank_changes",
+      "coverage",
+      "cost"
+    ],
+    "undefined": "null plus reason; never zero-as-missing"
+  },
+  "publication": {
+    "reports": [
+      "RECOVERY_WAVE2_RESULTS.md",
+      "RECOVERY_WAVE2_HANDOFF.md",
+      "RECOVERY_WAVE2_SELECTION.md",
+      "RECOVERY_WAVE2_CLAIMS.md"
+    ],
+    "report_dir": "docs/paper/static_ovmap",
+    "artifact_dir": "artifacts/static_ovmap/recovery_wave2_v1",
+    "remote_verify": "normal git push then full local HEAD equals remote refs/heads branch SHA",
+    "external_receipt": "publication/final.json outside commit; no self-referential hash claim",
+    "commit_arrays": "compact class scores/probabilities and actual interventions; no weights/RGB-D/full TSDF",
+    "soft_compact_package_limit_MiB": 50
+  }
+}

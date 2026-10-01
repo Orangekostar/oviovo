@@ -1,0 +1,198 @@
+{
+  "status": "PASS_SPECIFICATION_AUDIT_NOT_BENCHMARK_VALIDATION",
+  "task_id": "ovimap-recovery-wave2-v1",
+  "date": "2026-10-01",
+  "automated_checks": [
+    {
+      "check": "immutable_start",
+      "passed": true,
+      "detail": "Full inspected user-repository commit bound."
+    },
+    {
+      "check": "method_registry",
+      "passed": true,
+      "detail": "Two controls, two weight arms, four recovery arms; five map arms."
+    },
+    {
+      "check": "method_docs",
+      "passed": true,
+      "detail": "All new U/map IDs named in main instructions."
+    },
+    {
+      "check": "cohort",
+      "passed": true,
+      "detail": "Same explicit exposed cohorts; no independent-confirmation claim."
+    },
+    {
+      "check": "map_budget",
+      "passed": true,
+      "detail": "20 development maps + at most8 transfer maps."
+    },
+    {
+      "check": "no_forced_bad_map_transfer",
+      "passed": true,
+      "detail": "No required losing family transfer."
+    },
+    {
+      "check": "no_legacy_rerun",
+      "passed": true,
+      "detail": "Historical complete baseline maps reused."
+    },
+    {
+      "check": "weight_missing_sources",
+      "passed": true,
+      "detail": "Endpoints use actual source-availability behavior."
+    },
+    {
+      "check": "recovery_old_support",
+      "passed": true,
+      "detail": "U additions cannot steal existing painted support."
+    },
+    {
+      "check": "recovery_no_gt_selection",
+      "passed": true,
+      "detail": "No GT-based candidate/view selection."
+    },
+    {
+      "check": "matched_FC_control",
+      "passed": true,
+      "detail": "FC vs native tested on same actual request, with coverage disclosed."
+    },
+    {
+      "check": "paid_query_control",
+      "passed": true,
+      "detail": "Existing paid Q recovery is not misattributed to FC."
+    },
+    {
+      "check": "no_unsupported_projection",
+      "passed": true,
+      "detail": "Absent captured views remain explicitly unrecovered."
+    },
+    {
+      "check": "dense_reuse_not_pooled_reuse",
+      "passed": true,
+      "detail": "Distinguishes current dense cache from older pooled-only caches."
+    },
+    {
+      "check": "FC_recovery_budget",
+      "passed": true,
+      "detail": "Small recovery-only budget; snapshot prevents order-dependent budget expansion."
+    },
+    {
+      "check": "SAM_saved_representation",
+      "passed": true,
+      "detail": "No imagined logits or unauthorized SAM rerun."
+    },
+    {
+      "check": "SAM_crop_priority",
+      "passed": true,
+      "detail": "Protects full candidates rather than creating residual fragments."
+    },
+    {
+      "check": "causal_conflict",
+      "passed": true,
+      "detail": "Two past own-map snapshots; no final-map oracle."
+    },
+    {
+      "check": "native_fallback_full_path",
+      "passed": true,
+      "detail": "Candidate/count/fresh-label/alias semantics specified."
+    },
+    {
+      "check": "many_to_one_control",
+      "passed": true,
+      "detail": "Separates capacity relaxation from specificity/union constraints."
+    },
+    {
+      "check": "geometry_screen",
+      "passed": true,
+      "detail": "Missing semantic measurements not fabricated as zero."
+    },
+    {
+      "check": "expanded_official_export",
+      "passed": true,
+      "detail": "New owners enter official masks and ranking context."
+    },
+    {
+      "check": "frozen_selection",
+      "passed": true,
+      "detail": "Freeze before transfer; all data still exposed."
+    },
+    {
+      "check": "truthful_publication",
+      "passed": true,
+      "detail": "Actual code/results/report push with external final receipt."
+    },
+    {
+      "check": "reference_tests",
+      "passed": true,
+      "detail": "12 executed synthetic tests; not a production native or dataset validation."
+    },
+    {
+      "check": "no_test_count_target",
+      "passed": true,
+      "detail": "Scoped checks only, not inherited giant audits."
+    },
+    {
+      "check": "all_local_markdown_links_exist",
+      "passed": true,
+      "detail": "Local links resolve; public source links pinned."
+    }
+  ],
+  "manual_design_review": [
+    {
+      "issue": "Previous simple gamma formula would change missing-source behavior",
+      "resolution": "Interpolate exact FC_EQ/D2 endpoints; missing sources fixed; synthetic test executed."
+    },
+    {
+      "issue": "Old SAM cache does not contain logits",
+      "resolution": "Use per-track bit masks and recorded winning pixels; no second-best score reconstruction."
+    },
+    {
+      "issue": "Native-ineligible owner can already have Q evidence",
+      "resolution": "Add UQ paid-query control before attributing gains to new FC."
+    },
+    {
+      "issue": "Recovery eligibility was frozen intentionally in wave1",
+      "resolution": "Authorize a new append-only U identity; preserve old painted masks and official scoring."
+    },
+    {
+      "issue": "Association fallback can still be broken by global alias tokens or fresh-group restrictions",
+      "resolution": "Per-group actions across C++ and hard tokens only on actually constrained labels; real native test assigned to Codex."
+    },
+    {
+      "issue": "A strict one-to-one control cannot isolate group-coverage constraint",
+      "resolution": "A1 fallback, A2 free many-to-one, A3 specificity+union; three separate arms."
+    },
+    {
+      "issue": "Geometry-first screen conflicts with old all-readouts-locked diagnose_map",
+      "resolution": "Task-local map-lock diagnostic stage and truthful unmeasured semantic status."
+    },
+    {
+      "issue": "Adding candidates can change old ranks despite fixed old masks",
+      "resolution": "Recompute all official area ranks and report lost matches."
+    },
+    {
+      "issue": "Past exhaustive schedule spent on an equivalent ratio gate",
+      "resolution": "No ratio arm, no forced map transfer, predeclared catastrophic fragmentation stop."
+    },
+    {
+      "issue": "External cache/real data availability is unverified by this assistant",
+      "resolution": "Explicit bind stage; incomplete leaf status rather than manufactured coverage; no new benchmark claims."
+    }
+  ],
+  "executed_here": {
+    "synthetic_reference_tests": 12,
+    "real_mapper_runs": 0,
+    "neural_forward_passes": 0,
+    "production_native_compilations": 0,
+    "remote_writes": 0
+  },
+  "unverified": [
+    "Target-server assets and GPU availability",
+    "Production integration of new algorithms",
+    "New development/Replica metrics",
+    "Method novelty and independent generalization"
+  ],
+  "reference_test_log_sha256": "4e37441badb1c8f1f8d77042e1f5bc9b336e21b6f731f0be061b124ff24e37ea"
+}

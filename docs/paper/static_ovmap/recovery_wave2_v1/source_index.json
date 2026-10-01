@@ -1,0 +1,142 @@
+[
+  {
+    "key": "E01",
+    "path": "src/static_ovmap/module_validation/scannet_study.py",
+    "symbol": "native_readout; native_surface_readout; build_native_prediction; native_ranks",
+    "fact": "Native needs >=2 observations; only AVAILABLE colors paint eligible output; raw and painted owners differ.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/module_validation/scannet_study.py"
+  },
+  {
+    "key": "E02",
+    "path": "src/static_ovmap/backbone_wave1/readouts.py",
+    "symbol": "fuse_readout; build_sources; evaluate_map",
+    "fact": "FC/source loops depend on the native painted registry; all new maps use fresh anchors.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/readouts.py"
+  },
+  {
+    "key": "E03",
+    "path": "src/static_ovmap/module_validation/semantic_study.py",
+    "symbol": "prepare_semantic_manifest; reconcile_semantic_request",
+    "fact": "Original <=128 targets / <=3 views; all segments must resolve to one final owner. Use raw registry for new U branch.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/module_validation/semantic_study.py"
+  },
+  {
+    "key": "E04",
+    "path": "src/static_ovmap/backbone_wave1/semantic_readout.py",
+    "symbol": "reconstruct_native; run_native_query",
+    "fact": "Native request receipts retain physical feature keys; query_scores contain final-reconciled owners before painted-registry filtering.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/semantic_readout.py"
+  },
+  {
+    "key": "E05",
+    "path": "src/static_ovmap/backbone_wave1/features.py",
+    "symbol": "TensorEncoderCache",
+    "fact": "Stores raw encoder vectors for exact tensors; caller normalization must be preserved.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/features.py"
+  },
+  {
+    "key": "E06",
+    "path": "src/static_ovmap/backbone_wave1/region_readout.py",
+    "symbol": "run_region",
+    "fact": "NOW saves whole-frame dense features, pooled regions, text and provenance; fresh mask can reuse exact dense encoding.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/region_readout.py"
+  },
+  {
+    "key": "E07",
+    "path": "src/static_ovmap/a7_evidence_upgrade/region_adapter.py",
+    "symbol": "image_tensor; signed_mask; region_vector; load_model",
+    "fact": "Frozen ConvNeXt 800/1333 preprocessing, signed masks and pinned OVR operators. Not full FC-CLIP panoptic inference.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/a7_evidence_upgrade/region_adapter.py"
+  },
+  {
+    "key": "E08",
+    "path": "src/static_ovmap/backbone_wave1/association.py",
+    "symbol": "directional_assignments; plan_objects",
+    "fact": "Old solver has one-to-one capacities and unmatched planned_owner=0.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/association.py"
+  },
+  {
+    "key": "E09",
+    "path": "third_party_patches/ovimap/backbone_wave1_v1/backbone_wave1_v1.patch",
+    "symbol": "beginBackboneAssociation; candidate/fresh-group/count/alias changes",
+    "fact": "Zero plan allocates fresh owner; a complete native fallback needs changes at all integration layers.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/third_party_patches/ovimap/backbone_wave1_v1/backbone_wave1_v1.patch"
+  },
+  {
+    "key": "E10",
+    "path": "src/static_ovmap/backbone_wave1/frontend_sam2.py",
+    "symbol": "paired_rasters; _raster; run_paired_frontend",
+    "fact": "Partial-overlap discovery rule; saved masks and RAW winners, not full logits; 5-frame causal chunks.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/frontend_sam2.py"
+  },
+  {
+    "key": "E11",
+    "path": "src/static_ovmap/backbone_wave1/mapping_hooks.py",
+    "symbol": "BackboneMappingHook",
+    "fact": "Real preinsert probe and recipe hooks; new after-frame callback needed for own-map S2 history.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/mapping_hooks.py"
+  },
+  {
+    "key": "E12",
+    "path": "src/static_ovmap/backbone_wave1/maps.py",
+    "symbol": "mapping_job; run_map",
+    "fact": "Exact schedule, isolated binary, deferred features; do not call old all-runner to execute new matrix.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/maps.py"
+  },
+  {
+    "key": "E13",
+    "path": "src/static_ovmap/m2_reviewer_study/evaluation.py",
+    "symbol": "SceneEvaluator; official_view; pool",
+    "fact": "Masks enumerate input registry; exact ordered pooling/current-class area ranks; new U universe must be included.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/m2_reviewer_study/evaluation.py"
+  },
+  {
+    "key": "E14",
+    "path": "src/static_ovmap/backbone_wave1/diagnostics.py",
+    "symbol": "instance_diagnostics; diagnose_map; compare_maps",
+    "fact": "Raw geometry diagnosis; current old function waits for all readouts, requiring a new staged adapter.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/backbone_wave1/diagnostics.py"
+  },
+  {
+    "key": "E15",
+    "path": "artifacts/static_ovmap/backbone_wave1_v1/raw_geometry_pools.json",
+    "symbol": "development pools",
+    "fact": "BIDIR fragmentation and R50 loss motivate fail-native / capacity controls, not guaranteed recovery.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/artifacts/static_ovmap/backbone_wave1_v1/raw_geometry_pools.json"
+  },
+  {
+    "key": "E16",
+    "path": "artifacts/static_ovmap/backbone_wave1_v1/spatially_aligned_availability_changes.json",
+    "symbol": "office2/office4 predicted support correspondences",
+    "fact": "Nearly unchanged predicted geometry can change native/F availability; these are prediction-prediction IoUs, not GT proof.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/artifacts/static_ovmap/backbone_wave1_v1/spatially_aligned_availability_changes.json"
+  },
+  {
+    "key": "E17",
+    "path": "docs/paper/static_ovmap/BACKBONE_WAVE1_RESULTS.md",
+    "symbol": "official development/Replica results",
+    "fact": "Same-cohort Native+D2 remains AP reference; raw geometry does not establish stronger new backbone.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/docs/paper/static_ovmap/BACKBONE_WAVE1_RESULTS.md"
+  },
+  {
+    "key": "E18",
+    "path": "docs/paper/static_ovmap/BACKBONE_WAVE1_HANDOFF.md",
+    "symbol": "roots, runtime, patch stack, measured limitations",
+    "fact": "Actual restoration/build context; model times include CPU/I/O and data are exposed.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/docs/paper/static_ovmap/BACKBONE_WAVE1_HANDOFF.md"
+  },
+  {
+    "key": "E19",
+    "path": "src/static_ovmap/module_validation/native_capture.py",
+    "symbol": "RegionRequest; FrameObservation",
+    "fact": "Recorded identity/lineage, target masks, bbox, image and map version contracts.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/module_validation/native_capture.py"
+  },
+  {
+    "key": "E20",
+    "path": "src/static_ovmap/paired_evidence_study/residuals.py",
+    "symbol": "pool; simple_dependence",
+    "fact": "Actual grouped fusion and availability behavior; D2 is .25/.25/.5 only with all three sources.",
+    "url": "https://github.com/Orangekostar/oviovo/blob/c21297413954ecb7d706d1050a8e07822938ea6f/src/static_ovmap/paired_evidence_study/residuals.py"
+  }
+]
