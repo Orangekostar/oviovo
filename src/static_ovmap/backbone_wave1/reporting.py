@@ -531,7 +531,15 @@ def render(binding, spec):
             {"scene": m["scene"], "map_id": m["map_id"], "inputs": m["inputs"], "outputs": m["outputs"],
              "controller_reuse_alias": read(Path(m["capture_manifest"]).parents[2] / "controller_reuse_alias.json")
                 if (Path(m["capture_manifest"]).parents[2] / "controller_reuse_alias.json").is_file() else None} for m in success]}
-    outputs = {"resolved_inputs.json": binding, "experiment_matrix.json": read(root / "matrix.json"),
+    matrix = read(root / "matrix.json")
+    if selection:
+        matrix["replica"] = [{"scene": scene, "map_id": recipe["id"], "readouts": spec["semantics"]["readouts"]}
+            for scene in selection["replica_scene_order"] for recipe in selection["replica_recipes"]]
+        matrix["composition"] = [{"scene": scene, "map_id": "BBX_COMPOSE", "readouts": spec["semantics"]["readouts"]}
+            for scene in spec["datasets"]["development"]
+            if any(recipe["id"] == "BBX_COMPOSE" for recipe in selection["replica_recipes"])]
+        matrix["transfer_selection_identity"] = selection["identity"]
+    outputs = {"resolved_inputs.json": binding, "experiment_matrix.json": matrix,
         "bridge_parity.json": bridge, "scene_rows.json": primary, "secondary_rank_rows.json": [r for r in rows if r not in primary],
         "dataset_pools.json": pools, "secondary_rank_pools.json": secondary_pools,
         "within_map_rank_effects.json": rank_effects, "baseline_loss_paths.json": loss_paths,
