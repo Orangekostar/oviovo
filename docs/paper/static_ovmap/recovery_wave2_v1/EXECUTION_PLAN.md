@@ -75,11 +75,11 @@ FC dense/region/text receipts and original effective operators.
 Produces: U1/UQ/U2/U3 scores, request proofs, deterministic budget and cost receipts.
 
 - [x] Test single-view canonical FP32 classifier against duplicated-view old reader.
-- [ ] Validate exact saved native observation/request and final reconciled Q lineage
-  on actual candidates (production proof functions and their scoped tests pass).
+- [x] Validate exact saved native observation/request and final reconciled Q lineage
+  on actual candidates (10 U1 and 4 UQ restored observations across development).
 - [x] Select U2 exact U1 request; U3 top3 lawful captured requests, no substitutions.
 - [x] Freeze initial dense inventory and U2-then-U3 union allowance before inference.
-- [ ] Reuse verified parent text/dense/region content; new pooling/misses stay local.
+- [x] Reuse verified parent text/dense/region content; new pooling/misses stay local.
 - [ ] Track attempted/used/unavailable/cap exclusions and physical/standalone cost.
 
 ## Task 4: Real light evaluation and four-scene cache screen
@@ -88,9 +88,9 @@ Files: evaluation.py, workflow.py, run_ovimap_recovery_wave2.py.
 Consumes: locked complete predictions; expanded owner metadata with N unavailable.
 Produces: official scene rows/pools, actual matches/ranks, recovery funnel/support.
 
-- [ ] End-to-end check that every eligible recovered owner enters actual masks,
+- [x] End-to-end check that every eligible recovered owner enters actual masks,
   manifest and unchanged scorer; do not use a label-only old registry.
-- [ ] Run all eight fixed development light conditions, reusing true equivalents.
+- [x] Run all eight fixed development light conditions, reusing true equivalents.
 - [ ] Record probability/partition/scorer equality separately; aliases need proof.
 - [ ] Report paired U1/U2 common success and capped same-covered-subset evidence.
 
@@ -101,11 +101,11 @@ third_party_patches/ovimap/recovery_wave2_v1/ and isolated upstream/build.
 Consumes: own depth-valid preinsert probe and unchanged CropFormer/depth schedules.
 Produces: native action integration, trace evidence, twelve development maps.
 
-- [ ] Test Hungarian positive-benefit A1 and spatial-tied rowwise A2/A3 planners.
-- [ ] Implement actions through candidates, fresh labels, mode4 counts, reservations
+- [x] Test Hungarian positive-benefit A1 and spatial-tied rowwise A2/A3 planners.
+- [x] Implement actions through candidates, fresh labels, mode4 counts, reservations
   and transitive aliases; fallback has no preallocation or blanket prior tokens.
-- [ ] Build isolated extension on capture + backbone + recovery patch stack.
-- [ ] Run serial3-valid-frame off/all-fallback/accepted/follower native checks;
+- [x] Build isolated extension on capture + backbone + recovery patch stack.
+- [x] Run serial3-valid-frame off/all-fallback/accepted/follower native checks;
   supplement with a real native synthetic fixture if real followers are absent.
 - [ ] Run all three A arms on four scenes, preserving complete failed attempts.
 
@@ -173,13 +173,23 @@ Actual phase command is the original required command with the verified idle GPU
 report/publish phases never start map/model jobs. The new phase runner is required
 to record actual commands, statuses and immutable prerequisite identities.
 
-Current status: specification/source inspection, 12-scene binding and
-W/registry/expanded-payload primitives complete; 8 scoped production tests pass.
-Complete real experiments remain pending. Four actual development registries have
+Current status: 12-scene binding and the complete eight-condition development
+light screen are measured. Seventeen scoped production tests pass. Four actual development registries have
 14 candidates and 10 with lawful captured views; no target or annotation labels
 were opened to create them. Source restoration/budget primitives pass 4 further
 scoped tests. Binding found 0 missing artifacts and
 indexed 1455 parent dense image contents, 6420 pooled regions and 2 text spaces.
+Development recovery performed 10 fresh region poolings, zero image encodings and
+zero text forwards. All four official light pools keep baseline APall 12.5817838%
+for U; W040/W045 degrade it. Four recovered owners in scene0534_00 enter the actual
+official minimum100-target-point manifest. Per-scene AP averages are not used.
+The isolated recovery_native_v2 extension passes exact serial3-frame old/new/off/
+all-native TSDF, label, owner, alias and raster parity. Forty-one accepted real-frame
+pairs and a native two-group/one-owner follower fixture were verified. Its extension
+SHA is 48cfc80599c7ec7849749d18eff163680e6c1d937b9e1aa37d73b764f963af1b.
+The initial diagnostic build, failed follower traces and GPU self-occupancy failure
+remain preserved. A full A/S map screen, compositions, committed selection freeze,
+Replica transfer, complete reporting and publication are still pending.
 Worktree moved to shared storage after a local-disk
 write failure; the original /home/ww/crove/ovimap-recovery-wave2 entry is a symlink.
 No improvement or full-study completion claim is made here.
