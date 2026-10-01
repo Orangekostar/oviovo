@@ -6,6 +6,7 @@ from pathlib import Path
 import os
 import subprocess
 import time
+import hashlib
 
 from static_ovmap.backbone_wave1.runtime import execute
 from static_ovmap.module_validation.contracts import atomic_write_json, canonical_digest
@@ -51,6 +52,15 @@ def _light_eval_job(binding, scene, map_id, context, subdir):
         receipt, lock = read(root / "evaluation_rows.json"), read(root / "receipt.json")
         if receipt["status"] != "COMPLETE" or receipt["prediction_lock_identity"] != lock["identity"]:
             raise ValueError("completed light scorer belongs to another prediction lock")
+        index = ConsumptionIndex(root / "input_verifications.json")
+        for condition in lock["conditions"].values():
+            path = Path(condition["prediction_manifest"])
+            index.identity(path)
+            manifest = read(path)
+            if manifest["prediction_key"] != condition["prediction_key"]:
+                raise ValueError("completed light prediction no longer matches its lock")
+            index.identity(path.parent / manifest["arrays"]["path"], manifest["arrays"])
+        index.write_memo(root / "input_verifications.json")
         return receipt
     return evaluate_scene(binding, scene, map_id=map_id, context=context, output_subdir=subdir)
 
@@ -110,6 +120,33 @@ def _map_job(binding, build, scene, map_id, threads):
         receipt = _verified_outputs(path, {"COMPLETE"})
         if receipt["scene"] != scene or receipt["map_id"] != map_id or receipt["native_build_identity"] != build["recovery_identity"]:
             raise ValueError("completed map differs from the bound scene, recipe or native build")
+        from .maps import recipe_for
+        from static_ovmap.module_validation.boundary_jobs import verify_capture
+
+        expected = recipe_for(read(binding["spec"]), map_id)
+        if any(receipt["recipe"].get(key) != value for key, value in expected.items()):
+            raise ValueError("completed map scientific recipe differs from the frozen specification")
+        running = read(path.parent / "running.json")
+        key = {"binding": binding["identity"], "scene": scene, "recipe": receipt["recipe"],
+               "command": receipt["command"]["argv"], "environment": running["environment"],
+               "inputs": receipt["inputs"], "build": build["recovery_identity"]}
+        if canonical_digest(key) != receipt["input_identity"] or running["input_identity"] != receipt["input_identity"]:
+            raise ValueError("completed map recorded input identity is inconsistent")
+        capture = verify_capture(receipt["capture_manifest"], allow_skipped=True)
+        data = binding["scenes"][scene]
+        if (capture["scheduled_frame_ids"] != data["schedule"]
+                or capture["completed_frame_ids"] != data["completed_frame_ids"]):
+            raise ValueError("completed map schedule or native frame policy changed")
+        index = ConsumptionIndex(path.parent / "input_verifications.json")
+        repo = Path(binding["repository_root"])
+        for row in receipt["inputs"]:
+            source = Path(row["path"])
+            if source.is_relative_to(repo) and source.suffix in {".py", ".patch"}:
+                blob = subprocess.check_output(["git", "show", running["source_commit"] + ":" + str(source.relative_to(repo))], cwd=repo)
+                if hashlib.sha256(blob).hexdigest() != row["sha256"]:
+                    raise ValueError("historical map producer is not restorable from its recorded source commit")
+            else:
+                index.identity(source, row)
         return receipt
     from .maps import run_map
     return run_map(binding, build, scene, map_id, threads=threads, resume=True)
@@ -289,6 +326,9 @@ class Workflow:
         parallel_jobs(_light_eval_job, [(self.binding, scene, "BB00_NATIVE", None, subdir) for scene in scenes], self.args.evaluation_workers)
         pool_cohort(self.binding, "development", scenes, ["RW_LIGHT_COMBO"])
         selection = select_final(self.binding)
+        from .sensitivity import development_sensitivity
+
+        sensitivity = development_sensitivity(self.binding)
         recipe, nominee = selection["light_package"]["recipe"], selection["nominated_map"]
         checks = {"old_map_fixed_D2": read(self.root / "light/pools/development/BB00_NATIVE/RW_B_D2.json"),
                   "old_map_light": read(self.root / "light/pools/development/BB00_NATIVE" / (selection["light_package"]["id"] + ".json"))}
@@ -303,7 +343,8 @@ class Workflow:
             "map_composition": "TWO_BY_TWO" if nominee else "NOT_RUN_NO_QUALIFYING_MAP", "new_A_plus_S_sweeps": 0}
         result["identity"] = canonical_digest(result)
         atomic_write_json(self.root / "selection/composition_check.json", result)
-        return {"status": "COMPLETE", "selection_identity": selection["identity"], "composition_check": result["identity"]}
+        return {"status": "COMPLETE", "selection_identity": selection["identity"],
+                "sensitivity_identity": sensitivity["identity"], "composition_check": result["identity"]}
 
     def freeze(self):
         from .selection import commit_freeze

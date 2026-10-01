@@ -24,6 +24,9 @@ def run_region(job):
     from static_ovmap.module_validation.semantic_models import _load_request
 
     binding, scene = read(job["binding"]), job["scene"]
+    from .readouts import require_semantic_gate
+
+    require_semantic_gate(binding, scene, job["map_id"])
     data, root = binding["scenes"][scene], Path(job["output_root"])
     root.mkdir(parents=True, exist_ok=True)
     index = ConsumptionIndex(root / "input_verifications.json" if (root / "input_verifications.json").is_file()

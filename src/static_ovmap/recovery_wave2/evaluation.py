@@ -141,10 +141,17 @@ def evaluate_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, output
     return result
 
 
-def pool_cohort(binding, cohort, scene_order, methods, *, map_id="BB00_NATIVE"):
+def pool_cohort(binding, cohort, scene_order, methods, *, map_id="BB00_NATIVE", leave_out=None):
     from static_ovmap.m2_reviewer_study.evaluation import pool
     from static_ovmap.released_loader import load_released_module
 
+    expected = binding["datasets"][cohort]
+    if leave_out is not None:
+        if cohort != "development" or leave_out not in expected:
+            raise ValueError("leave-out pools require one of the fixed development scenes")
+        expected = [scene for scene in expected if scene != leave_out]
+    if list(scene_order) != expected:
+        raise ValueError("official pooling requires the exact protocol scene order")
     root = Path(binding["output_root"])
     rows = []
     for scene in scene_order:
@@ -161,7 +168,8 @@ def pool_cohort(binding, cohort, scene_order, methods, *, map_id="BB00_NATIVE"):
     namespace = load_released_module(Path(config["runtime"]["upstream"]) / "scripts/eval_utils.py")
     dataset = binding["scenes"][scene_order[0]]["dataset"]
     namespace["init"]("Replica" if dataset == "Replica" else "Scannet200")
-    output = root / "light/pools" / cohort / map_id
+    pool_cohort_name = cohort if leave_out is None else "leave_out_" + leave_out
+    output = root / "light/pools" / pool_cohort_name / map_id
     results = {}
     for method in methods:
         method_rows = [row for row in rows if row["method"] == method]
@@ -173,7 +181,7 @@ def pool_cohort(binding, cohort, scene_order, methods, *, map_id="BB00_NATIVE"):
         identities = [read(selected[scene]["evaluation_receipt"])["identity"] for scene in scene_order]
         identity = canonical_digest({"ordered_inputs": identities, "rank_mode": "OFFICIAL_CURRENT_CLASS"})
         result = None
-        if map_id == "BB00_NATIVE":
+        if map_id == "BB00_NATIVE" and leave_out is None:
             for parent_method in ("D2", "FC_EQ"):
                 path = Path(binding["parent_root"]) / "pools" / cohort / map_id / parent_method / "OFFICIAL_CURRENT_CLASS.json"
                 if path.is_file() and read(path)["identity"] == identity:
@@ -188,7 +196,7 @@ def pool_cohort(binding, cohort, scene_order, methods, *, map_id="BB00_NATIVE"):
         result.update(method=method, map_id=map_id)
         atomic_write_json(output / (method + ".json"), result)
         results[method] = result
-    receipt = {"status": "COMPLETE", "cohort": cohort, "scene_order": scene_order,
+    receipt = {"status": "COMPLETE", "cohort": pool_cohort_name, "scene_order": scene_order,
                "map_id": map_id, "methods": results, "aggregation": "RELEASED_DATASET_POOL"}
     receipt["identity"] = canonical_digest(receipt)
     atomic_write_json(output / "receipt.json", receipt)

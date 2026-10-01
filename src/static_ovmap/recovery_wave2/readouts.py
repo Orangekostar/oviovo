@@ -58,7 +58,8 @@ def build_sources(binding, scene, map_id, build, *, gpu="2"):
         for item in previous["outputs"]:
             index.identity(item["path"], item)
         return previous
-    native_job = {"output_root": str(native_root), "map_id": map_id, "map_receipt": str(map_path),
+    native_job = {"binding": str(Path(binding["output_root"]) / "resolved_inputs.json"), "scene": scene,
+        "output_root": str(native_root), "map_id": map_id, "map_receipt": str(map_path),
         "capture_manifest": str(capture_path), "deferred_metadata": mapping["deferred_metadata"],
         "model": inherited["models"]["native"], "checkpoint": inherited["checkpoint"],
         "upstream": build["upstream_worktree"], "gpu_lock": f"/mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-{gpu}.lock",

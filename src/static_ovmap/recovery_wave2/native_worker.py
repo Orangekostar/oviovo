@@ -120,6 +120,10 @@ def _adapt_native_function(cache_factory, budget_validator):
 
 
 def run_native(job):
+    from .readouts import require_semantic_gate
+
+    binding = read(job["binding"])
+    require_semantic_gate(binding, job["scene"], job["map_id"])
     root = Path(job["output_root"])
     root.mkdir(parents=True, exist_ok=True)
     index = ConsumptionIndex(root / "input_verifications.json")

@@ -56,10 +56,14 @@ def run_map(binding, build, scene, map_id, *, threads=8, resume=False):
     if recipe["frontend"] != "cropformer":
         frontend_root = Path(binding["output_root"]) / "frontend" / scene / "S1"
         frontend = read(frontend_root / "receipt.json")
-        if frontend["status"] != "COMPLETE":
+        if (frontend["status"] != "COMPLETE"
+                or frontend["identity"] != canonical_digest({key: value for key, value in frontend.items() if key != "identity"})
+                or frontend["scheduled_frame_ids"] != data["schedule"]
+                or frontend["completed_frame_ids"] != data["completed_frame_ids"]):
             raise ValueError("SAM maps require a complete locked CropFormer-priority frontend")
         recipe.update(frontend_root=str(frontend_root / "rasters"),
                       frontend_receipt=str(frontend_root / "receipt.json"),
+                      frontend_identity=frontend["identity"],
                       parent_sam_receipt=data["sam_receipt"], capture_manifest=data["capture_manifest"])
     env = dict(os.environ, **data["actual_parent_command"]["environment"])
     binary_root = str(Path(build["extension"]["path"]).parent)
@@ -77,6 +81,9 @@ def run_map(binding, build, scene, map_id, *, threads=8, resume=False):
     index = ConsumptionIndex(Path(binding["output_root"]) / "validation/input_verifications.json")
     for name in ("maps.py", "mapping_hooks.py", "association.py"):
         index.identity(Path(__file__).with_name(name))
+    if recipe["frontend"] != "cropformer":
+        for path in (recipe["frontend_receipt"], recipe["parent_sam_receipt"], recipe["capture_manifest"]):
+            index.identity(path)
     if recipe["frontend"] == "S2":
         index.identity(Path(__file__).with_name("sam_completion.py"))
     for path in (upstream / "scripts/panoptic_mapping_.py", upstream / "scripts/utils/common_scannet_nyu.py",
