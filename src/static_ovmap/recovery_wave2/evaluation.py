@@ -67,9 +67,13 @@ def _parent_alias(evaluator, payload, data, parent_predictions, parent_rows, ind
     return None
 
 
-def evaluate_scene(binding, scene, *, map_id="BB00_NATIVE", context=None):
+def evaluate_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, output_subdir=None):
     data = context or binding["scenes"][scene]
     root = Path(binding["output_root"]) / "light" / scene / map_id
+    if output_subdir is not None:
+        if Path(output_subdir).is_absolute() or ".." in Path(output_subdir).parts:
+            raise ValueError("additional condition evaluation must stay within its own map")
+        root = root / output_subdir
     index = ConsumptionIndex(Path(binding["output_root"]) / "validation/input_verifications.json")
     index.identity(root / "receipt.json")
     lock = read(root / "receipt.json")
@@ -148,6 +152,11 @@ def pool_cohort(binding, cohort, scene_order, methods, *, map_id="BB00_NATIVE"):
         if receipt["status"] != "COMPLETE":
             raise ValueError("official pooling requires every scene in the exact cohort")
         rows.extend(receipt["rows"])
+        for path in sorted((root / "light" / scene / map_id / "extra_conditions").glob("*/evaluation_rows.json")):
+            additional = read(path)
+            if additional["status"] != "COMPLETE" or additional["scene"] != scene or additional["map_id"] != map_id:
+                raise ValueError("additional condition pooling requires a complete exact-scene receipt")
+            rows.extend(additional["rows"])
     config = read(binding["scenes"][scene_order[0]]["config"])
     namespace = load_released_module(Path(config["runtime"]["upstream"]) / "scripts/eval_utils.py")
     dataset = binding["scenes"][scene_order[0]]["dataset"]
@@ -155,7 +164,10 @@ def pool_cohort(binding, cohort, scene_order, methods, *, map_id="BB00_NATIVE"):
     output = root / "light/pools" / cohort / map_id
     results = {}
     for method in methods:
-        selected = {row["scene"]: row for row in rows if row["method"] == method}
+        method_rows = [row for row in rows if row["method"] == method]
+        selected = {row["scene"]: row for row in method_rows}
+        if len(selected) != len(method_rows):
+            raise ValueError("a pool cannot silently choose between duplicate method rows")
         if set(selected) != set(scene_order):
             raise ValueError("a light pool cannot omit scenes or methods")
         identities = [read(selected[scene]["evaluation_receipt"])["identity"] for scene in scene_order]

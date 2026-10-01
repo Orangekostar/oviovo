@@ -44,10 +44,15 @@ def require_transfer_freeze(binding, scene):
         raise ValueError("Replica transfer selection differs from its committed freeze")
 
 
-def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_conditions=None):
+def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_conditions=None,
+                conditions_override=None, output_subdir=None):
     require_transfer_freeze(binding, scene)
     data = context or binding["scenes"][scene]
     root = Path(binding["output_root"]) / "light" / scene / map_id
+    if output_subdir is not None:
+        if Path(output_subdir).is_absolute() or ".." in Path(output_subdir).parts:
+            raise ValueError("additional condition outputs must stay within their own map")
+        root = root / output_subdir
     source_root = Path(binding["output_root"]) / "recovery" / scene / map_id
     root.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
@@ -66,7 +71,7 @@ def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_con
     for row in documents["cached_source_receipt"]["outputs"] + fc["outputs"]:
         index.identity(row["path"], row)
     sources = dict(restored["sources"])
-    sources.update({arm: read(fc["sources"][arm]["path"])["objects"] for arm in ("U2", "U3")})
+    sources.update({arm: read(row["path"])["objects"] for arm, row in fc["sources"].items()})
     config = resolver.rewrite(read(data["config"]))
     ids = config["models"]["native"]["valid_ids"]
     index.identity(data["predictions"]["D2"])
@@ -94,6 +99,8 @@ def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_con
     conditions = {method: {"gamma": gamma, "recovery": None} for method, gamma in WEIGHTS.items()}
     conditions.update({method: {"gamma": .5, "recovery": arm} for method, arm in RECOVERIES.items()})
     conditions.update(extra_conditions or {})
+    if conditions_override is not None:
+        conditions = dict(conditions_override)
     locked, decision_outputs, partition_aliases = {}, {}, {}
     for method, recipe in conditions.items():
         labels, audit = weight_decisions(decisions["FC_EQ"], decisions["D2"], recipe["gamma"], ids, incumbent)

@@ -159,6 +159,8 @@ def allocate_fc_requests(u2_requests, u3_requests, requests, model_identity, cac
 
 
 def prepare_cached_sources(binding, scene, registry_receipt, *, context=None):
+    from .light import require_transfer_freeze
+    require_transfer_freeze(binding, scene)
     data = context or binding["scenes"][scene]
     root = Path(registry_receipt["registry"]).parent
     resolver = PathResolver(binding["path_map"])

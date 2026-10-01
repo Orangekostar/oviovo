@@ -91,7 +91,9 @@ def _model_and_text(binding, data, index):
     return model_key, ops, text, ids, index.identity(text_path)
 
 
-def run_scene(binding, scene, *, map_id="BB00_NATIVE", gpu="2", context=None):
+def run_scene(binding, scene, *, map_id="BB00_NATIVE", gpu="2", context=None, requested_arms=("U2", "U3")):
+    from .light import require_transfer_freeze
+    require_transfer_freeze(binding, scene)
     import torch
     from static_ovmap.a7_evidence_upgrade.recognition_worker import aggregate_views
     from static_ovmap.a7_evidence_upgrade.region_adapter import image_tensor, load_model, region_vector, signed_mask
@@ -111,9 +113,13 @@ def run_scene(binding, scene, *, map_id="BB00_NATIVE", gpu="2", context=None):
             raise ValueError("locked FC prerequisite changed")
     registry, manifest, restored, plan = (documents[k] for k in
         ("registry", "captured_requests", "cached_sources", "fc_request_plan"))
+    requested_arms = tuple(requested_arms)
+    if len(set(requested_arms)) != len(requested_arms) or not set(requested_arms) <= {"U2", "U3"}:
+        raise ValueError("FC acquisition scope must contain only the requested frozen recovery arms")
     identity = canonical_digest({"scene": scene, "map_id": map_id,
         "prerequisites": {k: v["identity"] for k, v in documents.items()},
         "model": data["FC_physical_model_identity"], "text": data["FC_text"]["sha256"],
+        "requested_arms": requested_arms,
         "worker": index.identity(__file__)["sha256"]})
     receipt_path = root / "fc_recovery_receipt.json"
     if receipt_path.is_file():
@@ -140,7 +146,7 @@ def run_scene(binding, scene, *, map_id="BB00_NATIVE", gpu="2", context=None):
         "budget_assigned_before_inference": True, "model_load_seconds": 0.}
     features, model = {}, None
     requests = manifest["requests"]
-    ordered = list(dict.fromkeys(restored["U2_request_ids"] + restored["U3_request_ids"]))
+    ordered = list(dict.fromkeys(rid for arm in requested_arms for rid in restored[arm + "_request_ids"]))
     lock_path = Path("/mnt/shared/ww/ovimap-module-validation-v1") / f".visual-gpu-{gpu}.lock"
     try:
         if ordered:
@@ -250,7 +256,7 @@ def run_scene(binding, scene, *, map_id="BB00_NATIVE", gpu="2", context=None):
                         torch.cuda.empty_cache()
                 row["elapsed_seconds"] = time.monotonic() - begin
         sources = {}
-        for arm in ("U2", "U3"):
+        for arm in requested_arms:
             arm_ids = set(restored[arm + "_request_ids"])
             objects = {}
             for candidate in registry["candidates"]:
@@ -275,6 +281,7 @@ def run_scene(binding, scene, *, map_id="BB00_NATIVE", gpu="2", context=None):
             atomic_write_json(path, source)
             sources[arm] = index.identity(path)
         receipt.update(status="COMPLETE", sources=sources, outputs=list(sources.values()),
+            requested_arms=requested_arms,
             inputs=index.entries(), physical_model_identity=data["FC_physical_model_identity"],
             required_text_identity=text_identity, standalone_required_image_inputs=len(receipt["required_image_contents"]),
             standalone_required_region_inputs=len(receipt["required_region_receipts"]),
@@ -295,11 +302,14 @@ if __name__ == "__main__":
     parser.add_argument("--gpu", default="2")
     parser.add_argument("--map-id", default="BB00_NATIVE")
     parser.add_argument("--context")
+    parser.add_argument("--arm", action="append", choices=("U2", "U3"))
+    parser.add_argument("--no-fc", action="store_true")
     args = parser.parse_args()
     if args.context and len(args.scene) != 1:
         parser.error("a map-specific context requires exactly one scene")
     for scene in args.scene:
         result = run_scene(read(args.binding), scene, gpu=args.gpu, map_id=args.map_id,
-                           context=read(args.context) if args.context else None)
+                           context=read(args.context) if args.context else None,
+                           requested_arms=() if args.no_fc else args.arm or ("U2", "U3"))
         print(scene, result["status"], "images", result["physical_image_encodings"],
               "poolings", result["physical_region_poolings"], flush=True)

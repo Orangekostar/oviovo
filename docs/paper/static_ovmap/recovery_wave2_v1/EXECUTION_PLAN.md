@@ -80,7 +80,7 @@ Produces: U1/UQ/U2/U3 scores, request proofs, deterministic budget and cost rece
 - [x] Select U2 exact U1 request; U3 top3 lawful captured requests, no substitutions.
 - [x] Freeze initial dense inventory and U2-then-U3 union allowance before inference.
 - [x] Reuse verified parent text/dense/region content; new pooling/misses stay local.
-- [ ] Track attempted/used/unavailable/cap exclusions and physical/standalone cost.
+- [x] Track attempted/used/unavailable/cap exclusions and physical/standalone cost.
 
 ## Task 4: Real light evaluation and four-scene cache screen
 
@@ -142,8 +142,8 @@ Files: selection.py; workflow.py; selection/freezes and measured matrices.
 Consumes: complete four-scene ordered pools and standalone logical costs.
 Produces: selected gamma/recovery/light package and at most one qualifying map.
 
-- [ ] Test feasibility (-.05/-.10/-.10pp), gain (+.20/-.10/-.10pp), bands and ties.
-- [ ] Measure exactly one selected W x U composition and choose final light package.
+- [x] Test feasibility (-.05/-.10/-.10pp), gain (+.20/-.10/-.10pp), bands and ties.
+- [x] Measure exactly one selected W x U composition; final package awaits full map screen.
 - [ ] If eligible, measure one new-map x light four-scene two-by-two; no A x S sweep.
 - [ ] Generate leave-one-development-scene-out fixed-method sensitivity pools.
 - [ ] Commit frozen identities/recipes/nomination before every new Replica prediction.
@@ -190,11 +190,22 @@ SHA is 48cfc80599c7ec7849749d18eff163680e6c1d937b9e1aa37d73b764f963af1b.
 All 800 development S1 frontend frames were checked against original binary tracks
 and RAW winner/remap evidence. The changed canonical frame counts are 159, 160,
 160 and 159; all positive CropFormer pixels and separate original groups remain.
-Five SAM tests, one full-cohort catastrophe test and two native cache/accounting
-tests pass. Own-map S2 history/probe/warp and addition-only conflict paths are
-implemented; full S maps remain pending. A1 has completed three scenes, with
-geometry diagnosis complete on those scenes. Fresh native/Q and FC worker adapters
-are implemented but still require actual post-screen own-map readout verification.
+Five SAM tests, one full-cohort catastrophe test, two native cache/accounting,
+two selection and two workflow/freeze-boundary tests pass. Own-map S2
+history/probe/warp and addition-only conflict paths are implemented; full S maps
+remain pending. All four A1 maps, geometry diagnostics, fresh N/Q/FC readouts and
+official pools are measured: D2 APall 11.0744142%, AP50 23.7343537%, AP25 35.5838704%,
+mIoU 25.2214135%, mAcc 31.8512985%. A1 passes the geometry screen but is a semantic/
+high-IoU-instance tradeoff and does not qualify for new-map transfer.
+All four A2 maps and geometry diagnostics are complete. Best-IoU falls 3.08786pp,
+but R50 loses only 1 GT; the exact combined catastrophe rule does not trigger.
+Its own N/Q/FC readouts are running. A3 maps are still running under the same
+2x8 CPU allowance. The prescribed CLI now exists and cache-screen --resume has
+actually passed. Standalone additional encoder inputs for all baseline light
+arms are zero relative to the actual baseline pipeline; this does not imply
+zero standalone baseline cost or zero GPU work for full-map semantic regeneration.
+The selected gamma=.5 and NONE produce the one measured RW_LIGHT_COMBO, exactly
+equivalent to the measured baseline APall 12.5817838% and other pooled metrics.
 The initial diagnostic build, failed follower traces and GPU self-occupancy failure
 remain preserved. A full A/S map screen, compositions, committed selection freeze,
 Replica transfer, complete reporting and publication are still pending.
