@@ -325,6 +325,9 @@ class Workflow:
                 build_scene(self.binding, scene, conditions_override=components["combination"], output_subdir=subdir)
         parallel_jobs(_light_eval_job, [(self.binding, scene, "BB00_NATIVE", None, subdir) for scene in scenes], self.args.evaluation_workers)
         pool_cohort(self.binding, "development", scenes, ["RW_LIGHT_COMBO"])
+        from .coverage_diagnostics import common_coverage
+
+        common_coverage(self.binding, "development", workers=self.args.evaluation_workers)
         selection = select_final(self.binding)
         from .sensitivity import development_sensitivity
 
@@ -372,6 +375,9 @@ class Workflow:
             parallel_jobs(_light_eval_job, [(self.binding, scene, "BB00_NATIVE", None, subdir) for scene in scenes], self.args.evaluation_workers)
             methods.append("RW_FROZEN_LIGHT")
         pools = pool_cohort(self.binding, "replica", scenes, methods)
+        from .coverage_diagnostics import common_coverage
+
+        common_coverage(self.binding, "replica", workers=self.args.evaluation_workers)
         nominee, map_pools = freeze["nominated_map"], None
         if nominee:
             if nominee in S_MAPS:

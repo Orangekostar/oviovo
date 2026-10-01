@@ -5,6 +5,7 @@ from pathlib import Path
 from static_ovmap.module_validation.contracts import atomic_write_json, canonical_digest
 
 from .binding import read
+from .costs import light_costs
 from .evaluation import pool_cohort
 from .light import METHODS
 from .selection import banded_rank, feasible, light_selection_rows, net_gain
@@ -21,6 +22,7 @@ def development_sensitivity(binding):
         retained = [scene for scene in scenes if scene != excluded]
         pools = pool_cohort(binding, "development", retained, [*METHODS, "RW_LIGHT_COMBO"], leave_out=excluded)
         baseline = pools["methods"]["RW_B_D2"]["metrics"]
+        retained_costs = [light_costs(binding, scene)["methods"] for scene in retained]
         candidates = []
         for method, pool in pools["methods"].items():
             item = {"leave_out": excluded, "scene_order": retained, "method": method,
@@ -32,7 +34,9 @@ def development_sensitivity(binding):
                     "pool_identity": pool["identity"]}
             rows.append(item)
             if item["feasible_in_diagnostic_pool"]:
-                candidates.append({**costs[method], "metrics": pool["metrics"]})
+                cost_method = method if method in METHODS else fixed_selection["components"]["U_selected_id"]
+                candidates.append({**costs[method], "metrics": pool["metrics"],
+                    "standalone_new_encoder_inputs": sum(value[cost_method]["standalone_new_encoder_inputs"] for value in retained_costs)})
         rankings.append({"leave_out": excluded, "fixed_light_ranking": banded_rank(candidates),
                          "frozen_four_scene_choice": fixed_selection["light_package"]["id"]})
         for item in fixed_selection["map_inputs"]:

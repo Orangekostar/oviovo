@@ -45,7 +45,7 @@ def require_transfer_freeze(binding, scene):
 
 
 def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_conditions=None,
-                conditions_override=None, output_subdir=None):
+                conditions_override=None, output_subdir=None, recovery_owner_filter=None):
     require_transfer_freeze(binding, scene)
     data = context or binding["scenes"][scene]
     root = Path(binding["output_root"]) / "light" / scene / map_id
@@ -65,6 +65,10 @@ def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_con
         index.identity(path)
         documents[name] = read(path)
     registry = documents["registry"]
+    if recovery_owner_filter is not None:
+        recovery_owner_filter = set(map(int, recovery_owner_filter))
+        if not recovery_owner_filter <= {row["raw_owner"] for row in registry["candidates"]}:
+            raise ValueError("diagnostic coverage scope leaves the fixed capped candidate registry")
     restored, fc = documents["cached_sources"], documents["fc_recovery_receipt"]
     if fc["status"] != "COMPLETE":
         raise ValueError("light exports require completed FC recovery evidence")
@@ -105,13 +109,17 @@ def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_con
     for method, recipe in conditions.items():
         labels, audit = weight_decisions(decisions["FC_EQ"], decisions["D2"], recipe["gamma"], ids, incumbent)
         arm = recipe["recovery"]
-        recovered = {} if arm is None else {int(owner): int(row["label"])
-            for owner, row in sources[arm].items() if row["available"]}
+        method_sources = {} if arm is None else {owner: row for owner, row in sources[arm].items()
+            if recovery_owner_filter is None or int(owner) in recovery_owner_filter}
+        recovered = {int(owner): int(row["label"]) for owner, row in method_sources.items() if row["available"]}
         costs = {"recovery_logical_FC_views": 0 if arm not in ("U2", "U3") else
-                 sum(len(row.get("attempted_request_ids", [])) for row in sources[arm].values())}
+                 sum(len(row.get("attempted_request_ids", [])) for row in method_sources.values())}
+        metadata = {"gamma": recipe["gamma"], "recovery": arm, "request_plan_identity": documents["fc_request_plan"]["identity"]}
+        if recovery_owner_filter is not None:
+            metadata["diagnostic_covered_owners"] = sorted(recovery_owner_filter)
         payload = expanded_prediction(baseline, raw, registry, recovered, ids, nearest, matched,
             method, costs, incumbent_labels=None if recipe["gamma"] == .5 else labels,
-            metadata={"gamma": recipe["gamma"], "recovery": arm, "request_plan_identity": documents["fc_request_plan"]["identity"]})
+            metadata=metadata)
         payload_path = save_prediction(payload, root / "predictions" / method)
         output = {"method": method, "recipe": recipe, "prediction_manifest": str(payload_path),
             "prediction_key": payload.prediction_key, "record_key": payload.record_key,
@@ -133,7 +141,7 @@ def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_con
         locked[method] = output
         audit_path = root / "decisions" / (method + ".json")
         atomic_write_json(audit_path, {"method": method, "recipe": recipe, "old_owners": audit,
-            "recovery": {} if arm is None else sources[arm], "GT_input": False})
+            "recovery": method_sources, "GT_input": False})
         decision_outputs[method] = index.identity(audit_path)
         del payload
     receipt = {"status": "PREDICTIONS_LOCKED", "scene": scene, "map_id": map_id,
@@ -142,6 +150,8 @@ def build_scene(binding, scene, *, map_id="BB00_NATIVE", context=None, extra_con
         "registry_identity": registry["identity"], "GT_input": False,
         "all_predictions_locked_before_diagnostics": True, "decisions": decision_outputs,
         "inputs": index.entries(), "elapsed_seconds": time.monotonic() - started}
+    if recovery_owner_filter is not None:
+        receipt["diagnostic_covered_owners"] = sorted(recovery_owner_filter)
     receipt["identity"] = canonical_digest({k: v for k, v in receipt.items() if k not in ("elapsed_seconds", "inputs")})
     existing = root / "receipt.json"
     if existing.is_file() and read(existing)["identity"] != receipt["identity"]:

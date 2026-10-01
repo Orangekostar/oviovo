@@ -91,8 +91,8 @@ Produces: official scene rows/pools, actual matches/ranks, recovery funnel/suppo
 - [x] End-to-end check that every eligible recovered owner enters actual masks,
   manifest and unchanged scorer; do not use a label-only old registry.
 - [x] Run all eight fixed development light conditions, reusing true equivalents.
-- [ ] Record probability/partition/scorer equality separately; aliases need proof.
-- [ ] Report paired U1/U2 common success and capped same-covered-subset evidence.
+- [x] Record probability/partition/scorer equality separately; aliases need proof.
+- [x] Measure paired U1/U2 common success and capped same-covered-subset evidence.
 
 ## Task 5: Native per-group actions and A1/A2/A3 maps
 
@@ -107,7 +107,7 @@ Produces: native action integration, trace evidence, twelve development maps.
 - [x] Build isolated extension on capture + backbone + recovery patch stack.
 - [x] Run serial3-valid-frame off/all-fallback/accepted/follower native checks;
   supplement with a real native synthetic fixture if real followers are absent.
-- [ ] Run all three A arms on four scenes, preserving complete failed attempts.
+- [x] Run all three A arms on four scenes, preserving complete failed attempts.
 
 ## Task 6: Cached S1 and complete causal S2 path
 
@@ -199,15 +199,29 @@ mIoU 25.2214135%, mAcc 31.8512985%. A1 passes the geometry screen but is a seman
 high-IoU-instance tradeoff and does not qualify for new-map transfer.
 All four A2 maps and geometry diagnostics are complete. Best-IoU falls 3.08786pp,
 but R50 loses only 1 GT; the exact combined catastrophe rule does not trigger.
-Its own N/Q/FC readouts are running. A3 maps are still running under the same
-2x8 CPU allowance. The prescribed CLI now exists and cache-screen --resume has
+All A2 and A3 own N/Q/FC readouts and pools are now measured. A2 fixed-D2
+APall=11.9978458%, mIoU=24.0460969%; A3 APall=12.1455530%, mIoU=23.7112450%.
+Neither meets the prescribed NET_GAIN guard. The prescribed association-screen
+CLI has completed with all twelve maps, three full geometry screens and fresh
+standard readouts. S1/S2 eight-map execution is running under the same 2x8 CPU
+allowance. The prescribed CLI now exists and cache-screen --resume has
 actually passed. Standalone additional encoder inputs for all baseline light
 arms are zero relative to the actual baseline pipeline; this does not imply
 zero standalone baseline cost or zero GPU work for full-map semantic regeneration.
 The selected gamma=.5 and NONE produce the one measured RW_LIGHT_COMBO, exactly
 equivalent to the measured baseline APall 12.5817838% and other pooled metrics.
+Thirty-three targeted production tests pass in current_production.xml. Actual
+released matcher diagnostics validate terminal TP/FP-entry parity and retain
+numeric tie ambiguity; all twelve A-map planned/realized action traces have been
+aggregated. Paired U1/U2 classifications and the real four-scene U2/U3 common-
+coverage official pools are measured. Dynamic six-table/four-report generation,
+fixed-method leave-one-out pooling and primary-review publication guards are
+implemented; final generation awaits complete S screens and Replica transfer.
+The pre-commit FC producer bytes were restored with their exact original SHA
+7723aef12433579efe4bdc30a8d3b1337bf1ec7301ad1947c3d9aa493080495f and archived
+as historical provenance. No original locked FC/readout receipt was overwritten.
 The initial diagnostic build, failed follower traces and GPU self-occupancy failure
-remain preserved. A full A/S map screen, compositions, committed selection freeze,
+remain preserved. The remaining S map screen, final compositions, committed selection freeze,
 Replica transfer, complete reporting and publication are still pending.
 Worktree moved to shared storage after a local-disk
 write failure; the original /home/ww/crove/ovimap-recovery-wave2 entry is a symlink.
