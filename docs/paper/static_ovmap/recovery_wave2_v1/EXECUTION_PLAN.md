@@ -49,8 +49,8 @@ source distributions/order, native binary/patch stack, cache and schedule refere
 - [x] Create named branch/worktree from the exact base; verify supplied checksums.
 - [x] Run supplied reference tests as specification checks, not production proof.
 - [x] Add read-only path resolver and memoized consumed-object verification.
-- [ ] Bind actual 12 parent baseline map/readout receipts and assets once.
-- [ ] Check real consumed paths, complete schedules and original frame policy.
+- [x] Bind actual 12 parent baseline map/readout receipts and assets once.
+- [x] Check real consumed paths, complete schedules and original frame policy.
 
 ## Task 2: W and append-only U prediction primitives
 
@@ -172,8 +172,10 @@ Actual phase command is the original required command with the verified idle GPU
 report/publish phases never start map/model jobs. The new phase runner is required
 to record actual commands, statuses and immutable prerequisite identities.
 
-Current status: specification/source inspection and W/registry/expanded-payload
-primitives complete; 8 scoped production tests pass. Binding and complete real
-experiments remain pending. Worktree moved to shared storage after a local-disk
+Current status: specification/source inspection, 12-scene binding and
+W/registry/expanded-payload primitives complete; 8 scoped production tests pass.
+Complete real experiments remain pending. Binding found 0 missing artifacts and
+indexed 1455 parent dense image contents, 6420 pooled regions and 2 text spaces.
+Worktree moved to shared storage after a local-disk
 write failure; the original /home/ww/crove/ovimap-recovery-wave2 entry is a symlink.
 No improvement or full-study completion claim is made here.

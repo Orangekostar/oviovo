@@ -1,10 +1,16 @@
 """Geometry-only omitted-owner registry and captured-request lineage proofs."""
 
+from pathlib import Path
+import time
+
 import numpy as np
 
-from static_ovmap.module_validation.contracts import canonical_digest
+from static_ovmap.module_validation.contracts import atomic_write_json, canonical_digest
 from static_ovmap.module_validation.native_capture import RegionRequest, _array_digest
+from static_ovmap.module_validation.scannet_study import load_prediction
 from static_ovmap.module_validation.semantic_study import reconcile_semantic_request
+
+from .binding import ConsumptionIndex, read
 
 
 def support_digest(xyz):
@@ -48,6 +54,66 @@ def build_registry(xyz, raw, painted, *, minimum_rows=100, candidate_cap=128):
         "xyz_sha256": _array_digest(xyz), "candidates": candidates[:candidate_cap], "excluded": excluded}
     result["identity"] = canonical_digest(result)
     return result
+
+
+def prepare_registry(binding, scene, *, context=None, recovery_settings=None):
+    """Lock a raw registry and original request proofs without opening target data."""
+    data = context or binding["scenes"][scene]
+    map_id = data.get("map_id", "BB00_NATIVE")
+    root = Path(binding["output_root"]) / "recovery" / scene / map_id
+    index = ConsumptionIndex(Path(binding["output_root"]) / "validation/input_verifications.json")
+    capture_path = Path(data["capture_manifest"])
+    index.identity(capture_path)
+    capture = read(capture_path)
+    baseline_path = Path(data["predictions"]["D2"])
+    index.identity(baseline_path)
+    baseline_manifest = read(baseline_path)
+    index.identity(baseline_path.parent / baseline_manifest["arrays"]["path"], baseline_manifest["arrays"])
+    surface_path = capture_path.parent / capture["surface"]["path"]
+    index.identity(surface_path, capture["surface"])
+    settings = recovery_settings or read(binding["spec"])["recovery"]
+    identity = canonical_digest({"capture": capture["identity"],
+        "baseline": baseline_manifest["prediction_key"], "surface": capture["surface"]["sha256"],
+        "minimum_source_rows": settings["minimum_residual_source_rows"],
+        "cap": settings["candidate_cap_per_scene"], "max_views": settings["max_views"],
+        "operator": index.identity(__file__)["sha256"]})
+    receipt_path = root / "registry_receipt.json"
+    if receipt_path.is_file():
+        receipt = read(receipt_path)
+        if receipt["input_identity"] != identity:
+            raise ValueError("completed recovery registry inputs changed")
+        for item in receipt["outputs"]:
+            index.identity(item["path"], item)
+        return receipt
+    started = time.monotonic()
+    baseline = load_prediction(baseline_path)
+    with np.load(surface_path, allow_pickle=False) as surface:
+        xyz, raw = surface["surface_xyz"], surface["original_owner"]
+        if (_array_digest(xyz) != baseline.geometry.xyz_sha256
+                or _array_digest(surface["surface_faces"]) != baseline.geometry.faces_sha256
+                or capture["tsdf"]["sha256"] != baseline.geometry.tsdf_sha256
+                or baseline.scene_id != scene):
+            raise ValueError("raw registry geometry differs from its parent anchor")
+        registry = build_registry(xyz, raw, baseline.owner_ids,
+            minimum_rows=settings["minimum_residual_source_rows"],
+            candidate_cap=settings["candidate_cap_per_scene"])
+        requests = reconcile_requests(capture, surface["segment_labels"], raw, registry,
+                                      max_views=settings["max_views"])
+    registry_path, requests_path = root / "registry.json", root / "captured_requests.json"
+    atomic_write_json(registry_path, registry)
+    requests.update(capture=index.identity(capture_path), native_record_key=baseline.record_key)
+    requests["identity"] = canonical_digest({k: v for k, v in requests.items() if k != "identity"})
+    atomic_write_json(requests_path, requests)
+    receipt = {"status": "COMPLETE", "scene": scene, "map_id": map_id,
+        "input_identity": identity, "registry": str(registry_path), "requests": str(requests_path),
+        "candidate_count": len(registry["candidates"]),
+        "candidates_with_legal_views": sum(bool(v) for v in requests["views"].values()),
+        "native_selected_candidate_requests": len(requests["native_selected_request_ids"]),
+        "outputs": [index.identity(registry_path), index.identity(requests_path)],
+        "inputs": index.entries(), "elapsed_seconds": time.monotonic() - started,
+        "GT_input": False, "new_neural_inference": 0, "new_mapping": 0}
+    atomic_write_json(receipt_path, receipt)
+    return receipt
 
 
 def physical_request_identity(request):
