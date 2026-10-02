@@ -1,0 +1,1266 @@
+{
+  "deployment": "N0_UNCHANGED",
+  "development_composition_check": {
+    "cells": {
+      "old_map_fixed_D2": {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.4485214529559016,
+        "identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+        "map_id": "BB00_NATIVE",
+        "method": "RW_B_D2",
+        "metrics": {
+          "ap25": 0.31709688723974444,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32417107678455026,
+          "miou": 0.23562289001024223,
+          "uap": 0.12581783824640966
+        },
+        "ordered_inputs": [
+          "8ce3c8fd0e1255c70ea79fc33b75128906981438c4d19d3557f2b63cf942c537",
+          "34983edcd843ec85c9465ad85e9c3a2d5081581812f303bee871ebcce174ca13",
+          "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+          "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+        ],
+        "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00",
+          "scene0445_00",
+          "scene0626_00"
+        ],
+        "status": "COMPLETE"
+      },
+      "old_map_light": {
+        "aggregation": "RELEASED_DATASET_POOL",
+        "dataset": "ScanNet",
+        "elapsed_seconds": 0.4485214529559016,
+        "identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+        "map_id": "BB00_NATIVE",
+        "method": "RW_B_D2",
+        "metrics": {
+          "ap25": 0.31709688723974444,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32417107678455026,
+          "miou": 0.23562289001024223,
+          "uap": 0.12581783824640966
+        },
+        "ordered_inputs": [
+          "8ce3c8fd0e1255c70ea79fc33b75128906981438c4d19d3557f2b63cf942c537",
+          "34983edcd843ec85c9465ad85e9c3a2d5081581812f303bee871ebcce174ca13",
+          "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+          "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+        ],
+        "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+        "scene_order": [
+          "scene0056_00",
+          "scene0534_00",
+          "scene0445_00",
+          "scene0626_00"
+        ],
+        "status": "COMPLETE"
+      }
+    },
+    "identity": "96929a258fe1ab57493f77aea15216ab2099ebee152d9475a0e03e6b436a7876",
+    "light_recipe": {
+      "gamma": 0.5,
+      "recovery": null
+    },
+    "map_composition": "NOT_RUN_NO_QUALIFYING_MAP",
+    "new_A_plus_S_sweeps": 0,
+    "nominated_map": null,
+    "status": "COMPLETE"
+  },
+  "frozen_methods": [
+    {
+      "family": "control",
+      "gamma": 0.5,
+      "id": "RW_B_D2",
+      "recovery": "none"
+    },
+    {
+      "family": "control",
+      "gamma": 0.3333333333333333,
+      "id": "RW_B_FCEQ",
+      "recovery": "none"
+    },
+    {
+      "family": "W",
+      "gamma": 0.4,
+      "id": "RW_W040",
+      "recovery": "none"
+    },
+    {
+      "family": "W",
+      "gamma": 0.45,
+      "id": "RW_W045",
+      "recovery": "none"
+    },
+    {
+      "family": "U",
+      "gamma": 0.5,
+      "id": "RW_U1_NATIVE_SINGLE",
+      "recovery": "one_successful_native_request"
+    },
+    {
+      "family": "U",
+      "gamma": 0.5,
+      "id": "RW_UQ_PAID_QUERY",
+      "recovery": "already_acquired_query_scores"
+    },
+    {
+      "family": "U",
+      "gamma": 0.5,
+      "id": "RW_U2_FC_MATCHED_SINGLE",
+      "recovery": "FC_on_exact_U1_request"
+    },
+    {
+      "family": "U",
+      "gamma": 0.5,
+      "id": "RW_U3_FC_CAPTURED",
+      "recovery": "FC_on_up_to_three_valid_captured_requests"
+    }
+  ],
+  "no_Replica_retuning": true,
+  "selection": {
+    "Replica_results_read": false,
+    "binding_identity": "e645aacb9f0bbb0b686dd048ab3c1a72cef0e910b1556d4f32308a3b3865fcb8",
+    "components": {
+      "Replica_results_read": false,
+      "U_ranking": {
+        "banded_preference": [
+          "RW_B_D2",
+          "RW_U1_NATIVE_SINGLE",
+          "RW_U2_FC_MATCHED_SINGLE",
+          "RW_U3_FC_CAPTURED",
+          "RW_UQ_PAID_QUERY"
+        ],
+        "bands_are_preferences_not_statistical_equivalence": true,
+        "steps": [
+          {
+            "chosen": "RW_B_D2",
+            "cost_and_complexity_order": [
+              "RW_B_D2",
+              "RW_U1_NATIVE_SINGLE",
+              "RW_U2_FC_MATCHED_SINGLE",
+              "RW_U3_FC_CAPTURED",
+              "RW_UQ_PAID_QUERY"
+            ],
+            "metric_bands": [
+              {
+                "maximum": 0.12581783824640966,
+                "metric": "apall",
+                "retained": [
+                  "RW_B_D2",
+                  "RW_U1_NATIVE_SINGLE",
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.0005
+              },
+              {
+                "maximum": 0.2356606698131571,
+                "metric": "miou",
+                "retained": [
+                  "RW_B_D2",
+                  "RW_U1_NATIVE_SINGLE",
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              },
+              {
+                "maximum": 0.2259943310657596,
+                "metric": "ap50",
+                "retained": [
+                  "RW_B_D2",
+                  "RW_U1_NATIVE_SINGLE",
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              }
+            ]
+          },
+          {
+            "chosen": "RW_U1_NATIVE_SINGLE",
+            "cost_and_complexity_order": [
+              "RW_U1_NATIVE_SINGLE",
+              "RW_U2_FC_MATCHED_SINGLE",
+              "RW_U3_FC_CAPTURED",
+              "RW_UQ_PAID_QUERY"
+            ],
+            "metric_bands": [
+              {
+                "maximum": 0.12581783824640966,
+                "metric": "apall",
+                "retained": [
+                  "RW_U1_NATIVE_SINGLE",
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.0005
+              },
+              {
+                "maximum": 0.2356606698131571,
+                "metric": "miou",
+                "retained": [
+                  "RW_U1_NATIVE_SINGLE",
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              },
+              {
+                "maximum": 0.2259943310657596,
+                "metric": "ap50",
+                "retained": [
+                  "RW_U1_NATIVE_SINGLE",
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              }
+            ]
+          },
+          {
+            "chosen": "RW_U2_FC_MATCHED_SINGLE",
+            "cost_and_complexity_order": [
+              "RW_U2_FC_MATCHED_SINGLE",
+              "RW_U3_FC_CAPTURED",
+              "RW_UQ_PAID_QUERY"
+            ],
+            "metric_bands": [
+              {
+                "maximum": 0.12581783824640966,
+                "metric": "apall",
+                "retained": [
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.0005
+              },
+              {
+                "maximum": 0.2356606698131571,
+                "metric": "miou",
+                "retained": [
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              },
+              {
+                "maximum": 0.2259943310657596,
+                "metric": "ap50",
+                "retained": [
+                  "RW_U2_FC_MATCHED_SINGLE",
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              }
+            ]
+          },
+          {
+            "chosen": "RW_U3_FC_CAPTURED",
+            "cost_and_complexity_order": [
+              "RW_U3_FC_CAPTURED",
+              "RW_UQ_PAID_QUERY"
+            ],
+            "metric_bands": [
+              {
+                "maximum": 0.12581783824640966,
+                "metric": "apall",
+                "retained": [
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.0005
+              },
+              {
+                "maximum": 0.2356606698131571,
+                "metric": "miou",
+                "retained": [
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              },
+              {
+                "maximum": 0.2259943310657596,
+                "metric": "ap50",
+                "retained": [
+                  "RW_U3_FC_CAPTURED",
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              }
+            ]
+          },
+          {
+            "chosen": "RW_UQ_PAID_QUERY",
+            "cost_and_complexity_order": [
+              "RW_UQ_PAID_QUERY"
+            ],
+            "metric_bands": [
+              {
+                "maximum": 0.12581783824640966,
+                "metric": "apall",
+                "retained": [
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.0005
+              },
+              {
+                "maximum": 0.23562289001024223,
+                "metric": "miou",
+                "retained": [
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              },
+              {
+                "maximum": 0.2259943310657596,
+                "metric": "ap50",
+                "retained": [
+                  "RW_UQ_PAID_QUERY"
+                ],
+                "width_fraction": 0.001
+              }
+            ]
+          }
+        ],
+        "strict_metric_ranking": [
+          "RW_U2_FC_MATCHED_SINGLE",
+          "RW_U3_FC_CAPTURED",
+          "RW_B_D2",
+          "RW_UQ_PAID_QUERY",
+          "RW_U1_NATIVE_SINGLE"
+        ]
+      },
+      "U_selected_id": "RW_B_D2",
+      "W_ranking": {
+        "banded_preference": [
+          "RW_B_D2"
+        ],
+        "bands_are_preferences_not_statistical_equivalence": true,
+        "steps": [
+          {
+            "chosen": "RW_B_D2",
+            "cost_and_complexity_order": [
+              "RW_B_D2"
+            ],
+            "metric_bands": [
+              {
+                "maximum": 0.12581783824640966,
+                "metric": "apall",
+                "retained": [
+                  "RW_B_D2"
+                ],
+                "width_fraction": 0.0005
+              },
+              {
+                "maximum": 0.23562289001024223,
+                "metric": "miou",
+                "retained": [
+                  "RW_B_D2"
+                ],
+                "width_fraction": 0.001
+              },
+              {
+                "maximum": 0.2259943310657596,
+                "metric": "ap50",
+                "retained": [
+                  "RW_B_D2"
+                ],
+                "width_fraction": 0.001
+              }
+            ]
+          }
+        ],
+        "strict_metric_ranking": [
+          "RW_B_D2"
+        ]
+      },
+      "W_selected_id": "RW_B_D2",
+      "binding_identity": "e645aacb9f0bbb0b686dd048ab3c1a72cef0e910b1556d4f32308a3b3865fcb8",
+      "combination": {
+        "RW_LIGHT_COMBO": {
+          "gamma": 0.5,
+          "recovery": null
+        }
+      },
+      "combination_count": 1,
+      "feasible_ids": [
+        "RW_B_D2",
+        "RW_U1_NATIVE_SINGLE",
+        "RW_UQ_PAID_QUERY",
+        "RW_U2_FC_MATCHED_SINGLE",
+        "RW_U3_FC_CAPTURED"
+      ],
+      "gamma": 0.5,
+      "identity": "6683e4192621393832354d337c43314d16ebf53cf0221871c856ce8a77a7ad3b",
+      "inputs": [
+        {
+          "changed_blocks": 0,
+          "id": "RW_B_D2",
+          "metrics": {
+            "ap25": 0.31709688723974444,
+            "ap50": 0.2259943310657596,
+            "apall": 0.12581783824640966,
+            "defined_classes": 36,
+            "macc": 0.32417107678455026,
+            "miou": 0.23562289001024223,
+            "uap": 0.12581783824640966
+          },
+          "parameter_distance": 0.0,
+          "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+          "recipe": {
+            "gamma": 0.5,
+            "recovery": null
+          },
+          "standalone_new_encoder_inputs": 0
+        },
+        {
+          "changed_blocks": 1,
+          "id": "RW_B_FCEQ",
+          "metrics": {
+            "ap25": 0.3282708204493919,
+            "ap50": 0.2118599257884972,
+            "apall": 0.11261710071233881,
+            "defined_classes": 36,
+            "macc": 0.33955890763773416,
+            "miou": 0.2397691679655738,
+            "uap": 0.11261710071233881
+          },
+          "parameter_distance": 0.16666666666666669,
+          "pool_identity": "a95f64937d1a7bc694002be9472d32dfc6f7b3cc1a4d4613e63145b96e1e7ba8",
+          "recipe": {
+            "gamma": 0.3333333333333333,
+            "recovery": null
+          },
+          "standalone_new_encoder_inputs": 0
+        },
+        {
+          "changed_blocks": 1,
+          "id": "RW_W040",
+          "metrics": {
+            "ap25": 0.3075734556448842,
+            "ap50": 0.21144763966192537,
+            "apall": 0.11722270322270321,
+            "defined_classes": 36,
+            "macc": 0.31452902876720057,
+            "miou": 0.2235330655713502,
+            "uap": 0.11722270322270321
+          },
+          "parameter_distance": 0.09999999999999998,
+          "pool_identity": "5dbcfe87b7d6f32a5a635ec268a6a49fcf466a7a4dd47704023bacf29e6e45ae",
+          "recipe": {
+            "gamma": 0.4,
+            "recovery": null
+          },
+          "standalone_new_encoder_inputs": 0
+        },
+        {
+          "changed_blocks": 1,
+          "id": "RW_W045",
+          "metrics": {
+            "ap25": 0.30281117295403015,
+            "ap50": 0.21170861678004535,
+            "apall": 0.11708767951625093,
+            "defined_classes": 36,
+            "macc": 0.3117546965417448,
+            "miou": 0.22088941867333284,
+            "uap": 0.11708767951625093
+          },
+          "parameter_distance": 0.04999999999999999,
+          "pool_identity": "c6c324ade8c159f0bd4ea4d5e281ba570eeb880723351873b94b7efd89c5c080",
+          "recipe": {
+            "gamma": 0.45,
+            "recovery": null
+          },
+          "standalone_new_encoder_inputs": 0
+        },
+        {
+          "changed_blocks": 1,
+          "id": "RW_U1_NATIVE_SINGLE",
+          "metrics": {
+            "ap25": 0.31709688723974444,
+            "ap50": 0.2259943310657596,
+            "apall": 0.12581783824640966,
+            "defined_classes": 36,
+            "macc": 0.32417107678455026,
+            "miou": 0.2355657280824229,
+            "uap": 0.12581783824640966
+          },
+          "parameter_distance": 0.0,
+          "pool_identity": "23a25f6deb7d1f79479b81db8d74cdee98fdc5f1f4f218e5d17f461793c76679",
+          "recipe": {
+            "gamma": 0.5,
+            "recovery": "U1"
+          },
+          "standalone_new_encoder_inputs": 0
+        },
+        {
+          "changed_blocks": 1,
+          "id": "RW_UQ_PAID_QUERY",
+          "metrics": {
+            "ap25": 0.31709688723974444,
+            "ap50": 0.2259943310657596,
+            "apall": 0.12581783824640966,
+            "defined_classes": 36,
+            "macc": 0.32417107678455026,
+            "miou": 0.23562289001024223,
+            "uap": 0.12581783824640966
+          },
+          "parameter_distance": 0.0,
+          "pool_identity": "ddc80e585c9d72c59c7bbdc9740568b436dea58acdba0943aae49ca7c0a0e51d",
+          "recipe": {
+            "gamma": 0.5,
+            "recovery": "UQ"
+          },
+          "standalone_new_encoder_inputs": 0
+        },
+        {
+          "changed_blocks": 1,
+          "id": "RW_U2_FC_MATCHED_SINGLE",
+          "metrics": {
+            "ap25": 0.3169886621315193,
+            "ap50": 0.2259943310657596,
+            "apall": 0.12581783824640966,
+            "defined_classes": 36,
+            "macc": 0.32439984757052087,
+            "miou": 0.2356606698131571,
+            "uap": 0.12581783824640966
+          },
+          "parameter_distance": 0.0,
+          "pool_identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+          "recipe": {
+            "gamma": 0.5,
+            "recovery": "U2"
+          },
+          "standalone_new_encoder_inputs": 0
+        },
+        {
+          "changed_blocks": 1,
+          "id": "RW_U3_FC_CAPTURED",
+          "metrics": {
+            "ap25": 0.3169886621315193,
+            "ap50": 0.2259943310657596,
+            "apall": 0.12581783824640966,
+            "defined_classes": 36,
+            "macc": 0.32439984757052087,
+            "miou": 0.2356606698131571,
+            "uap": 0.12581783824640966
+          },
+          "parameter_distance": 0.0,
+          "pool_identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+          "recipe": {
+            "gamma": 0.5,
+            "recovery": "U3"
+          },
+          "standalone_new_encoder_inputs": 0
+        }
+      ],
+      "recovery": null,
+      "status": "COMPONENTS_SELECTED_DEVELOPMENT_ONLY"
+    },
+    "deployment": "N0_UNCHANGED",
+    "identity": "cb5263de19a3b37c66b589de3126b59429bc2d35e34221801ed420809965b3ec",
+    "light_inputs": [
+      {
+        "changed_blocks": 0,
+        "id": "RW_B_D2",
+        "metrics": {
+          "ap25": 0.31709688723974444,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32417107678455026,
+          "miou": 0.23562289001024223,
+          "uap": 0.12581783824640966
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+        "recipe": {
+          "gamma": 0.5,
+          "recovery": null
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 1,
+        "id": "RW_B_FCEQ",
+        "metrics": {
+          "ap25": 0.3282708204493919,
+          "ap50": 0.2118599257884972,
+          "apall": 0.11261710071233881,
+          "defined_classes": 36,
+          "macc": 0.33955890763773416,
+          "miou": 0.2397691679655738,
+          "uap": 0.11261710071233881
+        },
+        "parameter_distance": 0.16666666666666669,
+        "pool_identity": "a95f64937d1a7bc694002be9472d32dfc6f7b3cc1a4d4613e63145b96e1e7ba8",
+        "recipe": {
+          "gamma": 0.3333333333333333,
+          "recovery": null
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 1,
+        "id": "RW_W040",
+        "metrics": {
+          "ap25": 0.3075734556448842,
+          "ap50": 0.21144763966192537,
+          "apall": 0.11722270322270321,
+          "defined_classes": 36,
+          "macc": 0.31452902876720057,
+          "miou": 0.2235330655713502,
+          "uap": 0.11722270322270321
+        },
+        "parameter_distance": 0.09999999999999998,
+        "pool_identity": "5dbcfe87b7d6f32a5a635ec268a6a49fcf466a7a4dd47704023bacf29e6e45ae",
+        "recipe": {
+          "gamma": 0.4,
+          "recovery": null
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 1,
+        "id": "RW_W045",
+        "metrics": {
+          "ap25": 0.30281117295403015,
+          "ap50": 0.21170861678004535,
+          "apall": 0.11708767951625093,
+          "defined_classes": 36,
+          "macc": 0.3117546965417448,
+          "miou": 0.22088941867333284,
+          "uap": 0.11708767951625093
+        },
+        "parameter_distance": 0.04999999999999999,
+        "pool_identity": "c6c324ade8c159f0bd4ea4d5e281ba570eeb880723351873b94b7efd89c5c080",
+        "recipe": {
+          "gamma": 0.45,
+          "recovery": null
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 1,
+        "id": "RW_U1_NATIVE_SINGLE",
+        "metrics": {
+          "ap25": 0.31709688723974444,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32417107678455026,
+          "miou": 0.2355657280824229,
+          "uap": 0.12581783824640966
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "23a25f6deb7d1f79479b81db8d74cdee98fdc5f1f4f218e5d17f461793c76679",
+        "recipe": {
+          "gamma": 0.5,
+          "recovery": "U1"
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 1,
+        "id": "RW_UQ_PAID_QUERY",
+        "metrics": {
+          "ap25": 0.31709688723974444,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32417107678455026,
+          "miou": 0.23562289001024223,
+          "uap": 0.12581783824640966
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "ddc80e585c9d72c59c7bbdc9740568b436dea58acdba0943aae49ca7c0a0e51d",
+        "recipe": {
+          "gamma": 0.5,
+          "recovery": "UQ"
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 1,
+        "id": "RW_U2_FC_MATCHED_SINGLE",
+        "metrics": {
+          "ap25": 0.3169886621315193,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32439984757052087,
+          "miou": 0.2356606698131571,
+          "uap": 0.12581783824640966
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+        "recipe": {
+          "gamma": 0.5,
+          "recovery": "U2"
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 1,
+        "id": "RW_U3_FC_CAPTURED",
+        "metrics": {
+          "ap25": 0.3169886621315193,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32439984757052087,
+          "miou": 0.2356606698131571,
+          "uap": 0.12581783824640966
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+        "recipe": {
+          "gamma": 0.5,
+          "recovery": "U3"
+        },
+        "standalone_new_encoder_inputs": 0
+      },
+      {
+        "changed_blocks": 0,
+        "id": "RW_LIGHT_COMBO",
+        "metrics": {
+          "ap25": 0.31709688723974444,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12581783824640966,
+          "defined_classes": 36,
+          "macc": 0.32417107678455026,
+          "miou": 0.23562289001024223,
+          "uap": 0.12581783824640966
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+        "recipe": {
+          "gamma": 0.5,
+          "recovery": null
+        },
+        "standalone_new_encoder_inputs": 0
+      }
+    ],
+    "light_package": {
+      "changed_blocks": 0,
+      "id": "RW_B_D2",
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.23562289001024223,
+        "uap": 0.12581783824640966
+      },
+      "parameter_distance": 0.0,
+      "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+      "recipe": {
+        "gamma": 0.5,
+        "recovery": null
+      },
+      "standalone_new_encoder_inputs": 0
+    },
+    "light_ranking": {
+      "banded_preference": [
+        "RW_B_D2",
+        "RW_LIGHT_COMBO",
+        "RW_U1_NATIVE_SINGLE",
+        "RW_U2_FC_MATCHED_SINGLE",
+        "RW_U3_FC_CAPTURED",
+        "RW_UQ_PAID_QUERY"
+      ],
+      "bands_are_preferences_not_statistical_equivalence": true,
+      "steps": [
+        {
+          "chosen": "RW_B_D2",
+          "cost_and_complexity_order": [
+            "RW_B_D2",
+            "RW_LIGHT_COMBO",
+            "RW_U1_NATIVE_SINGLE",
+            "RW_U2_FC_MATCHED_SINGLE",
+            "RW_U3_FC_CAPTURED",
+            "RW_UQ_PAID_QUERY"
+          ],
+          "metric_bands": [
+            {
+              "maximum": 0.12581783824640966,
+              "metric": "apall",
+              "retained": [
+                "RW_B_D2",
+                "RW_LIGHT_COMBO",
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.0005
+            },
+            {
+              "maximum": 0.2356606698131571,
+              "metric": "miou",
+              "retained": [
+                "RW_B_D2",
+                "RW_LIGHT_COMBO",
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            },
+            {
+              "maximum": 0.2259943310657596,
+              "metric": "ap50",
+              "retained": [
+                "RW_B_D2",
+                "RW_LIGHT_COMBO",
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            }
+          ]
+        },
+        {
+          "chosen": "RW_LIGHT_COMBO",
+          "cost_and_complexity_order": [
+            "RW_LIGHT_COMBO",
+            "RW_U1_NATIVE_SINGLE",
+            "RW_U2_FC_MATCHED_SINGLE",
+            "RW_U3_FC_CAPTURED",
+            "RW_UQ_PAID_QUERY"
+          ],
+          "metric_bands": [
+            {
+              "maximum": 0.12581783824640966,
+              "metric": "apall",
+              "retained": [
+                "RW_LIGHT_COMBO",
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.0005
+            },
+            {
+              "maximum": 0.2356606698131571,
+              "metric": "miou",
+              "retained": [
+                "RW_LIGHT_COMBO",
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            },
+            {
+              "maximum": 0.2259943310657596,
+              "metric": "ap50",
+              "retained": [
+                "RW_LIGHT_COMBO",
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            }
+          ]
+        },
+        {
+          "chosen": "RW_U1_NATIVE_SINGLE",
+          "cost_and_complexity_order": [
+            "RW_U1_NATIVE_SINGLE",
+            "RW_U2_FC_MATCHED_SINGLE",
+            "RW_U3_FC_CAPTURED",
+            "RW_UQ_PAID_QUERY"
+          ],
+          "metric_bands": [
+            {
+              "maximum": 0.12581783824640966,
+              "metric": "apall",
+              "retained": [
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.0005
+            },
+            {
+              "maximum": 0.2356606698131571,
+              "metric": "miou",
+              "retained": [
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            },
+            {
+              "maximum": 0.2259943310657596,
+              "metric": "ap50",
+              "retained": [
+                "RW_U1_NATIVE_SINGLE",
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            }
+          ]
+        },
+        {
+          "chosen": "RW_U2_FC_MATCHED_SINGLE",
+          "cost_and_complexity_order": [
+            "RW_U2_FC_MATCHED_SINGLE",
+            "RW_U3_FC_CAPTURED",
+            "RW_UQ_PAID_QUERY"
+          ],
+          "metric_bands": [
+            {
+              "maximum": 0.12581783824640966,
+              "metric": "apall",
+              "retained": [
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.0005
+            },
+            {
+              "maximum": 0.2356606698131571,
+              "metric": "miou",
+              "retained": [
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            },
+            {
+              "maximum": 0.2259943310657596,
+              "metric": "ap50",
+              "retained": [
+                "RW_U2_FC_MATCHED_SINGLE",
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            }
+          ]
+        },
+        {
+          "chosen": "RW_U3_FC_CAPTURED",
+          "cost_and_complexity_order": [
+            "RW_U3_FC_CAPTURED",
+            "RW_UQ_PAID_QUERY"
+          ],
+          "metric_bands": [
+            {
+              "maximum": 0.12581783824640966,
+              "metric": "apall",
+              "retained": [
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.0005
+            },
+            {
+              "maximum": 0.2356606698131571,
+              "metric": "miou",
+              "retained": [
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            },
+            {
+              "maximum": 0.2259943310657596,
+              "metric": "ap50",
+              "retained": [
+                "RW_U3_FC_CAPTURED",
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            }
+          ]
+        },
+        {
+          "chosen": "RW_UQ_PAID_QUERY",
+          "cost_and_complexity_order": [
+            "RW_UQ_PAID_QUERY"
+          ],
+          "metric_bands": [
+            {
+              "maximum": 0.12581783824640966,
+              "metric": "apall",
+              "retained": [
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.0005
+            },
+            {
+              "maximum": 0.23562289001024223,
+              "metric": "miou",
+              "retained": [
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            },
+            {
+              "maximum": 0.2259943310657596,
+              "metric": "ap50",
+              "retained": [
+                "RW_UQ_PAID_QUERY"
+              ],
+              "width_fraction": 0.001
+            }
+          ]
+        }
+      ],
+      "strict_metric_ranking": [
+        "RW_U2_FC_MATCHED_SINGLE",
+        "RW_U3_FC_CAPTURED",
+        "RW_B_D2",
+        "RW_LIGHT_COMBO",
+        "RW_UQ_PAID_QUERY",
+        "RW_U1_NATIVE_SINGLE"
+      ]
+    },
+    "map_inputs": [
+      {
+        "changed_blocks": 1,
+        "geometry_screen_identity": "8eb7905a6a4b911e5e61dbd1fad211ab8e4e9791c1421acba9f9d89b7a71d196",
+        "geometry_status": "GEOMETRY_PASS",
+        "id": "RW_A1_NATIVE_FALLBACK",
+        "metrics": {
+          "ap25": 0.3558387039026137,
+          "ap50": 0.23734353741496597,
+          "apall": 0.11074414210128496,
+          "defined_classes": 36,
+          "macc": 0.3185129845409897,
+          "miou": 0.2522141354274219,
+          "uap": 0.11074414210128496
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "a05adccc7ad0fce21fc8b0aae1e4dc7e1c7d38fb7f1831211e90ee11ab44bd6f",
+        "qualifies": false,
+        "recipe": {
+          "association": "forward_1to1_with_native_fallback",
+          "frontend": "cropformer",
+          "id": "RW_A1_NATIVE_FALLBACK"
+        },
+        "standalone_new_encoder_inputs": 8479
+      },
+      {
+        "changed_blocks": 1,
+        "geometry_screen_identity": "f9db1f8226e1b8d29e51055edb639681b29caf45aa077aed9176b03171a9dba8",
+        "geometry_status": "GEOMETRY_PASS",
+        "id": "RW_A2_MULTI_FREE",
+        "metrics": {
+          "ap25": 0.32443877551020406,
+          "ap50": 0.23151814058956915,
+          "apall": 0.11997845804988662,
+          "defined_classes": 36,
+          "macc": 0.29980901853256725,
+          "miou": 0.24046096915653,
+          "uap": 0.11997845804988662
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "bca943a16bd6294f146ff8c4f0d90497de6922b50d3dcea525b64440a04985ef",
+        "qualifies": false,
+        "recipe": {
+          "association": "rowwise_best_with_native_fallback",
+          "frontend": "cropformer",
+          "id": "RW_A2_MULTI_FREE"
+        },
+        "standalone_new_encoder_inputs": 6196
+      },
+      {
+        "changed_blocks": 1,
+        "geometry_screen_identity": "afc68ed4dabd9238b10cb1f095af6b9f9b381f255b6fdf4148ac40b290e40255",
+        "geometry_status": "GEOMETRY_PASS",
+        "id": "RW_A3_MULTI_UNION",
+        "metrics": {
+          "ap25": 0.32352607709750564,
+          "ap50": 0.22516893424036283,
+          "apall": 0.12145553036029226,
+          "defined_classes": 36,
+          "macc": 0.2939515538996282,
+          "miou": 0.23711245000993986,
+          "uap": 0.12145553036029226
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "f960f1b056270ed51ad612a321c2bef1ac8c6021c375bb775be0f7ae8c559a2c",
+        "qualifies": false,
+        "recipe": {
+          "association": "rowwise_specific_union_with_native_fallback",
+          "frontend": "cropformer",
+          "id": "RW_A3_MULTI_UNION"
+        },
+        "standalone_new_encoder_inputs": 5550
+      },
+      {
+        "changed_blocks": 1,
+        "geometry_screen_identity": "65be83c4a3d798158c28f6e4d6a5fa20dadbc910a51239a0e0f917b3885244be",
+        "geometry_status": "GEOMETRY_PASS",
+        "id": "RW_S1_CROP_PRIORITY",
+        "metrics": {
+          "ap25": 0.31675056689342407,
+          "ap50": 0.2259943310657596,
+          "apall": 0.12692013101536911,
+          "defined_classes": 36,
+          "macc": 0.3243479571389992,
+          "miou": 0.23524188005868923,
+          "uap": 0.12692013101536911
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "e62647255dfd15ade07de400cc130edd08d4ac5970f76d68a289b223fb12a684",
+        "qualifies": false,
+        "recipe": {
+          "association": "native",
+          "frontend": "cached_SAM_crop_priority",
+          "id": "RW_S1_CROP_PRIORITY"
+        },
+        "standalone_new_encoder_inputs": 8993
+      },
+      {
+        "changed_blocks": 1,
+        "geometry_screen_identity": "7c7e8c5d137693021c125bf6db446246d76cc6ac074ba489302a783aed22bdc2",
+        "geometry_status": "GEOMETRY_PASS",
+        "id": "RW_S2_CONFLICT",
+        "metrics": {
+          "ap25": 0.31675056689342407,
+          "ap50": 0.22572448979591836,
+          "apall": 0.12578785588309396,
+          "defined_classes": 36,
+          "macc": 0.32288168023207603,
+          "miou": 0.23474004100313683,
+          "uap": 0.12578785588309396
+        },
+        "parameter_distance": 0.0,
+        "pool_identity": "c613624342148554ef53e93bc16eed5bd88de26b1ca64b97749fc233968cfce8",
+        "qualifies": false,
+        "recipe": {
+          "association": "native",
+          "frontend": "cached_SAM_crop_priority_with_causal_conflict",
+          "id": "RW_S2_CONFLICT"
+        },
+        "standalone_new_encoder_inputs": 8693
+      }
+    ],
+    "map_ranking": null,
+    "new_A_plus_S_combinations": 0,
+    "nominated_map": null,
+    "recovery_caps": {
+      "FC_additional_image_encoder_input_cap_per_scene": 32,
+      "FC_frame_budget_assignment": "rank candidate requests before inference; skip uncached frames beyond cap, no lower-ranked substitute",
+      "U1": "exactly one successful retained native observation, with matching physical request and final-owner proof",
+      "U2": "same candidate/request as U1; one FC view, no alternate-view substitution",
+      "U3": "all capped candidates with legal captured requests; top three by area then frame and physical request key",
+      "U3_failure": "omit recovered owner, no fallback masquerading as FC",
+      "UQ": "frozen query_scores availability plus final-lineage receipt; no extra query acquisition",
+      "base_geometry_and_existing_owner_masks_immutable": true,
+      "cache_inventory": "freeze before the recovery comparison; new admissions shared, no retroactive cap expansion",
+      "candidate_cap_per_scene": 128,
+      "candidate_selection_uses_target_coordinates_or_GT": false,
+      "fill_only": "raw_owner==candidate AND baseline_painted_owner==0",
+      "max_views": 3,
+      "minimum_residual_source_rows": 100,
+      "missing_owner_only": true,
+      "new_views_from_final_mesh_projection": false,
+      "order": "descending residual source-row count, then canonical world-coordinate support digest",
+      "paired_evaluation": "U1/U2 common successful subset plus full pipeline coverage separately",
+      "request_proof": "all recorded segments converge to exactly one active final RAW owner using captured aliases",
+      "whole_raw_registry_swap": false
+    },
+    "replica_scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "selection_rules": {
+      "bands_pp": {
+        "ap50": 0.1,
+        "apall": 0.05,
+        "miou": 0.1
+      },
+      "deploy": "N0_UNCHANGED",
+      "feasible_vs_B": {
+        "ap50_min_delta_pp": -0.1,
+        "apall_min_delta_pp": -0.05,
+        "miou_min_delta_pp": -0.1
+      },
+      "leave_one_scene_out": "sensitivity table, not extra tuning",
+      "map_transfer_gate": "candidate has NET_GAIN on four development scenes under fixed D2 and is not geometric-catastrophe",
+      "max_map_finalists": 1,
+      "metrics_internal_scale": "fractions; convert pp by /100",
+      "net_gain": {
+        "ap50_min_delta_pp": -0.1,
+        "apall_min_delta_pp": 0.2,
+        "miou_min_delta_pp": -0.1
+      },
+      "replica_results_change_selection": false,
+      "tie": "standalone new encoder inputs, changed blocks, parameter distance to baseline, fixed method ID"
+    },
+    "status": "DEVELOPMENT_SELECTION_LOCKED",
+    "technical_caps": {
+      "blas_threads": 4,
+      "concurrent_model_workers_per_gpu": 1,
+      "development_maps_max": 20,
+      "evaluation_workers": 3,
+      "mapping_threads": 8,
+      "mapping_workers": 2,
+      "native_trace_valid_frames": 3,
+      "new_full_baseline_maps": 0,
+      "new_full_map_scene_successes": 28,
+      "new_neural_model_training": 0,
+      "new_recovery_FC_encoder_inputs_total_max": 1280,
+      "new_recovery_targets_total_max": 5120,
+      "note": "recovery cap covers at most 40 scene/applications (parent12 + new28); actual usually much lower",
+      "replica_new_maps_max": 8
+    }
+  }
+}
