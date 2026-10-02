@@ -138,9 +138,9 @@ def _map_job(binding, build, scene, map_id, threads):
                 or capture["completed_frame_ids"] != data["completed_frame_ids"]):
             raise ValueError("completed map schedule or native frame policy changed")
         index = ConsumptionIndex(path.parent / "input_verifications.json")
-        repo = Path(binding["repository_root"])
+        repo = Path(binding["repository_root"]).resolve()
         for row in receipt["inputs"]:
-            source = Path(row["path"])
+            source = Path(row["path"]).resolve()
             if source.is_relative_to(repo) and source.suffix in {".py", ".patch"}:
                 blob = subprocess.check_output(["git", "show", running["source_commit"] + ":" + str(source.relative_to(repo))], cwd=repo)
                 if hashlib.sha256(blob).hexdigest() != row["sha256"]:

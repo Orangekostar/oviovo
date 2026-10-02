@@ -217,7 +217,24 @@ def collect_costs(binding):
         operations.append({"path": str(path), "operation": "CACHED_SAM_CPU_COMPOSITION", "scene": receipt["scene"],
             "map_id": "S1_FRONTEND", "status": receipt["status"], "elapsed_seconds": receipt.get("elapsed_seconds"),
             "physical_image_encodings": 0, "physical_region_poolings": 0})
+    for path in sorted(root.parent.glob("tooling/*/recovery_native_build_receipt.json")):
+        receipt = read(path)
+        operations.append({"path": str(path), "operation": "ISOLATED_NATIVE_BUILD_CPU", "scene": None,
+            "map_id": path.parent.name, "status": receipt["status"], "elapsed_seconds": receipt.get("elapsed_seconds"),
+            "physical_image_encodings": 0,
+            "initial_diagnostic_build_not_used_for_full_maps": path.parent.name == "native"})
+    for path in sorted((root / "validation/native").glob("*/receipt.json")):
+        receipt = read(path)
+        operations.append({"path": str(path), "operation": "SERIAL_NATIVE_VALIDATION_CPU", "scene": receipt["scene"],
+            "map_id": receipt["mode"], "status": receipt["status"], "elapsed_seconds": receipt.get("elapsed_seconds"),
+            "physical_image_encodings": 0})
+    diagnostic = root / "validation/native/follower_diagnostic/follower_observed.json"
+    if diagnostic.is_file():
+        failures.append({"path": str(diagnostic), "status": "FAILED_DIAGNOSTIC_GETTER", "elapsed_seconds": None,
+            "error": "initial getter queried cleared mode4 assignment; corrected snapshot getter validated in v2",
+            "missing_timing": "original failed diagnostic duration not separately retained"})
     preserved = [str(path) for pattern in ("**/*failed*", "**/follower_diagnostic", "**/S1_producer_*") for path in root.glob(pattern)]
+    preserved += [str(root.parent / "tooling/native")]
     totals = Counter()
     for row in operations:
         if row["status"] == "COMPLETE":
@@ -234,7 +251,8 @@ def collect_costs(binding):
 def _external_manifest(binding, rows):
     root, identities = Path(binding["output_root"]), {}
     index = ConsumptionIndex(root / "validation/input_verifications.json")
-    paths = [root / "resolved_inputs.json", root.parent / "tooling/recovery_native_v2/recovery_native_build_receipt.json"]
+    paths = [root / "resolved_inputs.json"]
+    paths += sorted(root.parent.glob("tooling/*/recovery_native_build_receipt.json"))
     paths += sorted((root / "maps").glob("*/*/map_receipt.json"))
     paths += sorted((root / "readouts").glob("*/*/receipt.json"))
     paths += sorted((root / "readouts").glob("*/*/native_query/native_query_receipt.json"))
@@ -261,6 +279,9 @@ def _external_manifest(binding, rows):
                 path_trace = Path(PathResolver(binding["path_map"]).resolve(receipt["manifest"])).with_name(name)
                 actual = index.identity(path_trace)
                 identities[(actual["path"], actual["sha256"])] = actual
+    for path in sorted(root.parent.glob("tooling/*/source_snapshot.tgz")):
+        actual = index.identity(path)
+        identities[(actual["path"], actual["sha256"])] = actual
     repo = Path(binding["repository_root"])
     manifests = []
     for path in sorted((root / "light").glob("*/*/**/predictions/*/manifest.json")):
@@ -279,7 +300,7 @@ def _external_manifest(binding, rows):
         "multiple_source_versions_at_one_original_path_are_preserved": True,
         "prediction_manifests": manifests, "bytes_recorded": sum(row.get("bytes", 0) for row in identities.values()),
         "large_data_committed": False, "availability": "EXISTING_SHARED_STORAGE_NO_PUBLIC_DOWNLOAD_PROMISE",
-        "path_rebinding": "USE --path-map WITH ABSOLUTE OLD_TO_NEW ROOTS; VERIFY CONTENT HASHES",
+        "path_rebinding": "INITIAL_BINDING_ACCEPTS --path-map; EXACT_COMPLETED_RESUME_REQUIRES_ORIGINAL_ROOT_ALIASES_AND_IMMUTABLE_BINDING",
         "reconstruction_command": shlex.join([read(binding["spec"])["default_python"],
             str(repo / "scripts/evaluation/run_ovimap_recovery_wave2.py"), "--phase", "all", "--resume"]),
         "native_build_command": shlex.join([read(binding["spec"])["default_python"], "-m", "static_ovmap.recovery_wave2.runtime",
@@ -462,7 +483,8 @@ def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensiti
         "Original FP32 model/operator/checkpoint identities and frozen category/template order are in `resolved_inputs.json`; native patch/build receipts are retained. "
         "The isolated upstream patch stack is capture, backbone, then recovery. Original binaries remain unchanged.\n\n"
         "Use the existing shared artifacts listed with content hashes in `external_artifacts.json`; large RGB-D, models, dense caches, maps, TSDF and verbose native logs are external. "
-        "These paths are not public download links. Restore the licensed original data/model access and hash-verify files; use `--path-map` when relocating roots.\n\n"
+        "These paths are not public download links. Restore the licensed original data/model access and hash-verify files. "
+        "Initial binding accepts `--path-map` for relocated parent inputs; exact completed-task resume retains the immutable binding and original root aliases.\n\n"
         "```bash\n" + shlex.join([read(binding["spec"])["default_python"], str(repo / "scripts/evaluation/run_ovimap_recovery_wave2.py"), "--phase", "all", "--resume"]) + "\n```\n\n"
         "Mapping defaults to 2 x 8 CPU threads, evaluation to 3 x 4 BLAS threads, one model worker under the existing GPU lock. "
         "Complete receipts resume only with verified content and recorded producer identities. Failed map attempts restart at frame zero in a new retained directory.\n\n"

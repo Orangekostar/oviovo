@@ -35,6 +35,16 @@ def require_semantic_gate(binding, scene, map_id):
 
 
 def build_sources(binding, scene, map_id, build, *, gpu="2"):
+    from static_ovmap.backbone_wave1.runtime import exclusive_lock
+
+    require_semantic_gate(binding, scene, map_id)
+    root = Path(binding["output_root"])
+    with exclusive_lock(root / "execution" / (".model_controller_gpu_" + str(gpu) + ".lock")), \
+            exclusive_lock(root / "readouts" / scene / ("." + map_id + ".lock")):
+        return _build_sources(binding, scene, map_id, build, gpu=gpu)
+
+
+def _build_sources(binding, scene, map_id, build, *, gpu="2"):
     gate_identity = require_semantic_gate(binding, scene, map_id)
     data, root = binding["scenes"][scene], Path(binding["output_root"]) / "readouts" / scene / map_id
     root.mkdir(parents=True, exist_ok=True)
