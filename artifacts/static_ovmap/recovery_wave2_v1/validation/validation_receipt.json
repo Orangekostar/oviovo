@@ -1,0 +1,93 @@
+{
+  "GT_input": false,
+  "accepted_real_frame_pairs": 41,
+  "actual_native_follower_verified": true,
+  "all_USE_NATIVE_vs_parent_exact": true,
+  "identity": "3e02604f2a3a0004774db3b9947d8745003da57b2b6a933ef173a0cc1a838e70",
+  "native_follower_groups": [
+    [
+      11,
+      1
+    ],
+    [
+      12,
+      1
+    ]
+  ],
+  "native_follower_segments": [
+    {
+      "input_instance_label": 11,
+      "local_index": 0,
+      "owner_discrepancy": false,
+      "planned_owner": 1,
+      "point_count": 3200,
+      "realized_count_owner": 1,
+      "realized_frame_assignment": 1,
+      "recovery_action": "ASSIGN_EXISTING",
+      "registered_label": 2,
+      "semantic_label": 1
+    },
+    {
+      "input_instance_label": 12,
+      "local_index": 1,
+      "owner_discrepancy": false,
+      "planned_owner": 1,
+      "point_count": 3200,
+      "realized_count_owner": 1,
+      "realized_frame_assignment": 1,
+      "recovery_action": "ASSIGN_EXISTING",
+      "registered_label": 1,
+      "semantic_label": 1
+    }
+  ],
+  "native_off_vs_parent_exact": true,
+  "new_extension": {
+    "bytes": 799040,
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/tooling/recovery_native_v2/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+    "sha256": "48cfc80599c7ec7849749d18eff163680e6c1d937b9e1aa37d73b764f963af1b"
+  },
+  "new_visual_inference": 0,
+  "receipts": {
+    "A1": {
+      "bytes": 43628,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/native/A1/receipt.json",
+      "sha256": "fd4e005052e2d9a1aaf678d58e06c7ef0af2d730f2deb40f06df241d2fae7d5d"
+    },
+    "A2": {
+      "bytes": 43566,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/native/A2/receipt.json",
+      "sha256": "618cb3324e08a2e072ad23a7e2b976875a0d1512d927f63518f27e5fe9b81a44"
+    },
+    "A3": {
+      "bytes": 49735,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/native/A3/receipt.json",
+      "sha256": "bf33f99d69b978f22de43bde4e50126d9eb01f58423d440aaecd81a4bfd6f4b8"
+    },
+    "ALL_NATIVE": {
+      "bytes": 40813,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/native/ALL_NATIVE/receipt.json",
+      "sha256": "a1f909be9f495fb237a22be7bd647b143c57f2a873c82c5031c73b5ee87cc018"
+    },
+    "follower": {
+      "bytes": 9330,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/native/follower/receipt.json",
+      "sha256": "139fcd647f89e0f532cd2b15ea29ba170da0bed3ff857ca551084723cf13c620"
+    },
+    "off": {
+      "bytes": 18014,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/native/off/receipt.json",
+      "sha256": "b05831205ad3ca2d854dcfb989db2554a81878a62bc784f2839c65deb4d24446"
+    },
+    "off-parent": {
+      "bytes": 17997,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/native/off-parent/receipt.json",
+      "sha256": "d46a7be596dcc0e694946dfc94517470c43b6e59da1b6016933d8896d3d8dc92"
+    }
+  },
+  "status": "VERIFIED",
+  "three_actual_valid_frames": [
+    0,
+    9,
+    18
+  ]
+}

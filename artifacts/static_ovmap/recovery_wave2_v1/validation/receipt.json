@@ -1,0 +1,29 @@
+{
+  "Replica_predictions_started_before_freeze": false,
+  "binding_identity": "e645aacb9f0bbb0b686dd048ab3c1a72cef0e910b1556d4f32308a3b3865fcb8",
+  "commit": "6dd3de7c00553f4895b72088435ebccf76cc9adc",
+  "light_package": {
+    "changed_blocks": 0,
+    "id": "RW_B_D2",
+    "metrics": {
+      "ap25": 0.31709688723974444,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32417107678455026,
+      "miou": 0.23562289001024223,
+      "uap": 0.12581783824640966
+    },
+    "parameter_distance": 0.0,
+    "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+    "recipe": {
+      "gamma": 0.5,
+      "recovery": null
+    },
+    "standalone_new_encoder_inputs": 0
+  },
+  "nominated_map": null,
+  "repository_file": "artifacts/static_ovmap/recovery_wave2_v1/selection.json",
+  "selection_identity": "b67ff432376d819e11861bb9c81a167dfcd7ece28066fb799a1543ddf737eed0",
+  "status": "FROZEN_COMMITTED"
+}

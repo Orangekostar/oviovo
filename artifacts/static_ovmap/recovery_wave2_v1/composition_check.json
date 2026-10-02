@@ -1,0 +1,79 @@
+{
+  "cells": {
+    "old_map_fixed_D2": {
+      "aggregation": "RELEASED_DATASET_POOL",
+      "dataset": "ScanNet",
+      "elapsed_seconds": 0.4485214529559016,
+      "identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+      "map_id": "BB00_NATIVE",
+      "method": "RW_B_D2",
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.23562289001024223,
+        "uap": 0.12581783824640966
+      },
+      "ordered_inputs": [
+        "8ce3c8fd0e1255c70ea79fc33b75128906981438c4d19d3557f2b63cf942c537",
+        "34983edcd843ec85c9465ad85e9c3a2d5081581812f303bee871ebcce174ca13",
+        "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+        "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+      ],
+      "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+      "rank_mode": "OFFICIAL_CURRENT_CLASS",
+      "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "status": "COMPLETE"
+    },
+    "old_map_light": {
+      "aggregation": "RELEASED_DATASET_POOL",
+      "dataset": "ScanNet",
+      "elapsed_seconds": 0.4485214529559016,
+      "identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+      "map_id": "BB00_NATIVE",
+      "method": "RW_B_D2",
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.23562289001024223,
+        "uap": 0.12581783824640966
+      },
+      "ordered_inputs": [
+        "8ce3c8fd0e1255c70ea79fc33b75128906981438c4d19d3557f2b63cf942c537",
+        "34983edcd843ec85c9465ad85e9c3a2d5081581812f303bee871ebcce174ca13",
+        "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+        "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+      ],
+      "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+      "rank_mode": "OFFICIAL_CURRENT_CLASS",
+      "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "status": "COMPLETE"
+    }
+  },
+  "identity": "96929a258fe1ab57493f77aea15216ab2099ebee152d9475a0e03e6b436a7876",
+  "light_recipe": {
+    "gamma": 0.5,
+    "recovery": null
+  },
+  "map_composition": "NOT_RUN_NO_QUALIFYING_MAP",
+  "new_A_plus_S_sweeps": 0,
+  "nominated_map": null,
+  "status": "COMPLETE"
+}

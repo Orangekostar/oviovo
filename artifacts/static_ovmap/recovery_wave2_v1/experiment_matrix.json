@@ -1,0 +1,1860 @@
+{
+  "rows": [
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.0,
+        "miou": 0.0
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_B_D2",
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.23562289001024223,
+        "uap": 0.12581783824640966
+      },
+      "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_B_D2.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 1.1173933209647435,
+        "ap50": -1.4134405277262423,
+        "apall": -1.3200737534070848,
+        "macc": 1.5387830853183904,
+        "miou": 0.41462779553315676
+      },
+      "feasible": false,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_B_FCEQ",
+      "metrics": {
+        "ap25": 0.3282708204493919,
+        "ap50": 0.2118599257884972,
+        "apall": 0.11261710071233881,
+        "defined_classes": 36,
+        "macc": 0.33955890763773416,
+        "miou": 0.2397691679655738,
+        "uap": 0.11261710071233881
+      },
+      "pool_identity": "a95f64937d1a7bc694002be9472d32dfc6f7b3cc1a4d4613e63145b96e1e7ba8",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_B_FCEQ.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": -0.9523431594860243,
+        "ap50": -1.4546691403834244,
+        "apall": -0.8595135023706444,
+        "macc": -0.9642048017349691,
+        "miou": -1.2089824438892034
+      },
+      "feasible": false,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_W040",
+      "metrics": {
+        "ap25": 0.3075734556448842,
+        "ap50": 0.21144763966192537,
+        "apall": 0.11722270322270321,
+        "defined_classes": 36,
+        "macc": 0.31452902876720057,
+        "miou": 0.2235330655713502,
+        "uap": 0.11722270322270321
+      },
+      "pool_identity": "5dbcfe87b7d6f32a5a635ec268a6a49fcf466a7a4dd47704023bacf29e6e45ae",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_W040.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": -1.428571428571429,
+        "ap50": -1.4285714285714262,
+        "apall": -0.8730158730158727,
+        "macc": -1.2416380242805447,
+        "miou": -1.4733471336909387
+      },
+      "feasible": false,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_W045",
+      "metrics": {
+        "ap25": 0.30281117295403015,
+        "ap50": 0.21170861678004535,
+        "apall": 0.11708767951625093,
+        "defined_classes": 36,
+        "macc": 0.3117546965417448,
+        "miou": 0.22088941867333284,
+        "uap": 0.11708767951625093
+      },
+      "pool_identity": "c6c324ade8c159f0bd4ea4d5e281ba570eeb880723351873b94b7efd89c5c080",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_W045.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.0,
+        "miou": -0.005716192781932139
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_U1_NATIVE_SINGLE",
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.2355657280824229,
+        "uap": 0.12581783824640966
+      },
+      "pool_identity": "23a25f6deb7d1f79479b81db8d74cdee98fdc5f1f4f218e5d17f461793c76679",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_U1_NATIVE_SINGLE.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.0,
+        "miou": 0.0
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_UQ_PAID_QUERY",
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.23562289001024223,
+        "uap": 0.12581783824640966
+      },
+      "pool_identity": "ddc80e585c9d72c59c7bbdc9740568b436dea58acdba0943aae49ca7c0a0e51d",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_UQ_PAID_QUERY.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": -0.010822510822511289,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.022877078597061118,
+        "miou": 0.003777980291486127
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_U2_FC_MATCHED_SINGLE",
+      "metrics": {
+        "ap25": 0.3169886621315193,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32439984757052087,
+        "miou": 0.2356606698131571,
+        "uap": 0.12581783824640966
+      },
+      "pool_identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_U2_FC_MATCHED_SINGLE.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": -0.010822510822511289,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.022877078597061118,
+        "miou": 0.003777980291486127
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_U3_FC_CAPTURED",
+      "metrics": {
+        "ap25": 0.3169886621315193,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32439984757052087,
+        "miou": 0.2356606698131571,
+        "uap": 0.12581783824640966
+      },
+      "pool_identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_U3_FC_CAPTURED.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.0,
+        "miou": 0.0
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_LIGHT_COMBO",
+      "metrics": {
+        "ap25": 0.31709688723974444,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12581783824640966,
+        "defined_classes": 36,
+        "macc": 0.32417107678455026,
+        "miou": 0.23562289001024223,
+        "uap": 0.12581783824640966
+      },
+      "pool_identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_LIGHT_COMBO.json",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 2.1428780758612653,
+        "ap50": 0.6745069745069748,
+        "apall": -1.367547164769385,
+        "macc": 1.92307963993108,
+        "miou": 0.6265853022304507
+      },
+      "map_id": "BB00_NATIVE",
+      "method": "NATIVE_READOUT",
+      "metrics": {
+        "ap25": 0.3385256679983571,
+        "ap50": 0.23273940081082936,
+        "apall": 0.1121423665987158,
+        "defined_classes": 36,
+        "macc": 0.34340187318386106,
+        "miou": 0.24188874303254673,
+        "uap": 0.1121423665987158
+      },
+      "pool_identity": "0acc6807e25e7d5fe1437bb4c9f51471c00c666912d771df99e8beb2fc150527",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 5.338057973772253,
+        "ap50": 1.6784408712980203,
+        "apall": -1.9340120784565207,
+        "macc": 1.0463329679312794,
+        "miou": 2.276263429939812
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A1_NATIVE_FALLBACK",
+      "method": "NATIVE_READOUT",
+      "metrics": {
+        "ap25": 0.370477466977467,
+        "ap50": 0.24277873977873982,
+        "apall": 0.10647771746184445,
+        "defined_classes": 36,
+        "macc": 0.33463440646386305,
+        "miou": 0.25838552430964035,
+        "uap": 0.10647771746184445
+      },
+      "pool_identity": "f608cc54eda573682d83fea325ec42364894ac6ae5e4d1b62c133cba556e3277",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 5.58468809107906,
+        "ap50": 0.4241118669690125,
+        "apall": -1.627735785672292,
+        "macc": 2.087887700335278,
+        "miou": 2.465367133164753
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A1_NATIVE_FALLBACK",
+      "method": "FC_EQ",
+      "metrics": {
+        "ap25": 0.37294376815053504,
+        "ap50": 0.23023544973544974,
+        "apall": 0.10954048038968674,
+        "defined_classes": 36,
+        "macc": 0.34504995378790304,
+        "miou": 0.26027656134188976,
+        "uap": 0.10954048038968674
+      },
+      "pool_identity": "d47c5b594a9d3a075d74368353cd61afe6fd523a180bfb9c4432f341bb7c3f93",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 3.8741816662869244,
+        "ap50": 1.1349206349206358,
+        "apall": -1.5073696145124702,
+        "macc": -0.5658092243560564,
+        "miou": 1.6591245417179656
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A1_NATIVE_FALLBACK",
+      "method": "D2",
+      "metrics": {
+        "ap25": 0.3558387039026137,
+        "ap50": 0.23734353741496597,
+        "apall": 0.11074414210128496,
+        "defined_classes": 36,
+        "macc": 0.3185129845409897,
+        "miou": 0.2522141354274219,
+        "uap": 0.11074414210128496
+      },
+      "pool_identity": "a05adccc7ad0fce21fc8b0aae1e4dc7e1c7d38fb7f1831211e90ee11ab44bd6f",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": true,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 4.397965262250969,
+        "ap50": 2.890913055198774,
+        "apall": 0.23659297786282063,
+        "macc": -0.9676936265525182,
+        "miou": 1.7382770851648854
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A2_MULTI_FREE",
+      "method": "NATIVE_READOUT",
+      "metrics": {
+        "ap25": 0.36107653986225413,
+        "ap50": 0.25490346161774735,
+        "apall": 0.12818376802503786,
+        "defined_classes": 36,
+        "macc": 0.3144941405190251,
+        "miou": 0.2530056608618911,
+        "uap": 0.12818376802503786
+      },
+      "pool_identity": "ba608f3308e10f6d9dd9842864e721ad656b33fb2f155da68216a7dff7ab0348",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NET_GAIN_WITH_GUARDRAILS",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 4.142654435511572,
+        "ap50": 3.6230364873222065,
+        "apall": -0.17432373622849745,
+        "macc": 0.5406989721209676,
+        "miou": 2.0914897129370615
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A2_MULTI_FREE",
+      "method": "FC_EQ",
+      "metrics": {
+        "ap25": 0.35852343159486016,
+        "ap50": 0.2622246959389817,
+        "apall": 0.12407460088412468,
+        "defined_classes": 36,
+        "macc": 0.32957806650575994,
+        "miou": 0.25653778713961284,
+        "uap": 0.12407460088412468
+      },
+      "pool_identity": "2e66fe2b9051b9d60f5314b556838128290149f3413ab1867dfa23dafa373c75",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 0.7341888270459618,
+        "ap50": 0.5523809523809542,
+        "apall": -0.5839380196523039,
+        "macc": -2.436205825198301,
+        "miou": 0.48380791462877826
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A2_MULTI_FREE",
+      "method": "D2",
+      "metrics": {
+        "ap25": 0.32443877551020406,
+        "ap50": 0.23151814058956915,
+        "apall": 0.11997845804988662,
+        "defined_classes": 36,
+        "macc": 0.29980901853256725,
+        "miou": 0.24046096915653,
+        "uap": 0.11997845804988662
+      },
+      "pool_identity": "bca943a16bd6294f146ff8c4f0d90497de6922b50d3dcea525b64440a04985ef",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 3.0498068069496567,
+        "ap50": 0.5219782862640049,
+        "apall": -2.039572214969039,
+        "macc": -1.1398792113862022,
+        "miou": 0.32293706985948856
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A3_MULTI_UNION",
+      "method": "NATIVE_READOUT",
+      "metrics": {
+        "ap25": 0.347594955309241,
+        "ap50": 0.23121411392839966,
+        "apall": 0.10542211609671927,
+        "defined_classes": 36,
+        "macc": 0.31277228467068824,
+        "miou": 0.2388522607088371,
+        "uap": 0.10542211609671927
+      },
+      "pool_identity": "60b8d399253e7117f8ba89a4b6c05f3bd4a1b1a765d0418baf6953c343feefe8",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 0.0013845942417323176,
+        "ap50": -1.9568405139833684,
+        "apall": -2.469824472999074,
+        "macc": -0.7547666843502832,
+        "miou": -0.7221318762476281
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A3_MULTI_UNION",
+      "method": "FC_EQ",
+      "metrics": {
+        "ap25": 0.31711073318216176,
+        "ap50": 0.20642592592592593,
+        "apall": 0.10111959351641892,
+        "defined_classes": 36,
+        "macc": 0.31662340994104743,
+        "miou": 0.22840157124776594,
+        "uap": 0.10111959351641892
+      },
+      "pool_identity": "3b6a534b754acc18db5130bf288bb5381a2e1b194c3423a0dc2c4e047b85b3f9",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 0.6429189857761197,
+        "ap50": -0.08253968253967847,
+        "apall": -0.43623078861173975,
+        "macc": -3.0219522884922076,
+        "miou": 0.14895599996976316
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_A3_MULTI_UNION",
+      "method": "D2",
+      "metrics": {
+        "ap25": 0.32352607709750564,
+        "ap50": 0.22516893424036283,
+        "apall": 0.12145553036029226,
+        "defined_classes": 36,
+        "macc": 0.2939515538996282,
+        "miou": 0.23711245000993986,
+        "uap": 0.12145553036029226
+      },
+      "pool_identity": "f960f1b056270ed51ad612a321c2bef1ac8c6021c375bb775be0f7ae8c559a2c",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 2.4244907209192865,
+        "ap50": 0.6745069745069748,
+        "apall": -1.3812596868152407,
+        "macc": 1.987453013507584,
+        "miou": 0.6499333500636695
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_S1_CROP_PRIORITY",
+      "method": "NATIVE_READOUT",
+      "metrics": {
+        "ap25": 0.3413417944489373,
+        "ap50": 0.23273940081082936,
+        "apall": 0.11200524137825725,
+        "defined_classes": 36,
+        "macc": 0.3440456069196261,
+        "miou": 0.24212222351087892,
+        "uap": 0.11200524137825725
+      },
+      "pool_identity": "edacd9940c5872f3414e2be6d3819adcc525c4c944ead8e7ddb0a46c8ffa8fb8",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 1.1379200164914394,
+        "ap50": 0.9675118532261412,
+        "apall": -0.9638928972262304,
+        "macc": 1.9121678427909239,
+        "miou": 0.5439736500908954
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_S1_CROP_PRIORITY",
+      "method": "FC_EQ",
+      "metrics": {
+        "ap25": 0.32847608740465883,
+        "ap50": 0.23566944959802102,
+        "apall": 0.11617890927414735,
+        "defined_classes": 36,
+        "macc": 0.3432927552124595,
+        "miou": 0.24106262651115118,
+        "uap": 0.11617890927414735
+      },
+      "pool_identity": "77d9873cd87b59773c97bf3a504262e337714825687b320957286dcd237a380e",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": -0.034632034632037234,
+        "ap50": 0.0,
+        "apall": 0.11022927689594564,
+        "macc": 0.017688035444896055,
+        "miou": -0.03810099515529908
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_S1_CROP_PRIORITY",
+      "method": "D2",
+      "metrics": {
+        "ap25": 0.31675056689342407,
+        "ap50": 0.2259943310657596,
+        "apall": 0.12692013101536911,
+        "defined_classes": 36,
+        "macc": 0.3243479571389992,
+        "miou": 0.23524188005868923,
+        "uap": 0.12692013101536911
+      },
+      "pool_identity": "e62647255dfd15ade07de400cc130edd08d4ac5970f76d68a289b223fb12a684",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 2.4237211201496853,
+        "ap50": 0.6787397787397814,
+        "apall": -1.6841844369622132,
+        "macc": 1.8400854820603219,
+        "miou": 0.602424081007219
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_S2_CONFLICT",
+      "method": "NATIVE_READOUT",
+      "metrics": {
+        "ap25": 0.3413340984412413,
+        "ap50": 0.23278172885315743,
+        "apall": 0.10897599387678752,
+        "defined_classes": 36,
+        "macc": 0.3425719316051535,
+        "miou": 0.24164713082031442,
+        "uap": 0.10897599387678752
+      },
+      "pool_identity": "35080c405d0d266bade0b1073d5270ed032608c8456885055d012bb1c16ff80a",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": 1.1379200164914394,
+        "ap50": 0.9675118532261412,
+        "apall": -0.9497033830367152,
+        "macc": 1.7658000959582587,
+        "miou": 0.48119410500639115
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_S2_CONFLICT",
+      "method": "FC_EQ",
+      "metrics": {
+        "ap25": 0.32847608740465883,
+        "ap50": 0.23566944959802102,
+        "apall": 0.1163208044160425,
+        "defined_classes": 36,
+        "macc": 0.34182907774413285,
+        "miou": 0.24043483106030614,
+        "uap": 0.1163208044160425
+      },
+      "pool_identity": "ebbe00e5064d4542a23f68380a2237625bb29d1ef5885e13d26449039da2edaf",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "cohort": "development",
+      "coverage": "4/4",
+      "delta_pp": {
+        "ap25": -0.034632034632037234,
+        "ap50": -0.026984126984125334,
+        "apall": -0.0029982363315694815,
+        "macc": -0.12893965524742312,
+        "miou": -0.08828490071053907
+      },
+      "geometry_status": "GEOMETRY_PASS",
+      "map_id": "RW_S2_CONFLICT",
+      "method": "D2",
+      "metrics": {
+        "ap25": 0.31675056689342407,
+        "ap50": 0.22572448979591836,
+        "apall": 0.12578785588309396,
+        "defined_classes": 36,
+        "macc": 0.32288168023207603,
+        "miou": 0.23474004100313683,
+        "uap": 0.12578785588309396
+      },
+      "pool_identity": "c613624342148554ef53e93bc16eed5bd88de26b1ca64b97749fc233968cfce8",
+      "scene_order": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": 0.0,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.0,
+        "miou": 0.0
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_B_D2",
+      "metrics": {
+        "ap25": 0.3797458622016501,
+        "ap50": 0.24495210428669076,
+        "apall": 0.11741338226305202,
+        "defined_classes": 51,
+        "macc": 0.37427869483346954,
+        "miou": 0.296910848924658,
+        "uap": 0.11741338226305202
+      },
+      "pool_identity": "964cb458f5aa047072b0eb6020144196199613bf0adf5835e28a64d976e3fb81",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_B_D2.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": -0.2461233654124706,
+        "ap50": -0.17213562222243295,
+        "apall": -1.3345520318658821,
+        "macc": -0.8029042307467094,
+        "miou": 0.2893153604146437
+      },
+      "feasible": false,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_B_FCEQ",
+      "metrics": {
+        "ap25": 0.37728462854752537,
+        "ap50": 0.24323074806446643,
+        "apall": 0.1040678619443932,
+        "defined_classes": 51,
+        "macc": 0.36624965252600244,
+        "miou": 0.29980400252880446,
+        "uap": 0.1040678619443932
+      },
+      "pool_identity": "e9b4f0719a9b3d7f3509d4d3652af59b8046f7c5ce2d1184895c12cdbb48c0a4",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_B_FCEQ.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": 1.4648699558239053,
+        "ap50": 1.4100453944203921,
+        "apall": 0.14132126304194081,
+        "macc": 0.6120797200572958,
+        "miou": 0.9521253648369421
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_W040",
+      "metrics": {
+        "ap25": 0.39439456175988913,
+        "ap50": 0.2590525582308947,
+        "apall": 0.11882659489347143,
+        "defined_classes": 51,
+        "macc": 0.3803994920340425,
+        "miou": 0.30643210257302744,
+        "uap": 0.11882659489347143
+      },
+      "pool_identity": "b5a76f5f86eb474a035e019f964861779762e5675fcd478570150a052b24b9cd",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_W040.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": 0.01142178362573687,
+        "ap50": -0.04340277777777901,
+        "apall": -0.026256001371743887,
+        "macc": -0.3657547176500353,
+        "miou": -0.2545732119920263
+      },
+      "feasible": false,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_W045",
+      "metrics": {
+        "ap25": 0.37986008003790744,
+        "ap50": 0.24451807650891297,
+        "apall": 0.11715082224933458,
+        "defined_classes": 51,
+        "macc": 0.3706211476569692,
+        "miou": 0.29436511680473776,
+        "uap": 0.11715082224933458
+      },
+      "pool_identity": "ada758cbf9fa56ecf3c788876116bc4efcef2f2ab9209234839229b6dab4c7d2",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_W045.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": 0.17206101190476164,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.13642927001479843,
+        "miou": -0.03245422572389911
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_U1_NATIVE_SINGLE",
+      "metrics": {
+        "ap25": 0.3814664723206977,
+        "ap50": 0.24495210428669076,
+        "apall": 0.11741338226305202,
+        "defined_classes": 51,
+        "macc": 0.3756429875336175,
+        "miou": 0.29658630666741903,
+        "uap": 0.11741338226305202
+      },
+      "pool_identity": "b3678d55832681a985b7ca09b3d4520e9c7ba91c77920c90628c2d74dc1ff93a",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_U1_NATIVE_SINGLE.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": false,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": 0.17206101190476164,
+        "ap50": 0.0,
+        "apall": 0.0,
+        "macc": 0.13626569665353694,
+        "miou": -0.031364497769403865
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_UQ_PAID_QUERY",
+      "metrics": {
+        "ap25": 0.3814664723206977,
+        "ap50": 0.24495210428669076,
+        "apall": 0.11741338226305202,
+        "defined_classes": 51,
+        "macc": 0.3756413518000049,
+        "miou": 0.296597203946964,
+        "uap": 0.11741338226305202
+      },
+      "pool_identity": "d8caa62728e29f2669311a234732b3ae067b721aa53fecd953343d77d68ef188",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_UQ_PAID_QUERY.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "TRADEOFF",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": true,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": 1.8666983575837792,
+        "ap50": 1.561879960317461,
+        "apall": 0.6450307264109347,
+        "macc": 0.7205042134688477,
+        "miou": 0.47414255074537115
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_U2_FC_MATCHED_SINGLE",
+      "metrics": {
+        "ap25": 0.39841284577748787,
+        "ap50": 0.26057090388986537,
+        "apall": 0.12386368952716137,
+        "defined_classes": 51,
+        "macc": 0.381483736968158,
+        "miou": 0.30165227443211173,
+        "uap": 0.12386368952716137
+      },
+      "pool_identity": "7500e1a8c5e62bc646920aba3232ab74c113fe7cd7269354c6c9caf0e407a343",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_U2_FC_MATCHED_SINGLE.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "NET_GAIN_WITH_GUARDRAILS",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": true,
+      "aggregation": "RELEASED_DATASET_POOL",
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": 1.8666983575837792,
+        "ap50": 1.561879960317461,
+        "apall": 0.6450307264109347,
+        "macc": 0.7205042134688477,
+        "miou": 0.47414255074537115
+      },
+      "feasible": true,
+      "map_id": "BB00_NATIVE",
+      "method": "RW_U3_FC_CAPTURED",
+      "metrics": {
+        "ap25": 0.39841284577748787,
+        "ap50": 0.26057090388986537,
+        "apall": 0.12386368952716137,
+        "defined_classes": 51,
+        "macc": 0.381483736968158,
+        "miou": 0.30165227443211173,
+        "uap": 0.12386368952716137
+      },
+      "pool_identity": "7500e1a8c5e62bc646920aba3232ab74c113fe7cd7269354c6c9caf0e407a343",
+      "pool_path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_U3_FC_CAPTURED.json",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "NET_GAIN_WITH_GUARDRAILS",
+      "status": "COMPLETE"
+    },
+    {
+      "cohort": "replica",
+      "coverage": "8/8",
+      "delta_pp": {
+        "ap25": -3.389207283292106,
+        "ap50": -3.0183470726253465,
+        "apall": -3.114794302223814,
+        "macc": -4.758415288683554,
+        "miou": -2.4508980267857137
+      },
+      "map_id": "BB00_NATIVE",
+      "method": "NATIVE_READOUT",
+      "metrics": {
+        "ap25": 0.345853789368729,
+        "ap50": 0.2147686335604373,
+        "apall": 0.08626543924081388,
+        "defined_classes": 51,
+        "macc": 0.326694541946634,
+        "miou": 0.2724018686568009,
+        "uap": 0.08626543924081388
+      },
+      "pool_identity": "8631a0f96f7b675f50be07de7f47369b60ca2172beca048cd9a18996c5c85e3c",
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "NO_NET_GAIN",
+      "status": "COMPLETE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A1_NATIVE_FALLBACK",
+      "method": "NATIVE_READOUT",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A1_NATIVE_FALLBACK",
+      "method": "FC_EQ",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A1_NATIVE_FALLBACK",
+      "method": "D2",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A2_MULTI_FREE",
+      "method": "NATIVE_READOUT",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A2_MULTI_FREE",
+      "method": "FC_EQ",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A2_MULTI_FREE",
+      "method": "D2",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A3_MULTI_UNION",
+      "method": "NATIVE_READOUT",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A3_MULTI_UNION",
+      "method": "FC_EQ",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_A3_MULTI_UNION",
+      "method": "D2",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_S1_CROP_PRIORITY",
+      "method": "NATIVE_READOUT",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_S1_CROP_PRIORITY",
+      "method": "FC_EQ",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_S1_CROP_PRIORITY",
+      "method": "D2",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_S2_CONFLICT",
+      "method": "NATIVE_READOUT",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_S2_CONFLICT",
+      "method": "FC_EQ",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    },
+    {
+      "NET_GAIN": null,
+      "cohort": "replica",
+      "coverage": "0/8",
+      "delta_pp": null,
+      "geometry_status": "NOT_RUN_NOT_FROZEN_NOMINEE",
+      "map_id": "RW_S2_CONFLICT",
+      "method": "D2",
+      "metrics": null,
+      "pool_identity": null,
+      "scene_order": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scientific_status": "INCONCLUSIVE",
+      "status": "NOT_RUN_NOT_FROZEN_NOMINEE"
+    }
+  ],
+  "spec": {
+    "association": {
+      "A1": "reuse old forward eligible/benefit solve exactly; unmatched => USE_NATIVE",
+      "A2": "same eligible forward edges; rowwise best, no global capacity constraint; unmatched => USE_NATIVE",
+      "A3_dominance_min": 0.8,
+      "A3_forward_margin_min": 0.1,
+      "A3_union_reverse_threshold_strict": 0.2,
+      "actions": [
+        "USE_NATIVE",
+        "ASSIGN_EXISTING",
+        "CREATE_NEW"
+      ],
+      "all_native_action_parity_required": true,
+      "experimental_explicit_CREATE_NEW": false,
+      "forward_threshold_strict": 0.2,
+      "many_to_one_means": "several local groups may share one existing owner; no forced existing-owner merges",
+      "minimum_intersection_pixels": 100,
+      "native_fallback_at_all_layers": true
+    },
+    "base_commit": "c21297413954ecb7d706d1050a8e07822938ea6f",
+    "baseline": {
+      "map": "BB00_NATIVE",
+      "readout": "D2",
+      "second_readout": "FC_EQ",
+      "source": "same parent map/receipt, not rounded historical table values"
+    },
+    "branch": "research/ovimap-recovery-wave2-v1",
+    "composition": {
+      "freeze_before_replica": true,
+      "geometry": "one qualifying map finalist x frozen light package; no A/S Cartesian product",
+      "light": "one selected gamma x one selected recovery rule; additionally compare each component",
+      "no_nomination_after_replica": true
+    },
+    "datasets": {
+      "all_exposed": true,
+      "development": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "new_confirmation_authorized": false,
+      "replica": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "schedule": "exact parent scheduled/completed frame lists, poses, intrinsics, depth and vocabulary"
+    },
+    "default_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "evaluation": {
+      "expanded_registry_supported": true,
+      "geometry_diagnostics": [
+        "raw_R25_R50_R75",
+        "best_GT_IoU",
+        "fragments",
+        "coverage",
+        "surface_F5"
+      ],
+      "overlaps": "read actual pinned evaluator vector, no assumed COCO .95 endpoint",
+      "primary": "OFFICIAL_CURRENT_CLASS + RELEASED_DATASET_POOL",
+      "projection": "same coordinates reuse; changed geometry recompute",
+      "rank": "recompute for all exported owners after recovery, including old owners",
+      "semantic_new_owner_diagnostics": [
+        "added_TP_FP",
+        "existing_GT_match_losses",
+        "rank_changes",
+        "coverage",
+        "cost"
+      ],
+      "undefined": "null plus reason; never zero-as-missing"
+    },
+    "fixed": {
+      "full_history_rerun": false,
+      "new_CropFormer_forward": false,
+      "new_SAM_forward": false,
+      "new_depth_or_pose": false,
+      "new_text_forward": false,
+      "query_attempt_budget": 200,
+      "refit_temperatures": false,
+      "retrain_query": false,
+      "visual_models": "parent native SigLIP and FC_FROZEN; same weights/preprocessing/templates"
+    },
+    "implementation_root": "src/static_ovmap/recovery_wave2",
+    "issued": "2026-10-01",
+    "light_methods": [
+      {
+        "family": "control",
+        "gamma": 0.5,
+        "id": "RW_B_D2",
+        "recovery": "none"
+      },
+      {
+        "family": "control",
+        "gamma": 0.3333333333333333,
+        "id": "RW_B_FCEQ",
+        "recovery": "none"
+      },
+      {
+        "family": "W",
+        "gamma": 0.4,
+        "id": "RW_W040",
+        "recovery": "none"
+      },
+      {
+        "family": "W",
+        "gamma": 0.45,
+        "id": "RW_W045",
+        "recovery": "none"
+      },
+      {
+        "family": "U",
+        "gamma": 0.5,
+        "id": "RW_U1_NATIVE_SINGLE",
+        "recovery": "one_successful_native_request"
+      },
+      {
+        "family": "U",
+        "gamma": 0.5,
+        "id": "RW_UQ_PAID_QUERY",
+        "recovery": "already_acquired_query_scores"
+      },
+      {
+        "family": "U",
+        "gamma": 0.5,
+        "id": "RW_U2_FC_MATCHED_SINGLE",
+        "recovery": "FC_on_exact_U1_request"
+      },
+      {
+        "family": "U",
+        "gamma": 0.5,
+        "id": "RW_U3_FC_CAPTURED",
+        "recovery": "FC_on_up_to_three_valid_captured_requests"
+      }
+    ],
+    "limits": {
+      "blas_threads": 4,
+      "concurrent_model_workers_per_gpu": 1,
+      "development_maps_max": 20,
+      "evaluation_workers": 3,
+      "mapping_threads": 8,
+      "mapping_workers": 2,
+      "native_trace_valid_frames": 3,
+      "new_full_baseline_maps": 0,
+      "new_full_map_scene_successes": 28,
+      "new_neural_model_training": 0,
+      "new_recovery_FC_encoder_inputs_total_max": 1280,
+      "new_recovery_targets_total_max": 5120,
+      "note": "recovery cap covers at most 40 scene/applications (parent12 + new28); actual usually much lower",
+      "replica_new_maps_max": 8
+    },
+    "map_variants": [
+      {
+        "association": "forward_1to1_with_native_fallback",
+        "frontend": "cropformer",
+        "id": "RW_A1_NATIVE_FALLBACK"
+      },
+      {
+        "association": "rowwise_best_with_native_fallback",
+        "frontend": "cropformer",
+        "id": "RW_A2_MULTI_FREE"
+      },
+      {
+        "association": "rowwise_specific_union_with_native_fallback",
+        "frontend": "cropformer",
+        "id": "RW_A3_MULTI_UNION"
+      },
+      {
+        "association": "native",
+        "frontend": "cached_SAM_crop_priority",
+        "id": "RW_S1_CROP_PRIORITY"
+      },
+      {
+        "association": "native",
+        "frontend": "cached_SAM_crop_priority_with_causal_conflict",
+        "id": "RW_S2_CONFLICT"
+      }
+    ],
+    "output_root": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001",
+    "parent_root": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001",
+    "phases": [
+      "bind",
+      "cache-screen",
+      "association-screen",
+      "sam-screen",
+      "compose",
+      "freeze",
+      "transfer",
+      "report",
+      "publish",
+      "all"
+    ],
+    "publication": {
+      "artifact_dir": "artifacts/static_ovmap/recovery_wave2_v1",
+      "commit_arrays": "compact class scores/probabilities and actual interventions; no weights/RGB-D/full TSDF",
+      "external_receipt": "publication/final.json outside commit; no self-referential hash claim",
+      "remote_verify": "normal git push then full local HEAD equals remote refs/heads branch SHA",
+      "report_dir": "docs/paper/static_ovmap",
+      "reports": [
+        "RECOVERY_WAVE2_RESULTS.md",
+        "RECOVERY_WAVE2_HANDOFF.md",
+        "RECOVERY_WAVE2_SELECTION.md",
+        "RECOVERY_WAVE2_CLAIMS.md"
+      ],
+      "soft_compact_package_limit_MiB": 50
+    },
+    "recovery": {
+      "FC_additional_image_encoder_input_cap_per_scene": 32,
+      "FC_frame_budget_assignment": "rank candidate requests before inference; skip uncached frames beyond cap, no lower-ranked substitute",
+      "U1": "exactly one successful retained native observation, with matching physical request and final-owner proof",
+      "U2": "same candidate/request as U1; one FC view, no alternate-view substitution",
+      "U3": "all capped candidates with legal captured requests; top three by area then frame and physical request key",
+      "U3_failure": "omit recovered owner, no fallback masquerading as FC",
+      "UQ": "frozen query_scores availability plus final-lineage receipt; no extra query acquisition",
+      "base_geometry_and_existing_owner_masks_immutable": true,
+      "cache_inventory": "freeze before the recovery comparison; new admissions shared, no retroactive cap expansion",
+      "candidate_cap_per_scene": 128,
+      "candidate_selection_uses_target_coordinates_or_GT": false,
+      "fill_only": "raw_owner==candidate AND baseline_painted_owner==0",
+      "max_views": 3,
+      "minimum_residual_source_rows": 100,
+      "missing_owner_only": true,
+      "new_views_from_final_mesh_projection": false,
+      "order": "descending residual source-row count, then canonical world-coordinate support digest",
+      "paired_evaluation": "U1/U2 common successful subset plus full pipeline coverage separately",
+      "request_proof": "all recorded segments converge to exactly one active final RAW owner using captured aliases",
+      "whole_raw_registry_swap": false
+    },
+    "repository": "Orangekostar/oviovo",
+    "runner": "scripts/evaluation/run_ovimap_recovery_wave2.py",
+    "sam": {
+      "S2_conflict_max": 0.2,
+      "S2_known_owner_depth_tolerance": "abs(hit_z-depth)<=0.03+0.01*depth",
+      "S2_min_known_pixels": 100,
+      "S2_min_owner_stable_previous_snapshots": 2,
+      "S2_reject_action": "drop only offending SAM-origin additions; retain original CropFormer pixels",
+      "S2_self_purity_min": 0.8,
+      "S2_state": "own current preinsert map plus two past snapshots; never final/other experimental map for online decisions",
+      "S2_uncertain_action": "KEEP_S1",
+      "attached_completion": "recorded RAW winner pixels only on CropFormer-background, attached to matched CropFormer group",
+      "chunk_valid_frames": 5,
+      "inputs": "cached per-track binary masks + recorded RAW winner raster + current CropFormer; no full logits assumed",
+      "match_rule": "mutual unique best IoU; tied maxima => unattached; spatial order is for output determinism only",
+      "protect": "all currently CropFormer-labeled pixels and their separate groups",
+      "replacement_coverage_min": 0.8,
+      "replacement_iou_min": 0.5,
+      "same_original_seed_and_frame_schedule": true,
+      "unattached_track_crop_overlap_max_strict": 0.2
+    },
+    "schema_version": 1,
+    "screening": {
+      "S1_gate": "at least one changed canonical frontend raster over all development frames; otherwise equivalent input control",
+      "S2_gate": "S1 has a real intervention and cached tracks are available; implement/run own-map conditional path",
+      "always_run_A_development": true,
+      "always_run_light_development": true,
+      "geometric_catastrophe": {
+        "action": "SCREENED_OUT_GEOMETRY; publish full geometry; do not spend N/Q/FC on that arm",
+        "alternative_min_R50_count_loss": 1,
+        "fragment_factor": 1.75,
+        "mean_best_iou_drop_pp": 3.0,
+        "min_R50_count_loss": 2,
+        "rule": "(bestIoU_drop>=3pp AND R50_loss>=2) OR (fragments>=1.75*base AND R50_loss>=1)"
+      },
+      "raw_geometry_only": false,
+      "relative_baseline": "same frozen BB00 native map, not failed prior FORWARD/BIDIR"
+    },
+    "selection": {
+      "bands_pp": {
+        "ap50": 0.1,
+        "apall": 0.05,
+        "miou": 0.1
+      },
+      "deploy": "N0_UNCHANGED",
+      "feasible_vs_B": {
+        "ap50_min_delta_pp": -0.1,
+        "apall_min_delta_pp": -0.05,
+        "miou_min_delta_pp": -0.1
+      },
+      "leave_one_scene_out": "sensitivity table, not extra tuning",
+      "map_transfer_gate": "candidate has NET_GAIN on four development scenes under fixed D2 and is not geometric-catastrophe",
+      "max_map_finalists": 1,
+      "metrics_internal_scale": "fractions; convert pp by /100",
+      "net_gain": {
+        "ap50_min_delta_pp": -0.1,
+        "apall_min_delta_pp": 0.2,
+        "miou_min_delta_pp": -0.1
+      },
+      "replica_results_change_selection": false,
+      "tie": "standalone new encoder inputs, changed blocks, parameter distance to baseline, fixed method ID"
+    },
+    "status": "EXECUTION_SPECIFICATION_NOT_EXPERIMENT_RESULT",
+    "task_id": "ovimap-recovery-wave2-v1",
+    "upstream": {
+      "commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+      "data_association": 2,
+      "inherited_ratio_threshold": 0.0,
+      "inst_association": 4,
+      "patch_stack": [
+        "existing module_validation_v1 capture patch",
+        "third_party_patches/ovimap/backbone_wave1_v1/backbone_wave1_v1.patch",
+        "third_party_patches/ovimap/recovery_wave2_v1/recovery_wave2_v1.patch (new)"
+      ],
+      "repository": "OVI-MAP/OVI-MAP"
+    },
+    "upstream_worktree_hint": "/home/ww/crove/ovimap-recovery-wave2-upstream",
+    "weight_rule": {
+      "equivalent_interpolation": "(1-t)*pFC_EQ+t*pD2, t=6*gamma-2; exact copies at endpoints",
+      "full_three_source": "(1-gamma)*(pN+pQ)/2+gamma*pF",
+      "gamma_candidates": [
+        0.3333333333333333,
+        0.4,
+        0.45,
+        0.5
+      ],
+      "partial_sources": "exact inherited available-source behavior, independent of gamma"
+    },
+    "worktree_hint": "/home/ww/crove/ovimap-recovery-wave2"
+  }
+}

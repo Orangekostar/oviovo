@@ -1,0 +1,780 @@
+{
+  "binding_identity": "e645aacb9f0bbb0b686dd048ab3c1a72cef0e910b1556d4f32308a3b3865fcb8",
+  "contracts": {
+    "C0": {
+      "assessment": "Current local groups, native labels and final RAW owners remain separate. Physical request lineage is reconciled to one final owner. W, U and full-map geometry/partition/semantic/scorer identities are independently recorded.",
+      "evidence": [
+        "locked_decisions.json.gz",
+        "official_scene_rows.json",
+        "geometry_summary.json"
+      ],
+      "source_files": [
+        "recovery_registry.py",
+        "export.py",
+        "mapping_hooks.py",
+        "evaluation.py"
+      ],
+      "status": "PASS"
+    },
+    "C1": {
+      "assessment": "The available-source endpoints use t=6*gamma-2 with endpoint copies, inherited category order and source-free native fallback. W is measured on all four original controls in both complete cohorts.",
+      "evidence": [
+        "official_pools.json",
+        "validation/targeted_runs.json"
+      ],
+      "source_files": [
+        "weight_readout.py",
+        "light.py"
+      ],
+      "status": "PASS"
+    },
+    "C10": {
+      "assessment": "Primary scoring imports the unchanged released evaluator, actual .50-.90 overlaps, target min100, original triangle painting, exact FP32 Open3D nearest projection and official current-class ranks. Ordered scene pools and summed confusion matrices are used. Actual matcher TP/FP terminal parity, duplicate/tie ambiguity, displaced matches and rank/confusion changes are retained. One W x U composition, 96 fixed-method leave-one-out rows and committed pre-Replica choices are measured. Fixed-D2 map nomination remains empty; alternate Native and exposed Replica gains do not retune it.",
+      "evidence": [
+        "official_scene_rows.json",
+        "official_pools.json",
+        "selection.json",
+        "leave_one_out.json",
+        "composition_check.json"
+      ],
+      "source_files": [
+        "evaluation.py",
+        "mechanisms.py",
+        "selection.py",
+        "sensitivity.py",
+        "reporting.py"
+      ],
+      "status": "PASS"
+    },
+    "C11": {
+      "assessment": "Targeted production tests and actual native/expanded-evaluator evidence are used rather than reference-kernel tests alone. All consumed historical Python versions are byte-exact archived, including the recovered precommit FC wrapper; native patch stack, isolated binary and restoration commands are retained. Compact publication is below 50 MiB, external data access is described truthfully, and normal push plus full remote SHA verification is the remaining authorized publication action.",
+      "evidence": [
+        "external_artifacts.json",
+        "validation/producer_sources.json",
+        "validation/targeted_runs.json",
+        "failure_and_costs.json"
+      ],
+      "source_files": [
+        "binding.py",
+        "workflow.py",
+        "provenance.py",
+        "publication.py",
+        "reporting.py"
+      ],
+      "status": "PASS"
+    },
+    "C2": {
+      "assessment": "Candidates are absent from positive painted owners; K=(RAW==owner)&(painted==0), source min100, spatial row-count/hash priority and cap128 precede inference. U appends exactly K while preserving incumbents; expanded registry, actual masks and ranks are measured. Source and target min100 are separate.",
+      "evidence": [
+        "recovery_funnel.json",
+        "official_scene_rows.json",
+        "mechanism_comparisons.json"
+      ],
+      "source_files": [
+        "recovery_registry.py",
+        "export.py",
+        "evaluation.py"
+      ],
+      "status": "PASS"
+    },
+    "C3": {
+      "assessment": "U1 uses the unique successful retained request with verified bbox/frame/pose/feature lineage; UQ uses available finite stored scores with final paid reconciliation. U2 uses exactly the U1 request; U3 considers captured requests in the fixed area/frame/physical-digest order, max3. Original signed pooling and text aggregation are preserved. All 21 actual U1 single observations match artificial duplicated original FP32 classification scores exactly.",
+      "evidence": [
+        "source_scores.json.gz",
+        "mechanism_comparisons.json",
+        "validation/single_observation.json"
+      ],
+      "source_files": [
+        "recovery_sources.py",
+        "recovery_fc_worker.py",
+        "recovery_registry.py"
+      ],
+      "status": "PASS"
+    },
+    "C4": {
+      "assessment": "Original effective model/operator identities, FP32 preprocessing and 14-template text space remain fixed. Exact parent content is read-only. The initial U2-then-U3 missing-image allowance is assigned once, max32, without replenishment or view substitution. Actual recovery performs zero new image encodings and 22 new region poolings; standalone cost remains separate.",
+      "evidence": [
+        "source_scores.json.gz",
+        "failure_and_costs.json",
+        "external_artifacts.json"
+      ],
+      "source_files": [
+        "binding.py",
+        "recovery_sources.py",
+        "recovery_fc_worker.py",
+        "costs.py"
+      ],
+      "status": "PASS"
+    },
+    "C5": {
+      "assessment": "The isolated C++ patch implements USE_NATIVE through eligibility, fresh bookkeeping, original mode4 counts, ordinary reservations and aliases without fallback preallocation or blanket prior-owner tokens. Explicit compatible followers may share one owner while retaining native label uniqueness. Three real valid-frame disabled/all-native paths are exactly equal; 41 accepted pairs and a real native two-group/one-owner fixture validate the constrained path.",
+      "evidence": [
+        "validation/validation_receipt.json",
+        "validation/recovery_native_build_receipt.json",
+        "mechanism_comparisons.json"
+      ],
+      "source_files": [
+        "native_patch.py",
+        "native_trace.py",
+        "native_validation.py",
+        "mapping_hooks.py"
+      ],
+      "status": "PASS"
+    },
+    "C6": {
+      "assessment": "A1 uses positive-benefit Hungarian with per-row dummies and USE_NATIVE on nonmatches. A2 is independent spatial-tied rowwise choice; A3 adds dominance/margin and post-filter union reverse coverage. No CREATE_NEW main action is used. All 12 A map-scene outputs and planned/realized candidate, alias, follower, fresh-owner and unknown count-owner evidence are measured.",
+      "evidence": [
+        "geometry_summary.json",
+        "mechanism_comparisons.json",
+        "official_pools.json"
+      ],
+      "source_files": [
+        "association.py",
+        "mapping_hooks.py",
+        "mechanisms.py"
+      ],
+      "status": "PASS"
+    },
+    "C7": {
+      "assessment": "S1 consumes saved binary tracks and exclusive RAW winning pixels with genuine remap/seed correspondence. Mutual unique best IoU/coverage attachments and strict standalone binary overlap use background only. All 800 frames preserve every original positive CropFormer pixel and separate group; 638 actual canonical inputs change. Chunk-first/no-seed behavior returns the original crop raster.",
+      "evidence": [
+        "geometry_summary.json",
+        "mechanism_comparisons.json",
+        "validation/targeted_runs.json"
+      ],
+      "source_files": [
+        "sam_completion.py",
+        "mapping_hooks.py"
+      ],
+      "status": "PASS"
+    },
+    "C8": {
+      "assessment": "S2 uses its own preinsert probe and the two preceding completed factor0 snapshots. Same-track history uses unmodified binary masks and visibility warp; missing/ambiguous membership and chunk identity cause abstention. Actual proposed support includes additions and the attached crop group. q_other>.2 with known area>=100 removes additions only. All 800 real S2 diagnostics were checked: 185 suppressed tracks, 18,966 removed addition pixels, 1,545 history abstentions and no changed crop positives.",
+      "evidence": [
+        "geometry_summary.json",
+        "mechanism_comparisons.json",
+        "validation/targeted_runs.json"
+      ],
+      "source_files": [
+        "sam_completion.py",
+        "mapping_hooks.py",
+        "mechanisms.py"
+      ],
+      "status": "PASS"
+    },
+    "C9": {
+      "assessment": "All 20 full development maps lock before post-map diagnostic GT. The exact complete four-scene catastrophe rule passes all five arms, including A2/A3 whose >=3pp IoU drop has only one R50 loss. All arms therefore receive their own fresh N/Q/FC anchors, requests and projection. All 20 Q readouts use exactly 200 attempts; the implemented exhaustion adapter does not add observations.",
+      "evidence": [
+        "geometry_summary.json",
+        "official_pools.json",
+        "failure_and_costs.json"
+      ],
+      "source_files": [
+        "maps.py",
+        "geometry.py",
+        "readouts.py",
+        "native_worker.py",
+        "region_worker.py"
+      ],
+      "status": "PASS"
+    }
+  },
+  "execution_sections": {
+    "0": "PASS: executable measured improvement attempt on the exact base/new worktree/branch; negative development selection retained.",
+    "1": "PASS: all eight light conditions, five map mechanisms and one light composition measured; no model search/training or unauthorized frontend.",
+    "10": "PASS: exact released official metrics, expanded U masks/registry/ranks and actual mechanism evidence; six scientific tables and all paired deltas included.",
+    "11": "PASS: task-local package and native patch/build instructions; unrelated original modules/licenses and historical studies preserved.",
+    "12": "PASS: 35 distinct targeted production tests, actual native/evaluator integration, 20 development/0 Replica/0 baseline new full maps, zero new SAM/CropFormer/text forwards; actual fresh N/Q/FC compute and failure/missing-timing evidence recorded. The rejected first publication attempt is retained; matcher diagnostic list ordering is deterministic.",
+    "13": "READY_FOR_NORMAL_PUSH: four reports and all specified compact artifacts are generated and reviewed. Publication is complete only after the external publication/final.json proves full local/remote SHA equality. No recursive verification commit.",
+    "2": "PASS: immutable 12-scene source/assets/schedules/cache binding and actual operator identities; original inputs remain read-only.",
+    "3": "PASS: exact four development and eight exposed Replica scenes; measured BB00_NATIVE+D2 baseline reused.",
+    "4": "PASS: all nine CLI phases implemented with bounded workers and matching complete artifact reuse; final all --resume is required before completion.",
+    "5": "PASS: exact W controls and append-only U1/UQ/U2/U3 recovery, full official exports and actual common-success/common-coverage diagnostics.",
+    "6": "PASS: genuine C++ fallback and compatible many-to-one A paths, serial native parity/follower proof and all 12 full A map-scene outputs.",
+    "7": "PASS: full binary/winner S1 and causal S2 paths and eight full S map-scene outputs; no new SAM/CropFormer inference.",
+    "8": "PASS: raw map-first full-cohort geometry screens and fresh measured semantics for every noncatastrophic arm.",
+    "9": "PASS: one light composition, fixed-D2 map gate, frozen commit 6dd3de7c00553f4895b72088435ebccf76cc9adc before new Replica scoring, all eight fixed light transfer arms and 96 fixed-method sensitivity rows. Conditional new-map composition/transfer legitimately skipped because no map qualifies."
+  },
+  "identity": "4a1312d33118c400e5d14145a538bc8746cc822aa3c10556c0949efb8207e4fa",
+  "post_publication_check_required": true,
+  "previous_review_identity": "370c84a547bd44006586849a78675f5079a42c8344061125a7ef6cf8bcf753a2",
+  "remaining_authorized_actions": [
+    "Run the complete required all --resume command",
+    "Normal named-branch push",
+    "Verify full local HEAD equals remote branch SHA",
+    "Write the external completion audit"
+  ],
+  "review_limitations": [
+    "Replica scenes were already exposed",
+    "No broad generalization/significance claim",
+    "No alternate-readout or Replica-driven nomination",
+    "Wall timing is not separate CUDA-event timing",
+    "Shared external data is not promised as public downloadable assets"
+  ],
+  "review_owner": "PRIMARY_AGENT",
+  "reviewed_files": [
+    {
+      "bytes": 1485,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/completion.json",
+      "sha256": "435dedc38d735fa02aab7ac2627cc111179dd6a0ca052d511ff9296747a87fdc"
+    },
+    {
+      "bytes": 2908,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/composition_check.json",
+      "sha256": "ea44ed18824830e54584da8076a420ad7c8bfac4f3bfa8bf6079c52620d1e5d8"
+    },
+    {
+      "bytes": 56395,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/experiment_matrix.json",
+      "sha256": "ccca8aaaa1a57c0eb9511659c988b43def9cea34bc25c9694076475386b8e0c9"
+    },
+    {
+      "bytes": 14685281,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/external_artifacts.json",
+      "sha256": "34e29cf4c0ba29995c517967261cf4e99e1cf377da623563c6a1e9a57e22643f"
+    },
+    {
+      "bytes": 1319216,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/failure_and_costs.json",
+      "sha256": "3ab8992ef154323fec4c353235d315922e31fc9e7ad913e10122dbf4769ab5e8"
+    },
+    {
+      "bytes": 742878,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/geometry_summary.json",
+      "sha256": "77eae2ccdf07942e0e1ea4d9cdf982346300411e6439557ea7bebcf1726c7c0b"
+    },
+    {
+      "bytes": 118432,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/leave_one_out.json",
+      "sha256": "77cba717b6490378e0d9bb6da3320189589f28f32bb72ddbef01d7065f97f7c1"
+    },
+    {
+      "bytes": 6912973,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/locked_decisions.json.gz",
+      "sha256": "5101d093f752e42cd90cfbdb5534cec0ef51a24994c98a16340e31d071ded33a"
+    },
+    {
+      "bytes": 1503506,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/mechanism_comparisons.json",
+      "sha256": "02f1eca262361735f40e9da01402444946e491b93f91ce461431c681510ea4b3"
+    },
+    {
+      "bytes": 45486,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/official_pools.json",
+      "sha256": "7f4cc42ec1408a73fcc14d75d5cbfb5956f84e89778640aa6ca9cfc4c674aee0"
+    },
+    {
+      "bytes": 2957358,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/official_scene_rows.json",
+      "sha256": "8ab2c1d842a86408b8dd0017c16b2ad628077286f8d4c33b04e537116d0d2190"
+    },
+    {
+      "bytes": 115445,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/recovery_funnel.json",
+      "sha256": "b5420c6497f877b0d94ac41816a6b471ae9b95f9f5bc1b74266376db0488421a"
+    },
+    {
+      "bytes": 742450,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/resolved_inputs.json",
+      "sha256": "61268691a337b1b61cb68ce10b9ce0cd90f9fb9e3bf2f8fabeedcbd5b48ab054"
+    },
+    {
+      "bytes": 40712,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/selection.json",
+      "sha256": "ed8fbf987e707616a0170ba2640fe04f2387e604fb7658c24c71588b2e036683"
+    },
+    {
+      "bytes": 123889,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/source_scores.json.gz",
+      "sha256": "574fc41e31af16391d1f5fc5ad619cdce3d66110beaec2955798a79b0e84f456"
+    },
+    {
+      "bytes": 3696,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/check_single_observation.py",
+      "sha256": "4a1bf2795c87ccfb48c31ca33ea9dd4b651b4dce15948828c4046f00702041e4"
+    },
+    {
+      "bytes": 10678,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/primary_review_assessments.json",
+      "sha256": "571e7c604a4c05cf1837a472f3bacf75fd3b08ef01726670fb5a55ab5848afd6"
+    },
+    {
+      "bytes": 5562,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/162a5c8335281998abf579f4b823d31a70ea8edff296c53faf0da35f287ed20a.py.gz",
+      "sha256": "2bf4f4a4d63921fa4af5a16c7d9927fc3e228bcf1b173a52da2347594bc41311"
+    },
+    {
+      "bytes": 4407,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/2f457986fd33b21a727595d2c370956fe4a5f76ddf8b90a2aff1bf9fe84337ef.py.gz",
+      "sha256": "1a08d64a02ca9f2edc520dc3d1c569afce4017cff75d020c63b6e16fe7728881"
+    },
+    {
+      "bytes": 3283,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/31ccc10d8f995584ec39ef47810454c9abc953d68f9f15ee4279fcb197380063.py.gz",
+      "sha256": "5e7102dcddede5281614aa1e62aebbbe8dbbfdf7800996aa452b60ad3c6b21a6"
+    },
+    {
+      "bytes": 5272,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/3a90442931e0cadc44affac8fc1ad1c4c222b0fb7cb6aa72317d6b5dea65dec6.py.gz",
+      "sha256": "21ef8400d547d5aba809f119fb413b53db12b924bdfef19d548640edd0404b95"
+    },
+    {
+      "bytes": 2489,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/4b600978936df74a7b1e243d0d70eb7701e7b083e387da2e2d42ffc7967fcfc0.py.gz",
+      "sha256": "237808da108cf2d883b93f0c7eccbdb0f0a6d825d86a39f822e9dc2068b58b4e"
+    },
+    {
+      "bytes": 3210,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/5578f4ffb6f8ce4557c8eb936c50949dbcdef8704444ea8a8241131c7690b450.py.gz",
+      "sha256": "58e8884406f53b5c4893ef23a6750da454b23158a769552e29990efd30fc1602"
+    },
+    {
+      "bytes": 1756,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/62348317fcc2fbbb3f9c5a6225da298b1e25377b8fd5f3dc88b4fc515e07b169.py.gz",
+      "sha256": "0db7a8a14fc0b3581102a0b79f769ea3c9ddf5fc9873ae4d8635d8827307126d"
+    },
+    {
+      "bytes": 3219,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/68a6a56880d2063c7049af660b6dd0ca1c4b289655738b3addbbf04f69b5be63.py.gz",
+      "sha256": "faaad0b213838e941a0e6217b58fbbdd71f33f689dc64994c6a8696b7a86d44e"
+    },
+    {
+      "bytes": 2842,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/68c33f3ee8452dd5de181b0388e9e65aee1360dc83deb3f381dd9e35a1d4b737.py.gz",
+      "sha256": "f01ff870ec4967e5db5c27ee47a5f9c1934392bac93d37b01a1ab83921988af3"
+    },
+    {
+      "bytes": 5158,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/7723aef12433579efe4bdc30a8d3b1337bf1ec7301ad1947c3d9aa493080495f.py.gz",
+      "sha256": "553601ee3a8861e95fad4ce7c2f756689789334b5280d618030a3daebd40c36c"
+    },
+    {
+      "bytes": 3813,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/81ea9b0da09dbda44c2936e98249cfb8cd90b60aa3fb8156c8d83c86dc606c9b.py.gz",
+      "sha256": "18a47d8d16b1a62cac0e58d65ccd42d2a2374f8413c0b62a4e1079228a6277f0"
+    },
+    {
+      "bytes": 1550,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/974f837b7d9842281cedfd36b80b8799ff0fa30926d6f48f2328933cb5872884.py.gz",
+      "sha256": "4a216526c502217fc624937e567b5bf2fa8158c26a613b7af71af38187120d34"
+    },
+    {
+      "bytes": 1727,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/a74007266d3e241a9db8d7c22efc466630c8022c7b558c59ad5026fe575443f2.py.gz",
+      "sha256": "c4c09e1e33b3b56aea7d07f810bd363e685b6136acef6331941c1860897d9ceb"
+    },
+    {
+      "bytes": 3306,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/be62343c7001118d15f765da15ea422585301202b69dc79485e18e3b8a5c6fcb.py.gz",
+      "sha256": "774ea83b6e335117a4d50d8e7081cf5f72dcf926c7f06d6e0b1c8c41d1abf769"
+    },
+    {
+      "bytes": 5379,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/c615003c44b6bb0cff62f233b6209562a5b15ff94906e6ca0574b7cb17819414.py.gz",
+      "sha256": "fa5305c7e0ea44797120790c164f47ffa2d37e8884d2103cde2bf1876ea119c9"
+    },
+    {
+      "bytes": 1381,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/c8d4203c0b6ec365bebf54c0e7c0eee5c94d68518d81c53916e4ac7fd0d8d10a.py.gz",
+      "sha256": "5b1783174d81aa95518efe3d3e5b104ab3c96aadad0831b957c7994ad5b210d9"
+    },
+    {
+      "bytes": 6575,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/ca1ae959cf7a27b47281c5dc398ee15a65430529d0a6303661be145ff01e6d03.py.gz",
+      "sha256": "62da941fe35a2d169ae557bb5e75ca7748b3e8d3ef0fc09df784e7f30f771446"
+    },
+    {
+      "bytes": 4542,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/d05c205bd1d81dddba5073d89f568ec6c87e169be8f37726aa2caddf8809e253.py.gz",
+      "sha256": "22a33f8c524d1dd2c51ca6030f8c2c60b246af0555ddba723adb3d33772caee5"
+    },
+    {
+      "bytes": 3344,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/da2b8ccc38e4057e6e2799b414fe324d51903431fea88b9a3b05a81cfbf05716.py.gz",
+      "sha256": "e6563036dc799e1ca7c2524acbc020a2e3b427bebcbc0789aeb369ef3ffed8e3"
+    },
+    {
+      "bytes": 3791,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources/df9af966906f33f8227848abbddb7a059022b0f3ad4163e72e4117c96a65a026.py.gz",
+      "sha256": "b2e80c6d5da4dc69ff2893bf597c26daf821e4e514e3f10afbc85f7f01dab537"
+    },
+    {
+      "bytes": 16981,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/producer_sources.json",
+      "sha256": "af404bc7b77d3ab179c3a7efd582c1201cf1c5a3999e9c8cc1c2786acf8bc895"
+    },
+    {
+      "bytes": 990,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/receipt.json",
+      "sha256": "0833382d0e7f84ce4ff47537ca9014af4886b4e01b28ce77b5b0de0fa4abc752"
+    },
+    {
+      "bytes": 41698,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/recovery_native_build_receipt.json",
+      "sha256": "7ea95344a83a38ccfca85232c899c0b94b1bfcd8550fc4099014d2b9a6c8ea23"
+    },
+    {
+      "bytes": 13385,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/single_observation.json",
+      "sha256": "b8f42a1b5c08b434a8073e675c83fe170797acb8a47a9083efad23ffa7514aeb"
+    },
+    {
+      "bytes": 28606,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/targeted_runs.json",
+      "sha256": "b77f49c97dd1041e9331021d62d4689a7b3ae7155c8e9d13f62b9fb6e2a83e54"
+    },
+    {
+      "bytes": 3079,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/artifacts/static_ovmap/recovery_wave2_v1/validation/validation_receipt.json",
+      "sha256": "f0db7e8a0a0a7e3cdb84ac8171a0fae0a8a7a45e6115b8e2a1a41bb0cdaae5ef"
+    },
+    {
+      "bytes": 1489,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/RECOVERY_WAVE2_CLAIMS.md",
+      "sha256": "584990acdce18f6d6c793260f2a8aa83815ffacfd31b580b61a9c8c99e26cb2b"
+    },
+    {
+      "bytes": 2431,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/RECOVERY_WAVE2_HANDOFF.md",
+      "sha256": "e9db3cb225a75a3bc58da8b03de6ba7e61c4dfc26f98ccc2b6f63bc77319239d"
+    },
+    {
+      "bytes": 38237,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/RECOVERY_WAVE2_RESULTS.md",
+      "sha256": "da1d7b285e1685172013ee35a9542e18b3af61a33a9bb9e0452cce2f0fa35314"
+    },
+    {
+      "bytes": 11517,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/RECOVERY_WAVE2_SELECTION.md",
+      "sha256": "0d3cec97eb84b033a06aca4150fc1202c18f67c4bbbedb4e0b71cf0b583839f9"
+    },
+    {
+      "bytes": 34004,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/CODEX_FINAL_EXECUTION_EN.md",
+      "sha256": "acc428a6222c09d2e528ffda1617d9a45211f44cba39803270989d189db0bb80"
+    },
+    {
+      "bytes": 7977,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/CODE_REVIEW_AND_PLAN_ZH.md",
+      "sha256": "519f550ff36893b52ec8b6098b4cd467fe4fa487cbc7582468db37beb915a015"
+    },
+    {
+      "bytes": 14770,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/EXECUTION_PLAN.md",
+      "sha256": "32b7af4f2a676df43a6bdbd6f0dfdf510e1c2b732517ef087c478dd899273f1d"
+    },
+    {
+      "bytes": 20919,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/IMPLEMENTATION_CONTRACTS.md",
+      "sha256": "1ad026a0c9c6782a981b014d9377d097241fb734f29d36d8d647f6a82121b6cc"
+    },
+    {
+      "bytes": 1047,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/MANIFEST.sha256",
+      "sha256": "0187676904338db97c5f3c7f55367b350e16b371c31c66634e0bcbb073a11ea9"
+    },
+    {
+      "bytes": 6637,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/PACKAGE_AUDIT.json",
+      "sha256": "5f27e26ec85fd0e1a124412cc79a2f735e0a16260a651f66593257d2c35c38ef"
+    },
+    {
+      "bytes": 11859,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/PROTOCOL_SPEC.json",
+      "sha256": "ca2aa8b406924745bbab9073384259f8c11b0bf53c229432664be61422faeaa4"
+    },
+    {
+      "bytes": 1952,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/README.md",
+      "sha256": "3cecd8720ad156c3013636694aad70d3c68b55dc79d1a4c53a3080a287b99160"
+    },
+    {
+      "bytes": 1731,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/REFERENCE_TEST_LOG.txt",
+      "sha256": "4e37441badb1c8f1f8d77042e1f5bc9b336e21b6f731f0be061b124ff24e37ea"
+    },
+    {
+      "bytes": 9400,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/SOURCE_EVIDENCE.md",
+      "sha256": "4e002ec448d3df889b9d971a871fe19e8caae3ea813b5e732c29352b5b62ce5c"
+    },
+    {
+      "bytes": 9110,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/audit_package.py",
+      "sha256": "64d7dd913282e2888d73a02ba71db0de497881da4f34d39af42f00713f23f259"
+    },
+    {
+      "bytes": 8425,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/reference_kernels.py",
+      "sha256": "745e07fdb4a2547526e7090664900d158dd21bcf6151fb35ed67fb2b3e6071a1"
+    },
+    {
+      "bytes": 8361,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/source_index.json",
+      "sha256": "cf4b96f0cdb98bc7f57f62725f70c21bccfd7ed215c54caed36eb7293ba7af2b"
+    },
+    {
+      "bytes": 3951,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/docs/paper/static_ovmap/recovery_wave2_v1/test_reference_kernels.py",
+      "sha256": "16d5b6d4befac06b098d5229aea912b342e5bb82eecf04db7b5e1df68b2073ef"
+    },
+    {
+      "bytes": 1235,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/scripts/evaluation/run_ovimap_recovery_wave2.py",
+      "sha256": "27211f82ef6b3183233625b1e0d72f1e99e274853ef8b179d75465a29f772798"
+    },
+    {
+      "bytes": 74,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/__init__.py",
+      "sha256": "beb4d3248c80251c088d46cef0cfc5c13cf94279a295af472e4fd2a4420e5c90"
+    },
+    {
+      "bytes": 4709,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/association.py",
+      "sha256": "a74007266d3e241a9db8d7c22efc466630c8022c7b558c59ad5026fe575443f2"
+    },
+    {
+      "bytes": 12701,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/binding.py",
+      "sha256": "27e5f769130d1b0baa778e040d567506dba73d1f427fbe1847cb4267255b7385"
+    },
+    {
+      "bytes": 4862,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/costs.py",
+      "sha256": "a7d0fef663f17ddf8a622a3e6e0661c5bc5ba27fa7adcda3a7b057ffbac87abc"
+    },
+    {
+      "bytes": 2253,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/coverage_diagnostics.py",
+      "sha256": "be534fa68be6ada7042f39bd6f9f44c20af37e01527813efc4eddd201d927fcf"
+    },
+    {
+      "bytes": 12971,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/evaluation.py",
+      "sha256": "ab903a54158243598f1e94c46390dddb566b30b9f2bee1288225103eb4ab9df6"
+    },
+    {
+      "bytes": 2992,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/export.py",
+      "sha256": "88a62683068d4054ed2aae5bd14e994ce9dc7a7d7522283024641f5ae3ab48c9"
+    },
+    {
+      "bytes": 12140,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/geometry.py",
+      "sha256": "87f574dc4c2f4e5364db07f92dda12748450bc820359eb40a8a8cc48713e9e1a"
+    },
+    {
+      "bytes": 9865,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/light.py",
+      "sha256": "9a13009b92b97981bc1cb9a0b37d35909a9b627f820f0ec888ac0136b23fff35"
+    },
+    {
+      "bytes": 2689,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/map_batch.py",
+      "sha256": "7eccd35f9c72a335c2eb746907bb1a56d6c24d6e74b980de2eb1d1ca69c968c4"
+    },
+    {
+      "bytes": 5369,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/mapping_hooks.py",
+      "sha256": "62348317fcc2fbbb3f9c5a6225da298b1e25377b8fd5f3dc88b4fc515e07b169"
+    },
+    {
+      "bytes": 10018,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/maps.py",
+      "sha256": "31ccc10d8f995584ec39ef47810454c9abc953d68f9f15ee4279fcb197380063"
+    },
+    {
+      "bytes": 21550,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/mechanisms.py",
+      "sha256": "9e1126d5f0a79bdb92c217cf1beaacba3260b65b224453d1761f66fbd624ecb3"
+    },
+    {
+      "bytes": 1729,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/native_patch.py",
+      "sha256": "7e3148d9ba20c4eddad5f5598b84687afa2cb8c15a427f6567323ff1a09d5d3b"
+    },
+    {
+      "bytes": 8850,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/native_trace.py",
+      "sha256": "4e9ae28e1b5ffdad7cb4e181d4ab6a619c34aa5429a78ed4c98cfb28ddfc1f62"
+    },
+    {
+      "bytes": 4940,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/native_validation.py",
+      "sha256": "1201102b3cc132e62f805eb20a913e257c5a4bb032a2545ab44e6d95192ed415"
+    },
+    {
+      "bytes": 9885,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/native_worker.py",
+      "sha256": "da2b8ccc38e4057e6e2799b414fe324d51903431fea88b9a3b05a81cfbf05716"
+    },
+    {
+      "bytes": 3945,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/provenance.py",
+      "sha256": "f51273f20e42b57a7b20bd8cd0f159579b19a93a355bd31a3236263b1ac4a7b4"
+    },
+    {
+      "bytes": 4550,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/publication.py",
+      "sha256": "2d1cb61582482b1680e53296eae21a4a51960b3cd3aed04b6ed84cf37f44d4c4"
+    },
+    {
+      "bytes": 13587,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/readouts.py",
+      "sha256": "180c4a0b5857f63d822f3f31c4957312f7eac9b65697b71253a8fce93c5e0eca"
+    },
+    {
+      "bytes": 19711,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/recovery_fc_worker.py",
+      "sha256": "162a5c8335281998abf579f4b823d31a70ea8edff296c53faf0da35f287ed20a"
+    },
+    {
+      "bytes": 10119,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/recovery_registry.py",
+      "sha256": "5578f4ffb6f8ce4557c8eb936c50949dbcdef8704444ea8a8241131c7690b450"
+    },
+    {
+      "bytes": 13315,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/recovery_sources.py",
+      "sha256": "ddb6413f7133003a4c958eb806308906fb54094260eaf949a3b5647b29a9cd14"
+    },
+    {
+      "bytes": 13422,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/region_worker.py",
+      "sha256": "81ea9b0da09dbda44c2936e98249cfb8cd90b60aa3fb8156c8d83c86dc606c9b"
+    },
+    {
+      "bytes": 45571,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/reporting.py",
+      "sha256": "df59bbeee2a0e81c9953422b9f9ba1ee5b81f53e6c9cd74c20cce4695381e5b5"
+    },
+    {
+      "bytes": 2819,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/runtime.py",
+      "sha256": "2905ba24f8811c5fa0279f047d056ee02eaef9d022266c385735928c6f6a68fe"
+    },
+    {
+      "bytes": 22378,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/sam_completion.py",
+      "sha256": "ca1ae959cf7a27b47281c5dc398ee15a65430529d0a6303661be145ff01e6d03"
+    },
+    {
+      "bytes": 10605,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/selection.py",
+      "sha256": "6477c62efdbe874bd1cb862c75d06c82df6125c4b9dfd56100ff6e330a637852"
+    },
+    {
+      "bytes": 3909,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/sensitivity.py",
+      "sha256": "e32ff7bec90229254ecf22959fefca1ddc3bb7b8c1463f34fcb7215b0ae7af30"
+    },
+    {
+      "bytes": 2624,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/weight_readout.py",
+      "sha256": "f2c1d50f50871a53f789a2a91aa0858fd64b5e13e40c49236ada447535284e73"
+    },
+    {
+      "bytes": 26033,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/src/static_ovmap/recovery_wave2/workflow.py",
+      "sha256": "8c4e7af3452a502bf045fb06e2f4c3103d667e90e8f4b1132241bfbbc4a79fec"
+    },
+    {
+      "bytes": 2239,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_association.py",
+      "sha256": "3007ea7ecd8cde480e72afb5e4b70f18e6b97a4d3dcbc807da4d4c7b45e3065e"
+    },
+    {
+      "bytes": 1454,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_binding.py",
+      "sha256": "2dc2c3b248e7997e60db7d37d1aff193e02192f7d7c530070ea15d96c7fb36b6"
+    },
+    {
+      "bytes": 704,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_evaluation.py",
+      "sha256": "311b7fdeeef5ab4161d4a67b02b59d257a1d92cdab20c77e2bda51e6761255af"
+    },
+    {
+      "bytes": 1355,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_fc_cache.py",
+      "sha256": "b4b6d1e2934220a42fc5bcea56fb2b906d96861215c2b2780e11c955cadfc8e7"
+    },
+    {
+      "bytes": 1265,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_geometry.py",
+      "sha256": "c0c6db101e477b3552992711b025a388557e1046f6b26969fb76149bd22cf0ff"
+    },
+    {
+      "bytes": 6346,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_light.py",
+      "sha256": "ba6a78cdf3073ca8d2ff2a4227cccc2c80debea52830e03e2633b9071fe7c90d"
+    },
+    {
+      "bytes": 3048,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_mechanisms.py",
+      "sha256": "0a26ea17502fce5d84bfe8f709b41d9c6d6109971c5fcd8039f6371b53f1e4af"
+    },
+    {
+      "bytes": 2636,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_native_worker.py",
+      "sha256": "15dcddaf7766db0bc304dda1c10cdcb9ab1d911c80442008f1f19b1c05e89e26"
+    },
+    {
+      "bytes": 805,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_publication.py",
+      "sha256": "66a0249afbbbf9b50c292c2d5a8923c57b5b15b786b4bacff52a0e6a62f97b9c"
+    },
+    {
+      "bytes": 1950,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_reporting.py",
+      "sha256": "4020fe6e9fb059fac11425209398e9eaf8e029eb0396ef8e37a03d302c574f61"
+    },
+    {
+      "bytes": 5109,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_sam.py",
+      "sha256": "c6e8e3acde7c009303b3fb86a33d72571f0ecf0a61bb814404a1e57984bab8b4"
+    },
+    {
+      "bytes": 1878,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_selection.py",
+      "sha256": "26a1d4f5134eea0e787efb694635ff47754778145fcaf6d1445552cf7f270d88"
+    },
+    {
+      "bytes": 4907,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_sources.py",
+      "sha256": "9734922f1d0b466fd72aaca718bddd6d1878f016824c0da53bc9a422477a8c5d"
+    },
+    {
+      "bytes": 1866,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/tests/evaluation/test_recovery_wave2_workflow.py",
+      "sha256": "c3afecb72b0b54a8b71a77609e7df0ba53d3e02f290814b847740552cfc48a53"
+    },
+    {
+      "bytes": 2738,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/third_party_patches/ovimap/recovery_wave2_v1/README.md",
+      "sha256": "8cadc2dadd41a3a1770cc69c8b862b25a95c886a01ea4d878967b8bc286c5201"
+    },
+    {
+      "bytes": 16209,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/worktree/third_party_patches/ovimap/recovery_wave2_v1/recovery_wave2_v1.patch",
+      "sha256": "f108f7f07b74b75f43dd74810a8c35d1587c3f267a45e9e5cc7fdd4edc192b55"
+    }
+  ],
+  "revision_reason": "DETERMINISTIC_DIAGNOSTIC_ORDER; NUMERIC_PREDICTION_AND_SCORE_ARTIFACTS_HASH_UNCHANGED",
+  "scientific_outcome": "RETAIN_BASELINE",
+  "scope": "IMPLEMENTATION_AND_MEASURED_EVIDENCE_BEFORE_NORMAL_PUBLICATION",
+  "status": "PASS",
+  "targeted_validation": {
+    "actual_U1_duplicate_sanity": "PASS",
+    "actual_matcher_trace_rows": 244,
+    "actual_native": "VERIFIED",
+    "byte_exact_archived_producers": 20,
+    "deterministic_matcher_order": "PASS",
+    "distinct_production_tests": 35,
+    "status": "PASS",
+    "suite": {
+      "bytes": 5766,
+      "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/validation/deterministic_publication.xml",
+      "sha256": "7fd1a7ab48bdf3d5439fd94a6b50dab290fac734acaf3f511c3ff9c3c12f2381"
+    }
+  }
+}

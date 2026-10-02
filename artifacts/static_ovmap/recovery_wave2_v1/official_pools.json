@@ -1,0 +1,1218 @@
+[
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4485214529559016,
+    "identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_B_D2",
+    "metrics": {
+      "ap25": 0.31709688723974444,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32417107678455026,
+      "miou": 0.23562289001024223,
+      "uap": 0.12581783824640966
+    },
+    "ordered_inputs": [
+      "8ce3c8fd0e1255c70ea79fc33b75128906981438c4d19d3557f2b63cf942c537",
+      "34983edcd843ec85c9465ad85e9c3a2d5081581812f303bee871ebcce174ca13",
+      "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+      "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+    ],
+    "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_B_D2.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.45923213893547654,
+    "identity": "a95f64937d1a7bc694002be9472d32dfc6f7b3cc1a4d4613e63145b96e1e7ba8",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_B_FCEQ",
+    "metrics": {
+      "ap25": 0.3282708204493919,
+      "ap50": 0.2118599257884972,
+      "apall": 0.11261710071233881,
+      "defined_classes": 36,
+      "macc": 0.33955890763773416,
+      "miou": 0.2397691679655738,
+      "uap": 0.11261710071233881
+    },
+    "ordered_inputs": [
+      "3b86eab8308bac85c99de34854cc94ecd3e5da72142455d8ea30c7db0d22be1f",
+      "95f75297ab61c468224c3b26af5c493d2bca93b14a12b6ba1e5edd1e28128a06",
+      "4ae621e9d4f4213a7402b3170167db3dadd113dbcca23324a14b6cb9de95a926",
+      "98efdf7d67003fb851632d3e86ac9ce261ace39a64f1c49d0beec55a0ac6e86e"
+    ],
+    "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_B_FCEQ.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.9664219461847097,
+    "identity": "5dbcfe87b7d6f32a5a635ec268a6a49fcf466a7a4dd47704023bacf29e6e45ae",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_W040",
+    "metrics": {
+      "ap25": 0.3075734556448842,
+      "ap50": 0.21144763966192537,
+      "apall": 0.11722270322270321,
+      "defined_classes": 36,
+      "macc": 0.31452902876720057,
+      "miou": 0.2235330655713502,
+      "uap": 0.11722270322270321
+    },
+    "ordered_inputs": [
+      "8a257424243d2d097ee9a0784465719e620ae388c838350d7291f2c497e5a283",
+      "d22f04e47c5dd45c20f36b8846d71697a98025b49986b35fe6725753d86d71f9",
+      "4ae621e9d4f4213a7402b3170167db3dadd113dbcca23324a14b6cb9de95a926",
+      "98efdf7d67003fb851632d3e86ac9ce261ace39a64f1c49d0beec55a0ac6e86e"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_W040.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.499837304931134,
+    "identity": "c6c324ade8c159f0bd4ea4d5e281ba570eeb880723351873b94b7efd89c5c080",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_W045",
+    "metrics": {
+      "ap25": 0.30281117295403015,
+      "ap50": 0.21170861678004535,
+      "apall": 0.11708767951625093,
+      "defined_classes": 36,
+      "macc": 0.3117546965417448,
+      "miou": 0.22088941867333284,
+      "uap": 0.11708767951625093
+    },
+    "ordered_inputs": [
+      "4c3860563b7bf14d5b77144c83a23931c1077aa53fdc8c74bc154fdef9ffa91c",
+      "4ee4b14072af71806a033845afddad69ed8ae77622012e14ba83843282963617",
+      "4ae621e9d4f4213a7402b3170167db3dadd113dbcca23324a14b6cb9de95a926",
+      "27abe1b982b561716b249997fcafb1bfe0952ff6ccba511bb257aeeebb5cfe8d"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_W045.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.6075754289049655,
+    "identity": "23a25f6deb7d1f79479b81db8d74cdee98fdc5f1f4f218e5d17f461793c76679",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_U1_NATIVE_SINGLE",
+    "metrics": {
+      "ap25": 0.31709688723974444,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32417107678455026,
+      "miou": 0.2355657280824229,
+      "uap": 0.12581783824640966
+    },
+    "ordered_inputs": [
+      "47c5a8432885761410d9b25616e06c407228c4bd917a7155765ea32bb3517756",
+      "cdbdd5f14e662a33ad5985abe0586676d16eda71e444fe2fb3a26dcfcd2b3469",
+      "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+      "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_U1_NATIVE_SINGLE.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.49135421006940305,
+    "identity": "ddc80e585c9d72c59c7bbdc9740568b436dea58acdba0943aae49ca7c0a0e51d",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_UQ_PAID_QUERY",
+    "metrics": {
+      "ap25": 0.31709688723974444,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32417107678455026,
+      "miou": 0.23562289001024223,
+      "uap": 0.12581783824640966
+    },
+    "ordered_inputs": [
+      "47c5a8432885761410d9b25616e06c407228c4bd917a7155765ea32bb3517756",
+      "e75170911066c1a943433474b40ccacb057e06fef40886b2b33f0804bfb7b568",
+      "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+      "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_UQ_PAID_QUERY.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.46704104798845947,
+    "identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_U2_FC_MATCHED_SINGLE",
+    "metrics": {
+      "ap25": 0.3169886621315193,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32439984757052087,
+      "miou": 0.2356606698131571,
+      "uap": 0.12581783824640966
+    },
+    "ordered_inputs": [
+      "47c5a8432885761410d9b25616e06c407228c4bd917a7155765ea32bb3517756",
+      "aa450f13a0c2c4dc2f00d3bd95462a8372e216bc3503a8b5c07a4380ccdc32e2",
+      "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+      "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_U2_FC_MATCHED_SINGLE.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.46704104798845947,
+    "identity": "d3e49fa8b89be86170d728e3d42db589fee488d3e3f2ce1ff461ddf3f9a324d9",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_U3_FC_CAPTURED",
+    "metrics": {
+      "ap25": 0.3169886621315193,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32439984757052087,
+      "miou": 0.2356606698131571,
+      "uap": 0.12581783824640966
+    },
+    "ordered_inputs": [
+      "47c5a8432885761410d9b25616e06c407228c4bd917a7155765ea32bb3517756",
+      "aa450f13a0c2c4dc2f00d3bd95462a8372e216bc3503a8b5c07a4380ccdc32e2",
+      "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+      "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_U3_FC_CAPTURED.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4485214529559016,
+    "identity": "cb4e2e9c9b290f8a7d32fec766ed92338fb72f9f00b3d9b9f8cae74a4d284a1a",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_LIGHT_COMBO",
+    "metrics": {
+      "ap25": 0.31709688723974444,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12581783824640966,
+      "defined_classes": 36,
+      "macc": 0.32417107678455026,
+      "miou": 0.23562289001024223,
+      "uap": 0.12581783824640966
+    },
+    "ordered_inputs": [
+      "8ce3c8fd0e1255c70ea79fc33b75128906981438c4d19d3557f2b63cf942c537",
+      "34983edcd843ec85c9465ad85e9c3a2d5081581812f303bee871ebcce174ca13",
+      "e1819ba67f6f22c3fb569444357d4cc54896da2b0bd5fe663986c96da7791eb4",
+      "f667cfae102f7a86ce1008ac5839488ae6420ce0183399600961cb96fbb6c8d0"
+    ],
+    "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/development/BB00_NATIVE/RW_LIGHT_COMBO.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.8562813709722832,
+    "identity": "0acc6807e25e7d5fe1437bb4c9f51471c00c666912d771df99e8beb2fc150527",
+    "map_id": "BB00_NATIVE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.3385256679983571,
+      "ap50": 0.23273940081082936,
+      "apall": 0.1121423665987158,
+      "defined_classes": 36,
+      "macc": 0.34340187318386106,
+      "miou": 0.24188874303254673,
+      "uap": 0.1121423665987158
+    },
+    "ordered_inputs": [
+      "d2b6951d18718c3ec7e5b69daeb89569fddf6db426dc95a6fe9df0af8a9481d5",
+      "7c5c3176841937d84260476fa38c4ac91224f55c051d6649b8c783766aa5aee3",
+      "79a951cc1b40a48b877e4e903f44166d0b56ca18fe35abd82b237ce2f11a361b",
+      "62fe2200c208f9b56491980957ed613783eac61e56ad8629b611a956116bec83"
+    ],
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/development/BB00_NATIVE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5308482400141656,
+    "identity": "f608cc54eda573682d83fea325ec42364894ac6ae5e4d1b62c133cba556e3277",
+    "map_id": "RW_A1_NATIVE_FALLBACK",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.370477466977467,
+      "ap50": 0.24277873977873982,
+      "apall": 0.10647771746184445,
+      "defined_classes": 36,
+      "macc": 0.33463440646386305,
+      "miou": 0.25838552430964035,
+      "uap": 0.10647771746184445
+    },
+    "ordered_inputs": [
+      "5a8354b1a6db062b741aa27ef80859dcb81b783acf6776dab01f649946eea68c",
+      "b9efdadf921a8df015229ae024d4c14091b9c410d0b7ed113b3ba0e602e27b70",
+      "3ba1a9150b321afd0a2cec7f926146db3bb3d9267f3be7758c252d41199f4bdf",
+      "7b141c19a5e1381ca5113a19cfa89307e2d5baafdeaa2bd0850859bea67ce38a"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A1_NATIVE_FALLBACK/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4465598550159484,
+    "identity": "d47c5b594a9d3a075d74368353cd61afe6fd523a180bfb9c4432f341bb7c3f93",
+    "map_id": "RW_A1_NATIVE_FALLBACK",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.37294376815053504,
+      "ap50": 0.23023544973544974,
+      "apall": 0.10954048038968674,
+      "defined_classes": 36,
+      "macc": 0.34504995378790304,
+      "miou": 0.26027656134188976,
+      "uap": 0.10954048038968674
+    },
+    "ordered_inputs": [
+      "98aaeb1e829833bb6b259c8d738357c4f16a4bd94f1aa6a4fc1e4ece87006bd9",
+      "dc3c807948a21f26238e922de56ad426415b0cef9a6d3cf5a4cf7eb0d82c72f0",
+      "3c0ec57731c96e5f315f8867bf331788a62aa020c156814e81943180c70d8a95",
+      "03dc5859b80c593f268830176819604ad44727cc0db7572e5e41c26c9679176c"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A1_NATIVE_FALLBACK/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4494286831468344,
+    "identity": "a05adccc7ad0fce21fc8b0aae1e4dc7e1c7d38fb7f1831211e90ee11ab44bd6f",
+    "map_id": "RW_A1_NATIVE_FALLBACK",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.3558387039026137,
+      "ap50": 0.23734353741496597,
+      "apall": 0.11074414210128496,
+      "defined_classes": 36,
+      "macc": 0.3185129845409897,
+      "miou": 0.2522141354274219,
+      "uap": 0.11074414210128496
+    },
+    "ordered_inputs": [
+      "6be1f48e80c4821e565ca69883c3d7d40b34c60ab16cdbedad482d0e98b732e9",
+      "acd09d60e1d16554c3f034c4ad8afbaee2c45fffc8672fea74366334cbe6989b",
+      "4b6177d5c08f38484ac462b402c869d3e6bc4fcc61aa5bfaedad39b9e0401c1a",
+      "492feefb42530a9283476dd140e36db666c5e2b27ebea61ed796fc754b56555f"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A1_NATIVE_FALLBACK/D2/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4538714170921594,
+    "identity": "ba608f3308e10f6d9dd9842864e721ad656b33fb2f155da68216a7dff7ab0348",
+    "map_id": "RW_A2_MULTI_FREE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.36107653986225413,
+      "ap50": 0.25490346161774735,
+      "apall": 0.12818376802503786,
+      "defined_classes": 36,
+      "macc": 0.3144941405190251,
+      "miou": 0.2530056608618911,
+      "uap": 0.12818376802503786
+    },
+    "ordered_inputs": [
+      "6e918dfa32dd75a007c9c0e9e2523cfee2b4be9c27d073fb8b8a75f51c788997",
+      "bebbbeb8f7dd1c3751de2012f51c4402f4c6c68f6a6d1a0368b75ad532429595",
+      "5620cad8ae6ce2e1cb685f502847b0fd45a0a83d669dff0e2dd1564503e10cd2",
+      "e5d7c0a3d88686d2bfb20a59009358a54ea43cb2d781e0bea064c13a863a67e7"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A2_MULTI_FREE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.443456508917734,
+    "identity": "2e66fe2b9051b9d60f5314b556838128290149f3413ab1867dfa23dafa373c75",
+    "map_id": "RW_A2_MULTI_FREE",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.35852343159486016,
+      "ap50": 0.2622246959389817,
+      "apall": 0.12407460088412468,
+      "defined_classes": 36,
+      "macc": 0.32957806650575994,
+      "miou": 0.25653778713961284,
+      "uap": 0.12407460088412468
+    },
+    "ordered_inputs": [
+      "2153743d393baa2919936016c2e36b650b7f76ff457a8614a551058f5674a20a",
+      "96ca89cdc3287a9ac24f8c5fdc342170a47484a397d9d843d433eeeee0e453c3",
+      "8aeee29f9ea71f305bef05d5e3203b7ede34502f7c9dc584d72e4d2d5dd93a09",
+      "fa83e3f1fa1a538dca3c9051b7d7e9450196426c6bad7774dcfe8a8628ef268c"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A2_MULTI_FREE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4070604909211397,
+    "identity": "bca943a16bd6294f146ff8c4f0d90497de6922b50d3dcea525b64440a04985ef",
+    "map_id": "RW_A2_MULTI_FREE",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.32443877551020406,
+      "ap50": 0.23151814058956915,
+      "apall": 0.11997845804988662,
+      "defined_classes": 36,
+      "macc": 0.29980901853256725,
+      "miou": 0.24046096915653,
+      "uap": 0.11997845804988662
+    },
+    "ordered_inputs": [
+      "7754ed66c642cfddc354214a237e7b4990ac03b37f6834e288c8486b447c5994",
+      "ced3280d1e303c368afda9d721b6fe69a15807329260fdb706398656f746cbeb",
+      "8aeee29f9ea71f305bef05d5e3203b7ede34502f7c9dc584d72e4d2d5dd93a09",
+      "6484339cde58a7734a57de341b6fe9b8e556af47d4c1ef001fd7636b252fe0e8"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A2_MULTI_FREE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5731061829719692,
+    "identity": "60b8d399253e7117f8ba89a4b6c05f3bd4a1b1a765d0418baf6953c343feefe8",
+    "map_id": "RW_A3_MULTI_UNION",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.347594955309241,
+      "ap50": 0.23121411392839966,
+      "apall": 0.10542211609671927,
+      "defined_classes": 36,
+      "macc": 0.31277228467068824,
+      "miou": 0.2388522607088371,
+      "uap": 0.10542211609671927
+    },
+    "ordered_inputs": [
+      "12d6000fb1f248c26ca9cdf072890731766e16589b8380e2d08f80a6b80bf578",
+      "ee144b9db410fbfd9d59601bcd35ed6524bc319ef86b456844e4c1289111eb82",
+      "67b9a979ba37f9fa3a99fb0c901a22fde5b569befc8577e1c08523f512267876",
+      "3aff1ddb36046f3749a0a45b626f1fe06980a8781052eba4cb4e545c56fed2c4"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A3_MULTI_UNION/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.43113554595038295,
+    "identity": "3b6a534b754acc18db5130bf288bb5381a2e1b194c3423a0dc2c4e047b85b3f9",
+    "map_id": "RW_A3_MULTI_UNION",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.31711073318216176,
+      "ap50": 0.20642592592592593,
+      "apall": 0.10111959351641892,
+      "defined_classes": 36,
+      "macc": 0.31662340994104743,
+      "miou": 0.22840157124776594,
+      "uap": 0.10111959351641892
+    },
+    "ordered_inputs": [
+      "4ec33abb36772688158622f141229238146c068aef0e8bc0df92760a788a8c92",
+      "6b1ab785227252f4e454b5dbc83540cccf4386aba2fe3d2fdd1cd01fa31b3862",
+      "90ab835c855bf7d6a63f2b10afbed0e9ae93dcfa895db28d456062297b029703",
+      "da1b4cb0da8178d652387038c36c812b3df172b4f8388d2501c121a199876bc6"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A3_MULTI_UNION/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.431556056952104,
+    "identity": "f960f1b056270ed51ad612a321c2bef1ac8c6021c375bb775be0f7ae8c559a2c",
+    "map_id": "RW_A3_MULTI_UNION",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.32352607709750564,
+      "ap50": 0.22516893424036283,
+      "apall": 0.12145553036029226,
+      "defined_classes": 36,
+      "macc": 0.2939515538996282,
+      "miou": 0.23711245000993986,
+      "uap": 0.12145553036029226
+    },
+    "ordered_inputs": [
+      "c4c15805a5be86083c292bdf740bc3269b2e76861dfae929bce966e2174cf6c6",
+      "7e7d7017114f413de3095ddc2669b77a4b40e6a6273bda78248892bfea8eedf2",
+      "90ab835c855bf7d6a63f2b10afbed0e9ae93dcfa895db28d456062297b029703",
+      "b2ee8da40477420dc738647ab6f17c5dab20fce1d259cdf288d55986feaa92e7"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_A3_MULTI_UNION/D2/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5239308709278703,
+    "identity": "edacd9940c5872f3414e2be6d3819adcc525c4c944ead8e7ddb0a46c8ffa8fb8",
+    "map_id": "RW_S1_CROP_PRIORITY",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.3413417944489373,
+      "ap50": 0.23273940081082936,
+      "apall": 0.11200524137825725,
+      "defined_classes": 36,
+      "macc": 0.3440456069196261,
+      "miou": 0.24212222351087892,
+      "uap": 0.11200524137825725
+    },
+    "ordered_inputs": [
+      "70c52d6449f023a3965cd60add776982a35bed494eef699a304089be894d8c44",
+      "11b7e8d0fb0399e3ed81c2605dc0aa1af990ea7750f50e27e1cecd56b3d28047",
+      "ca455ffe04630aef9aaf4c0deafc759a874a68efdaa98c41196dfafabf94c3ab",
+      "60aa21d695c573a714940220e7f6548c1e0150a094195f28521acc90b8bd07c8"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_S1_CROP_PRIORITY/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.49668058892711997,
+    "identity": "77d9873cd87b59773c97bf3a504262e337714825687b320957286dcd237a380e",
+    "map_id": "RW_S1_CROP_PRIORITY",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.32847608740465883,
+      "ap50": 0.23566944959802102,
+      "apall": 0.11617890927414735,
+      "defined_classes": 36,
+      "macc": 0.3432927552124595,
+      "miou": 0.24106262651115118,
+      "uap": 0.11617890927414735
+    },
+    "ordered_inputs": [
+      "30e27353831e3594b420425ebc44997d83938654e7b014802e62983902a3235a",
+      "49b0da40f3dc8021d9e9bdc1990973e00747a22de1159e139f03141327b962f9",
+      "e70340b897e16ef895ff676aa29de7cd8fe7082cd135f85d896ffbf594b740d2",
+      "ab245bd7b554ae43d9bcbfd334ba94bda3de11de22d0c53ccf70fa106c49dde7"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_S1_CROP_PRIORITY/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.47700715507380664,
+    "identity": "e62647255dfd15ade07de400cc130edd08d4ac5970f76d68a289b223fb12a684",
+    "map_id": "RW_S1_CROP_PRIORITY",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.31675056689342407,
+      "ap50": 0.2259943310657596,
+      "apall": 0.12692013101536911,
+      "defined_classes": 36,
+      "macc": 0.3243479571389992,
+      "miou": 0.23524188005868923,
+      "uap": 0.12692013101536911
+    },
+    "ordered_inputs": [
+      "64d80d7cf8d4151ced83df9b1ef91f734a74fd72fa2fca6f4b1188360448b1d3",
+      "e67edaa091ff8a0d4aca9d93ad87139d7f0dfc959efb64871819c91b8a74ef83",
+      "5c7af22b8b5446c026c72947d9ab704a958f0d2ad0916ffba2e3309c2a689853",
+      "7a614e4c86e80e7c869b69a504f7ca0e372f1bc2c66c4e453f3d2f91940ed784"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_S1_CROP_PRIORITY/D2/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.4852585969492793,
+    "identity": "35080c405d0d266bade0b1073d5270ed032608c8456885055d012bb1c16ff80a",
+    "map_id": "RW_S2_CONFLICT",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.3413340984412413,
+      "ap50": 0.23278172885315743,
+      "apall": 0.10897599387678752,
+      "defined_classes": 36,
+      "macc": 0.3425719316051535,
+      "miou": 0.24164713082031442,
+      "uap": 0.10897599387678752
+    },
+    "ordered_inputs": [
+      "1638331288427bf5340a3fe23e73c221d9a7d78f72e09141e7adc400d28fc680",
+      "db89724f6bdcc57808c1bcaa72eb2552d6c4733771c387b9666526c4d1a27cb9",
+      "4f14896cbdfec94b84adad6712e188fef03f4a0714258bc0d804f59528a516c1",
+      "e716f6542591b12e41c40aa53db32d87006c04980eca7d52b4b4a9c8ccefa942"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_S2_CONFLICT/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.49723651399835944,
+    "identity": "ebbe00e5064d4542a23f68380a2237625bb29d1ef5885e13d26449039da2edaf",
+    "map_id": "RW_S2_CONFLICT",
+    "method": "FC_EQ",
+    "metrics": {
+      "ap25": 0.32847608740465883,
+      "ap50": 0.23566944959802102,
+      "apall": 0.1163208044160425,
+      "defined_classes": 36,
+      "macc": 0.34182907774413285,
+      "miou": 0.24043483106030614,
+      "uap": 0.1163208044160425
+    },
+    "ordered_inputs": [
+      "7e7223d11af027f0ad1e27cd5f50b32c2e04ed5174a4b8719ee40f10230dae05",
+      "6b66e1d2cec1107c97f4a77b4f0723ff4f50f817b289ed52192eaf6de581cc24",
+      "2e103a2f8a166174afd2b649ab0e1ed0a73ced96cfc431a3ee76cdccfd381966",
+      "b5a74d24801fc1acc963b04f1b344cf6f2a89c2f4097765feaa0255b7d4cf034"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_S2_CONFLICT/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "development",
+    "dataset": "ScanNet",
+    "elapsed_seconds": 0.5101095209829509,
+    "identity": "c613624342148554ef53e93bc16eed5bd88de26b1ca64b97749fc233968cfce8",
+    "map_id": "RW_S2_CONFLICT",
+    "method": "D2",
+    "metrics": {
+      "ap25": 0.31675056689342407,
+      "ap50": 0.22572448979591836,
+      "apall": 0.12578785588309396,
+      "defined_classes": 36,
+      "macc": 0.32288168023207603,
+      "miou": 0.23474004100313683,
+      "uap": 0.12578785588309396
+    },
+    "ordered_inputs": [
+      "b9b259c6827a89cf36cd442be382e45fd9e7dac2b4ca11d0d5a6bcd659f4df16",
+      "56c6b3a1fcf349fd77f9d2c9dacdb9c7332b2e8ab049084b3f24dc53db6a54de",
+      "b51d7ad35de2857c04bacb6b88e17eba035d6f5b4a2ad73a2cb9a6b868b5e52b",
+      "8107ea1c50e3933e4f1a02b74beb9a5d93be9ffdcd24e1b7a47aeffbd3956698"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/pools/development/RW_S2_CONFLICT/D2/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "scene0056_00",
+      "scene0534_00",
+      "scene0445_00",
+      "scene0626_00"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0638271159259602,
+    "identity": "964cb458f5aa047072b0eb6020144196199613bf0adf5835e28a64d976e3fb81",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_B_D2",
+    "metrics": {
+      "ap25": 0.3797458622016501,
+      "ap50": 0.24495210428669076,
+      "apall": 0.11741338226305202,
+      "defined_classes": 51,
+      "macc": 0.37427869483346954,
+      "miou": 0.296910848924658,
+      "uap": 0.11741338226305202
+    },
+    "ordered_inputs": [
+      "91f812bc0594310de3842d5b41f0ea04271c5cb502e696b38efee716d93d0ec7",
+      "a524a7e20235e0036fa467213986e9fc50b4b72c5699a9299ffe6829a6396785",
+      "df26f654121ed4ebb582bf8ad6d6d2e6c51de70c0d687b98b026d75c3348a39d",
+      "96b74cbf7aa28fb0a1ef785b62e0950be5c15074923448e57555a26a61cce7f7",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "59fbd2ca73b9c0a78a0f0e1134cc5cfba66462a6b10e394f5d09ceeceb8f914b",
+      "e203d7eeccff1efd38b16f9aadce583f86146788d667ba6b2822f5e11db4e05b",
+      "d343c35759ece2f315723ebbc6e0286b8f2d8e734098d8315510513c9c1eb480"
+    ],
+    "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/replica/BB00_NATIVE/D2/OFFICIAL_CURRENT_CLASS.json",
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_B_D2.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.0613163789967075,
+    "identity": "e9b4f0719a9b3d7f3509d4d3652af59b8046f7c5ce2d1184895c12cdbb48c0a4",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_B_FCEQ",
+    "metrics": {
+      "ap25": 0.37728462854752537,
+      "ap50": 0.24323074806446643,
+      "apall": 0.1040678619443932,
+      "defined_classes": 51,
+      "macc": 0.36624965252600244,
+      "miou": 0.29980400252880446,
+      "uap": 0.1040678619443932
+    },
+    "ordered_inputs": [
+      "7de7115ea9f3d2412c1898dfb131e7a9629db9bc0f55325ea8432dad272ae1b6",
+      "31e2f120d9926dad47cd5718759f7dcb1330154074753b812f0c3fea3bd4a8e0",
+      "8ac093737608678743bb2c0b4dbda869a94199457880fd4bb15fa4fa9f1fb4d8",
+      "ab6f5e5ee2a8865e25351e02fd96eea5e3eec77a5e8dbca5da571c8db8b6cf42",
+      "3873ff3bca45c6c1bf14fa78595f888df94c2afc972447a32c855132e595b8cc",
+      "cc4b68d589f74f1779a2fb558ef6f52617f0afb42f79bc5815b7db9a2cb01014",
+      "d9169a39da01b6401da7affc0784658bbbe8c9e58984e95e0d49fbe1fbfbd424",
+      "48fdc8f796916c7d8758f83a1679ae4721ab7066a8ff8a4b5647b945c3da5ac6"
+    ],
+    "parent_pool": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/replica/BB00_NATIVE/FC_EQ/OFFICIAL_CURRENT_CLASS.json",
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_B_FCEQ.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "EXACT_ORDERED_PARENT_SCORER_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 2.076827293029055,
+    "identity": "b5a76f5f86eb474a035e019f964861779762e5675fcd478570150a052b24b9cd",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_W040",
+    "metrics": {
+      "ap25": 0.39439456175988913,
+      "ap50": 0.2590525582308947,
+      "apall": 0.11882659489347143,
+      "defined_classes": 51,
+      "macc": 0.3803994920340425,
+      "miou": 0.30643210257302744,
+      "uap": 0.11882659489347143
+    },
+    "ordered_inputs": [
+      "ebd10cc0a6f64b200df3bb54bd437ee63ed65bc9b818c87047ba7aeaf039e9ae",
+      "282eb3345b26bc32a184e1699243894cf764156cdea532705fdc2b6df43c1da2",
+      "9725ab8a6f8d1618816e9ec67c3a04398a41ddc276ea8e29c11aed7870bb0d23",
+      "e3ae2c7d3c2b4ba1136701d50f5fe078d5d3ab6089af5bccb7f4e24ef9110807",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "0ee30d6f9c5ed0135237f5cde9fba39776d420f8a82aa667606ac1e38cb91544",
+      "8e7e3c41c8e7ee28c4e0ca6eac81a78b2daffaba0e46a3f3c330bd02604e40ad",
+      "e002baa339c385179d464b7347ecd60c5c4b6909b5a0f1c18c99b2ee24bd3c21"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_W040.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.7400962689425796,
+    "identity": "ada758cbf9fa56ecf3c788876116bc4efcef2f2ab9209234839229b6dab4c7d2",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_W045",
+    "metrics": {
+      "ap25": 0.37986008003790744,
+      "ap50": 0.24451807650891297,
+      "apall": 0.11715082224933458,
+      "defined_classes": 51,
+      "macc": 0.3706211476569692,
+      "miou": 0.29436511680473776,
+      "uap": 0.11715082224933458
+    },
+    "ordered_inputs": [
+      "ebd10cc0a6f64b200df3bb54bd437ee63ed65bc9b818c87047ba7aeaf039e9ae",
+      "a524a7e20235e0036fa467213986e9fc50b4b72c5699a9299ffe6829a6396785",
+      "9725ab8a6f8d1618816e9ec67c3a04398a41ddc276ea8e29c11aed7870bb0d23",
+      "176ead9545c1669c33d2b015796e639d61006a3d6ed7d0d2370849e78f670068",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "1ddd05b0a769f390ce7ce7da3fd9672126f584d45de79ec1497dcef3046bff1e",
+      "afb4356bd0fcbfbe213a4403e751ded818be125e531879d28954d5990730c775",
+      "c8f61a0b68e0bd85bc01735ef5ddb381d9413473e7f27b6636cfb339f37a113c"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_W045.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.9817312159575522,
+    "identity": "b3678d55832681a985b7ca09b3d4520e9c7ba91c77920c90628c2d74dc1ff93a",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_U1_NATIVE_SINGLE",
+    "metrics": {
+      "ap25": 0.3814664723206977,
+      "ap50": 0.24495210428669076,
+      "apall": 0.11741338226305202,
+      "defined_classes": 51,
+      "macc": 0.3756429875336175,
+      "miou": 0.29658630666741903,
+      "uap": 0.11741338226305202
+    },
+    "ordered_inputs": [
+      "aa84e0b7e421569aa22b81cd1754c5b2e6451287619cabeedb74233c88effb1a",
+      "a524a7e20235e0036fa467213986e9fc50b4b72c5699a9299ffe6829a6396785",
+      "91b45e07d4e464f51b3908c9bedff85b8324c344f54dcecfeeab4a4f67df1da3",
+      "05aad78c677499dc494a1e6d059cd776f52c185bd517f67e8b96c12ca2e18700",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "b5bdbdf78ce632c3be6a9d1365ede2fdb7e3b5a88c618d003a00fb763233bcca",
+      "e203d7eeccff1efd38b16f9aadce583f86146788d667ba6b2822f5e11db4e05b",
+      "9191b6e5961cbb70c75d025eb38d2c88c3c90f95c2076287070fb815fefae84b"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_U1_NATIVE_SINGLE.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 2.993082874920219,
+    "identity": "d8caa62728e29f2669311a234732b3ae067b721aa53fecd953343d77d68ef188",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_UQ_PAID_QUERY",
+    "metrics": {
+      "ap25": 0.3814664723206977,
+      "ap50": 0.24495210428669076,
+      "apall": 0.11741338226305202,
+      "defined_classes": 51,
+      "macc": 0.3756413518000049,
+      "miou": 0.296597203946964,
+      "uap": 0.11741338226305202
+    },
+    "ordered_inputs": [
+      "91f812bc0594310de3842d5b41f0ea04271c5cb502e696b38efee716d93d0ec7",
+      "a524a7e20235e0036fa467213986e9fc50b4b72c5699a9299ffe6829a6396785",
+      "78047bb74af53cb20d6a966e776a29bb75a360c892be74fde7a586493ee8ca37",
+      "05aad78c677499dc494a1e6d059cd776f52c185bd517f67e8b96c12ca2e18700",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "59fbd2ca73b9c0a78a0f0e1134cc5cfba66462a6b10e394f5d09ceeceb8f914b",
+      "e203d7eeccff1efd38b16f9aadce583f86146788d667ba6b2822f5e11db4e05b",
+      "9191b6e5961cbb70c75d025eb38d2c88c3c90f95c2076287070fb815fefae84b"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_UQ_PAID_QUERY.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.1191246379166842,
+    "identity": "7500e1a8c5e62bc646920aba3232ab74c113fe7cd7269354c6c9caf0e407a343",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_U2_FC_MATCHED_SINGLE",
+    "metrics": {
+      "ap25": 0.39841284577748787,
+      "ap50": 0.26057090388986537,
+      "apall": 0.12386368952716137,
+      "defined_classes": 51,
+      "macc": 0.381483736968158,
+      "miou": 0.30165227443211173,
+      "uap": 0.12386368952716137
+    },
+    "ordered_inputs": [
+      "59ee1946260b884f360275febb3df8986564c5b4fa3cf3dd0c3e3a2160e8e2d9",
+      "a524a7e20235e0036fa467213986e9fc50b4b72c5699a9299ffe6829a6396785",
+      "ee7412ee21875e6913ad0a1dc9275048d6596306b5cff6322a5a386c10b286fa",
+      "a2de33112dbb898f6f9294d6569f90454410f0c04c24b59b32152802ad618956",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "991c4fa3d53239d91174e7e18ce9b874890a4debf1dac2315186da5ac8634884",
+      "e203d7eeccff1efd38b16f9aadce583f86146788d667ba6b2822f5e11db4e05b",
+      "9f9c9d12f687526a123e61b0d9cce5544888d3f1f0780e97c30c96eba24fe218"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_U2_FC_MATCHED_SINGLE.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.1191246379166842,
+    "identity": "7500e1a8c5e62bc646920aba3232ab74c113fe7cd7269354c6c9caf0e407a343",
+    "map_id": "BB00_NATIVE",
+    "method": "RW_U3_FC_CAPTURED",
+    "metrics": {
+      "ap25": 0.39841284577748787,
+      "ap50": 0.26057090388986537,
+      "apall": 0.12386368952716137,
+      "defined_classes": 51,
+      "macc": 0.381483736968158,
+      "miou": 0.30165227443211173,
+      "uap": 0.12386368952716137
+    },
+    "ordered_inputs": [
+      "59ee1946260b884f360275febb3df8986564c5b4fa3cf3dd0c3e3a2160e8e2d9",
+      "a524a7e20235e0036fa467213986e9fc50b4b72c5699a9299ffe6829a6396785",
+      "ee7412ee21875e6913ad0a1dc9275048d6596306b5cff6322a5a386c10b286fa",
+      "a2de33112dbb898f6f9294d6569f90454410f0c04c24b59b32152802ad618956",
+      "95d4fefd16723f1c5d36b4c13f31bb09edcfae7225cb4e63124e0ad5c7a302ae",
+      "991c4fa3d53239d91174e7e18ce9b874890a4debf1dac2315186da5ac8634884",
+      "e203d7eeccff1efd38b16f9aadce583f86146788d667ba6b2822f5e11db4e05b",
+      "9f9c9d12f687526a123e61b0d9cce5544888d3f1f0780e97c30c96eba24fe218"
+    ],
+    "path": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/light/pools/replica/BB00_NATIVE/RW_U3_FC_CAPTURED.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "reuse_kind": "RELEASED_DATASET_POOL_EXECUTED_OR_EXACT_LOCAL_RECEIPTS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  },
+  {
+    "aggregation": "RELEASED_DATASET_POOL",
+    "cohort": "replica",
+    "dataset": "Replica",
+    "elapsed_seconds": 1.6132466299459338,
+    "identity": "8631a0f96f7b675f50be07de7f47369b60ca2172beca048cd9a18996c5c85e3c",
+    "map_id": "BB00_NATIVE",
+    "method": "NATIVE_READOUT",
+    "metrics": {
+      "ap25": 0.345853789368729,
+      "ap50": 0.2147686335604373,
+      "apall": 0.08626543924081388,
+      "defined_classes": 51,
+      "macc": 0.326694541946634,
+      "miou": 0.2724018686568009,
+      "uap": 0.08626543924081388
+    },
+    "ordered_inputs": [
+      "89e57bc68f96d1facd908c42fcb3ce3acc6cf237091d56ae0cef744ea700d9de",
+      "48ad7c78b77444ab0d452b50b5e651a6dd646e2308638ee6e4686218fb971c68",
+      "5081757766b4946e7060585e1d5baef9531c806a34e48a930a888c023e20e2c3",
+      "32a755de63e2b414c3d6df7a729981b2f27f4e88f8e9b6323f988318b21a8fc5",
+      "55c41523394c35b49fd742e5f2c38480d9129ca9536880349854f5f1f9fb0cd0",
+      "15a8fff847f243841565668e1c41f34653a3d10d450efd99c1ff65f60a23fc0a",
+      "3188378cd2829ffa1983b9bd2a487ea33dec44f4fd97b6c41bf75f385f3f6e61",
+      "0a9e5235f25850016bc2849f0ec834f3443675578c994668fb34b0d9327dc8f3"
+    ],
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/pools/replica/BB00_NATIVE/NATIVE_READOUT/OFFICIAL_CURRENT_CLASS.json",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "scene_order": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "status": "COMPLETE"
+  }
+]
