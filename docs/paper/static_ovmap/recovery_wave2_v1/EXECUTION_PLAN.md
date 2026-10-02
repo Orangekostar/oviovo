@@ -149,7 +149,7 @@ Produces: selected gamma/recovery/light package and at most one qualifying map.
   none of the five fixed-D2 development arms reaches the NET_GAIN threshold.
 - [x] Generate leave-one-development-scene-out fixed-method sensitivity pools.
 - [x] Commit frozen identities/recipes/nomination before every new Replica prediction.
-- [ ] Run all eight fixed light Replica conditions and distinct frozen package;
+- [x] Run all eight fixed light Replica conditions and distinct frozen package;
   transfer only the one qualifying map, retaining complete cohort statuses.
 
 ## Task 9: Reporting, primary requirement audit and publication
@@ -158,12 +158,12 @@ Files: reporting.py; four RECOVERY_WAVE2 reports; compact specified artifact pat
 Consumes: actual rows/pools/funnels/actions/SAM diagnostics/failures/costs/identities.
 Produces: code, patch, real compact evidence, final decision and remote proof.
 
-- [ ] Run scoped production tests and actual native/evaluator integration checks.
-- [ ] Generate six specified scientific tables and four dynamic reports; report
+- [x] Run scoped production tests and actual native/evaluator integration checks.
+- [x] Generate six specified scientific tables and four dynamic reports; report
   actual negative/equivalent/blocked/screened leaves and missing timings honestly.
-- [ ] Primary reviews full diff and requirement-by-requirement actual evidence for
-  every C0-C11 and execution section; remaining evidence keeps goal active.
-- [ ] Verify compact arrays and external restoration manifest, no unrelated changes.
+- [x] Primary reviews full diff and requirement-by-requirement actual evidence for
+  every C0-C11 and execution section; publication verification remains external.
+- [x] Verify compact arrays and external restoration manifest, no unrelated changes.
 - [ ] Normal push named branch; compare full local HEAD with remote branch SHA;
   write final external publication/final.json without recursive verification commit.
 
@@ -194,14 +194,22 @@ claims that conflict suppression necessarily improves final AP.
 The 96 fixed-method leave-one-scene-out rows are complete without refitting.
 Gamma=0.5, recovery=NONE, light package RW_B_D2, no map nominee and deployment
 N0_UNCHANGED were frozen before new Replica predictions in full commit
-6dd3de7c00553f4895b72088435ebccf76cc9adc. Eight-scene light transfer is running;
-there will be no new Replica full maps because no development map qualifies.
+6dd3de7c00553f4895b72088435ebccf76cc9adc. Eight-scene light transfer is complete;
+there are no new Replica full maps because no development map qualifies.
+Replica D2 APall/AP50/AP25/mIoU/mAcc is
+11.7413/24.4952/37.9746/29.6911/37.4279%. U2/U3 is
+12.3864/26.0571/39.8413/30.1652/38.1484%; this descriptive regression gain does
+not change the precommitted development choice or deployment.
 
-The latest complete production suite has 33 distinct passing tests; four relevant
-controller/resume tests also pass after the lock repair. Final report generation,
-primary full-spec audit, final targeted verification and normal verified push
-remain outstanding. Recovery cache hits do not imply zero standalone baseline
-cost or zero GPU work for fresh full-map semantic regeneration.
+The final complete production suite has 34 distinct passing tests, including
+the report metadata regression. All 21 actual single-native recovery observations
+match artificial duplicated original FP32 classification with zero score difference.
+Four dynamic reports and all specified compact artifacts are generated (about
+28 MiB). The primary C0-C11/section review assessments retain actual evidence and
+explicit claim boundaries. The required final all --resume and normal full-SHA
+verified push are the remaining publication actions; their proof is external.
+Recovery cache hits do not imply zero standalone baseline cost or zero GPU work
+for fresh full-map semantic regeneration.
 The selected gamma=.5 and NONE produce the one measured RW_LIGHT_COMBO, exactly
 equivalent to the measured baseline APall 12.5817838% and other pooled metrics.
 Thirty-three targeted production tests pass in current_production.xml. Actual

@@ -21,6 +21,7 @@ from .workflow import A_MAPS, S_MAPS
 
 METRICS = ("apall", "ap50", "ap25", "miou", "macc")
 COMPACT = "artifacts/static_ovmap/recovery_wave2_v1"
+COHORTS = ("development", "replica")
 
 
 def _pool(path, scenes):
@@ -59,7 +60,8 @@ def collect_matrix(binding):
     freeze = read(root / "freeze/receipt.json")
     selection = read(root / "selection/final.json")
     rows, pools = [], []
-    for cohort, scenes in binding["datasets"].items():
+    for cohort in COHORTS:
+        scenes = binding["datasets"][cohort]
         baseline = _pool(root / "light/pools" / cohort / "BB00_NATIVE/RW_B_D2.json", scenes)["metrics"]
         methods = [*METHODS, "RW_LIGHT_COMBO"] if cohort == "development" else list(METHODS)
         if cohort == "replica" and freeze["light_package"]["id"] not in METHODS:
@@ -103,7 +105,7 @@ def collect_matrix(binding):
                     "NET_GAIN": None if metrics is None else net_gain(metrics, baseline),
                     "geometry_status": status, "pool_identity": result["identity"] if result else None})
     baselines = {cohort: next(row["metrics"] for row in rows if row["cohort"] == cohort
-        and row["map_id"] == "BB00_NATIVE" and row["method"] == "RW_B_D2") for cohort in binding["datasets"]}
+        and row["map_id"] == "BB00_NATIVE" and row["method"] == "RW_B_D2") for cohort in COHORTS}
     for row in rows:
         row["scientific_status"] = _scientific_status(row["metrics"], baselines[row["cohort"]])
     return rows, pools
@@ -146,7 +148,8 @@ def _compact_light(row):
 def collect_mechanisms(binding):
     root, light, funnels, paired, actions, sam = Path(binding["output_root"]), [], [], [], [], []
     sources, decisions, geometry = {}, {}, {"screens": {}, "scenes": [], "current_semantic_status": {}}
-    for cohort, scenes in binding["datasets"].items():
+    for cohort in COHORTS:
+        scenes = binding["datasets"][cohort]
         for scene in scenes:
             light.extend(_compact_light(row) for row in light_scene(binding, scene))
             funnels.extend(recovery_funnel(binding, scene))
@@ -190,7 +193,7 @@ def collect_mechanisms(binding):
                 sam.append({**{key: value for key, value in action.items() if key != "S2_frames"},
                     "S2_frame_count": len(action["S2_frames"]),
                     "complete_frame_evidence": str(root / "mechanisms" / f"{scene}_{map_id}.json")})
-    coverage = {cohort: read(root / "mechanisms" / (cohort + "_common_coverage.json")) for cohort in binding["datasets"]}
+    coverage = {cohort: read(root / "mechanisms" / (cohort + "_common_coverage.json")) for cohort in COHORTS}
     return {"light": light, "paired_U1_U2": paired, "association": actions, "SAM": sam,
             "same_covered_subset": coverage}, funnels, sources, decisions, geometry
 
@@ -253,6 +256,12 @@ def collect_costs(binding):
         failures.append({"path": str(diagnostic), "status": "FAILED_DIAGNOSTIC_GETTER", "elapsed_seconds": None,
             "error": "initial getter queried cleared mode4 assignment; corrected snapshot getter validated in v2",
             "missing_timing": "original failed diagnostic duration not separately retained"})
+    phase_failures = []
+    for path in sorted((root / "execution/phases").glob("*.previous_*.json")):
+        receipt = read(path)
+        if receipt["status"].startswith("FAILED"):
+            phase_failures.append({"path": str(path), **receipt,
+                "cost_scope": "CONTROLLER_WALL_TIME; CHILD_MODEL_OPERATIONS_LISTED_SEPARATELY"})
     preserved = [str(path) for pattern in ("**/*failed*", "**/follower_diagnostic", "**/S1_producer_*") for path in root.glob(pattern)]
     preserved += [str(root.parent / "tooling/native")]
     totals = Counter()
@@ -261,7 +270,8 @@ def collect_costs(binding):
             totals[row["operation"] + "_physical_image_inputs"] += row.get("physical_image_encodings") or 0
             totals[row["operation"] + "_physical_region_poolings"] += row.get("physical_region_poolings") or 0
     return {"method_light_costs": lights, "map_standalone_costs": maps, "physical_operations": operations,
-        "complete_operation_totals": dict(totals), "failed_operations": failures, "preserved_attempt_paths": sorted(set(preserved)),
+        "complete_operation_totals": dict(totals), "failed_operations": failures,
+        "failed_phase_attempts": phase_failures, "preserved_attempt_paths": sorted(set(preserved)),
         "new_SAM_forwards": 0, "new_CropFormer_forwards": 0, "new_text_forwards": 0,
         "cold_runs_performed": False, "operation_wall_sums_are_not_project_elapsed_time": True,
         "CUDA_event_and_separate_CPU_timings": "NOT_RECORDED; WORKER_WALL_TIME_REPORTED",
@@ -432,7 +442,8 @@ def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensiti
           row.get("physical_encoder_calls", row.get("encoder_batch_calls", "NA")), row.get("physical_region_poolings", "NA"),
           _number(row.get("model_load_seconds")), _number(row.get("elapsed_seconds"))] for row in costs["physical_operations"]])
     logical_rows = []
-    for cohort, scenes in binding["datasets"].items():
+    for cohort in COHORTS:
+        scenes = binding["datasets"][cohort]
         for method in METHODS:
             method_rows = [row for row in costs["method_light_costs"] if row["scene"] in scenes and row["method"] == method]
             logical_rows.append([cohort, "BB00_NATIVE / " + method,
@@ -463,7 +474,9 @@ def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensiti
         f"Frozen light: `{selection['light_package']['id']}`; map nominee: `{selection['nominated_map']}`.\n\n"
         "Values are percentages; paired deltas are percentage points against each cohort's exact BB00_NATIVE + D2. "
         "Development uses the original four scenes; all eight Replica scenes were already exposed. "
-        "APall uses the actual released .50-.90 overlap vector. Ordered released pooling and summed confusion matrices are used.\n\n")
+        "APall uses the actual released .50-.90 overlap vector. Ordered released pooling and summed confusion matrices are used.\n\n"
+        "Map nomination uses fixed D2 only. Gains in an alternate standard readout are descriptive and cannot nominate a map. "
+        "Replica gains are regression measurements and cannot replace the committed development choice.\n\n")
     results = prefix + "## Table 1: Official Metrics and Coverage\n\n" + score_table
     results += "\n\n## Raw Geometry Screen\n\n" + geometry_table
     results += "\n\n## Table 2: Recovery Funnel\n\n" + funnel_table
@@ -524,6 +537,8 @@ def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensiti
         f"Supported decision: `{completion['scientific_outcome']}`; measured development NET_GAIN: `{completion['development_NET_GAIN']}`.\n\n"
         "Supported claims are the exact ordered cohort metrics, post-lock recovery coverage/classification diagnostics, actual native action effects and protected cached-SAM changes documented in RESULTS. "
         "A gain, tradeoff or failure must be named by method, cohort and metric. The frozen transfer recipe is the only nominated package; a descriptive best Replica result cannot replace it.\n\n"
+        "`development_NET_GAIN` refers to the selectable light package or a qualifying fixed-D2 map. "
+        "The complete table also reports numerical guardrail gains in alternate readouts and exposed Replica controls; those are not omitted or used to revise nomination.\n\n"
         "U changes exported coverage on a fixed raw geometry, so it does not establish raw geometry improvement. Equal AP does not establish equal probabilities, semantics or partitions. "
         "Same-mask U1/U2 comparisons support only their common successful source subset. Resource-screened semantics are unmeasured, not zero and not copied baseline scores.\n\n"
         "Replica scenes were already exposed and are not new held-out confirmation. Leave-one-scene-out pools are correlated sensitivity analyses, not independent trials. "
