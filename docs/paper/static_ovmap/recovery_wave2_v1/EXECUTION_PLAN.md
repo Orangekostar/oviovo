@@ -201,15 +201,18 @@ Replica D2 APall/AP50/AP25/mIoU/mAcc is
 12.3864/26.0571/39.8413/30.1652/38.1484%; this descriptive regression gain does
 not change the precommitted development choice or deployment.
 
-The final complete production suite has 34 distinct passing tests, including
-the report metadata regression. All 21 actual single-native recovery observations
+The final complete production suite has 35 distinct passing tests, including
+the report metadata and deterministic matcher-order regressions. All 21 actual single-native recovery observations
 match artificial duplicated original FP32 classification with zero score difference.
 Four dynamic reports and all specified compact artifacts are generated (about
 28 MiB). The primary C0-C11/section review assessments retain actual evidence and
 explicit claim boundaries. The required final all --resume and normal full-SHA
 verified push are the remaining publication actions; their proof is external.
 Recovery cache hits do not imply zero standalone baseline cost or zero GPU work
-for fresh full-map semantic regeneration.
+for fresh full-map semantic regeneration. The first complete all-resume reached
+publication readiness, where file-hash checking correctly rejected unordered
+diagnostic lists. Matcher diagnostic keys are now explicitly sorted; the failed
+publication controller receipt remains external and is included in failure costs.
 The selected gamma=.5 and NONE produce the one measured RW_LIGHT_COMBO, exactly
 equivalent to the measured baseline APall 12.5817838% and other pooled metrics.
 Thirty-three targeted production tests pass in current_production.xml. Actual

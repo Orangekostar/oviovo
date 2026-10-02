@@ -107,16 +107,16 @@ def matcher_comparison(baseline, variant, added):
     after = released_attribution(variant, added)
     old = {tuple(row["key"]): row for row in before["tp_matches"]}
     new = {tuple(row["key"]): row for row in after["tp_matches"]}
-    loss = [old[key] for key in old.keys() - new.keys()]
+    loss = [old[key] for key in sorted(old.keys() - new.keys())]
     displaced, ambiguous = [], []
-    for key in old.keys() & new.keys():
+    for key in sorted(old.keys() & new.keys()):
         previous, current = set(old[key]["possible_owners"]), set(new[key]["possible_owners"])
         if previous.isdisjoint(added) and current <= set(added):
             displaced.append({"key": list(key), "previous_owners": sorted(previous), "new_owners": sorted(current)})
         elif previous.isdisjoint(added) and current & set(added):
             ambiguous.append({"key": list(key), "possible_new_owners": sorted(current)})
     return {"actual": after, "baseline_by_overlap": before["by_overlap"],
-        "lost_baseline_GT_TP_entries": loss, "new_GT_TP_entries": [new[key] for key in new.keys() - old.keys()],
+        "lost_baseline_GT_TP_entries": loss, "new_GT_TP_entries": [new[key] for key in sorted(new.keys() - old.keys())],
         "old_TP_score_displaced_by_added": displaced, "old_TP_score_displacement_ambiguous": ambiguous}
 
 

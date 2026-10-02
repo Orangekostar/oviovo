@@ -49,3 +49,19 @@ def test_unverified_trace_or_inconsistent_terminal_entries_rejected():
         released_attribution(value, set())
     with pytest.raises(ValueError, match="terminal"):
         released_attribution(trace([first(1)], [1, 0]), set())
+
+
+def test_matcher_diagnostics_have_stable_sorted_gt_entry_order(monkeypatch):
+    from static_ovmap.recovery_wave2 import mechanisms
+
+    def matches(indices, owner):
+        return {"tp_matches": [{"key": [0, 0, 1, "scene", i], "possible_owners": [owner], "score": .5}
+                               for i in indices], "by_overlap": {}}
+
+    before = matches(range(19, -1, -1), 1)
+    after = matches(range(29, 9, -1), 2)
+    monkeypatch.setattr(mechanisms, "released_attribution", lambda value, added: value)
+    result = mechanisms.matcher_comparison(before, after, {2})
+    for key in ("lost_baseline_GT_TP_entries", "new_GT_TP_entries", "old_TP_score_displaced_by_added"):
+        order = [row["key"] for row in result[key]]
+        assert len(order) == 10 and order == sorted(order)
