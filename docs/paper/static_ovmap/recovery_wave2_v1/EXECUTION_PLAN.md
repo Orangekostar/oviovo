@@ -121,7 +121,7 @@ Produces: protected CropFormer completions, causal conflict diagnostics and S ma
 - [x] Construct full development S1 rasters; alias only actual canonical equivalents.
 - [x] Implement S2 history capture, same-track visibility warp, stable factor0
   owner evidence, q>.2 addition-only suppression and unknown/history abstention.
-- [ ] Run conditional complete S1/S2 four-scene maps where required by input gate.
+- [x] Run conditional complete S1/S2 four-scene maps where required by input gate.
 
 ## Task 7: Geometry screen and own-map semantic regeneration
 
@@ -131,10 +131,11 @@ Produces: full raw diagnostics and actual standard NATIVE/FC_EQ/D2 readouts unle
 the complete four-scene aggregate meets the fixed catastrophe rule.
 
 - [x] Test catastrophe fraction/pp/count units and full-cohort decision scope.
-- [ ] Compare all-GT raw recall/IoU/fragments/coverage/F5 with parent definitions.
-- [ ] Generate fresh map-specific N/Q/F, own requests/projection and temperatures;
+- [x] Compare all-GT raw recall/IoU/fragments/coverage/F5 with parent definitions.
+- [x] Generate fresh map-specific N/Q/F, own requests/projection and temperatures;
   parent cache is exact lookup only, every new miss remains task-local.
-- [ ] Publish semantic NOT_RUN_RESOURCE_SCREEN distinctly from measured geometry.
+- [x] Implement semantic NOT_RUN_RESOURCE_SCREEN distinctly from measured geometry;
+  all five actual development arms passed and received fresh semantics.
 
 ## Task 8: Single compositions, freeze and eight-scene transfer
 
@@ -143,10 +144,11 @@ Consumes: complete four-scene ordered pools and standalone logical costs.
 Produces: selected gamma/recovery/light package and at most one qualifying map.
 
 - [x] Test feasibility (-.05/-.10/-.10pp), gain (+.20/-.10/-.10pp), bands and ties.
-- [x] Measure exactly one selected W x U composition; final package awaits full map screen.
-- [ ] If eligible, measure one new-map x light four-scene two-by-two; no A x S sweep.
-- [ ] Generate leave-one-development-scene-out fixed-method sensitivity pools.
-- [ ] Commit frozen identities/recipes/nomination before every new Replica prediction.
+- [x] Measure exactly one selected W x U composition and select the final package.
+- [x] Resolve conditional new-map x light check: NOT_RUN_NO_QUALIFYING_MAP;
+  none of the five fixed-D2 development arms reaches the NET_GAIN threshold.
+- [x] Generate leave-one-development-scene-out fixed-method sensitivity pools.
+- [x] Commit frozen identities/recipes/nomination before every new Replica prediction.
 - [ ] Run all eight fixed light Replica conditions and distinct frozen package;
   transfer only the one qualifying map, retaining complete cohort statuses.
 
@@ -173,41 +175,33 @@ Actual phase command is the original required command with the verified idle GPU
 report/publish phases never start map/model jobs. The new phase runner is required
 to record actual commands, statuses and immutable prerequisite identities.
 
-Current status: 12-scene binding and the complete eight-condition development
-light screen are measured. Seventeen scoped production tests pass. Four actual development registries have
-14 candidates and 10 with lawful captured views; no target or annotation labels
-were opened to create them. Source restoration/budget primitives pass 4 further
-scoped tests. Binding found 0 missing artifacts and
-indexed 1455 parent dense image contents, 6420 pooled regions and 2 text spaces.
-Development recovery performed 10 fresh region poolings, zero image encodings and
-zero text forwards. All four official light pools keep baseline APall 12.5817838%
-for U; W040/W045 degrade it. Four recovered owners in scene0534_00 enter the actual
-official minimum100-target-point manifest. Per-scene AP averages are not used.
-The isolated recovery_native_v2 extension passes exact serial3-frame old/new/off/
-all-native TSDF, label, owner, alias and raster parity. Forty-one accepted real-frame
-pairs and a native two-group/one-owner follower fixture were verified. Its extension
-SHA is 48cfc80599c7ec7849749d18eff163680e6c1d937b9e1aa37d73b764f963af1b.
-All 800 development S1 frontend frames were checked against original binary tracks
-and RAW winner/remap evidence. The changed canonical frame counts are 159, 160,
-160 and 159; all positive CropFormer pixels and separate original groups remain.
-Five SAM tests, one full-cohort catastrophe test, two native cache/accounting,
-two selection and two workflow/freeze-boundary tests pass. Own-map S2
-history/probe/warp and addition-only conflict paths are implemented; full S maps
-remain pending. All four A1 maps, geometry diagnostics, fresh N/Q/FC readouts and
-official pools are measured: D2 APall 11.0744142%, AP50 23.7343537%, AP25 35.5838704%,
-mIoU 25.2214135%, mAcc 31.8512985%. A1 passes the geometry screen but is a semantic/
-high-IoU-instance tradeoff and does not qualify for new-map transfer.
-All four A2 maps and geometry diagnostics are complete. Best-IoU falls 3.08786pp,
-but R50 loses only 1 GT; the exact combined catastrophe rule does not trigger.
-All A2 and A3 own N/Q/FC readouts and pools are now measured. A2 fixed-D2
-APall=11.9978458%, mIoU=24.0460969%; A3 APall=12.1455530%, mIoU=23.7112450%.
-Neither meets the prescribed NET_GAIN guard. The prescribed association-screen
-CLI has completed with all twelve maps, three full geometry screens and fresh
-standard readouts. S1/S2 eight-map execution is running under the same 2x8 CPU
-allowance. The prescribed CLI now exists and cache-screen --resume has
-actually passed. Standalone additional encoder inputs for all baseline light
-arms are zero relative to the actual baseline pipeline; this does not imply
-zero standalone baseline cost or zero GPU work for full-map semantic regeneration.
+Current status: all 20 prescribed development map-scene runs, all five geometry
+screens and all fresh NATIVE/FC_EQ/D2 readouts are complete. The original eight
+light conditions and exactly one W x U composition have complete released pools.
+The baseline D2 APall is 12.5817838%; A1/A2/A3/S1/S2 fixed-D2 APall is respectively
+11.0744142%, 11.9978458%, 12.1455530%, 12.6920131% and 12.5787856%.
+No new map meets the +0.20pp APall transfer gate with AP50/mIoU guards.
+
+The exact native extension SHA is
+48cfc80599c7ec7849749d18eff163680e6c1d937b9e1aa37d73b764f963af1b.
+Serial three-frame disabled/all-native parity, 41 accepted real-frame pairs and
+a real native two-group/one-owner fixture pass. All 800 S1 and 800 S2 frames were
+checked; S1 changes 638 canonical inputs while retaining every CropFormer positive
+pixel and separate group. S2 actually suppresses 185 tracks / 18,966 addition
+pixels, with 1,545 history abstentions. These are measured interventions, not
+claims that conflict suppression necessarily improves final AP.
+
+The 96 fixed-method leave-one-scene-out rows are complete without refitting.
+Gamma=0.5, recovery=NONE, light package RW_B_D2, no map nominee and deployment
+N0_UNCHANGED were frozen before new Replica predictions in full commit
+6dd3de7c00553f4895b72088435ebccf76cc9adc. Eight-scene light transfer is running;
+there will be no new Replica full maps because no development map qualifies.
+
+The latest complete production suite has 33 distinct passing tests; four relevant
+controller/resume tests also pass after the lock repair. Final report generation,
+primary full-spec audit, final targeted verification and normal verified push
+remain outstanding. Recovery cache hits do not imply zero standalone baseline
+cost or zero GPU work for fresh full-map semantic regeneration.
 The selected gamma=.5 and NONE produce the one measured RW_LIGHT_COMBO, exactly
 equivalent to the measured baseline APall 12.5817838% and other pooled metrics.
 Thirty-three targeted production tests pass in current_production.xml. Actual

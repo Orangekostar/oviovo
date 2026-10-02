@@ -45,6 +45,15 @@ def _number(value, *, percent=False):
     return "NA" if value is None else f"{value * (100 if percent else 1):.4f}"
 
 
+def _scientific_status(metrics, baseline):
+    if metrics is None:
+        return "INCONCLUSIVE"
+    if net_gain(metrics, baseline):
+        return "NET_GAIN_WITH_GUARDRAILS"
+    deltas = [metrics[key] - baseline[key] for key in METRICS]
+    return "TRADEOFF" if max(deltas) > 1e-12 and min(deltas) < -1e-12 else "NO_NET_GAIN"
+
+
 def collect_matrix(binding):
     root = Path(binding["output_root"])
     freeze = read(root / "freeze/receipt.json")
@@ -93,6 +102,10 @@ def collect_matrix(binding):
                     "delta_pp": None if metrics is None else {key: 100 * (metrics[key] - baseline[key]) for key in METRICS},
                     "NET_GAIN": None if metrics is None else net_gain(metrics, baseline),
                     "geometry_status": status, "pool_identity": result["identity"] if result else None})
+    baselines = {cohort: next(row["metrics"] for row in rows if row["cohort"] == cohort
+        and row["map_id"] == "BB00_NATIVE" and row["method"] == "RW_B_D2") for cohort in binding["datasets"]}
+    for row in rows:
+        row["scientific_status"] = _scientific_status(row["metrics"], baselines[row["cohort"]])
     return rows, pools
 
 
@@ -132,7 +145,7 @@ def _compact_light(row):
 
 def collect_mechanisms(binding):
     root, light, funnels, paired, actions, sam = Path(binding["output_root"]), [], [], [], [], []
-    sources, decisions, geometry = {}, {}, {"screens": {}, "scenes": []}
+    sources, decisions, geometry = {}, {}, {"screens": {}, "scenes": [], "current_semantic_status": {}}
     for cohort, scenes in binding["datasets"].items():
         for scene in scenes:
             light.extend(_compact_light(row) for row in light_scene(binding, scene))
@@ -152,6 +165,13 @@ def collect_mechanisms(binding):
     for map_id in (*A_MAPS, *S_MAPS):
         screen = read(root / "geometry/screens" / (map_id + ".json"))
         geometry["screens"][map_id] = screen
+        if screen["status"] == "GEOMETRY_PASS":
+            for method in ("NATIVE_READOUT", "FC_EQ", "D2"):
+                _pool(root / "pools/development" / map_id / method / "OFFICIAL_CURRENT_CLASS.json",
+                      binding["datasets"]["development"])
+            geometry["current_semantic_status"][map_id] = "COMPLETE"
+        else:
+            geometry["current_semantic_status"][map_id] = screen["semantic_status"]
         if screen["status"] == "EQUIVALENT_INPUT":
             continue
         for scene in binding["datasets"]["development"]:
@@ -378,20 +398,22 @@ def generate(binding):
 
 def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensitivity, selection, completion):
     repo, root = Path(binding["repository_root"]), Path(binding["output_root"])
-    score_table = _table(["Cohort", "Map / Method", "Status / Coverage", "APall", "AP50", "AP25", "mIoU", "mAcc", "Delta APall pp", "Delta mIoU pp"],
+    score_table = _table(["Cohort", "Map / Method", "Status / Coverage", "Scientific status", "APall", "AP50", "AP25", "mIoU", "mAcc",
+        *["Delta " + name + " pp" for name in ("APall", "AP50", "AP25", "mIoU", "mAcc")]],
         [[row["cohort"], row["map_id"] + " / " + row["method"], row["status"] + " " + row["coverage"],
+          row["scientific_status"],
           *[_number(None if row["metrics"] is None else row["metrics"][key], percent=True) for key in METRICS],
-          _number(None if row.get("delta_pp") is None else row["delta_pp"]["apall"]),
-          _number(None if row.get("delta_pp") is None else row["delta_pp"]["miou"])] for row in matrix])
+          *[_number(None if row.get("delta_pp") is None else row["delta_pp"][key]) for key in METRICS]] for row in matrix])
     funnel_table = _table(["Scene", "Arm", "RAW", "Painted", "Candidates", "U1 eligible", "Legal views", "Source available", "Used requests", "Added owners", "Target min100", "Cap exclusions"],
         [[row["scene"], row["method"], row["raw_positive_owners"], row["native_painted_owners"], row["capped_source_min100_candidates"],
           row["single_retained_native_eligible"], row["legal_captured_request_count"], row["source_available_owners"], row["used_evidence_requests"],
           row["exported_source_positive_owners"], len(row["official_target_min100_owners"]), row["FC_cap_excluded_requests"]] for row in funnels])
-    light_table = _table(["Scene", "Method", "Added TP50", "Added FP50", "Ambiguous TP/FP50", "Lost old TP entries all overlaps", "Old rank changes", "Old class changes", "Correct-point delta"],
+    light_table = _table(["Scene", "Method", "Added TP50", "Added FP50", "Ambiguous TP/FP50", "Lost old TP entries all overlaps", "Old TP displaced by added", "Old rank changes", "Old class changes", "Changed confusion cells", "Correct-point delta"],
         [[row["scene"], row["method"], row["matcher"]["actual"]["by_overlap"]["0.5"]["added_tp_score_entries"],
           row["matcher"]["actual"]["by_overlap"]["0.5"]["added_fp_score_entries"],
           str(row["matcher"]["actual"]["by_overlap"]["0.5"]["ambiguous_added_tp_score_entries"]) + "/" + str(row["matcher"]["actual"]["by_overlap"]["0.5"]["ambiguous_added_fp_score_entries"]),
-          len(row["matcher"]["lost_baseline_GT_TP_entries"]), len(row["old_owner_rank_changes"]), len(row["class_changed_incumbents"]),
+          len(row["matcher"]["lost_baseline_GT_TP_entries"]), len(row["matcher"]["old_TP_score_displaced_by_added"]),
+          len(row["old_owner_rank_changes"]), len(row["class_changed_incumbents"]), len(row["point_confusion_delta"]),
           row["point_confusion_diagonal_delta"]] for row in mechanisms["light"] if row["method"] in METHODS])
     association_table = _table(["Scene", "Arm", "Assign / Native", "Followers", "Candidate / Alias veto visits", "Mixed fallback visits", "Planned-realized mismatch", "Fresh owner rate", "Mean best IoU", "R50"],
         [[row["scene"], row["map_id"], str(row["totals"].get("ASSIGN_EXISTING", 0)) + " / " + str(row["totals"].get("USE_NATIVE", 0)),
@@ -404,8 +426,9 @@ def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensiti
           (row["S2_totals"] or {}).get("stable_known_pixels", "NA"), str((row["S2_totals"] or {}).get("known_self_track_pixels", "NA")) + " / " + str((row["S2_totals"] or {}).get("known_other_track_pixels", "NA")),
           str((row["S2_totals"] or {}).get("suppressed_tracks", "NA")) + " / " + str((row["S2_totals"] or {}).get("removed_additions", "NA")),
           (row["S2_totals"] or {}).get("history_abstention_tracks", "NA"), row["all_positive_crop_pixels_unchanged"]] for row in mechanisms["SAM"]])
-    cost_table = _table(["Scene", "Map", "Operation", "Status", "Physical image inputs", "Encoder calls", "Region poolings", "Model load seconds", "Worker wall seconds"],
+    cost_table = _table(["Scene", "Map", "Operation", "Status", "Physical image inputs", "Native / Q image inputs", "Encoder calls", "Region poolings", "Model load seconds", "Worker wall seconds"],
         [[row.get("scene"), row.get("map_id"), row["operation"], row["status"], row.get("physical_image_encodings", "NA"),
+          str(row.get("physical_native_image_inputs", "NA")) + " / " + str(row.get("physical_Q_image_inputs", "NA")),
           row.get("physical_encoder_calls", row.get("encoder_batch_calls", "NA")), row.get("physical_region_poolings", "NA"),
           _number(row.get("model_load_seconds")), _number(row.get("elapsed_seconds"))] for row in costs["physical_operations"]])
     logical_rows = []
@@ -426,7 +449,7 @@ def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensiti
     logical_table = _table(["Cohort", "Map / Method", "Standalone additional image inputs", "Required image inputs", "Additional recovery poolings", "Required cached-SAM cold inputs"], logical_rows)
     geometry_table = _table(["Arm", "Status", "Best IoU drop pp", "R50 count loss", "Fragment ratio", "Semantic status"],
         [[name, row["status"], _number(row.get("mean_best_iou_drop_pp")), row.get("R50_count_loss", "NA"),
-          _number(row.get("fragment_ratio")), row["semantic_status"]] for name, row in geometry["screens"].items()])
+          _number(row.get("fragment_ratio")), geometry["current_semantic_status"][name]] for name, row in geometry["screens"].items()])
     paired_rows = [row for scene in mechanisms["paired_U1_U2"] for row in scene["objects"]]
     paired_table = _table(["Scene", "Owner", "U1 / U2 class", "Agreement", "Target points", "Valid GT points", "GT majority / purity", "U1 / U2 correct points"],
         [[row["scene"], row["owner"], str(row["U1_label"]) + " / " + str(row["U2_label"]), row["label_agreement"], row["projected_support_points"], row["valid_GT_points"],
@@ -473,12 +496,18 @@ def write_reports(binding, matrix, mechanisms, funnels, geometry, costs, sensiti
         f"Banded light preference: `{selection['light_ranking']['banded_preference']}`.\n\n"
         f"Composition status: `{read(root / 'selection/composition_check.json')['map_composition']}`. No A x S sweep.\n\n"
         "## Fixed-Method Leave-One-Scene-Out Sensitivity\n\n" + loo + "\n\nThese correlated three-scene pools reuse fixed predictions and the released evaluator. No algorithms are refit; neither selection nor Replica parameters change.\n")
+    replica_chosen = next(row for row in matrix if row["cohort"] == "replica" and row["map_id"] == "BB00_NATIVE"
+        and row["method"] == (selection["light_package"]["id"] if selection["light_package"]["id"] in METHODS else "RW_FROZEN_LIGHT"))
     handoff = ("# Recovery Wave 2 Handoff\n\n"
         f"Implementation: `{completion['implementation_status']}`. Scientific outcome: `{completion['scientific_outcome']}`. "
         "Publication is verified only by the external `publication/final.json` full-SHA comparison. Deployment: `N0_UNCHANGED`.\n\n"
         f"Task root: `{root}`. Immutable parent: `{binding['parent_root']}`. Branch: `research/ovimap-recovery-wave2-v1`.\n\n"
         f"Completed new full maps: development {completion['development_full_map_successes']}, Replica {completion['Replica_full_map_successes']}. "
         "No baseline maps, new SAM/CropFormer/text forwards, training, checkpoint or temperature fits. Fresh own-map N/Q/FC regeneration is separately measured.\n\n"
+        f"Frozen Replica package: `{replica_chosen['method']}`, coverage `{replica_chosen['coverage']}`, "
+        + ", ".join(name + "=" + _number(replica_chosen["metrics"][key], percent=True) + "%" for name, key in
+            zip(("APall", "AP50", "AP25", "mIoU", "mAcc"), METRICS, strict=True))
+        + f". Scientific status: `{replica_chosen['scientific_status']}`. Replica results did not change the nomination.\n\n"
         f"Default Python: `{read(binding['spec'])['default_python']}`. FC Python: `{binding['fc']['python']}`. "
         "Original FP32 model/operator/checkpoint identities and frozen category/template order are in `resolved_inputs.json`; native patch/build receipts are retained. "
         "The isolated upstream patch stack is capture, backbone, then recovery. Original binaries remain unchanged.\n\n"
