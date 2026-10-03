@@ -12,11 +12,12 @@ from static_ovmap.module_validation.contracts import atomic_write_json, canonica
 from static_ovmap.recovery_wave2.binding import ConsumptionIndex, read
 
 from .freezing import OWNED_PATHS, implementation_inventory, verified_validation
+from .partial_execution import PARTIAL_LOCK, PARTIAL_RESULT, _pool_partition, semantic_block, validate_partial_scope
 from .projected_views import _verified_identity
 from .protocol import PACKAGE, experiment_matrix, load_spec
 from .runtime import require_frozen_execution
-from .tables import _complete, main_tables, render_tables, result_store
-from .timing import aggregate_timings
+from .tables import _complete, _evidence, collect_actual_physical_costs, main_tables, render_tables, result_store
+from .timing import _validate_unmeasured_block, aggregate_timings, recovery_arm
 
 
 RELEASE_ROOT = "artifacts/static_ovmap/cvpr_compact_tables_v1"
@@ -106,50 +107,119 @@ def audit_measurements(binding, *, index=None):
             raise ValueError("actual publication anchor schedule or scene changed")
         anchor_proofs.append({**anchor, "context": index.identity(root / "anchor_contexts" / (scene + ".json")),
                               "map": index.identity(mapping_path), "capture": index.identity(context["capture_manifest"])})
-        locks[scene] = _document(root / "predictions" / scene / "receipt.json", index, "PREDICTIONS_LOCKED")
+        locks[scene] = _document(root / "predictions" / scene / "receipt.json", index)
         methods = {row["method"] for row in matrix["outputs"] if row["scene"] == scene}
+        if locks[scene]["status"] == PARTIAL_LOCK:
+            methods = set(validate_partial_scope(spec, locks[scene]))
+            failed = _document(root / "recovery" / scene / "receipt.json", index, "FAILED")
+            projected = _document(root / "projected_views" / scene / "receipt.json", index, "COMPLETE")
+            manifest = _document(projected["manifest"], index)
+            for arm, block in locks[scene]["blocked_sources"].items():
+                if semantic_block(failed, manifest, recovery_arm(arm)) != block:
+                    raise ValueError("publication block differs from the actual unchanged selected-mask failures")
+        elif locks[scene]["status"] != "PREDICTIONS_LOCKED":
+            raise ValueError("publication cannot infer blocked predictions from incomplete execution")
         if (locks[scene]["scene"] != scene or locks[scene]["cohort"] != cohort
                 or set(locks[scene]["predictions"]) != methods or locks[scene]["output_count"] != len(methods)
                 or not locks[scene]["baseline_array_and_rank_parity"]):
-            raise ValueError("publication requires exactly all172 locked fixed predictions and unchanged A0")
-        scene_receipts[scene] = _complete(root / "evaluation" / scene / "receipt.json", index)
+            raise ValueError("publication requires every independently available fixed prediction and unchanged A0")
+        scene_receipts[scene] = _evidence(root / "evaluation" / scene / "receipt.json", index)
+        if (scene_receipts[scene]["prediction_lock_identity"] != locks[scene]["identity"]
+                or scene_receipts[scene].get("blocked_methods", {}) != locks[scene].get("blocked_methods", {})):
+            raise ValueError("publication scoring differs from its exact locked method/blocked scope")
+    partitions = {}
+    for cohort in spec["cohorts"]:
+        selected = {scene: scene_receipts[scene] for scene in spec["cohorts"][cohort]}
+        methods, blocked = _pool_partition(spec, cohort, selected)
+        manifest = _evidence(root / "pools" / cohort / "receipt.json", index)
+        if (manifest["scene_order"] != spec["cohorts"][cohort] or set(manifest["methods"]) != set(methods)
+                or manifest.get("blocked_methods", {}) != blocked):
+            raise ValueError("publication cohort manifest changed actual full ordered pool availability")
+        partitions[cohort] = (set(methods), blocked, manifest)
     for planned in matrix["pools"]:
         key = (planned["cohort"], planned["method"])
+        if key[1] in partitions[key[0]][1]:
+            if (root / "pools" / key[0] / (key[1] + ".json")).exists():
+                raise ValueError("a blocked full pool must not have a substitute scientific receipt")
+            continue
         pools[key] = _complete(root / "pools" / key[0] / (key[1] + ".json"), index)
+        if pools[key] != partitions[key[0]][2]["methods"][key[1]]:
+            raise ValueError("publication pool differs from its full-cohort manifest")
     actual_store = result_store(spec, scene_receipts, pools, root)
-    store = _complete(root / "tables/result_store.json", index)
+    store = _evidence(root / "tables/result_store.json", index)
     if actual_store != store:
         raise ValueError("published store differs from the actual full ordered scene/pool receipts")
-    timings = [_complete(root / "timing" / row["scene"] / row["arm"] / "receipt.json", index) for row in matrix["timings"]]
-    timing = _complete(root / "timing/pool.json", index)
+    timings = []
+    for planned in matrix["timings"]:
+        row = _document(root / "timing" / planned["scene"] / planned["arm"] / "receipt.json", index)
+        if row["status"] == "BLOCKED_UNMEASURED":
+            _validate_unmeasured_block(row)
+            block = locks[planned["scene"]].get("blocked_sources", {}).get(planned["arm"])
+            if block != row["technical_block"]:
+                raise ValueError("publication cold block differs from the actual scientific dependency")
+        elif row["status"] != "COMPLETE":
+            raise ValueError("publication requires every actual fixed cold observation or proved unmeasured block")
+        timings.append(row)
+    timing = _evidence(root / "timing/pool.json", index)
     aggregate = aggregate_timings(spec, timings)
     if any(timing[key] != aggregate[key] for key in aggregate if key != "identity"):
-        raise ValueError("published timing pool differs from its24 real fixed measurements")
-    diagnosis = _complete(root / "diagnostics/replica8_recovery.json", index)
-    all_diagnosis = _complete(root / "diagnostics/receipt.json", index)
+        raise ValueError("published timing pool differs from its24 fixed measured/blocked positions")
+    diagnosis = _evidence(root / "diagnostics/replica8_recovery.json", index)
+    all_diagnosis = _evidence(root / "diagnostics/receipt.json", index)
     if all_diagnosis["scene_order"] != [row["scene"] for row in matrix["anchors"]]:
         raise ValueError("publication diagnosis must include all26 scenes")
+    from .diagnostics import aggregate_recovery_diagnostics
+    diagnostics = {anchor["scene"]: _evidence(root / "diagnostics" / (anchor["scene"] + ".json"), index)
+                   for anchor in matrix["anchors"]}
+    if (all_diagnosis["scene_identities"] != {scene: row["identity"] for scene, row in diagnostics.items()}
+            or diagnosis != aggregate_recovery_diagnostics(spec, [diagnostics[s] for s in spec["cohorts"]["replica8"]])):
+        raise ValueError("published diagnosis differs from its full fixed post-lock scene evidence")
     reference = _document(root / "external/reference.json", index, "AUTHOR_REPORTED_NOT_REPRODUCED")
-    tables = _complete(root / "tables/tables_main.json", index)
+    tables = _evidence(root / "tables/tables_main.json", index)
     if tables != main_tables(spec, store, reference, diagnosis, timing, root):
         raise ValueError("actual table cells differ from their typed measured and attributed evidence")
     for filename, content in render_tables(tables).items():
         if (root / "tables" / filename).read_text() != content:
             raise ValueError("numeric LaTeX differs from its single result store")
-    table_receipt = _complete(root / "tables/receipt.json", index)
+    table_receipt = _evidence(root / "tables/receipt.json", index)
     visual = verify_visual_qa(binding, table_receipt, index)
-    costs = _complete(root / "tables/costs.json", index)
-    if {(row["scene"], row["method_id"]) for row in costs["method_dependencies"]} != {
-            (row["scene"], row["method"]) for row in matrix["outputs"]}:
-        raise ValueError("all172 method dependencies must enter the actual paid-cost ledger")
-    reports = _complete(root / "reports/receipt.json", index)
+    costs = _evidence(root / "tables/costs.json", index)
+    expected_costs = {(row["scene"], row["method_id"]) for row in store["scene_metrics"] if row["status"] == "COMPLETE"}
+    if ({(row["scene"], row["method_id"]) for row in costs["method_dependencies"]} != expected_costs
+            or len(costs["method_dependencies"]) != len(expected_costs)):
+        raise ValueError("every actual fixed prediction must retain its method dependency costs")
+    expected_blocked = [{key: row[key] for key in ("scene", "cohort", "method_id", "status", "unavailable_reason",
+        "blocked_condition", "technical_block", "receipt_path", "receipt_identity")}
+        for row in store["scene_metrics"] if row["status"] == "BLOCKED_TECHNICAL"]
+    if (costs.get("blocked_method_dependencies", []) != expected_blocked
+            or costs["physical_payments"] != collect_actual_physical_costs(binding, [r["scene"] for r in matrix["anchors"]], index=index)):
+        raise ValueError("published costs changed blocked dependencies or original physical worker payments")
+    reports = _evidence(root / "reports/receipt.json", index)
     if reports["primary_method"] != "CT_A3_ER" or reports["deployment"] != "N0_UNCHANGED":
         raise ValueError("publication cannot change the fixed primary method or deployment")
-    for name in REPORT_NAMES:
-        index.identity(Path(binding["repository_root"]) / "docs/paper/static_ovmap" / name)
-    coverage = {"implementation_status": "IMPLEMENTATION_COMPLETE_FROZEN", "scientific_status": "COMPLETE",
-        "anchor_count": len(anchor_proofs), "prediction_count": len(store["scene_metrics"]), "pool_count": len(pools),
-        "timing_status": "COMPLETE", "timing_count": len(timings), "fixed_matrix_identity": matrix["identity"],
+    from .reports import analyze_results, render_reports
+    analysis = _evidence(root / "reports/analysis.json", index)
+    if analysis != analyze_results(spec, store, diagnosis, timing):
+        raise ValueError("published analysis changed actual paired effects or unavailable comparisons")
+    for name, content in render_reports(binding, store, diagnosis, timing, reference, analysis, revision,
+                                         cost_data=costs, scene_diagnostics=diagnostics).items():
+        path = Path(binding["repository_root"]) / "docs/paper/static_ovmap" / name
+        index.identity(path)
+        if path.read_text() != content:
+            raise ValueError("published report differs from its measured typed evidence: " + name)
+    blocked_dependencies = ["scene/" + row["scene"] + "/" + row["method_id"] for row in expected_blocked]
+    blocked_dependencies += ["pool/" + row["cohort"] + "/" + row["method_id"]
+        for row in store["pooled_metrics"] if row["status"] == "BLOCKED_TECHNICAL"]
+    blocked_dependencies += ["timing/" + row["scene"] + "/" + row["arm"]
+        for row in timings if row["status"] == "BLOCKED_UNMEASURED"]
+    coverage = {"implementation_status": "IMPLEMENTATION_FROZEN", "scientific_status": store["status"],
+        "anchor_count": len(anchor_proofs), "prediction_count": store["main_scene_outputs"]["complete"], "pool_count": len(pools),
+        "main_scene_outputs": store["main_scene_outputs"], "internal_pools": store["internal_pools"],
+        "cold_timing_leaves": {"complete": timing["leaf_count"], "blocked": timing.get("blocked_leaf_count", 0), "required": 24},
+        "blocked_required_dependencies": blocked_dependencies, "scientific_complete": not blocked_dependencies,
+        "objective_completion_status": "PENDING_PRIMARY_REQUIREMENT_AUDIT",
+        "timing_status": timing["status"], "timing_count": timing["leaf_count"], "fixed_matrix_identity": matrix["identity"],
+        "benchmark_coverage": reports["benchmark_coverage"],
         "external_comparison_provenance_status": reference["status"], "external_protocol_status": reference["external_protocol_status"],
         "external_full_scorer_protocol_verified": reference["full_scorer_protocol_independently_verified"],
         "performance_outcome": reports["performance_outcome"], "publication_status": "PENDING_PUSH_VERIFICATION",
@@ -233,10 +303,25 @@ def build_release(binding):
                 keep(item)
         projected = read(root / "projected_views" / scene / "receipt.json")
         copy(projected["manifest"], "projected_views/" + scene + "/manifest.json")
-        copy(root / "recovery" / scene / "regions/receipt.json")
-        fc = read(root / "recovery" / scene / "regions/receipt.json")
-        for name, source in fc["sources"].items():
-            copy(source["path"], "sources/" + scene + "/" + name + ".json")
+        regions = root / "recovery" / scene / "regions/receipt.json"
+        if regions.is_file():
+            copy(regions)
+            fc = read(regions)
+            for name, source in fc["sources"].items():
+                copy(source["path"], "sources/" + scene + "/" + name + ".json")
+        else:
+            failed = read(root / "recovery" / scene / "receipt.json")
+            locked = read(root / "predictions" / scene / "receipt.json")
+            if failed.get("status") != "FAILED" or locked.get("status") != PARTIAL_LOCK or not locked.get("blocked_methods"):
+                raise ValueError("missing regions receipt requires the actual proved all-failed scientific block")
+        independent = root / "recovery" / (scene + "_U2") / "receipt.json"
+        if independent.is_file():
+            copy(independent)
+            fc = read(independent)
+            for name, source in fc["sources"].items():
+                copy(source["path"], "sources/" + scene + "/INDEPENDENT_" + name + ".json")
+            for item in fc.get("inputs", []) + fc.get("outputs", []):
+                keep(item)
         native = read(root / "native_recovery" / scene / "receipt.json")
         copy(native["source"]["path"], "sources/" + scene + "/G1_NATIVE.json")
         evaluated = read(root / "evaluation" / scene / "receipt.json")
@@ -277,7 +362,12 @@ def build_release(binding):
         path = root / "timing" / planned["scene"] / planned["arm"] / "receipt.json"
         copy(path)
         row = read(path)
-        copy(row["recovery_receipt"])
+        if row.get("status") == "BLOCKED_UNMEASURED":
+            _validate_unmeasured_block(row)
+            if (path.parent / "call/receipt.json").exists():
+                raise ValueError("unreserved blocked timing cannot publish a physical call")
+        else:
+            copy(row["recovery_receipt"])
         for item in row["inputs"] + row["outputs"]:
             keep(item)
     costs = read(root / "tables/costs.json")
@@ -313,19 +403,38 @@ def build_release(binding):
 def verify_primary_review(binding, bundle):
     repo, root = Path(binding["repository_root"]), Path(binding["output_root"])
     index = ConsumptionIndex(root / "validation/input_verifications.json")
-    review = _document(root / "validation/primary_review.json", index, "PASS")
+    review = _document(root / "validation/primary_review.json", index)
+    coverage = _document(root / "publication/scientific_coverage.json", index)
+    actual_blocks = set(coverage.get("blocked_required_dependencies", []))
     catalog = requirement_catalog()
     expected = {row["id"] for row in catalog["requirements"]}
     if (review["reviewer"] != "PRIMARY_CODEX" or review["requirement_catalog_identity"] != catalog["identity"]
-            or review["bundle_identity"] != bundle["identity"] or review["unresolved_required_items"]
+            or review["bundle_identity"] != bundle["identity"]
             or {row["requirement_id"] for row in review["requirements"]} != expected
             or len(review["requirements"]) != len(expected)):
         raise ValueError("primary review must cover every package requirement against the current full release")
+    blocked_requirements, covered_blocks = set(), set()
     for row in review["requirements"]:
-        if row["status"] != "PROVEN_COMPLETE" or not row["evidence"] or not row["finding"]:
+        if row["status"] not in ("PROVEN_COMPLETE", "BLOCKED_TECHNICAL") or not row["evidence"] or not row["finding"]:
             raise ValueError("uncertain, indirect or missing requirement evidence cannot pass publication")
+        dependencies = set(row.get("blocked_dependencies", []))
+        if row["status"] == "BLOCKED_TECHNICAL":
+            if not dependencies or not dependencies <= actual_blocks:
+                raise ValueError("blocked requirement must identify an actual audited fixed scientific dependency")
+            blocked_requirements.add(row["requirement_id"])
+            covered_blocks.update(dependencies)
+        elif dependencies:
+            raise ValueError("a proven complete requirement cannot contain unresolved dependencies")
         for item in row["evidence"]:
             index.identity(item["path"], item)
+    if (set(review["unresolved_required_items"]) != blocked_requirements or covered_blocks != actual_blocks
+            or len(review["unresolved_required_items"]) != len(blocked_requirements)):
+        raise ValueError("primary review must retain every actual blocked requirement and scientific dependency")
+    if blocked_requirements:
+        if review["status"] != "PASS_WITH_TECHNICAL_BLOCKS" or review.get("objective_complete") is not False:
+            raise ValueError("conditional publication must not claim overall objective completion")
+    elif review["status"] != "PASS":
+        raise ValueError("complete publication requires its explicit primary PASS review")
     expected_files = {item["path"] for item in bundle["files"]}
     expected_files.update(row["path"] for row in implementation_inventory(binding, index=index))
     expected_files.update("docs/paper/static_ovmap/" + name for name in REPORT_NAMES)

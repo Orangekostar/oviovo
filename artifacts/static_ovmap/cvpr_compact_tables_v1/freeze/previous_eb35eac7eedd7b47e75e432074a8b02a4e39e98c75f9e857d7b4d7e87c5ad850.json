@@ -16,14 +16,14 @@
       "tables",
       "reports"
     ],
-    "id": "04",
+    "cold_reservations_before_amendment": 0,
+    "id": "03",
     "main_outcomes_seen": true,
-    "preservation_preflight_identity": "ab66dbe59cd00263f798b20d33bdd9480faef6c42c68a8c1d2b6f05e467d0f2d",
-    "preserved_cold_resumption_identity": "1eb16507e866c5672fd11354f675fba27f4cd14e9f015c4d99b8a3b5ebc93062",
-    "preserved_scientific_integration_identity": "71c4171282621555b4567e1204f633a6e58f8e9235a5e99d9d3a993e66a32833",
-    "previous_freeze_identity": "eb35eac7eedd7b47e75e432074a8b02a4e39e98c75f9e857d7b4d7e87c5ad850",
-    "previous_revision": "f5d2113228eba3869acf528249c2efd31986a701",
-    "reason": "Retain every fixed position and actual technical block in post-lock diagnostics, tables, reports and conditional publication; no scientific producer or observed cold call changes.",
+    "preflight_identity": "3b3b8c69a865468ff4b7eb2b65b5c28a3772bc3d81b5cde7bea4e625fc81596d",
+    "preserved_integration_identity": "71c4171282621555b4567e1204f633a6e58f8e9235a5e99d9d3a993e66a32833",
+    "previous_freeze_identity": "925c2241225793034c461673b19043944d1018afb5ae3a49751d51ffdef25ada",
+    "previous_revision": "48fb39d3beae0a50ad369fc72c4bd439fca3fa7f",
+    "reason": "Verify all24 per-arm cold prerequisites, preserve actual office1 U2 parent and two unmeasured semantic blocks before any physical cold reservation.",
     "unchanged_scientific_producers": [
       {
         "bytes": 28905,
@@ -94,12 +94,11 @@
         "bytes": 26996,
         "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/partial_execution.py",
         "sha256": "3839162a9134fc0257a33c206c7f97cbaf710bd85b15d0609526e31fc03b1cae"
-      },
-      {
-        "bytes": 31572,
-        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/timing.py",
-        "sha256": "75517b5ed46d3c3e383d6518239a80872f1090c455f885d06d8f0b8325efb3a5"
       }
+    ],
+    "unreserved_cold_scope": [
+      "timing/scientific_parents.json",
+      "timing/*/*/receipt.json"
     ]
   },
   "anchor_inputs": [
@@ -579,7 +578,7 @@
     "sha256": "3f5ab03d6afb8a6a300abc3291305cf20c4e306791cadc380649e58e0349aba3"
   },
   "branch": "research/ovimap-cvpr-compact-tables-v1",
-  "created_at_unix": 1791043186.262594,
+  "created_at_unix": 1791038715.9631026,
   "data_exposure": {
     "captures": {
       "scene0011_00": {
@@ -785,7 +784,7 @@
     "N": 0.010357429721631367,
     "Q": 0.010000492837221748
   },
-  "identity": "9cdb331bd0aac15f5ad8003f61d4f7a4baef4aaa8ef99a1556363676bf623403",
+  "identity": "eb35eac7eedd7b47e75e432074a8b02a4e39e98c75f9e857d7b4d7e87c5ad850",
   "implementation_sources": [
     {
       "bytes": 82,
@@ -818,9 +817,9 @@
       "sha256": "e9b3de04fadcabc287a91480b658798e8e92ab218bf1ce0f6bcc7085cabb01ac"
     },
     {
-      "bytes": 20646,
+      "bytes": 14187,
       "path": "src/static_ovmap/cvpr_compact/diagnostics.py",
-      "sha256": "16137606198e8fe3540ef1e56549447ff15223a8bc2c7f1822ea34e07e7cc28f"
+      "sha256": "29b22a0f1ff40a7c81a7b986396c386289c42a3650ca748f4d84165763db3bd0"
     },
     {
       "bytes": 28805,
@@ -868,9 +867,9 @@
       "sha256": "b54e211d3daee7d3f5f81bba0f634e2d46eca55acbf1eaa1673b03c33fd32c74"
     },
     {
-      "bytes": 32477,
+      "bytes": 24236,
       "path": "src/static_ovmap/cvpr_compact/publication.py",
-      "sha256": "abdd799f3c00deffcafe1a896d1b3896f2ea1eb45fd72bee2b28f02693deebb8"
+      "sha256": "3ed7d171fba8821381944db92519018ac19dcd77104c11728abf4b577691d325"
     },
     {
       "bytes": 8102,
@@ -888,9 +887,9 @@
       "sha256": "d5a9193dc95320cde684199428334f97da4130447c9abbe8ae2f25b7b3899976"
     },
     {
-      "bytes": 25222,
+      "bytes": 20219,
       "path": "src/static_ovmap/cvpr_compact/reports.py",
-      "sha256": "51b4fcbec2c1bb31257893702c720b28377e932fd6ad7da4fa5b9d71c18038ef"
+      "sha256": "f0649972db8fd97a5e774be446c23cf59de9de1caa2cdc75b7661595cb1fcb56"
     },
     {
       "bytes": 8403,
@@ -898,9 +897,9 @@
       "sha256": "312e5f38402366d62302ce04d1c73fdd67cac94e282a579dfce3e6840dbcf1be"
     },
     {
-      "bytes": 36008,
+      "bytes": 24569,
       "path": "src/static_ovmap/cvpr_compact/tables.py",
-      "sha256": "63b030bb8bbdf914f2d4923135362984fdc75749149d7c86fa6079f54034285b"
+      "sha256": "7761d92048e8568522095a3e026e398ddf422a4c5fc8578d15df9cd50bf32722"
     },
     {
       "bytes": 31572,
@@ -918,9 +917,9 @@
       "sha256": "cd9d31425b29cf9ac8e195e4238995cd67de5e792cd1c1319ffa22ea4884fcea"
     },
     {
-      "bytes": 145361,
+      "bytes": 126889,
       "path": "tests/evaluation/test_cvpr_compact_contracts.py",
-      "sha256": "86a1bf430e668cb614cec81036eecd6571da433868ff58505ca1ec0c48eac116"
+      "sha256": "a86ac392555cf0cd5798a20994f2441b231aca46796d3083a7a945761fba8c2a"
     },
     {
       "bytes": 10046,
@@ -22453,12 +22452,12 @@
     "existing_map_smoke": {
       "bytes": 11640,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_smoke.json",
-      "sha256": "834fc48ffe04ac6cb52a1c5e27c5a8bb27ec2dcef42b3969aaf8511552adafbc"
+      "sha256": "7b84de6a44707b62700b9ce5e57e85b0cc00cad1229c5f9bd81f1cb4f42a3a30"
     },
     "focused_tests": {
-      "bytes": 10782,
+      "bytes": 10781,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_contract_tests.json",
-      "sha256": "deb4e6ac040f83b3e3c007a6ec08dc981bfa13d08c4ed4d8905fe9ff6430ebbf"
+      "sha256": "ed8a2e15cea9ab04d63dcd8ce113ed996fa56427bab9928480354d742703f156"
     }
   }
 }

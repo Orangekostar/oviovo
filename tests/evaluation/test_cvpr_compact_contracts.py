@@ -1589,6 +1589,120 @@ def test_result_store_rejects_missing_or_misaligned_full_cohort_receipts(tmp_pat
         result_store(spec, scenes, broken, tmp_path)
 
 
+def _partial_table_inputs(tmp_path):
+    spec, scenes, pools, reference, diagnosis, timing = _table_inputs(tmp_path)
+    _, _, _, _, scope = partial_scope_fixture()
+    blocked = set(scope["blocked_methods"])
+    scene = scenes["office1"]
+    scene.update(scope, status="PARTIAL_WITH_TECHNICAL_BLOCKS")
+    scene["rows"] = [row for row in scene["rows"] if row["method"] not in blocked]
+    scene["identity"] = canonical_digest({key: value for key, value in scene.items() if key != "identity"})
+    for method in blocked:
+        del pools[("replica8", method)]
+    for method, pool in pools.items():
+        if method[0] == "replica8":
+            selected = [next(row for row in scenes[s]["rows"] if row["method"] == method[1])
+                        for s in spec["cohorts"]["replica8"]]
+            pool["row_identities"] = [row["identity"] for row in selected]
+            pool["identity"] = canonical_digest({key: value for key, value in pool.items() if key != "identity"})
+    diagnosis["status"] = "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    for arm in ("G1", "G3"):
+        row = diagnosis["arms"][arm]
+        row.update(status="BLOCKED_TECHNICAL", n=None, added_TP50=None, added_FP50=None,
+                   ambiguous_added_TP50=None, ambiguous_added_FP50=None, matching_ambiguity_flag=None,
+                   complete_scene_count=7, blocked_scenes=["office1"],
+                   unavailable_reason="FULL_COHORT_DIAGNOSTIC_HAS_BLOCKED_CONDITIONS")
+    diagnosis["identity"] = canonical_digest({key: value for key, value in diagnosis.items() if key != "identity"})
+    timing.update(status="PARTIAL_WITH_TECHNICAL_BLOCKS", leaf_count=22, planned_leaf_count=24, blocked_leaf_count=2)
+    for arm in ("G1_FC", "G3_FC"):
+        timing["arms"][arm].update(mean_seconds=None, complete_scene_count=7, blocked_scene_count=1,
+            unavailable_reason="FULL_EIGHT_SCENE_MEAN_HAS_BLOCKED_UNMEASURED_LEAVES")
+    timing["identity"] = canonical_digest({key: value for key, value in timing.items() if key != "identity"})
+    return spec, scenes, pools, reference, diagnosis, timing
+
+
+def test_blocked_result_store_keeps_fixed_slots_and_same_na_provenance_in_all_tables(tmp_path):
+    from static_ovmap.cvpr_compact.tables import result_store, main_tables, format_cell, render_tables
+
+    spec, scenes, pools, reference, diagnosis, timing = _partial_table_inputs(tmp_path)
+    store = result_store(spec, scenes, pools, tmp_path)
+    assert store["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    assert len(store["scene_metrics"]) == 172 and len(store["pooled_metrics"]) == 14
+    assert store["main_scene_outputs"] == {"complete": 168, "blocked": 4, "required": 172}
+    assert store["internal_pools"] == {"complete": 10, "blocked": 4, "required": 14}
+    blocked = [row for row in store["pooled_metrics"] if row["source_kind"] == "UNAVAILABLE"]
+    assert len(blocked) == 4
+    assert all(row["completed_coverage"] == 7 and row["required_coverage"] == 8 for row in blocked)
+    assert all(all(value is None for value in row["metrics"].values()) for row in blocked)
+    tables = main_tables(spec, store, reference, diagnosis, timing, tmp_path)
+    assert tables["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    assert [len(tables["tables"][name]) for name in ("table1", "table2", "table3")] == [6, 6, 4]
+    cells = [cell for rows in tables["tables"].values() for row in rows for cell in row["cells"]]
+    repeated = [cell for cell in cells if cell["method_id"] == "CT_A3_ER"
+                and cell["cohort"] == "replica8" and cell["metric"] == "apall"]
+    assert len(repeated) == 3 and all(format_cell(cell) == "--" for cell in repeated)
+    assert len({(cell["source_id"], cell["receipt_identity"]) for cell in repeated}) == 1
+    assert all(cell["unavailable_reason"] == "FULL_COHORT_POOL_HAS_BLOCKED_CONDITIONS" for cell in repeated)
+    g1 = tables["tables"]["table3"][2]
+    assert [format_cell(cell) for cell in g1["cells"]] == ["1", "--", "--", "--", "--", "--", "--"]
+    assert "office1" in render_tables(tables)["table3_recovery.tex"]
+    missing = dict(pools)
+    del missing[("replica8", "CT_H_U2")]
+    with pytest.raises(ValueError, match="complete|fixed|pool"):
+        result_store(spec, scenes, missing, tmp_path)
+    fabricated = copy.deepcopy(scenes)
+    fabricated["office1"]["blocked_sources"]["G1_FC"]["GT_input"] = True
+    fabricated["office1"]["identity"] = canonical_digest({
+        key: value for key, value in fabricated["office1"].items() if key != "identity"})
+    with pytest.raises(ValueError, match="block|identity|content changed"):
+        result_store(spec, fabricated, pools, tmp_path)
+
+
+def test_partial_diagnosis_keeps_common_denominator_and_no_partial_sum_as_full_result():
+    from static_ovmap.cvpr_compact.diagnostics import aggregate_recovery_diagnostics
+
+    spec, _, _, methods, scope = partial_scope_fixture()
+    receipts = []
+    for scene in spec["cohorts"]["replica8"]:
+        conditions = {row["id"]: {"source_available_additions": int(row["recovery"] != "NONE"),
+            "target_min100_additions": int(row["recovery"] != "NONE"), "target_small_additions": 0,
+            "added_TP50": int(row["recovery"] != "NONE"), "added_FP50": 0,
+            "ambiguous_added_TP50": 0, "ambiguous_added_FP50": 0} for row in spec["methods"]}
+        receipt = {"status": "COMPLETE", "scene": scene, "candidate_count": 2, "conditions": conditions}
+        if scene == "office1":
+            receipt.update(scope, status="PARTIAL_WITH_TECHNICAL_BLOCKS")
+            receipt["conditions"] = {row["id"]: conditions[row["id"]] for row in methods}
+        receipt["identity"] = canonical_digest(receipt)
+        receipts.append(receipt)
+    result = aggregate_recovery_diagnostics(spec, receipts)
+    assert result["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS" and result["common_candidate_denominator"] == 16
+    assert result["arms"]["U2"]["n"] == 8 and result["arms"]["U2"]["complete_scene_count"] == 8
+    for arm in ("G1", "G3"):
+        row = result["arms"][arm]
+        assert row["n"] is None and row["N"] == 16 and row["added_TP50"] is None
+        assert row["complete_scene_count"] == 7 and row["blocked_scenes"] == ["office1"]
+        assert row["known_measured_counts"]["source_available_additions"] == 7
+
+
+def test_common_success_native_fc_comparison_uses_saved_same_view_scores_only():
+    from static_ovmap.cvpr_compact.diagnostics import common_success_comparison
+
+    fc = {"valid_ids": [1, 2], "objects": {
+        "7": {"available": True, "label": 1, "scores": [.9, .1], "used_request_ids": ["same-g1"]},
+        "9": {"available": False, "label": 0, "scores": None, "used_request_ids": []}}}
+    native = {"valid_ids": [1, 2], "objects": {
+        "7": {"available": True, "label": 2, "scores": [.2, .8], "used_request_ids": ["same-g1"]},
+        "9": {"available": True, "label": 1, "scores": [.6, .4], "used_request_ids": ["other-g1"]}}}
+    result = common_success_comparison(fc, native)
+    assert result["common_success_owners"] == [7] and result["native_only_success_owners"] == [9]
+    assert result["label_agreement_count"] == 0 and result["cross_encoder_scores_commensurate"] is False
+    assert result["objects"][0]["FC_scores"] == [.9, .1] and result["objects"][0]["Native_scores"] == [.2, .8]
+    assert result["new_model_inference"] == 0 and result["new_benchmark_row"] is False
+    native["objects"]["7"]["used_request_ids"] = ["different-frame"]
+    with pytest.raises(ValueError, match="same|view"):
+        common_success_comparison(fc, native)
+
+
 def test_fixed_timing_arm_names_resolve_to_the_same_production_recovery_arms():
     from static_ovmap.cvpr_compact.timing import recovery_arm
 
@@ -1657,8 +1771,107 @@ def test_report_analysis_keeps_fixed_primary_negative_controls_and_null_deltas(t
     cost_data["identity"] = canonical_digest(cost_data)
     reports = render_reports(binding, store, diagnosis, timing, reference, result, "a" * 40, cost_data=cost_data)
     assert "Native-painted support is a required A5 prerequisite" in reports["COMPACT_TABLES_RESULTS.md"]
-    assert "CT_A5_FC_ONLY | 6 | 2 | 3 | 1" in reports["COMPACT_TABLES_RESULTS.md"]
+    assert "CT_A5_FC_ONLY | -- | -- | -- | -- | 1/8" in reports["COMPACT_TABLES_RESULTS.md"]
     assert "tables/costs.json" in reports["COMPACT_TABLES_HANDOFF.md"]
+
+
+def test_partial_reports_preserve_unavailable_comparisons_and_actual_negative_controls(tmp_path):
+    from static_ovmap.cvpr_compact.tables import result_store
+    from static_ovmap.cvpr_compact.reports import analyze_results, render_reports
+
+    spec, scenes, pools, reference, diagnosis, timing = _partial_table_inputs(tmp_path)
+    store = result_store(spec, scenes, pools, tmp_path)
+    result = analyze_results(spec, store, diagnosis, timing)
+    assert result["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    assert result["primary_method"] == "CT_A3_ER" and result["deployment"] == "N0_UNCHANGED"
+    replica = result["cohorts"]["replica8"]
+    assert replica["A3_dominated_by"] is None
+    assert all(value is None for value in replica["A3_vs_A1_pp"].values())
+    assert all(value is None for value in replica["interaction_pp"].values())
+    assert replica["guardrails_vs_A1"]["all_preferences_met"] is None
+    assert replica["metric_pareto_scope_complete"] is False
+    assert set(replica["metric_pareto_unavailable"]) == {"CT_A2_R", "CT_A3_ER", "CT_A5_FC_ONLY"}
+    assert result["cohorts"]["scannet_cf18"]["A3_vs_A5_pp"]["apall"] == pytest.approx(-2.)
+    for row in result["recovery"].values():
+        assert row["source_available_delta"] is None and row["mean_seconds_delta"] is None
+        assert row["matching_attribution_ambiguous"] is None
+    timing.update(model_loading_seconds_total=7.5,
+                  hardware={"name": "synthetic GPU", "compute_capability": "8.6", "uuid": "synthetic-uuid"})
+    binding = {"identity": "synthetic-binding", "output_root": str(tmp_path), "repository_root": str(tmp_path)}
+    reports = render_reports(binding, store, diagnosis, timing, reference, result, "a" * 40)
+    text = reports["COMPACT_TABLES_RESULTS.md"]
+    assert "168/172" in text and "10/14" in text and "22/24" in text
+    assert "office1" in text and "-2.00" in text
+    assert "None/" not in text and "Internal scientific coverage: COMPLETE" not in text
+    assert "All eight scenes contribute to each cold mean" not in text
+    assert "PARTIAL_WITH_TECHNICAL_BLOCKS" in reports["COMPACT_TABLES_CLAIMS.md"]
+
+
+def test_actual_physical_collector_retains_independent_u2_and_skips_only_proven_unreserved_blocks(tmp_path):
+    from static_ovmap.cvpr_compact.tables import collect_actual_physical_costs
+    from static_ovmap.cvpr_compact.timing import record_blocked_measurement
+    from static_ovmap.module_validation.contracts import atomic_write_json
+    from static_ovmap.recovery_wave2.binding import ConsumptionIndex
+
+    _, projected, failed, _, scope = partial_scope_fixture()
+    root = tmp_path / "task"
+    historical = tmp_path / "parent"
+    index = ConsumptionIndex()
+
+    def save(path, value):
+        value = copy.deepcopy(value)
+        value["identity"] = canonical_digest({key: row for key, row in value.items() if key != "identity"})
+        atomic_write_json(path, value)
+        return index.identity(path)
+
+    def worker(images, pools=0, **extra):
+        return {"status": "COMPLETE", "scene": "office1", "physical_image_encodings": images,
+                "physical_region_poolings": pools, "inputs": [], "outputs": [], **extra}
+
+    native = historical / "native.json"
+    fc = historical / "fc/receipt.json"
+    mapping = historical / "map.json"
+    save(native, worker(6))
+    save(fc, worker(2, 3))
+    save(mapping, worker(0))
+    failed.update(physical_image_encodings=3, physical_region_poolings=0, inputs=[], outputs=[])
+    failed_path = root / "recovery/office1/receipt.json"
+    failed_item = save(failed_path, failed)
+    save(root / "recovery/office1/receipt.failed_123.json", failed)
+    projected_path = root / "projected_views/office1/manifest.json"
+    projected_item = save(projected_path, projected)
+    save(root / "recovery/office1_U2/receipt.json", worker(0, cold=False, GT_input=False, arms=["U2"]))
+    save(root / "native_recovery/office1/receipt.json", worker(6))
+    binding = {"identity": "synthetic-binding", "gpu": "2", "output_root": str(root), "path_map": [],
+        "cohorts": {"replica8": ["office1"], "scannet_cf18": []},
+        "scenes": {"office1": {"native_query_receipt": str(native), "fc_root": str(fc.parent),
+                               "parent_map_receipt": str(mapping)}}}
+    u2_call = root / "timing/office1/ARCHIVED_U2_FC/call/receipt.json"
+    save(u2_call, worker(0, cold=True, arms=["U2"]))
+    save(u2_call.parent.parent / "receipt.json", {"status": "COMPLETE", "scene": "office1",
+        "arm": "ARCHIVED_U2_FC", "recovery_receipt": str(u2_call), "inputs": [], "outputs": []})
+    from static_ovmap.cvpr_compact.partial_execution import semantic_block
+    failed_document = json.loads(failed_path.read_text())
+    projected_document = json.loads(projected_path.read_text())
+    for arm in ("G1_FC", "G3_FC"):
+        parent = {"status": "BLOCKED_TECHNICAL_PARENT", "scene": "office1", "arm": arm,
+            "technical_block": semantic_block(failed_document, projected_document, arm[:2]),
+            "failed_receipt": failed_item, "projected_manifest": projected_item}
+        parent["identity"] = canonical_digest(parent)
+        record_blocked_measurement(binding, "office1", arm, parent,
+            root / "timing/office1" / arm / "receipt.json", index)
+    result = collect_actual_physical_costs(binding, ["office1"], index=index)
+    paths = [row["receipt"]["path"] for row in result["workers"]]
+    assert str(root / "recovery/office1_U2/receipt.json") in paths
+    assert str(root / "recovery/office1/receipt.failed_123.json") in paths
+    assert len(paths) == len(set(paths)) == 8
+    assert result["current_task_warm"]["FC_IMAGE"] == 6
+    assert result["current_task_cold"]["FC_IMAGE"] == 0
+    assert result["historical_parent"]["FC_IMAGE"] == 2
+    assert result["complete_cold_call_count"] == 1 and result["unreserved_blocked_cold_leaf_count"] == 2
+    save(root / "timing/office1/G1_FC/call/receipt.json", worker(1))
+    with pytest.raises(ValueError, match="blocked|unreserved|call"):
+        collect_actual_physical_costs(binding, ["office1"], index=index)
 
 
 def test_cost_usage_unifies_legacy_and_new_fc_tensors_and_retains_failed_masks():
@@ -1958,7 +2171,8 @@ def test_publication_catalog_covers_package_and_push_requires_full_named_sha():
         check_public_json({"data": {"access_token": "secret"}})
 
 
-def test_release_contains_real_scores_decisions_matching_and_deterministic_compression(tmp_path, monkeypatch):
+@pytest.mark.parametrize("partial", [False, True])
+def test_release_contains_real_scores_decisions_matching_and_deterministic_compression(tmp_path, monkeypatch, partial):
     import gzip
     from static_ovmap.cvpr_compact import publication
     from static_ovmap.cvpr_compact.protocol import experiment_matrix, load_spec
@@ -1986,6 +2200,7 @@ def test_release_contains_real_scores_decisions_matching_and_deterministic_compr
         write(name, {"value": "fixture"})
     write("tables/costs.json", {"physical_payments": {"workers": []}})
     original_scores = {"scores": [.25, -.75], "padding": "x" * 70000}
+    _, _, _, _, partial_scope = partial_scope_fixture()
     for anchor in matrix["anchors"]:
         scene = anchor["scene"]
         query_decisions = write("original/" + scene + "/query_decisions.json", {"selected": ["actual-q-request"]})
@@ -2000,10 +2215,20 @@ def test_release_contains_real_scores_decisions_matching_and_deterministic_compr
         for directory in ("projected_views", "recovery", "native_recovery", "predictions"):
             write(directory + "/" + scene + "/receipt.json", {"manifest": str(projected),
                   "source": {"path": str(native)}, "inputs": [], "outputs": []})
-        write("recovery/" + scene + "/regions/receipt.json", {"sources": {"G1": {"path": str(recovery)}}})
+        blocked_scene = partial and scene == "office1"
+        if blocked_scene:
+            write("recovery/office1/receipt.json", {"status": "FAILED", "inputs": [], "outputs": []})
+            write("predictions/office1/receipt.json", {**partial_scope, "status": "PARTIAL_PREDICTIONS_LOCKED",
+                                                      "inputs": [], "outputs": []})
+            write("recovery/office1_U2/receipt.json", {"sources": {"U2": {"path": str(recovery)}},
+                                                      "inputs": [], "outputs": []})
+        else:
+            write("recovery/" + scene + "/regions/receipt.json", {"sources": {"G1": {"path": str(recovery)}}})
         evaluated, registry = [], {}
         for planned in [row for row in matrix["outputs"] if row["scene"] == scene]:
             method = planned["method"]
+            if blocked_scene and method in partial_scope["blocked_methods"]:
+                continue
             manifest = {"prediction_key": method, "record_key": method + "-record", "instance_ranks": [[7, .5]],
                         "metadata": {"unknown_incumbent_semantics_preserve_support": True,
                                      "owner_semantic_decisions": {"7": 1, "8": 0, "9": 2}},
@@ -2028,23 +2253,88 @@ def test_release_contains_real_scores_decisions_matching_and_deterministic_compr
         write("pools/" + planned["cohort"] + "/" + planned["method"] + ".json", {"ordered_scene_ids": planned["scene_order"]})
     for planned in matrix["timings"]:
         leaf = "timing/" + planned["scene"] + "/" + planned["arm"]
-        call = write(leaf + "/call/receipt.json", {"actual_seconds": .5})
-        write(leaf + "/receipt.json", {"recovery_receipt": str(call), "inputs": [], "outputs": []})
+        if partial and planned["scene"] == "office1" and planned["arm"] in ("G1_FC", "G3_FC"):
+            write(leaf + "/receipt.json", {"status": "BLOCKED_UNMEASURED", "scene": "office1", "arm": planned["arm"],
+                "technical_block": partial_scope["blocked_sources"][planned["arm"]], "measured_seconds": None,
+                "parity": None, "physical_calls_reserved": 0, "measurement_reserved": False, "cold_call_executed": False,
+                "inputs": [], "outputs": []})
+        else:
+            call = write(leaf + "/call/receipt.json", {"actual_seconds": .5})
+            write(leaf + "/receipt.json", {"recovery_receipt": str(call), "inputs": [], "outputs": []})
     first = publication.build_release(binding)
     second = publication.build_release(binding)
     assert first == second
     release = repo / publication.RELEASE_ROOT
     assert json.loads(gzip.decompress((release / "sources/office0/N.json.gz").read_bytes())) == original_scores
     decision_paths = list((release / "decisions").glob("*/*.json"))
-    assert len(decision_paths) == 172
+    assert len(decision_paths) == (168 if partial else 172)
     assert json.loads(decision_paths[0].read_text())["registry_checks"]["unknown_semantic_positive_owners"] == [8]
     assert json.loads(decision_paths[0].read_text())["all_positive_owner_labels"] == {"7": 1, "8": 0, "9": 2}
-    assert len(list((release / "evaluation").glob("*/*/matches.json.gz"))) == 172
+    assert len(list((release / "evaluation").glob("*/*/matches.json.gz"))) == (168 if partial else 172)
     assert len(list((release / "timing").glob("*/*/receipt.json"))) == 24
+    assert len(list((release / "timing").glob("*/*/call/receipt.json"))) == (22 if partial else 24)
+    if partial:
+        assert (release / "recovery/office1_U2/receipt.json").is_file()
+        assert not (release / "recovery/office1/regions/receipt.json").exists()
     assert first["bytes_excluding_bundle_and_primary_review"] < publication.LIMIT_BYTES
     monkeypatch.setattr(publication, "LIMIT_BYTES", 1)
     with pytest.raises(RuntimeError, match="50MiB"):
         publication.build_release(binding)
+
+
+def test_primary_review_allows_only_explicit_actual_blocks_without_claiming_completion(tmp_path, monkeypatch):
+    from static_ovmap.cvpr_compact import publication
+    from static_ovmap.module_validation.contracts import atomic_write_json
+    from static_ovmap.recovery_wave2.binding import ConsumptionIndex
+
+    root, repo = tmp_path / "run", tmp_path / "repo"
+    index = ConsumptionIndex()
+    catalog = {"identity": "synthetic-catalog", "requirements": [{"id": "implementation"}, {"id": "full_cold_mean"}]}
+    monkeypatch.setattr(publication, "requirement_catalog", lambda: catalog)
+    monkeypatch.setattr(publication, "implementation_inventory", lambda *args, **kwargs: [])
+    evidence = root / "original_block.json"
+    atomic_write_json(evidence, {"synthetic_original_failure": True})
+    coverage = {"blocked_required_dependencies": ["timing/office1/G1_FC"]}
+    coverage["identity"] = canonical_digest(coverage)
+    atomic_write_json(root / "publication/scientific_coverage.json", coverage)
+    files = []
+    for name in publication.REPORT_NAMES:
+        path = repo / "docs/paper/static_ovmap" / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Synthetic report for review-status regression only.\n")
+        files.append(index.identity(path))
+    review = {"status": "PASS_WITH_TECHNICAL_BLOCKS", "reviewer": "PRIMARY_CODEX", "objective_complete": False,
+        "requirement_catalog_identity": catalog["identity"], "bundle_identity": "synthetic-bundle",
+        "unresolved_required_items": ["full_cold_mean"], "reviewed_files": files,
+        "requirements": [{"requirement_id": "implementation", "status": "PROVEN_COMPLETE",
+            "evidence": [index.identity(evidence)], "finding": "Synthetic complete contract."},
+            {"requirement_id": "full_cold_mean", "status": "BLOCKED_TECHNICAL",
+             "blocked_dependencies": ["timing/office1/G1_FC"], "evidence": [index.identity(evidence)],
+             "finding": "The fixed eight-scene mean has one actual unmeasured block."}]}
+    path = root / "validation/primary_review.json"
+
+    def save(value):
+        value["identity"] = canonical_digest({key: row for key, row in value.items() if key != "identity"})
+        atomic_write_json(path, value)
+
+    save(review)
+    binding = {"output_root": str(root), "repository_root": str(repo)}
+    assert publication.verify_primary_review(binding, {"identity": "synthetic-bundle", "files": []}) == review
+    for change in ("claim_complete", "global_pass", "hide_unresolved", "invent_block", "missing_requirement"):
+        changed = copy.deepcopy(review)
+        if change == "claim_complete":
+            changed["objective_complete"] = True
+        elif change == "global_pass":
+            changed["status"] = "PASS"
+        elif change == "hide_unresolved":
+            changed["unresolved_required_items"] = []
+        elif change == "invent_block":
+            changed["requirements"][1]["blocked_dependencies"] = ["timing/room0/G1_FC"]
+        else:
+            changed["requirements"].pop(0)
+        save(changed)
+        with pytest.raises(ValueError):
+            publication.verify_primary_review(binding, {"identity": "synthetic-bundle", "files": []})
 
 
 def test_legacy_region_cache_restores_only_losslessly_widened_original_fp32(tmp_path):
