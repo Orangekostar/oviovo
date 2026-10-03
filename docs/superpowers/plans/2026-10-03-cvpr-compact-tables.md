@@ -119,8 +119,8 @@ Files: `src/static_ovmap/cvpr_compact/tables.py`, four COMPACT_TABLES reports,
 
 - [x] Run the current-source focused production validation (66 tests after amendment03) and real scene0056_00 eight-condition end-to-end check with unchanged lock identity; no whole-repository test sweep.
 - [ ] Execute the specified all --resume command and verify idempotent exact-input reuse.
-- [ ] Audit every package requirement against actual files, receipts and outputs; retain unresolved items and keep goal active until full completion.
-- [ ] Keep compact release below50MiB, large maps/weights on shared storage with truthful manifests.
+- [x] Audit all327 package requirements against actual files, receipts and outputs. The primary review retains28 scientific-blocked requirements and7 subsequent publication obligations; objective_complete=false and the full goal remains active.
+- [x] Keep compact release below50MiB, including the primary review. The verified amendment08 artifact set plus review occupies44,588,721 bytes; all1,638 archived members and1,658 original source copies retain exact bytes/hashes. Large immutable dependencies remain in shared storage with reconstruction identities.
 - [ ] Commit and normal-push the named branch; compare full local/remote SHA and write external publication/final.json without another recursive verification commit.
 
 Canonical execution:
@@ -167,7 +167,7 @@ all26 diagnoses, original tables/PDF and22 reserved cold observations stay exact
 - [x] Record preservation preflight, archive previous reports, run one final
   current-source focused suite and reuse the same real eight-condition smoke;
   freeze the documented consumer amendment before regenerating reports.
-- [ ] Build and audit the actual complete compact release below50MiB, including
+- [x] Build and audit the actual complete compact release below50MiB, including
   manifest and eventual primary review. No technical block becomes COMPLETE.
 - [ ] Perform the327-requirement primary review, canonical all-resume reuse and
   normal GitHub publication with full local/remote SHA verification.
@@ -182,3 +182,17 @@ Amendment07 fixes the chronological publication audit: only six identified
 subsequent push/delivery requirements may be PENDING_PUBLICATION, never a
 scientific or implementation gap. Primary read all327 catalogued requirements;
 the evidence classification and full code/artifact review remain in progress.
+
+## Amendment09: Canonical Completed-Table Reuse
+
+- [x] Diagnose actual all-resume failure from locked tuple metadata versus
+  serialized JSON lists; all original sources and133 worker ledgers are exact.
+- [x] Reproduce the production build/reuse failure with a real locked-payload
+  regression; the verified canonical-identity comparison passes and still
+  rejects changed metadata ordering while preserving existing table bytes.
+- [x] Preserve amendment08 release/review/report and failed canonical-command
+  artifacts before replacing owned consumer metadata.
+- [ ] Validate current74 focused tests and unchanged eight-condition smoke,
+  freeze the consumer correction, and review the updated compact release.
+- [ ] Execute actual canonical all-resume through normal publication and verify
+  the full remote SHA. Scientific counts remain168/172,10/14 and22/24.

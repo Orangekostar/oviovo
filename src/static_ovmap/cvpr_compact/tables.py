@@ -498,7 +498,7 @@ def build_tables(binding, diagnostics):
     if (destination / "receipt.json").is_file():
         previous = _evidence(destination / "receipt.json", index)
         if (previous["result_store_identity"] != store["identity"] or previous["tables_identity"] != tables["identity"]
-                or read(destination / "supplement.json") != supplement):
+                or _evidence(destination / "supplement.json", index)["identity"] != supplement["identity"]):
             raise ValueError("completed measured tables changed; invalidate their affected descendants explicitly")
         return previous
     for filename, value in (("scene_metrics.json", store["scene_metrics"]), ("pooled_metrics.json", store["pooled_metrics"]),

@@ -1548,6 +1548,94 @@ def _table_inputs(tmp_path):
     return spec, scenes, pools, reference, diagnostic, timing
 
 
+def test_completed_tables_reuse_locked_metadata_after_json_roundtrip(tmp_path, monkeypatch):
+    from static_ovmap.cvpr_compact import evaluation, tables
+    from static_ovmap.module_validation.contracts import atomic_write_json
+    from static_ovmap.module_validation.scannet_study import load_prediction, save_prediction
+    from static_ovmap.recovery_wave2.binding import ConsumptionIndex, read
+
+    spec, scenes, pools, reference, diagnosis, timing = _table_inputs(tmp_path)
+    index = ConsumptionIndex()
+
+    def write(path, value):
+        value = tables._seal(value)
+        atomic_write_json(path, value)
+        return value
+
+    geometry = GeometryIdentity("a" * 64, "b" * 64, "c" * 64, "synthetic-table-reuse", 2)
+    dependency = tables._seal({"status": "COMPLETE", "native_support_prerequisite_included": True,
+                              "sources": ["native", "fc"]})
+    first_path = None
+    for scene, receipt in scenes.items():
+        predictions = {}
+        for row in receipt["rows"]:
+            scoring = tmp_path / "scores" / scene / (row["method"] + ".json")
+            write(scoring, {"status": "COMPLETE", "classes": []})
+            row["evaluation_receipt"] = str(scoring)
+            tables._seal(row)
+            payload = PredictionPayload(row["method"], "COMBO", scene, geometry,
+                np.array([1, 1]), np.array([7, 7]), ((1, .5),), {"FC_images": 1},
+                {"dependency_costs": dependency, "cohorts": ["replica8", "scannet_cf18"]})
+            payload.lock()
+            path = save_prediction(payload, tmp_path / "payloads" / scene / row["method"])
+            predictions[row["method"]] = str(path)
+            first_path = first_path or path
+        write(tmp_path / "predictions" / scene / "receipt.json", {"predictions": predictions})
+        write(tmp_path / "evaluation" / scene / "receipt.json", receipt)
+    for (cohort, method), receipt in pools.items():
+        selected = [next(row for row in scenes[scene]["rows"] if row["method"] == method)
+                    for scene in receipt["scene_order"]]
+        receipt["row_identities"] = [row["identity"] for row in selected]
+        details = tmp_path / "pool_details" / cohort / (method + ".json")
+        write(details, {"ordered_inputs": receipt["ordered_inputs"], "classes": []})
+        receipt["per_class_receipt"] = index.identity(details)
+        write(tmp_path / "pools" / cohort / (method + ".json"), receipt)
+    for cohort, ordered in spec["cohorts"].items():
+        write(tmp_path / "pools" / cohort / "receipt.json", {"status": "COMPLETE",
+            "scene_order": ordered, "methods": {method: receipt for (group, method), receipt in pools.items()
+                                                if group == cohort}})
+    write(tmp_path / "diagnostics/replica8_recovery.json", diagnosis)
+    write(tmp_path / "timing/pool.json", timing)
+    reference["inputs"] = []
+    write(tmp_path / "external/reference.json", reference)
+    diagnostics = tables._seal({"status": "COMPLETE", "scene_order": list(scenes), "outputs": []})
+    binding = {"spec": str(SPEC), "output_root": str(tmp_path)}
+    monkeypatch.setattr(tables, "require_frozen_execution", lambda *args: "SYNTHETIC_FIXTURE_ONLY")
+    monkeypatch.setattr(evaluation, "trace_class_metrics", lambda scoring, **kwargs: scoring["classes"])
+    monkeypatch.setattr(tables, "collect_actual_physical_costs",
+                        lambda *args, **kwargs: tables._seal({"status": "COMPLETE", "workers": []}))
+    compilations = []
+
+    def compile_preview(argv, *, cwd, **kwargs):
+        compilations.append(argv)
+        (cwd / "table_layout_preview.pdf").write_bytes(b"synthetic-pdf")
+
+    monkeypatch.setattr(tables.subprocess, "run", compile_preview)
+    previous = tables.build_tables(binding, diagnostics)
+    table_bytes = {path.name: path.read_bytes() for path in (tmp_path / "tables").iterdir()}
+    loaded = load_prediction(first_path)
+    assert isinstance(loaded.metadata["cohorts"], tuple)
+    saved_metadata = read(tmp_path / "tables/supplement.json")["costs"][0]["metadata"]
+    assert saved_metadata != loaded.metadata
+    assert canonical_digest(saved_metadata) == canonical_digest(loaded.metadata)
+    assert tables.build_tables(binding, diagnostics) == previous
+    assert len(compilations) == 2
+    assert {path.name: path.read_bytes() for path in (tmp_path / "tables").iterdir()} == table_bytes
+
+    changed = PredictionPayload(loaded.method_id, loaded.branch, loaded.scene_id, geometry,
+        loaded.owner_ids, loaded.semantic_labels, loaded.instance_ranks, loaded.logical_cost,
+        {"dependency_costs": dependency, "cohorts": ["scannet_cf18", "replica8"]})
+    changed.lock()
+    changed_path = save_prediction(changed, tmp_path / "changed_payload")
+    lock_path = tmp_path / "predictions" / loaded.scene_id / "receipt.json"
+    lock = read(lock_path)
+    lock["predictions"][loaded.method_id] = str(changed_path)
+    write(lock_path, lock)
+    with pytest.raises(ValueError, match="completed measured tables changed"):
+        tables.build_tables(binding, diagnostics)
+    assert {path.name: path.read_bytes() for path in (tmp_path / "tables").iterdir()} == table_bytes
+
+
 def test_table_cells_share_pool_provenance_preserve_precision_and_typed_counts(tmp_path):
     from static_ovmap.cvpr_compact.tables import result_store, main_tables, render_tables, format_cell
 
