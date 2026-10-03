@@ -32,7 +32,7 @@ WORKER_DEPENDENCIES = {
     "prediction_worker": ("outputs", "costs", "region_worker", "projected_views", "runtime", "protocol"),
     "evaluation": ("runtime", "protocol", "projected_views"),
     "partial_execution": ("outputs", "costs", "prediction_worker", "evaluation", "recovery_run", "projected_views", "runtime", "protocol"),
-    "timing": ("recovery_run", "region_worker", "projected_views", "outputs", "costs", "runtime", "protocol"),
+    "timing": ("recovery_run", "region_worker", "projected_views", "outputs", "costs", "partial_execution", "runtime", "protocol"),
 }
 
 
@@ -390,12 +390,15 @@ def run_pipeline(spec_path, repository_root, *, phase="all", resume=False, gpu=N
                 elif current == "evaluate":
                     result = _evaluate(binding, scenes)
                 elif current == "time":
-                    scientific = {scene: str(root / "recovery" / scene / "receipt.json") for scene in spec["cohorts"]["replica8"]}
+                    from .timing import build_scientific_parent_plan
+
+                    scientific = build_scientific_parent_plan(binding)
                     inputs_path = root / "timing/scientific_parents.json"
                     atomic_write_json(inputs_path, scientific)
                     result = run_worker(binding, module="timing", python=binding["fc"]["python"],
                         arguments=["--scientific-receipts", inputs_path], result_path=root / "timing/pool.json",
-                        expected_status="COMPLETE", inputs=[inputs_path, *scientific.values()])
+                        expected_status=scientific["status"], inputs=[inputs_path,
+                            *[item["path"] for item in scientific["inputs"]]])
                 elif current == "tables":
                     from .diagnostics import run_diagnostics
                     from .tables import build_tables

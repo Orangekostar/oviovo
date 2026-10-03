@@ -96,6 +96,7 @@ Files: `src/static_ovmap/cvpr_compact/timing.py` and the shared production recov
 Produces exactly24 synchronized resident-model, feature-cache-cold receipts.
 
 - [x] Implement one shared production callable, fresh cold views/cache-disabled sessions, exclusive nonreplayable reservations, exact labels/support plus declared FP32 parity, full-arm-name mapping, and all-eight-scene means; synthetic tests pass.
+- [x] Implement per-arm preflight for all24 fixed leaves, actual independent office1 U2 evidence, proved unmeasured G1/G3 blocks, and 22-call single-model/resumption regression checks; freeze amendment03 before physical measurement.
 - [ ] Isolate empty feature/view/result caches per scene/arm; forbid parent persistent feature reads, permit resident model/text and within-run frame sharing only.
 - [ ] Measure candidate creation, real view/archive work, decode, encode, pool, classify and output/rank export under one timer; record model load separately.
 - [ ] Verify scientific support/label and FP32 feature parity; average all8 scene costs per arm, including real no-op eligibility overhead.

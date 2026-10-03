@@ -1070,6 +1070,170 @@ def test_timing_mean_requires_all_24_real_leaves_and_one_physical_gpu():
         aggregate_timings(spec, changed)
 
 
+def test_proven_blocked_timing_is_unmeasured_and_cannot_reserve_or_replace_a_call(tmp_path, monkeypatch):
+    from static_ovmap.cvpr_compact import timing
+    from static_ovmap.module_validation.contracts import atomic_write_json
+    from static_ovmap.recovery_wave2.binding import ConsumptionIndex
+
+    _, projected, failed, _, scope = partial_scope_fixture()
+    index = ConsumptionIndex()
+    failed_path, projected_path = tmp_path / "failed.json", tmp_path / "projected.json"
+    atomic_write_json(failed_path, failed)
+    atomic_write_json(projected_path, projected)
+    parent = {"status": "BLOCKED_TECHNICAL_PARENT", "scene": "office1", "arm": "G1_FC",
+        "technical_block": scope["blocked_sources"]["G1_FC"],
+        "failed_receipt": index.identity(failed_path), "projected_manifest": index.identity(projected_path)}
+    parent["identity"] = canonical_digest(parent)
+    monkeypatch.setattr(timing, "reserve_measurement", lambda *args: pytest.fail("a blocked leaf must not reserve a call"))
+    binding = {"identity": "synthetic-binding", "gpu": "2"}
+    path = tmp_path / "cold/receipt.json"
+    result = timing.record_blocked_measurement(binding, "office1", "G1_FC", parent, path, index)
+    assert result["status"] == "BLOCKED_UNMEASURED" and result["measured_seconds"] is None
+    assert result["physical_calls_reserved"] == 0 and result["cold_call_executed"] is False
+    assert result["measurement_reserved"] is False and result["parity"] is None
+    assert not (path.parent / "call").exists()
+    assert timing.record_blocked_measurement(binding, "office1", "G1_FC", parent, path, index) == result
+    atomic_write_json(path, {"status": "RESERVED", "input_identity": "observed-call"})
+    with pytest.raises(ValueError, match="overwrite|reserved|replay"):
+        timing.record_blocked_measurement(binding, "office1", "G1_FC", parent, path, index)
+
+
+def test_partial_cold_summary_keeps_24_fixed_leaves_and_never_reports_a_seven_scene_mean(tmp_path):
+    from static_ovmap.cvpr_compact.timing import aggregate_timings, record_blocked_measurement, PRODUCTION_CALLABLE
+    from static_ovmap.cvpr_compact.protocol import experiment_matrix
+    from static_ovmap.module_validation.contracts import atomic_write_json
+    from static_ovmap.recovery_wave2.binding import ConsumptionIndex
+
+    spec, projected, failed, _, scope = partial_scope_fixture()
+    index = ConsumptionIndex()
+    failed_path, projected_path = tmp_path / "failed.json", tmp_path / "projected.json"
+    atomic_write_json(failed_path, failed)
+    atomic_write_json(projected_path, projected)
+    rows = []
+    for number, leaf in enumerate(experiment_matrix(spec)["timings"]):
+        scene, arm = leaf["scene"], leaf["arm"]
+        if scene == "office1" and arm in ("G1_FC", "G3_FC"):
+            parent = {"status": "BLOCKED_TECHNICAL_PARENT", "scene": scene, "arm": arm,
+                "technical_block": scope["blocked_sources"][arm],
+                "failed_receipt": index.identity(failed_path), "projected_manifest": index.identity(projected_path)}
+            parent["identity"] = canonical_digest(parent)
+            row = record_blocked_measurement({"identity": "synthetic-binding", "gpu": "2"}, scene, arm,
+                parent, tmp_path / scene / arm / "receipt.json", index)
+        else:
+            row = {**leaf, "status": "COMPLETE", "measured_seconds": number + .25,
+                "parity": {"status": "PASS"}, "production_callable": PRODUCTION_CALLABLE,
+                "resident_model": True, "persistent_feature_cache_enabled": False,
+                "persistent_view_cache_enabled": False, "persistent_result_cache_enabled": False,
+                "hardware": {"uuid": "one-gpu", "name": "NVIDIA A40", "compute_capability": "8.6"}}
+            row["identity"] = canonical_digest(row)
+        rows.append(row)
+    result = aggregate_timings(spec, list(reversed(rows)))
+    assert result["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    assert result["leaf_count"] == 22 and result["planned_leaf_count"] == 24 and result["blocked_leaf_count"] == 2
+    for arm in ("G1_FC", "G3_FC"):
+        summary = result["arms"][arm]
+        assert summary["mean_seconds"] is None and summary["sum_seconds"] is None
+        assert summary["scene_count"] == 8 and summary["complete_scene_count"] == 7
+        assert summary["scene_order"] == spec["cohorts"]["replica8"] and len(summary["receipt_identities"]) == 8
+    expected = [row["measured_seconds"] for row in rows if row["arm"] == "ARCHIVED_U2_FC"]
+    assert result["arms"]["ARCHIVED_U2_FC"]["mean_seconds"] == sum(expected) / 8
+    with pytest.raises(ValueError, match="24|fixed"):
+        aggregate_timings(spec, rows[:-1])
+    changed = copy.deepcopy(rows)
+    blocked = next(row for row in changed if row["status"] == "BLOCKED_UNMEASURED")
+    blocked["measured_seconds"] = 0.
+    blocked["identity"] = canonical_digest({k: v for k, v in blocked.items() if k != "identity"})
+    with pytest.raises(ValueError, match="unmeasured|block"):
+        aggregate_timings(spec, changed)
+    changed = copy.deepcopy(rows)
+    blocked = next(row for row in changed if row["status"] == "BLOCKED_UNMEASURED")
+    blocked["technical_block"]["GT_input"] = True
+    blocked["technical_block"]["identity"] = canonical_digest({
+        k: v for k, v in blocked["technical_block"].items() if k != "identity"})
+    blocked["identity"] = canonical_digest({k: v for k, v in blocked.items() if k != "identity"})
+    with pytest.raises(ValueError, match="unmeasured|block"):
+        aggregate_timings(spec, changed)
+
+
+def test_cold_controller_calls_22_independent_arms_once_and_reuses_complete_measurements(tmp_path, monkeypatch):
+    from contextlib import contextmanager
+    from types import SimpleNamespace
+    import torch
+    from static_ovmap.cvpr_compact import timing
+    from static_ovmap.module_validation.contracts import atomic_write_json
+    from static_ovmap.recovery_wave2.binding import ConsumptionIndex
+
+    spec, projected, failed, _, scope = partial_scope_fixture()
+    binding = {"identity": "synthetic-binding", "gpu": "2", "spec": str(SPEC), "output_root": str(tmp_path)}
+    index = ConsumptionIndex()
+    failed_path, projected_path = tmp_path / "failed.json", tmp_path / "projected.json"
+    atomic_write_json(failed_path, failed)
+    atomic_write_json(projected_path, projected)
+    parents, documents = {}, {}
+    for scene in spec["cohorts"]["replica8"]:
+        parents[scene], documents[scene] = {}, {}
+        for arm in spec["timing"]["arms"]:
+            if scene == "office1" and arm in ("G1_FC", "G3_FC"):
+                entry = {"status": "BLOCKED_TECHNICAL_PARENT", "scene": scene, "arm": arm,
+                    "technical_block": scope["blocked_sources"][arm],
+                    "failed_receipt": index.identity(failed_path), "projected_manifest": index.identity(projected_path)}
+                entry["identity"] = canonical_digest(entry)
+                parents[scene][arm], documents[scene][arm] = entry, None
+            else:
+                documents[scene][arm] = {"identity": canonical_digest([scene, arm]), "scene": scene}
+    monkeypatch.setattr(timing, "_preflight_parents", lambda *args: (parents, documents))
+    monkeypatch.setattr(timing, "require_frozen_execution", lambda *args: "SYNTHETIC_FIXTURE_ONLY")
+    monkeypatch.setattr(timing, "assert_serial_execution", lambda *args: None)
+    hardware = {"uuid": "one-gpu", "name": "NVIDIA A40", "compute_capability": "8.6"}
+    monkeypatch.setattr(timing, "_hardware", lambda *args: hardware)
+    monkeypatch.setattr(timing, "load_recovery_inputs", lambda binding, scene, **kwargs:
+        SimpleNamespace(identity=scene, scene=scene, data={}))
+    @contextmanager
+    def lease(*args):
+        yield SimpleNamespace(active=True)
+    monkeypatch.setattr(timing, "gpu_lease", lease)
+    for name in ("synchronize", "reset_peak_memory_stats"):
+        monkeypatch.setattr(torch.cuda, name, lambda: None)
+    monkeypatch.setattr(torch.cuda, "max_memory_allocated", lambda: 0)
+    loads, calls = [], []
+    class Session:
+        def __init__(self, binding, data, index, *, cache):
+            assert cache is None
+            self.model_key, self.text_identity, self.ids = "model", {"sha256": "a" * 64}, [1]
+            self.model_load_seconds = .01
+        def load_model(self):
+            loads.append(1)
+            self.model, self.weight_audit = object(), {"strict": True}
+    monkeypatch.setattr(timing, "FCSession", Session)
+    def recover(binding, inputs, output, *, arms, session, cold, lease):
+        assert cold is True and len(arms) == 1 and lease.active
+        calls.append((inputs.scene, arms[0]))
+        value = {"status": "COMPLETE", "scene": inputs.scene, "candidate_count": 0,
+            "source_available_additions": {arms[0]: 0}, "physical_image_encodings": 0,
+            "physical_region_poolings": 0, "outputs": []}
+        value["identity"] = canonical_digest(value)
+        atomic_write_json(Path(output) / "receipt.json", value)
+        return value
+    monkeypatch.setattr(timing, "recover_fc", recover)
+    def finish(row, path, scientific, index):
+        assert scientific is not None
+        row.update(status="COMPLETE", parity={"status": "PASS"})
+        row["identity"] = canonical_digest({key: value for key, value in row.items() if key != "identity"})
+        atomic_write_json(path, row)
+    monkeypatch.setattr(timing, "_finish_parity", finish)
+    first = timing.run_timings(binding, {})
+    assert len(calls) == len(set(calls)) == 22 and len(loads) == 1
+    assert ("office1", "U2") in calls and ("office1", "G1") not in calls and ("office1", "G3") not in calls
+    assert first["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS" and first["planned_leaf_count"] == 24
+    hashes = {path: sha256_file(path) for path in (tmp_path / "timing").glob("*/CT_*/receipt.json")}
+    assert len(hashes) == 0  # Arms use source names, not method IDs.
+    hashes = {path: sha256_file(path) for path in (tmp_path / "timing").glob("*/*/receipt.json")}
+    assert len(hashes) == 24
+    timing.run_timings(binding, {})
+    assert len(calls) == 22 and len(loads) == 1
+    assert all(sha256_file(path) == digest for path, digest in hashes.items())
+
+
 def test_cold_parity_checks_selected_features_support_labels_and_current_ranks(tmp_path):
     from static_ovmap.cvpr_compact.timing import compare_recovery_parity
     from static_ovmap.module_validation.scannet_study import save_prediction

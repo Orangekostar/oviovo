@@ -53,6 +53,174 @@ def _features(record, index):
     return dict(zip(ids.tolist(), features, strict=True))
 
 
+def _seal(value):
+    value["identity"] = canonical_digest({key: item for key, item in value.items() if key != "identity"})
+    return value
+
+
+def _verified_parent(parent, scene, arm, index):
+    from .partial_execution import semantic_block
+
+    _verified_identity(parent)
+    if parent["scene"] != scene or parent["arm"] != arm:
+        raise ValueError("cold preflight parent leaves its exact fixed scene/arm")
+    core = recovery_arm(arm)
+    if parent["status"] == "BLOCKED_TECHNICAL_PARENT":
+        if core not in ("G1", "G3"):
+            raise ValueError("projected semantic block cannot replace archived U2 evidence")
+        documents = []
+        for key in ("failed_receipt", "projected_manifest"):
+            item = parent[key]
+            index.identity(item["path"], item)
+            documents.append(_document(read(item["path"]), index))
+        actual = semantic_block(*documents, core)
+        if parent["technical_block"] != actual:
+            raise ValueError("cold block differs from the actual unchanged selected-mask failure")
+        return None
+    if parent["status"] != "COMPLETE_PARENT":
+        raise ValueError("cold preflight cannot infer a valid scientific parent from a missing prerequisite")
+    item = parent["receipt"]
+    index.identity(item["path"], item)
+    scientific = _document(read(item["path"]), index)
+    if (scientific["status"] != "COMPLETE" or scientific["scene"] != scene
+            or scientific["identity"] != parent["scientific_identity"]
+            or scientific.get("cold") is not False or scientific.get("GT_input") is not False
+            or core not in scientific["arms"] or core not in scientific["sources"]
+            or core not in scientific["plan"] or ARM_METHOD[core] not in scientific["exports"]):
+        raise ValueError("cold scientific parent lacks its actual complete same-arm production evidence")
+    for item in scientific["inputs"] + scientific["outputs"]:
+        index.identity(item["path"], item)
+    item = scientific["sources"][core]
+    index.identity(item["path"], item)
+    source = _document(read(item["path"]), index)
+    plan = scientific["plan"][core]
+    if set(source["objects"]) != set(plan):
+        raise ValueError("cold preflight changed the complete candidate registry")
+    attempted, used = [], []
+    for owner, row in source["objects"].items():
+        if (row["attempted_request_ids"] != plan[owner]
+                or not set(row["used_request_ids"]) <= set(plan[owner])
+                or (row["available"] and not row["used_request_ids"])):
+            raise ValueError("cold preflight changed actual selected requests or source availability")
+        attempted.extend(row["attempted_request_ids"])
+        used.extend(row["used_request_ids"])
+    if attempted and not used:
+        raise ValueError("all selected requests failed in this arm; a complete warm aggregate cannot certify a scientific zero")
+    return scientific
+
+
+def build_scientific_parent_plan(binding):
+    from .partial_execution import validate_partial_scope
+
+    spec, root = load_spec(binding["spec"]), Path(binding["output_root"])
+    index = ConsumptionIndex(root / "validation/input_verifications.json")
+    scenes, arms = spec["cohorts"][spec["timing"]["cohort"]], spec["timing"]["arms"]
+    parents, complete, blocked = {}, 0, 0
+    for scene in scenes:
+        path = root / "recovery" / scene / "receipt.json"
+        scientific = _document(path, index)
+        lock = None
+        if scientific["status"] != "COMPLETE":
+            lock_path = root / "predictions" / scene / "receipt.json"
+            lock = _document(lock_path, index)
+            validate_partial_scope(spec, lock)
+            if lock["scene"] != scene:
+                raise ValueError("cold parent partition changed its actual prediction-lock scene")
+        parents[scene] = {}
+        for arm in arms:
+            if lock is not None and arm in lock["blocked_sources"]:
+                parent = {"status": "BLOCKED_TECHNICAL_PARENT", "scene": scene, "arm": arm,
+                    "technical_block": lock["blocked_sources"][arm], "failed_receipt": index.identity(path),
+                    "projected_manifest": index.identity(root / "projected_views" / scene / "manifest.json")}
+                blocked += 1
+            else:
+                actual_path = path if lock is None else root / "recovery" / (scene + "_U2") / "receipt.json"
+                actual = _document(actual_path, index)
+                parent = {"status": "COMPLETE_PARENT", "scene": scene, "arm": arm,
+                    "receipt": index.identity(actual_path), "scientific_identity": actual["identity"]}
+                complete += 1
+            parents[scene][arm] = _seal(parent)
+            _verified_parent(parent, scene, arm, index)
+    result = {"schema": "compact-cold-parent-plan-v1", "binding_identity": binding["identity"],
+        "matrix_identity": experiment_matrix(spec)["identity"], "scene_order": scenes, "arm_order": arms,
+        "status": "PARTIAL_WITH_TECHNICAL_BLOCKS" if blocked else "COMPLETE", "parents": parents,
+        "complete_parent_count": complete, "blocked_parent_count": blocked,
+        "required_leaf_count": len(scenes) * len(arms), "inputs": index.entries()}
+    index.write_memo(root / "validation/input_verifications.json")
+    return _seal(result)
+
+
+def _preflight_parents(binding, spec, scientific_receipts, index):
+    scenes, arms = spec["cohorts"][spec["timing"]["cohort"]], spec["timing"]["arms"]
+    if scientific_receipts.get("schema") == "compact-cold-parent-plan-v1":
+        _verified_identity(scientific_receipts)
+        if (scientific_receipts["binding_identity"] != binding["identity"]
+                or scientific_receipts["matrix_identity"] != experiment_matrix(spec)["identity"]
+                or scientific_receipts["scene_order"] != scenes or scientific_receipts["arm_order"] != arms):
+            raise ValueError("cold parent plan changed its fixed binding, matrix or order")
+        parents = scientific_receipts["parents"]
+    else:
+        if set(scientific_receipts) != set(scenes):
+            raise ValueError("cold timing requires all eight fixed scientific recovery parents")
+        parents = {}
+        for scene in scenes:
+            scientific = _document(scientific_receipts[scene], index)
+            parents[scene] = {arm: _seal({"status": "COMPLETE_PARENT", "scene": scene, "arm": arm,
+                "receipt": index.identity(scientific_receipts[scene]), "scientific_identity": scientific["identity"]})
+                for arm in arms}
+    if set(parents) != set(scenes) or any(set(parents[scene]) != set(arms) for scene in scenes):
+        raise ValueError("cold preflight must cover all24 fixed scene/arm leaves")
+    documents = {scene: {} for scene in scenes}
+    for scene in scenes:
+        for arm in arms:
+            documents[scene][arm] = _verified_parent(parents[scene][arm], scene, arm, index)
+    return parents, documents
+
+
+def _validate_unmeasured_block(row):
+    block = row["technical_block"]
+    _verified_identity(block)
+    if (row["status"] != "BLOCKED_UNMEASURED" or row["measured_seconds"] is not None
+            or row["parity"] is not None or row["physical_calls_reserved"] != 0
+            or row["measurement_reserved"] is not False or row["cold_call_executed"] is not False
+            or block.get("schema") != "compact-selected-semantic-block-v1"
+            or block.get("GT_input") is not False or block.get("failed_view_replacement") is not False
+            or block["status"] != "BLOCKED_TECHNICAL" or block["scene"] != row["scene"]
+            or block["recovery_source"] != row["arm"] or not block["selected_request_ids"]
+            or len(set(block["selected_request_ids"])) != len(block["selected_request_ids"])
+            or [item["request_id"] for item in block["failed_requests"]] != block["selected_request_ids"]
+            or any(item["status"] != "UNAVAILABLE_TECHNICAL_FAILURE" or not item["reason"]
+                   for item in block["failed_requests"])):
+        raise ValueError("blocked timing must retain proven unmeasured status without a reserved or executed call")
+
+
+def record_blocked_measurement(binding, scene, arm, parent, path, index):
+    if parent["status"] != "BLOCKED_TECHNICAL_PARENT" or _verified_parent(parent, scene, arm, index) is not None:
+        raise ValueError("unmeasured cold leaf requires its actual technical block")
+    path = Path(path)
+    producers = [index.identity(__file__), index.identity(Path(__file__).with_name("recovery_run.py"))]
+    identity = canonical_digest({"binding": binding["identity"], "scene": scene, "arm": arm,
+        "parent": parent["identity"], "producers": producers, "measurement_reserved": False})
+    if path.is_file():
+        previous = read(path)
+        if previous.get("status") != "BLOCKED_UNMEASURED" or previous.get("input_identity") != identity:
+            raise ValueError("unmeasured block must not overwrite a reserved, observed or incompatible cold call")
+        _verified_identity(previous)
+        _validate_unmeasured_block(previous)
+        for item in previous["inputs"]:
+            index.identity(item["path"], item)
+        return previous
+    value = {"status": "BLOCKED_UNMEASURED", "binding_identity": binding["identity"], "scene": scene,
+        "arm": arm, "input_identity": identity, "technical_block": parent["technical_block"],
+        "scientific_parent_identity": parent["identity"], "planned_gpu": str(binding["gpu"]), "hardware": None,
+        "measured_seconds": None, "parity": None, "measurement_reserved": False, "physical_calls_reserved": 0,
+        "cold_call_executed": False, "planned_production_callable": PRODUCTION_CALLABLE,
+        "unavailable_reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED_IN_FIXED_SCIENTIFIC_PARENT",
+        "inputs": [parent["failed_receipt"], parent["projected_manifest"], *producers], "outputs": []}
+    atomic_write_json(path, _seal(value))
+    return value
+
+
 def compare_recovery_parity(scientific, cold, arm, *, index=None):
     arm = recovery_arm(arm)
     index = index or ConsumptionIndex()
@@ -127,6 +295,10 @@ def aggregate_timings(spec, receipts):
         key = (row["scene"], row["arm"])
         if key in rows:
             raise ValueError("duplicate cold timing leaf; exactly24 distinct measurements are required")
+        if row["status"] == "BLOCKED_UNMEASURED":
+            _validate_unmeasured_block(row)
+            rows[key] = row
+            continue
         if (row["status"] != "COMPLETE" or row["parity"]["status"] != "PASS"
                 or row["production_callable"] != PRODUCTION_CALLABLE or not row["resident_model"]
                 or any(row[name] for name in ("persistent_feature_cache_enabled",
@@ -140,18 +312,26 @@ def aggregate_timings(spec, receipts):
         rows[key] = row
     if set(rows) != set(expected):
         raise ValueError("complete cold timing requires exactly24 fixed scene/arm leaves")
-    if len(hardware) != 1:
+    complete = [rows[key] for key in expected if rows[key]["status"] == "COMPLETE"]
+    blocked = [rows[key] for key in expected if rows[key]["status"] == "BLOCKED_UNMEASURED"]
+    if complete and len(hardware) != 1:
         raise ValueError("the timing mean requires one physical GPU and architecture")
     arms = {}
     scenes = spec["cohorts"][spec["timing"]["cohort"]]
     for arm in spec["timing"]["arms"]:
         selected = [rows[(scene, arm)] for scene in scenes]
-        total = sum(row["measured_seconds"] for row in selected)
-        arms[arm] = {"mean_seconds": total / len(scenes), "sum_seconds": total,
+        measured = [row for row in selected if row["status"] == "COMPLETE"]
+        available = len(measured) == len(scenes)
+        total = sum(row["measured_seconds"] for row in measured)
+        arms[arm] = {"mean_seconds": total / len(scenes) if available else None, "sum_seconds": total if available else None,
             "scene_count": len(scenes), "scene_order": list(scenes),
-            "receipt_identities": [row["identity"] for row in selected]}
-    result = {"status": "COMPLETE", "leaf_count": len(rows), "arms": arms,
-        "hardware": dict(rows[expected[0]]["hardware"]), "none_seconds": 0.,
+            "complete_scene_count": len(measured), "blocked_scene_count": len(scenes) - len(measured),
+            "receipt_identities": [row["identity"] for row in selected],
+            "measured_sum_seconds": total,
+            "unavailable_reason": None if available else "FULL_EIGHT_SCENE_MEAN_HAS_BLOCKED_UNMEASURED_LEAVES"}
+    result = {"status": "PARTIAL_WITH_TECHNICAL_BLOCKS" if blocked else "COMPLETE", "leaf_count": len(complete),
+        "planned_leaf_count": len(rows), "blocked_leaf_count": len(blocked), "arms": arms,
+        "hardware": dict(complete[0]["hardware"]) if complete else None, "none_seconds": 0.,
         "none_basis": "NO_RECOVERY_BY_DEFINITION", "empty_candidate_scenes_measured": True,
         "definition": "FEATURE_CACHE_COLD_INCREMENTAL_RECOVERY_MODEL_RESIDENT"}
     result["identity"] = canonical_digest(result)
@@ -215,26 +395,28 @@ def run_timings(binding, scientific_receipts, *, output_root=None):
 
     spec = load_spec(binding["spec"])
     scenes = spec["cohorts"][spec["timing"]["cohort"]]
-    if set(scientific_receipts) != set(scenes):
-        raise ValueError("cold timing requires all eight fixed scientific recovery parents")
     for scene in scenes:
         require_frozen_execution(binding, scene)
     assert_serial_execution(binding)
     root = Path(output_root or Path(binding["output_root"]) / "timing").resolve()
     index = ConsumptionIndex(root / "input_verifications.json")
+    parents, scientific_documents = _preflight_parents(binding, spec, scientific_receipts, index)
     hardware = _hardware(binding["gpu"])
     measurements, resident = [], None
     with exclusive_lock(root / ".controller.lock"), gpu_lease(binding, root) as lease:
         for scene in scenes:
-            scientific = _document(scientific_receipts[scene], index)
-            if scientific["status"] != "COMPLETE" or scientific["scene"] != scene:
-                raise ValueError("cold timing scientific parent is incomplete or belongs to another scene")
             inputs = load_recovery_inputs(binding, scene, index=index)
             session, model_load_reference, new_model_load_seconds = None, None, 0.
             for arm in spec["timing"]["arms"]:
                 core_arm = recovery_arm(arm)
                 leaf = root / scene / arm
                 path = leaf / "receipt.json"
+                scientific = scientific_documents[scene][arm]
+                if scientific is None:
+                    row = record_blocked_measurement(binding, scene, arm, parents[scene][arm], path, index)
+                    measurements.append(row)
+                    print(f"Cold {scene}/{arm}: BLOCKED_UNMEASURED; no physical call reserved", flush=True)
+                    continue
                 input_identity = canonical_digest({"binding": binding["identity"], "resident_inputs": inputs.identity,
                     "scientific": scientific["identity"], "arm": arm, "hardware": hardware,
                     "producer": index.identity(__file__), "production_operator": index.identity(Path(__file__).with_name("recovery_run.py"))})
