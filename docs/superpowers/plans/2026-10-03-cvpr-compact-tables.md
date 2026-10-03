@@ -67,7 +67,7 @@ Consumes bound inputs, one BB00 capture and locked projected/legacy requests.
 Produces N/Q/F source vectors, selected-view evidence and immutable A0-A5/U2/G3 payloads.
 
 - [x] Implement CF18 command substitutions with the actual parent BB00 binary/config, original CropFormer PNG conversion and native capture hooks; scene0011_00 completed200/200 slots with the exact bound kernel.
-- [ ] Reuse compatible maps; build missing maps once; reproduce original N and causal Q with honest exhaustion, static F <=3 views and fixed final temperatures.
+- [x] Reuse compatible maps; build missing maps once; reproduce original N and causal Q with honest exhaustion, static F <=3 views and fixed final temperatures. All 18 actual N/Q/F sources were audited; all 18 Q runs made 200 unique acquisitions.
 - [x] Implement task-local N/Q/static-F bridges; test separate N cosine, original F selection/cap exclusions, committed-freeze-first entry gates and successful-worker reuse without spending retries.
 - [x] Implement FC frame sharing with exact image/model/operator identity; pool new masks with inherited signed-mask operators.
 - [x] Implement same-view native six-crop recovery with original canonical-relative FP32 classifier.
@@ -80,7 +80,7 @@ Produces N/Q/F source vectors, selected-view evidence and immutable A0-A5/U2/G3 
 Files: `src/static_ovmap/cvpr_compact/{workflow,evaluation,diagnostics}.py`.
 Consumes locked outputs; produces 172 typed rows, 14 pools and actual matching evidence.
 
-- [ ] Commit complete implementation plus freeze/experiment.json and exposure ledger before main predictions.
+- [x] Commit complete implementation plus freeze/experiment.json and exposure ledger before main predictions. Initial freeze `1373d7a5` and documented alias amendment `fd77ab22` are retained.
 - [ ] Expand mask registry with genuine Native-unavailable recovered owners, preserve unknown errors and exact original 1NN projection.
 - [x] Implement the expanded-registry scoring wrapper and exercise the actual released evaluator on a synthetic full-owner fixture, including A5 unknown errors and exact resumption.
 - [x] Implement bounded workflow/CLI, shared recovery export and original per-class scene/pool summaries; verify original AP/semantic parity and successful pool resumption on synthetic data.
@@ -114,7 +114,7 @@ Files: `src/static_ovmap/cvpr_compact/tables.py`, four COMPACT_TABLES reports,
 
 ## Task 7: Acceptance And Publication
 
-- [x] Run the final current-source focused production validation (51 tests) and real scene0056_00 eight-condition end-to-end check with exact baseline and shared-export parity; no whole-repository test sweep.
+- [x] Run the final current-source focused production validation (56 tests after amendment01) and real scene0056_00 eight-condition end-to-end check with exact baseline and shared-export parity; no whole-repository test sweep.
 - [ ] Execute the specified all --resume command and verify idempotent exact-input reuse.
 - [ ] Audit every package requirement against actual files, receipts and outputs; retain unresolved items and keep goal active until full completion.
 - [ ] Keep compact release below50MiB, large maps/weights on shared storage with truthful manifests.
@@ -129,7 +129,13 @@ Canonical execution:
 
 - Existing main native anchors:8 exact Replica aliases. New main native anchors:18 complete CF18 captures, each200/200 original frames (26/26 total).
 - All18 CF18 raw input/export and CropFormer receipts are complete. The original controller in `attempt_001/execution/anchors/background_controller.json` completed; its kernel PID is absent and all26 actual anchor contexts were checked.
-- Final focused contract suite:51 passed, including synthetic integration through the pinned scorer, captured original per-class pools, cold-source parity, all-failed technical blocking, table provenance, negative analysis, content unions, paid-failure provenance, orphan locks, exact retry bounds, complete compact packaging and lossless legacy storage conversion. Compilation and scoped whitespace checks passed. This is not new main-benchmark scoring or another development map.
+- Final focused contract suite:56 passed under amendment01, including synthetic integration through the pinned scorer, captured original per-class pools, cold-source parity, all-failed technical blocking, table provenance, negative analysis, content unions, paid-failure provenance, orphan locks, exact retry bounds, complete compact packaging, lossless legacy storage conversion and actual current-alias interpretation. The original eight-condition development smoke remains byte-identical.
 - Existing Native/Q/F cost inventories for8 Replica scenes and original smoke are checked, including failed dense inputs recovered from the original paid array ledgers. The full main physical ledger remains pending actual execution.
-- Main outputs0/172, internal pools0/14, actual cold timing0/24. Freeze/publication modules and live/orphan guards are implemented. The current original eight-condition smoke passed, including exact warm/final export and A0 parity. The freeze commit, full measured execution and final release remain pending.
+- Freeze revision `fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24` is committed. All 26 projected-view receipts are complete; the primary audited every source registry, completed camera and 454 selected masks. All 18 actual FC weight/class-order audits and Native/Q audits are complete.
+- The canonical controller `383645` is absent and its encode phase is FAILED. Its office0 warm recovery completed; the actual failed scene is office1. All three exact preselected FC masks disappear at the original 24x42 dense resolution. The CPU reproduction and three failed command receipts are retained in `validation/office1_dense_support_root_cause.json`; this is a C5 technical block, not a valid zero-recovery output. No mask dilation, alternate view, changed resolution or new scientific recipe is permitted.
+- Unchanged frozen production workers completed the other 24 scenes through `validation/continue_independent_encode.py`. A separate CPU controller used at most 3 workers to lock and score ready scenes. Both controllers are terminal, with exact PID/start-tick/argv/cwd history and terminal receipts under `execution/independent_*`. Office1's independent Native and genuine no-archived-view U2 leaves also completed; the original FC failure remains unchanged.
+- Actual main predictions and scoring rows are 164/172 across 25 fully completed scenes. All 6 CF18 pools cover their complete ordered 18-scene cohort; no Replica subset was pooled. The primary integration evidence is `validation/independent_execution_integration.json`, identity `ba72c1ee0b5be4e3b35ea7a605463b912de6915caa13a92a7b9074236f405db6`.
+- The primary audited all 25 complete FC recovery receipts against the actual selected plans, FP32 vectors, original FC text, area-weighted classification, class IDs and recorded failed views. Evidence is `validation/primary_warm_fc_recovery_audit.json`, identity `9b7786f495c4797e254dad037750d9582610d2e563dc545fa81e09821f1d10ab`. Office1 is explicitly excluded as the retained block, not counted as a complete recovery.
+- No actual cold timing has yet been reserved or measured. Office1's remaining independent predictions, blocked-condition orchestration, measured tables, the final requirement-by-requirement review and GitHub publication remain pending; incomplete cohort results must not be reported as official pools.
+- Amendment02 implements proof-bound partial condition construction and exact inherited scoring/pooling without changing the 164 completed producers. Eight targeted checks pass, including full ordered eight-scene pool scope, exact per-class aliases, and no retry of an exhausted FC leaf. Current-source final tests, the unchanged smoke, amendment freeze and actual office1 independent execution are the next gates; prospective counts are not measured completion.
 - Previous scene0056_00 smoke receipts and failed commands are preserved. Explicit pre-freeze regeneration corrected only lossless legacy FP32 storage and environment-dependent probability-audit metadata; no scientific parameter, label decision, extra method or development map changed.

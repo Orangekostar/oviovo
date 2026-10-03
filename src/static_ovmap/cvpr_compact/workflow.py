@@ -24,13 +24,14 @@ from .timing import _process
 PHASES = ("bind", "prepare", "anchors", "views", "encode", "predict", "evaluate", "time", "tables", "publish", "all")
 GPU_MODULES = {"recovery_run", "native_region_worker", "timing"}
 REQUIRED_MODULES = ("protocol", "binding", "benchmark_inputs", "anchor", "base_sources", "query_bridge", "projected_views",
-    "outputs", "region_worker", "native_region_worker", "prediction_worker", "evaluation", "recovery_run",
+    "outputs", "region_worker", "native_region_worker", "prediction_worker", "evaluation", "partial_execution", "recovery_run",
     "runtime", "timing", "diagnostics", "external", "costs", "tables", "reports", "freezing", "publication", "workflow")
 WORKER_DEPENDENCIES = {
     "recovery_run": ("region_worker", "projected_views", "outputs", "costs", "runtime", "protocol"),
     "native_region_worker": ("projected_views", "runtime", "protocol"),
     "prediction_worker": ("outputs", "costs", "region_worker", "projected_views", "runtime", "protocol"),
     "evaluation": ("runtime", "protocol", "projected_views"),
+    "partial_execution": ("outputs", "costs", "prediction_worker", "evaluation", "recovery_run", "projected_views", "runtime", "protocol"),
     "timing": ("recovery_run", "region_worker", "projected_views", "outputs", "costs", "runtime", "protocol"),
 }
 
@@ -144,15 +145,78 @@ def _encode(binding, scenes):
         data, context = _context(binding, scene)
         views = root / "projected_views" / scene / "receipt.json"
         fc_root = root / "recovery" / scene
-        fc = run_worker(binding, module="recovery_run", python=binding["fc"]["python"],
-            arguments=["--scene", scene, "--output-root", fc_root], result_path=fc_root / "receipt.json",
-            expected_status="COMPLETE", inputs=[context, views])
+        blocks = _exhausted_semantic_blocks(binding, scene, context, views)
+        if blocks is None:
+            try:
+                fc = run_worker(binding, module="recovery_run", python=binding["fc"]["python"],
+                    arguments=["--scene", scene, "--output-root", fc_root], result_path=fc_root / "receipt.json",
+                    expected_status="COMPLETE", inputs=[context, views])
+            except RuntimeError:
+                blocks = _exhausted_semantic_blocks(binding, scene, context, views)
+                if blocks is None:
+                    raise
         native_root = root / "native_recovery" / scene
         native = run_worker(binding, module="native_region_worker", python=data["runtime"]["native_perception_python"],
             arguments=["--scene", scene, "--views", views, "--context", context, "--output-root", native_root],
             result_path=native_root / "receipt.json", expected_status="COMPLETE", inputs=[context, views])
-        results[scene] = {"FC": fc["identity"], "Native": native["identity"]}
+        if blocks is None:
+            results[scene] = {"status": "COMPLETE", "FC": fc["identity"], "Native": native["identity"]}
+        else:
+            result = {"status": "PARTIAL_WITH_TECHNICAL_BLOCKS", "blocked_sources": blocks,
+                      "Native": native["identity"]}
+            spec = load_spec(binding["spec"])
+            if scene in spec["cohorts"]["replica8"]:
+                u2_root = root / "recovery" / (scene + "_U2")
+                u2 = run_worker(binding, module="recovery_run", python=binding["fc"]["python"],
+                    arguments=["--scene", scene, "--arm", "U2", "--output-root", u2_root],
+                    result_path=u2_root / "receipt.json", expected_status="COMPLETE", inputs=[context, views])
+                result["U2"] = u2["identity"]
+            results[scene] = result
     return results
+
+
+def _exhausted_semantic_blocks(binding, scene, context, views):
+    from .partial_execution import semantic_block
+
+    root = Path(binding["output_root"])
+    path = root / "recovery" / scene / "receipt.json"
+    if not path.is_file() or read(path)["status"] != "FAILED":
+        return None
+    producer = Path(__file__).with_name("recovery_run.py")
+    index = ConsumptionIndex(root / "validation/input_verifications.json")
+    argv = [binding["fc"]["python"], "-m", "static_ovmap.cvpr_compact.recovery_run", "--binding",
+            str(root / "resolved_inputs.json"), "--scene", scene, "--output-root", str(path.parent)]
+    identity = canonical_digest({"binding": binding["identity"], "argv": argv,
+        "producer": index.identity(producer), "inputs": [index.identity(item) for item in (context, views)],
+        "dependency_sources": [index.identity(producer.with_name(name + ".py")) for name in WORKER_DEPENDENCIES["recovery_run"]],
+        "expected_result": str(path), "expected_status": "COMPLETE"})
+    ledger_path = root / "execution/recovery_run" / ("command_" + identity + ".json")
+    if not ledger_path.is_file():
+        return None
+    ledger = read(ledger_path)
+    attempts = ledger["attempts"]
+    if ledger["input_identity"] != identity or len(attempts) != 3:
+        return None
+    for attempt in attempts:
+        actual = _process(attempt["child_pid"]) if attempt.get("child_pid") else None
+        if (actual and actual["live"] and actual["start_ticks"] == attempt.get("child_start_ticks")
+                and actual["argv"] == argv):
+            raise LiveLeafError("the failed recovery worker is still live; observe before continuing")
+        if (attempt["status"] != "FAILED" or attempt["exit_code"] == 0 or attempt["argv"] != argv
+                or attempt["cwd"] != binding["repository_root"]):
+            return None
+        index.identity(attempt["log"])
+    failed = read(path)
+    _verified_identity(failed)
+    for item in failed["inputs"] + failed["outputs"]:
+        index.identity(item["path"], item)
+    projected = read(views)
+    _verified_identity(projected)
+    for item in projected["outputs"]:
+        index.identity(item["path"], item)
+    manifest = read(projected["manifest"])
+    arms = ["G1", "G3"] if scene in load_spec(binding["spec"])["cohorts"]["replica8"] else ["G1"]
+    return {arm + "_FC": semantic_block(failed, manifest, arm) for arm in arms}
 
 
 def _predict(binding, scenes):
@@ -164,6 +228,16 @@ def _predict(binding, scenes):
         fc = root / "recovery" / scene / "regions/receipt.json"
         native = root / "native_recovery" / scene / "receipt.json"
         output = root / "predictions" / scene
+        if _exhausted_semantic_blocks(binding, scene, context, views) is not None:
+            inputs = [context, views, root / "recovery" / scene / "receipt.json", native]
+            if scene in load_spec(binding["spec"])["cohorts"]["replica8"]:
+                inputs.append(root / "recovery" / (scene + "_U2") / "receipt.json")
+            locked = run_worker(binding, module="partial_execution", python=data["runtime"]["native_perception_python"],
+                arguments=["--operation", "predict", "--scene", scene, "--context", context, "--output-root", output],
+                result_path=output / "receipt.json", expected_status="PARTIAL_PREDICTIONS_LOCKED", inputs=inputs)
+            results[scene] = {"status": "PARTIAL_WITH_TECHNICAL_BLOCKS", "identity": locked["identity"],
+                              "blocked_methods": locked["blocked_methods"]}
+            continue
         locked = run_worker(binding, module="prediction_worker", python=data["runtime"]["native_perception_python"],
             arguments=["--scene", scene, "--views", views, "--regions", fc, "--native-regions", native,
                 "--context", context, "--output-root", output], result_path=output / "receipt.json",
@@ -184,6 +258,10 @@ def _evaluate(binding, scenes, *, pool=True):
         data, context = _context(binding, scene)
         lock = root / "predictions" / scene / "receipt.json"
         output = root / "evaluation" / scene
+        if read(lock)["status"] == "PARTIAL_PREDICTIONS_LOCKED":
+            return run_worker(binding, module="partial_execution", python=data["runtime"]["native_perception_python"],
+                arguments=["--operation", "evaluate", "--scene", scene, "--lock", lock, "--output-root", output],
+                result_path=output / "receipt.json", expected_status="PARTIAL_WITH_TECHNICAL_BLOCKS", inputs=[context, lock])
         return run_worker(binding, module="evaluation", python=data["runtime"]["native_perception_python"],
             arguments=["--scene", scene, "--lock", lock, "--output-root", output], result_path=output / "receipt.json",
             expected_status="COMPLETE", inputs=[context, lock])
@@ -192,14 +270,33 @@ def _evaluate(binding, scenes, *, pool=True):
         jobs = {workers.submit(evaluate, scene): scene for scene in scenes}
         for job in as_completed(jobs):
             scene = jobs[job]
-            results[scene] = job.result()["identity"]
+            receipt = job.result()
+            results[scene] = {"status": receipt["status"], "identity": receipt["identity"]}
     if pool:
         for cohort, selected in binding["cohorts"].items():
             first, context = _context(binding, selected[0])
+            if any(read(root / "evaluation" / scene / "receipt.json")["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS"
+                   for scene in selected):
+                run_worker(binding, module="partial_execution", python=first["runtime"]["native_perception_python"],
+                    arguments=["--operation", "pool", "--cohort", cohort],
+                    result_path=root / "pools" / cohort / "receipt.json", expected_status="PARTIAL_WITH_TECHNICAL_BLOCKS",
+                    inputs=[root / "evaluation" / scene / "receipt.json" for scene in selected])
+                continue
             run_worker(binding, module="evaluation", python=first["runtime"]["native_perception_python"],
                 arguments=["--cohort", cohort], result_path=root / "pools" / cohort / "receipt.json",
                 expected_status="COMPLETE", inputs=[root / "evaluation" / scene / "receipt.json" for scene in selected])
     return results
+
+
+def _phase_status(result):
+    if isinstance(result, dict):
+        if result.get("status") in ("BLOCKED_TECHNICAL", "PARTIAL_WITH_TECHNICAL_BLOCKS", "PARTIAL_PREDICTIONS_LOCKED"):
+            return "PARTIAL_WITH_TECHNICAL_BLOCKS"
+        if any(_phase_status(value) != "COMPLETE" for value in result.values()):
+            return "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    elif isinstance(result, (tuple, list)) and any(_phase_status(value) != "COMPLETE" for value in result):
+        return "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    return "COMPLETE"
 
 
 def run_smoke(binding):
@@ -309,7 +406,7 @@ def run_pipeline(spec_path, repository_root, *, phase="all", resume=False, gpu=N
                 else:
                     from .publication import publish
                     result = publish(binding)
-                record.update(status="COMPLETE", result=result)
+                record.update(status=_phase_status(result), result=result)
             except BaseException as exc:
                 record.update(status="FAILED", error=f"{type(exc).__name__}: {exc}")
                 raise
@@ -318,5 +415,6 @@ def run_pipeline(spec_path, repository_root, *, phase="all", resume=False, gpu=N
                 record["identity"] = canonical_digest({k: v for k, v in record.items() if k != "identity"})
                 atomic_write_json(receipt_path, record)
             results[current] = record["identity"]
-            print("Compact phase", current, "COMPLETE", flush=True)
-    return {"phase": phase, "status": "COMPLETE", "binding_identity": binding["identity"], "phase_identities": results}
+            print("Compact phase", current, record["status"], flush=True)
+    status = _phase_status({name: read(root / "phases" / (name + ".json")) for name in selected})
+    return {"phase": phase, "status": status, "binding_identity": binding["identity"], "phase_identities": results}

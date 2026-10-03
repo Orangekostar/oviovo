@@ -11,25 +11,59 @@
     "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
   },
   "amendment": {
-    "affected_descendants": [
-      "predictions/office1",
-      "evaluation/office1",
-      "pools/replica8",
-      "diagnostics",
-      "tables",
-      "reports"
+    "actual_validation": [
+      {
+        "bytes": 45262,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/query_alias_root_cause_audit.json",
+        "sha256": "818cac978d991f88d0b433f85b1ddd3db5f2ebf5ff9da9ce93102e7db1834735"
+      },
+      {
+        "bytes": 14680,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/query_alias_bridge_validation.json",
+        "sha256": "61c291c555e698124d723fb942985d6b6224bc9e987cc10a70910933fd4cce65"
+      },
+      {
+        "bytes": 10675,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_contract_tests.json",
+        "sha256": "f75a8a692741ede302a67d5b35f9db82213d23fb32abb06cdbd71e48c40eb952"
+      },
+      {
+        "bytes": 11454,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_smoke.json",
+        "sha256": "fcd62502e90d007627532e1df87dfcb08a9d5893ce8f83b9697c1db18e3095e7"
+      }
     ],
-    "cold_reservations_before_amendment": 0,
-    "failed_view_replacement": false,
-    "id": "02",
+    "affected_descendants": [
+      "readouts/scene0378_02",
+      "contexts/scene0378_02.json",
+      "projected_views/scene0378_02",
+      "recovery/scene0378_02",
+      "native_recovery/scene0378_02",
+      "predictions/scene0378_02",
+      "evaluation/scene0378_02",
+      "readouts/scene0518_00",
+      "contexts/scene0518_00.json",
+      "projected_views/scene0518_00",
+      "recovery/scene0518_00",
+      "native_recovery/scene0518_00",
+      "predictions/scene0518_00",
+      "evaluation/scene0518_00"
+    ],
+    "cold_measurements_reserved": 0,
+    "common_native_maps_preserved": 26,
+    "complete_descendants_invalidated": [],
+    "completed_CF18_readouts_preserved": 16,
+    "documentation": {
+      "bytes": 4235,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/docs/paper/static_ovmap/cvpr_compact_tables_v1/TECHNICAL_AMENDMENT_01.md",
+      "sha256": "4cb61a1e3f0100267dbab690aba2dfd83172c47d9e07682d2ef9b6b7cfe03e20"
+    },
+    "main_metrics_observed_by_primary": false,
     "main_outcomes_seen": true,
-    "preflight_identity": "7529e329c584ce2b529ca391383365a673eeb2833ae2f3ccfb4b47a0813775ba",
-    "preserve_complete_CF18_pools": 6,
-    "preserve_unaffected_outputs": 164,
-    "previous_freeze_identity": "0e93a65bf9943c8d82dc6680edc2db3678045ca23c02a7b057c3a8a8febaefd5",
-    "previous_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
-    "reason": "Continue fixed independent conditions after the proven original office1 FC all-failed block; retain exhausted commands and all successful producer bytes; exact inherited-scoring scope/status bridge and identity-proven original per-class cache aliases only.",
-    "scientific_constants_or_method_recipes_changed": false
+    "previous_freeze_identity": "ad81919f79bc532301b543fb671d195b72b9f7f3b33e0eda4dd4f90bc3637855",
+    "previous_revision": "1373d7a5eea02028774acea865fda9177165d661",
+    "projected_view_receipts_preserved": 24,
+    "reason": "Current native merged segment statistics can retain a retired owner. Interpret each recorded membership row through causal current segment aliases; preserve original positive-ancestry guard and replay. No parameters or method recipes change."
   },
   "anchor_inputs": [
     {
@@ -508,7 +542,7 @@
     "sha256": "3f5ab03d6afb8a6a300abc3291305cf20c4e306791cadc380649e58e0349aba3"
   },
   "branch": "research/ovimap-cvpr-compact-tables-v1",
-  "created_at_unix": 1791035239.723023,
+  "created_at_unix": 1791027860.255441,
   "data_exposure": {
     "captures": {
       "scene0011_00": {
@@ -714,7 +748,7 @@
     "N": 0.010357429721631367,
     "Q": 0.010000492837221748
   },
-  "identity": "925c2241225793034c461673b19043944d1018afb5ae3a49751d51ffdef25ada",
+  "identity": "0e93a65bf9943c8d82dc6680edc2db3678045ca23c02a7b057c3a8a8febaefd5",
   "implementation_sources": [
     {
       "bytes": 82,
@@ -777,11 +811,6 @@
       "sha256": "c6c24d4f543b55e5eadea2cf375d23fa67ea54bbfe889c2fcce3327a6a9c07fd"
     },
     {
-      "bytes": 26996,
-      "path": "src/static_ovmap/cvpr_compact/partial_execution.py",
-      "sha256": "3839162a9134fc0257a33c206c7f97cbaf710bd85b15d0609526e31fc03b1cae"
-    },
-    {
       "bytes": 9961,
       "path": "src/static_ovmap/cvpr_compact/prediction_worker.py",
       "sha256": "502618109f7080957137f2b478a9197f45337229ee523f8c5e528b7d0f77b320"
@@ -837,9 +866,9 @@
       "sha256": "c294d49f9e7b709d328689073977c42b81762e484b602068406eb1d1c2196332"
     },
     {
-      "bytes": 23957,
+      "bytes": 17675,
       "path": "src/static_ovmap/cvpr_compact/workflow.py",
-      "sha256": "5ae2d035e5ea80a106674a13b18671b96eca49752851e819b64a88a8ee07c4a0"
+      "sha256": "b56a77f40bed0917127c6cebf61558ee81994b8beafb8b1d985798b1dbf59f47"
     },
     {
       "bytes": 997,
@@ -847,9 +876,9 @@
       "sha256": "cd9d31425b29cf9ac8e195e4238995cd67de5e792cd1c1319ffa22ea4884fcea"
     },
     {
-      "bytes": 116682,
+      "bytes": 106498,
       "path": "tests/evaluation/test_cvpr_compact_contracts.py",
-      "sha256": "cee2037c49b2291e098ea72a15d508fd6c1acd69af310c74364b489209d5d7d8"
+      "sha256": "ee3b50d230e8d8fc7b7807d68bb021a4dc53207ece71b14fb248d4cbfdf3e77d"
     },
     {
       "bytes": 10046,
@@ -22380,14 +22409,14 @@
   "untouched_confirmation_claim": false,
   "validation": {
     "existing_map_smoke": {
-      "bytes": 11640,
+      "bytes": 11454,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_smoke.json",
-      "sha256": "ffec8d0b473b61b18c588cdb0cc16529a626d58bc4f6a3c8a9a5ee4adf123547"
+      "sha256": "fcd62502e90d007627532e1df87dfcb08a9d5893ce8f83b9697c1db18e3095e7"
     },
     "focused_tests": {
-      "bytes": 10866,
+      "bytes": 10675,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_contract_tests.json",
-      "sha256": "77a55092a70b301519c7d1633d3900761154565cdcc23b99a5f1ffedc5d2b274"
+      "sha256": "f75a8a692741ede302a67d5b35f9db82213d23fb32abb06cdbd71e48c40eb952"
     }
   }
 }

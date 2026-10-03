@@ -18,6 +18,115 @@ from static_ovmap.recovery_wave2.recovery_registry import build_registry
 SPEC = Path(__file__).resolve().parents[2] / "configs/static_ovmap/cvpr_compact_tables_v1.json"
 
 
+def partial_scope_fixture(scene="office1"):
+    from static_ovmap.cvpr_compact.partial_execution import partition_methods, semantic_block
+
+    spec = json.loads(SPEC.read_text())
+    selected = ["first", "second", "third"]
+    projected = {"scene_id": scene, "GT_input": False, "failed_view_replacement": False,
+        "g1": {"owner:86": selected[:1]}, "views": {"owner:86": selected},
+        "requests": {rid: {"request_id": rid, "scene": scene, "frame_id": 1950 - i * 10,
+                           "target_mask_sha256": str(i) * 64} for i, rid in enumerate(selected)}}
+    projected["identity"] = canonical_digest(projected)
+    failed = {"scene": scene, "status": "FAILED", "GT_input": False,
+        "failed_view_replacement": False, "arms": ["G1", "G3", "U2"],
+        "error": "RuntimeError: BLOCKED_ALL_SEMANTIC_REQUESTS_FAILED: selected requests exist",
+        "requests": {rid: {**row, "status": "UNAVAILABLE_TECHNICAL_FAILURE",
+                           "reason": "EMPTY_DENSE_MASK_SUPPORT"} for rid, row in projected["requests"].items()}}
+    failed["identity"] = canonical_digest(failed)
+    blocks = {arm + "_FC": semantic_block(failed, projected, arm) for arm in ("G1", "G3")}
+    available_sources = ["G1_NATIVE", "ARCHIVED_U2_FC"]
+    methods, blocked = partition_methods(spec, scene, available_sources, blocks)
+    scope = {"scene": scene, "expected_method_ids": [row["id"] for row in spec["methods"]],
+        "available_recovery_sources": available_sources, "blocked_sources": blocks, "blocked_methods": blocked}
+    return spec, projected, failed, methods, scope
+
+
+def test_partial_scope_keeps_fixed_recipes_and_proves_each_failed_selected_mask():
+    from static_ovmap.cvpr_compact.partial_execution import partition_methods, semantic_block
+
+    spec, projected, failed, methods, scope = partial_scope_fixture()
+    assert [row["id"] for row in methods] == ["CT_A0_NATIVE", "CT_A1_E", "CT_A4_NATIVE_RECOVERY", "CT_H_U2"]
+    assert set(scope["blocked_methods"]) == {"CT_A2_R", "CT_A3_ER", "CT_A5_FC_ONLY", "CT_G3"}
+    assert scope["blocked_sources"]["G1_FC"]["selected_request_ids"] == ["first"]
+    assert scope["blocked_sources"]["G3_FC"]["selected_request_ids"] == ["first", "second", "third"]
+    assert len(spec["methods"]) == 8 and spec["methods"][3]["recovery"] == "G1_FC"
+    with pytest.raises(ValueError, match="partition"):
+        partition_methods(spec, "office1", ["G1_NATIVE"], scope["blocked_sources"])
+    with pytest.raises(ValueError, match="partition"):
+        partition_methods(spec, "office1", ["G1_NATIVE", "ARCHIVED_U2_FC", "G1_FC"], scope["blocked_sources"])
+    changed = copy.deepcopy(failed)
+    changed["requests"]["first"]["target_mask_sha256"] = "changed-mask"
+    changed["identity"] = canonical_digest({k: v for k, v in changed.items() if k != "identity"})
+    with pytest.raises(ValueError, match="selected"):
+        semantic_block(changed, projected, "G1")
+
+
+@pytest.mark.parametrize("change", ["no_selected", "missing_failure", "successful_request", "successful_receipt"])
+def test_partial_semantic_block_rejects_unproven_failure_or_genuine_no_view(change):
+    from static_ovmap.cvpr_compact.partial_execution import semantic_block
+
+    _, projected, failed, _, _ = partial_scope_fixture()
+    if change == "no_selected":
+        projected["g1"]["owner:86"] = []
+    elif change == "missing_failure":
+        del failed["requests"]["first"]
+    elif change == "successful_request":
+        failed["requests"]["first"]["status"] = "COMPLETE"
+    else:
+        failed["status"] = "COMPLETE"
+    for value in (projected, failed):
+        value["identity"] = canonical_digest({k: v for k, v in value.items() if k != "identity"})
+    with pytest.raises(ValueError):
+        semantic_block(failed, projected, "G1")
+
+
+def test_partial_pool_requires_all_eight_scenes_and_exact_available_method_scope():
+    from static_ovmap.cvpr_compact.partial_execution import select_partial_pool_rows
+
+    spec, _, _, methods, scope = partial_scope_fixture()
+    receipts = {scene: {"status": "COMPLETE", "scene": scene,
+        "rows": [{"status": "COMPLETE", "scene": scene, "method": row["id"],
+                  "rank_mode": "OFFICIAL_CURRENT_CLASS"} for row in spec["methods"]]}
+        for scene in reversed(spec["cohorts"]["replica8"])}
+    receipts["office1"] = {**scope, "status": "PARTIAL_WITH_TECHNICAL_BLOCKS", "rows": [
+        {"status": "COMPLETE", "scene": "office1", "method": row["id"],
+         "rank_mode": "OFFICIAL_CURRENT_CLASS"} for row in methods]}
+    rows = select_partial_pool_rows(spec, "replica8", "CT_A0_NATIVE", receipts)
+    assert [row["scene"] for row in rows] == spec["cohorts"]["replica8"] and len(rows) == 8
+    with pytest.raises(ValueError, match="BLOCKED_TECHNICAL"):
+        select_partial_pool_rows(spec, "replica8", "CT_A3_ER", receipts)
+    missing = {s: row for s, row in receipts.items() if s != "room2"}
+    with pytest.raises(ValueError, match="complete fixed scene set"):
+        select_partial_pool_rows(spec, "replica8", "CT_A0_NATIVE", missing)
+    receipts["office1"]["rows"].pop()
+    with pytest.raises(ValueError, match="scope"):
+        select_partial_pool_rows(spec, "replica8", "CT_A0_NATIVE", receipts)
+
+
+def test_partial_encode_continues_native_and_u2_without_retrying_failed_fc(monkeypatch, tmp_path):
+    from static_ovmap.cvpr_compact import workflow
+
+    _, _, _, _, scope = partial_scope_fixture()
+    binding = {"output_root": str(tmp_path), "spec": str(SPEC), "fc": {"python": "fc-python"}}
+    data = {"runtime": {"native_perception_python": "native-python"}}
+    monkeypatch.setattr(workflow, "_context", lambda *args: (data, tmp_path / "context.json"))
+    monkeypatch.setattr(workflow, "_exhausted_semantic_blocks", lambda *args: scope["blocked_sources"])
+    calls = []
+    def worker(binding, **kwargs):
+        calls.append(kwargs)
+        if kwargs["module"] == "recovery_run":
+            assert "--arm" in kwargs["arguments"] and "U2" in kwargs["arguments"]
+        return {"identity": kwargs["module"]}
+    monkeypatch.setattr(workflow, "run_worker", worker)
+    result = workflow._encode(binding, ["office1"])
+    assert [row["module"] for row in calls] == ["native_region_worker", "recovery_run"]
+    assert result["office1"]["Native"] == "native_region_worker"
+    assert result["office1"]["U2"] == "recovery_run"
+    assert workflow._phase_status(result) == "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    assert workflow._phase_status({"office0": {"status": "COMPLETE"}}) == "COMPLETE"
+
+
 def test_compact_captured_frames_resolve_retired_membership_before_causal_registration(monkeypatch):
     from types import SimpleNamespace
     from static_ovmap.cvpr_compact.query_bridge import CapturedFrames
@@ -671,7 +780,7 @@ def test_pool_selection_requires_all_fixed_scenes_once_in_protocol_order():
         select_pool_rows(spec, "scannet_cf18", "CT_G3", receipts)
 
 
-def test_released_scoring_keeps_recovered_masks_and_unknown_semantic_errors(tmp_path):
+def test_released_scoring_keeps_recovered_masks_and_unknown_semantic_errors(tmp_path, monkeypatch):
     import os
     from static_ovmap.cvpr_compact.evaluation import evaluate_scene
     from static_ovmap.cvpr_compact.outputs import build_method_outputs
@@ -795,6 +904,55 @@ def test_released_scoring_keeps_recovered_masks_and_unknown_semantic_errors(tmp_
         ["scene0056_00"], "CT_A5_FC_ONLY", "OFFICIAL_CURRENT_CLASS", ConsumptionIndex())
     namespace["evaluate"] = original
     assert again == pooled and reused["identity"] == details["identity"]
+
+    from static_ovmap.cvpr_compact.partial_execution import evaluate_partial_scene
+    _, _, _, selected, scope = partial_scope_fixture("scene0056_00")
+    selected_ids = {row["id"] for row in selected}
+    partial_lock = {**scope, "status": "PARTIAL_PREDICTIONS_LOCKED", "inputs": [], "outputs": files,
+        "predictions": {key: value for key, value in predictions.items() if key in selected_ids},
+        "prediction_identities": {key: value for key, value in identities.items() if key in selected_ids}}
+    partial_lock["identity"] = canonical_digest(partial_lock)
+    partial = evaluate_partial_scene(binding, "scene0056_00", partial_lock, tmp_path / "partial_scoring")
+    assert partial["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS" and partial["row_count"] == 4
+    assert partial["blocked_methods"] == scope["blocked_methods"]
+    assert partial["expected_method_ids"] == [row["id"] for row in spec["methods"]]
+    assert {row["method"] for row in partial["rows"]} == selected_ids
+    for row in partial["rows"]:
+        assert row["metrics"] == rows[row["method"]]["metrics"] and row["status"] == "COMPLETE"
+        assert partial["registry_checks"][row["method"]]["semantic_confusion_count"] == 200
+    assert evaluate_partial_scene(binding, "scene0056_00", partial_lock,
+                                  tmp_path / "partial_scoring")["identity"] == partial["identity"]
+
+    from static_ovmap.cvpr_compact.partial_execution import pool_partial_cohort
+    from static_ovmap.cvpr_compact import evaluation as compact_evaluation
+    from static_ovmap.cvpr_compact import partial_execution
+    # Reuse synthetic scoring files to test the full fixed-cohort packaging path.
+    pool_binding = {**binding, "scenes": {scene: data for scene in spec["cohorts"]["replica8"]}}
+    pool_binding["identity"] = canonical_digest({k: v for k, v in pool_binding.items() if k != "identity"})
+    for scene in spec["cohorts"]["replica8"]:
+        scene_result = copy.deepcopy(result)
+        scene_result["scene"] = scene
+        for row in scene_result["rows"]:
+            row["scene"] = scene
+            row["identity"] = canonical_digest({k: v for k, v in row.items() if k != "identity"})
+        if scene == "office1":
+            _, _, _, _, scene_scope = partial_scope_fixture(scene)
+            scene_result.update(scene_scope, status="PARTIAL_WITH_TECHNICAL_BLOCKS",
+                rows=[row for row in scene_result["rows"] if row["method"] in selected_ids])
+        scene_result["identity"] = canonical_digest({k: v for k, v in scene_result.items() if k != "identity"})
+        atomic_write_json(tmp_path / "evaluation" / scene / "receipt.json", scene_result)
+    monkeypatch.setattr(compact_evaluation, "require_frozen_execution", lambda *args: "SYNTHETIC_FIXTURE_ONLY")
+    monkeypatch.setattr(partial_execution, "require_frozen_execution", lambda *args: "SYNTHETIC_FIXTURE_ONLY")
+    pooled_scope = pool_partial_cohort(pool_binding, "replica8")
+    assert pooled_scope["status"] == "PARTIAL_WITH_TECHNICAL_BLOCKS"
+    assert pooled_scope["complete_pool_count"] == 4 and pooled_scope["required_pool_count"] == 8
+    assert set(pooled_scope["methods"]) == selected_ids
+    assert len(pooled_scope["blocked_methods"]) == 4
+    for method, measured in pooled_scope["methods"].items():
+        assert measured["status"] == "COMPLETE" and measured["scene_order"] == spec["cohorts"]["replica8"]
+        assert measured["metrics"]["miou"] == rows[method]["metrics"]["miou"]
+        assert len(measured["row_identities"]) == 8 and len(measured["ordered_inputs"]) == 8
+    assert pool_partial_cohort(pool_binding, "replica8")["identity"] == pooled_scope["identity"]
 
 
 def test_completed_base_worker_verifies_outputs_without_spending_retry(tmp_path):
