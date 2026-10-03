@@ -159,15 +159,26 @@ all26 diagnoses, original tables/PDF and22 reserved cold observations stay exact
 - [x] Diagnose actual213MiB publication failure: repeated full JSON evidence
   does not meet the50MiB target under separate gzip compression.
 - [x] Reproduce the omitted Replica U2/G3 Pareto scope with two failing assertions.
-- [ ] Compare all fixed cohort methods in Pareto analysis; keep the prescribed
+- [x] Compare all fixed cohort methods in Pareto analysis; keep the prescribed
   A3 paired deltas and2x2 contrasts unchanged, and disclose unavailable inputs.
-- [ ] Validate deterministic lossless whole-evidence XZ packaging against every
+- [x] Validate deterministic lossless whole-evidence XZ packaging against every
   original byte/hash; retain direct small tables, summaries and reconstruction
   metadata, with a standard-library extraction interface for archived evidence.
-- [ ] Record preservation preflight, archive previous reports, run one final
+- [x] Record preservation preflight, archive previous reports, run one final
   current-source focused suite and reuse the same real eight-condition smoke;
   freeze the documented consumer amendment before regenerating reports.
 - [ ] Build and audit the actual complete compact release below50MiB, including
   manifest and eventual primary review. No technical block becomes COMPLETE.
 - [ ] Perform the327-requirement primary review, canonical all-resume reuse and
   normal GitHub publication with full local/remote SHA verification.
+
+Amendment06 actual evidence:73 tests passed, the original smoke is exact and
+all15 scientific producers are unchanged. The real archive restores1,638 members
+and715,826,986 original bytes;1,658 source copies pass byte/hash comparison.
+Actual release including its manifest is42,740,397 bytes, before primary review.
+Full scientific counts remain blocked at168/172,10/14 and22/24.
+
+Amendment07 fixes the chronological publication audit: only six identified
+subsequent push/delivery requirements may be PENDING_PUBLICATION, never a
+scientific or implementation gap. Primary read all327 catalogued requirements;
+the evidence classification and full code/artifact review remain in progress.

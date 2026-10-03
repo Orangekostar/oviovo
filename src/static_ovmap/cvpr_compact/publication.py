@@ -26,6 +26,14 @@ RELEASE_ROOT = "artifacts/static_ovmap/cvpr_compact_tables_v1"
 REPORT_NAMES = tuple("COMPACT_TABLES_" + name + ".md" for name in ("RESULTS", "HANDOFF", "SELECTION", "CLAIMS"))
 LIMIT_BYTES = 50 * 1024**2
 SECRET_KEYS = {"password", "api_key", "access_token", "refresh_token", "authorization", "credentials", "scannet_password"}
+PENDING_PUBLICATION_STEPS = {
+    "CODEX_FINAL_EXECUTION_EN.md:45": "CANONICAL_ALL_RESUME_THROUGH_PUBLICATION",
+    "CODEX_FINAL_EXECUTION_EN.md:417": "VERIFIED_COMPACT_ARTIFACTS_ON_GITHUB",
+    "CODEX_FINAL_EXECUTION_EN.md:430": "NORMAL_PUSH_AND_FULL_REMOTE_SHA_VERIFICATION",
+    "CODEX_FINAL_EXECUTION_EN.md:438": "FINAL_RESPONSE_WITH_VERIFIED_PUBLICATION",
+    "PROTOCOL_SPEC.publication.verify_full_remote_sha": "NORMAL_PUSH_AND_FULL_REMOTE_SHA_VERIFICATION",
+    "PROTOCOL_SPEC.publication.receipt_outside_commit": "EXTERNAL_POST_PUSH_RECEIPT",
+}
 
 
 def requirement_catalog():
@@ -542,12 +550,17 @@ def verify_primary_review(binding, bundle):
             or {row["requirement_id"] for row in review["requirements"]} != expected
             or len(review["requirements"]) != len(expected)):
         raise ValueError("primary review must cover every package requirement against the current full release")
-    blocked_requirements, covered_blocks = set(), set()
+    blocked_requirements, covered_blocks, pending_publication = set(), set(), {}
     for row in review["requirements"]:
-        if row["status"] not in ("PROVEN_COMPLETE", "BLOCKED_TECHNICAL") or not row["evidence"] or not row["finding"]:
+        if row["status"] not in ("PROVEN_COMPLETE", "BLOCKED_TECHNICAL", "PENDING_PUBLICATION") or not row["evidence"] or not row["finding"]:
             raise ValueError("uncertain, indirect or missing requirement evidence cannot pass publication")
         dependencies = set(row.get("blocked_dependencies", []))
-        if row["status"] == "BLOCKED_TECHNICAL":
+        if row["status"] == "PENDING_PUBLICATION":
+            step = PENDING_PUBLICATION_STEPS.get(row["requirement_id"])
+            if step is None or row.get("pending_publication_step") != step or dependencies:
+                raise ValueError("only exact subsequent publication obligations may remain pending publication")
+            pending_publication[row["requirement_id"]] = step
+        elif row["status"] == "BLOCKED_TECHNICAL":
             if not dependencies or not dependencies <= actual_blocks:
                 raise ValueError("blocked requirement must identify an actual audited fixed scientific dependency")
             blocked_requirements.add(row["requirement_id"])
@@ -556,10 +569,16 @@ def verify_primary_review(binding, bundle):
             raise ValueError("a proven complete requirement cannot contain unresolved dependencies")
         for item in row["evidence"]:
             index.identity(item["path"], item)
-    if (set(review["unresolved_required_items"]) != blocked_requirements or covered_blocks != actual_blocks
-            or len(review["unresolved_required_items"]) != len(blocked_requirements)):
+    unresolved = blocked_requirements | set(pending_publication)
+    if (set(review["unresolved_required_items"]) != unresolved or covered_blocks != actual_blocks
+            or len(review["unresolved_required_items"]) != len(unresolved)
+            or review.get("pending_publication_steps", {}) != pending_publication):
         raise ValueError("primary review must retain every actual blocked requirement and scientific dependency")
-    if blocked_requirements:
+    if pending_publication:
+        status = "READY_FOR_PUBLICATION_WITH_TECHNICAL_BLOCKS" if blocked_requirements else "READY_FOR_PUBLICATION"
+        if review["status"] != status or review.get("objective_complete") is not False:
+            raise ValueError("prepublication readiness cannot claim subsequent publication completion")
+    elif blocked_requirements:
         if review["status"] != "PASS_WITH_TECHNICAL_BLOCKS" or review.get("objective_complete") is not False:
             raise ValueError("conditional publication must not claim overall objective completion")
     elif review["status"] != "PASS":

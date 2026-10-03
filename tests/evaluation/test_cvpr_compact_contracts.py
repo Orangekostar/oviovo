@@ -2371,6 +2371,24 @@ def test_primary_review_allows_only_explicit_actual_blocks_without_claiming_comp
     review["archived_members_reviewed"] = members
     save(review)
     assert publication.verify_primary_review(binding, bundle) == review
+    requirement_id = "CODEX_FINAL_EXECUTION_EN.md:430"
+    catalog["requirements"].append({"id": requirement_id})
+    review["requirements"].append({"requirement_id": requirement_id, "status": "PENDING_PUBLICATION",
+        "pending_publication_step": "NORMAL_PUSH_AND_FULL_REMOTE_SHA_VERIFICATION",
+        "evidence": [index.identity(evidence)], "finding": "The reviewed normal push runs after this prepublication audit."})
+    review["unresolved_required_items"].append(requirement_id)
+    review["pending_publication_steps"] = {requirement_id: "NORMAL_PUSH_AND_FULL_REMOTE_SHA_VERIFICATION"}
+    review["status"] = "READY_FOR_PUBLICATION_WITH_TECHNICAL_BLOCKS"
+    save(review)
+    assert publication.verify_primary_review(binding, bundle) == review
+    invalid = copy.deepcopy(review)
+    invalid["requirements"][0].update(status="PENDING_PUBLICATION",
+        pending_publication_step="NORMAL_PUSH_AND_FULL_REMOTE_SHA_VERIFICATION")
+    invalid["pending_publication_steps"]["implementation"] = "NORMAL_PUSH_AND_FULL_REMOTE_SHA_VERIFICATION"
+    invalid["unresolved_required_items"].append("implementation")
+    save(invalid)
+    with pytest.raises(ValueError, match="publication"):
+        publication.verify_primary_review(binding, bundle)
 
 
 def test_legacy_region_cache_restores_only_losslessly_widened_original_fp32(tmp_path):
