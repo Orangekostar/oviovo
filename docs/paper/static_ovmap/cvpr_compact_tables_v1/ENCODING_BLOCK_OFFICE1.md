@@ -36,12 +36,22 @@ The unchanged committed implementation completed independent warm leaves for
 the other 24 scenes, plus office1's Native and U2 branches. Predictions and the
 released evaluator completed 164 conditions across 25 fully completed scenes,
 using at most three CPU jobs. All six CF18 pools cover the full ordered cohort.
-No Replica subset has been pooled. Office1's independent prediction construction
-and explicit blocked-condition orchestration remain pending. No cold timing has
+No Replica subset was pooled. At that point office1's independent prediction
+construction and explicit blocked-condition orchestration remained pending. No cold timing has
 been reserved for a retry of the failed warm leaf.
 
-The implementation freeze remains
-`fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24`. These operational continuations do not
-change its source inventory, scientific inputs, constants, A3 designation or
-deployment `N0_UNCHANGED`. A subsequent code change must use a documented freeze
-amendment and preserve this failure and every already completed unaffected leaf.
+The failure and initial operational continuations used freeze
+`fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24`. Amendment02 was subsequently committed
+at `48fb39d3beae0a50ad369fc72c4bd439fca3fa7f` to continue independent fixed
+conditions with explicit blocked-source evidence. All existing scientific
+producer bytes and failed receipts remain unchanged.
+
+Actual office1 A0, A1, A4 and U2 predictions and scoring are now complete. A2, A3,
+A5 and G3 have no manufactured predictions or scoring rows. Four Replica pools
+cover every ordered scene; the other four are explicitly blocked, with no
+seven-scene substitute. Current coverage is 168/172 outputs and 10/14 pools.
+The primary actual integration proof is `validation/partial_execution_integration.json`,
+identity `71c4171282621555b4567e1204f633a6e58f8e9235a5e99d9d3a993e66a32833`.
+No cold timing has been reserved. Scientific constants, fixed A3 designation
+and deployment `N0_UNCHANGED` are preserved. Timing, tables and publication
+remain pending; these block records do not establish full scientific completion.

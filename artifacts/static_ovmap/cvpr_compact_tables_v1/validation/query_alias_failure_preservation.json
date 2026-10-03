@@ -1,0 +1,28 @@
+{
+  "count_again_in_actual_physical_failure_ledger": true,
+  "failed_command": {
+    "bytes": 1624,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/command_66aaafa2a9e6ed65584c9c59fb4fe1a8cf2d1b00cb2e36dac51cec86b1a7f1e6.json",
+    "sha256": "a1f2424f00c59b6d08cd27e8e761f1018f04df8ebf75798f380dd64490faa97f"
+  },
+  "failure_receipt": {
+    "bytes": 1200970,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/native_query_receipt.failed_1791028269006973453.json",
+    "sha256": "07d84f9de995f9332346b0aab3b66ddfb06477cd1e846e3315ef478d15d6793c"
+  },
+  "identity": "d0e5a55f662d92c7ead62c401ef6ad597dc712c37bb90111b1b0e1ef0c1c8da1",
+  "model_load_seconds": 1.0758556490764022,
+  "observed_at_unix": 1791028564.9886642,
+  "original_failed_log": {
+    "bytes": 1462,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/run.attempt_001.log",
+    "sha256": "60548790f5ac911c7c5407551e3cd9488ff041a83dab4e64837869538e92eefb"
+  },
+  "physical_encoder_batch_calls": 1155,
+  "physical_image_inputs": 6930,
+  "reviewer": "PRIMARY_CODEX",
+  "scene": "scene0378_02",
+  "status": "PASS_ORIGINAL_FAILURE_PRESERVED",
+  "successful_scientific_recovery_not_proven_here": true,
+  "worker_elapsed_seconds": 321.25317117595114
+}

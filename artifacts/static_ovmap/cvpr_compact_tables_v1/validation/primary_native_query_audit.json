@@ -1,0 +1,862 @@
+{
+  "binding_identity": "08eeeb0bfc0f77041cb2704d449fbd782243813ee3c0bd2280c43b43400f40f6",
+  "final_172_predictions_metrics_and_24_timings_not_proven_here": true,
+  "identity": "5e18724d33bd755c102284c6183b08191327cbfa19980cd0b1c74ba419bbe38f",
+  "new_neural_inference_by_this_audit": 0,
+  "observed_at_unix": 1791029554.3573523,
+  "reviewer": "PRIMARY_CODEX",
+  "scene_count": 18,
+  "scene_order": [
+    "scene0011_00",
+    "scene0011_01",
+    "scene0050_00",
+    "scene0050_01",
+    "scene0050_02",
+    "scene0084_00",
+    "scene0084_01",
+    "scene0084_02",
+    "scene0168_00",
+    "scene0168_01",
+    "scene0168_02",
+    "scene0231_00",
+    "scene0231_01",
+    "scene0231_02",
+    "scene0378_00",
+    "scene0378_01",
+    "scene0378_02",
+    "scene0518_00"
+  ],
+  "scenes": [
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 672,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 1991561,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "f9e67483397e69896d6c7550ade853b08083959cdefee4c9b29ce973f932aa9d"
+      },
+      "new_image_inputs": 4032,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 467358,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "fa908a28fdc45c76fc653ce15598ced7a1e9576b3682bfdd1b3f55008a1d3540"
+      },
+      "query_scores": {
+        "bytes": 499059,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "3c940eb90b6297c85e11878bb77efb587238ebc2e7f4c8e28ac79794de66512a"
+      },
+      "receipt": {
+        "bytes": 1550049,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "4235280c5de28e5de45af51db3dd1990633bb95edc56b5eb56aae2544a9a627d"
+      },
+      "scene": "scene0011_00",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 1751
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 708,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 2262063,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "0de981576e85cb612b25432fbc63fe71a771b290ee526c3b871ba863c73b41f3"
+      },
+      "new_image_inputs": 4248,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 488989,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "a0abe13ce75d823cc71b7b6b9227d88eac208c2ef848d15d8e25c23de1ad8a57"
+      },
+      "query_scores": {
+        "bytes": 639867,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "7455e40d3d4178165824dd8c6a256f8a48595acc18c4630bf1db35e2e9fabd05"
+      },
+      "receipt": {
+        "bytes": 1631787,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "79a0196e7da4dc62f83b37194a145570822bd53cafdf99e37c8b552ecb3fc18a"
+      },
+      "scene": "scene0011_01",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 1869
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1186,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 3996575,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "d3ac3ad7f6288ba4fa01301d62791ef493a363e13ffee0385727678a6a1537fd"
+      },
+      "new_image_inputs": 7116,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 550351,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "6e3169e50688938ef279c40c3fc33d95bd14862060f5d9efb1b80e5a132c539a"
+      },
+      "query_scores": {
+        "bytes": 885776,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "0511f659168740dd0dea567345a43e06cd5ce4caf2f8ac3421eca94860b3db78"
+      },
+      "receipt": {
+        "bytes": 2431757,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "bda193e793ea283fb9887d3e67f342689767966eb8b545d5ae3c2b9874def663"
+      },
+      "scene": "scene0050_00",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 2567
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1123,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 3861605,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "cc69f4bfe3fa52cf8a65a14583f3690f70a8fe5a4e47ff5a75faa39a613cf45d"
+      },
+      "new_image_inputs": 6738,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 541971,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "b56e96152e5fb94420baa86ce481b7cd8f9ba691d5e71f5ec3d8fd4197a64e2f"
+      },
+      "query_scores": {
+        "bytes": 895308,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "7829d4aa4e57b8a53ab5d0b2a1df65ff96eab7125f78e88445c3293ab0307005"
+      },
+      "receipt": {
+        "bytes": 2321824,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "929e21ced65c60ce3fa2bde14c2e0551da081158e8258c8bbc399e6f15691fcc"
+      },
+      "scene": "scene0050_01",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 2507
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1035,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 3687194,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "af26c1c0911cd6ecb7c14d0ed6a5bf61439c83c62b1fd5c605318da1f0f5b220"
+      },
+      "new_image_inputs": 6210,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 552851,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "a0fe30178b7342129f4a3cd1b527afad976cd27da87becaa47b339102b52d2df"
+      },
+      "query_scores": {
+        "bytes": 931896,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "e01a7bd8ab472173e56cdd7a8381efd5ab734450078efbbee27dee742cfef574"
+      },
+      "receipt": {
+        "bytes": 2187037,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "0c44a513cb23ceab7265e263cb7aba54a02609e443633716f304513af0716d5d"
+      },
+      "scene": "scene0050_02",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 2620
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 417,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 1103316,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "0098543bea3785d3a85f736e1ac68e8e437619cf2ec119b425c8f9e5e0513862"
+      },
+      "new_image_inputs": 2502,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 488456,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "596e7f9fbdd20aee93f92b8ef6d698d54728b0e4b10e2878c1f952fa9ac9431d"
+      },
+      "query_scores": {
+        "bytes": 320494,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "03f33fb7738b86014f69f9519c8c8cbe91db508658a6c86efe2a8ee3d7a5cb0d"
+      },
+      "receipt": {
+        "bytes": 1033662,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "c7874a34aaa2726cd0bf01a67645126ea299d696706b48e984259a198d259586"
+      },
+      "scene": "scene0084_00",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 1172
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 456,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 1213347,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "7175a4bbaf01dbdd0067333f1f12b6a90a497444ad068a172fa0a667478d57aa"
+      },
+      "new_image_inputs": 2736,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 449377,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "af3e29a16486fdc0845565a1266f37c82097aa5513a259408964b28689b16680"
+      },
+      "query_scores": {
+        "bytes": 339476,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "ca2d85f182b86b96c8fe137b906fd46191869e85fd1ae398b3c8d7db9175f67b"
+      },
+      "receipt": {
+        "bytes": 1100406,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "eb77e11349b7deeb31be151f131b79f1ecfa61fb3500a3aeb4dc906645cd2666"
+      },
+      "scene": "scene0084_01",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 1218
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 407,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 1006445,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "6ee1679680b990fbdb05c00258dc6625c2e3edbd145480d77525c7fb02e8a1e0"
+      },
+      "new_image_inputs": 2442,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 423092,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "7a203d3274a6a5651f564212a34ac834541e2949fe296dd1cd6f71546bec9cb0"
+      },
+      "query_scores": {
+        "bytes": 292456,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "424ab068c9e9cddc934ad4b36dfe95d0b7db6602216b174acd36e98149e4a245"
+      },
+      "receipt": {
+        "bytes": 997583,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "7948324f21be258c4ec5f11857ac7a19d1864df5f8ca27e015fb7725edae1e44"
+      },
+      "scene": "scene0084_02",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 1107
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1545,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 5349091,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "e0ec64d385f988de04f9be04ad8c9b0a14906f6f15c3dea4e1f7f83054e69a5e"
+      },
+      "new_image_inputs": 9270,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 640268,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "66dd9ea64bdd9dc99a827a5a4df750062fe922bd7e8961699db51cb68e6d4eeb"
+      },
+      "query_scores": {
+        "bytes": 1195886,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "1d226cae7028279ebaa420b519704157e25ddc9b72ed81e565dfaf07463c945e"
+      },
+      "receipt": {
+        "bytes": 3054247,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "fb1cfbd772af291e468401eb1d75ff4af5b0bbaa2db7d1392d74960b1e250c7e"
+      },
+      "scene": "scene0168_00",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3672
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1500,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 5230377,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "5999049a88df11e7f645694521df8e50430fcc5e5f8a7e9703db1f2ff5f42044"
+      },
+      "new_image_inputs": 9000,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 646573,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "0a03fe639bee9c65de679b82a9c6f15a16b392b3657d580d343c5e6b49603473"
+      },
+      "query_scores": {
+        "bytes": 1167750,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "4ba67561de2759faf3110cbb33495fbe0eba433c85cc51d22a0a5bb79a09b811"
+      },
+      "receipt": {
+        "bytes": 2983907,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "8e1b54a851729e7f23170cf32e5019faba4da3add4a8ad80cdbf0ac33a2bed43"
+      },
+      "scene": "scene0168_01",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3667
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1575,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 5851267,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "5cbd71f2a10bb85c96d80d3dc6fca6102a992b5a28bc658830a17838bf136a83"
+      },
+      "new_image_inputs": 9450,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 615070,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "8697eb4322526a1bf58d261f0661842a64e9a9b05e1ca87e149372a54f7466bf"
+      },
+      "query_scores": {
+        "bytes": 1365085,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "e138b277a0327c8b2795ed20f264346d8e0d760bffae28ddb85624c40378332d"
+      },
+      "receipt": {
+        "bytes": 3086288,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "a805c9fac89164d68b90742976edfd036b13bd5206260d6f753e4ba58e6a120e"
+      },
+      "scene": "scene0168_02",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3474
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1713,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 6302979,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "5355ad8f4c4f973f5013e4f612e7034f5000d7ebe8c7dfb6530463d9f57493a6"
+      },
+      "new_image_inputs": 10278,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 620236,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "30370cd96f888fe5f33c400b2a28d80073c2ba0d8f67578b94166c85c90bfdbb"
+      },
+      "query_scores": {
+        "bytes": 1376239,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "a6dbb5c616442fe7f01d3d84a7af7bcc1dad06cba64b0fc210c3e1fc5716a575"
+      },
+      "receipt": {
+        "bytes": 3350432,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "613d0d44ca948b579408dd2f3e2bf2d1e9dc6fd6236734e637977bbea8e49434"
+      },
+      "scene": "scene0231_00",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3262
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1599,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 5948467,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "e81454ee41c229e54f20204106c3ef005d566f245b31ef5a781711b20a33e579"
+      },
+      "new_image_inputs": 9594,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 598139,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "cbf4bb1f54314c2e62f185ef5e071a5009f036ab76fbd51531329f930bfe99ef"
+      },
+      "query_scores": {
+        "bytes": 1395073,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "17f890369e24d1920c2251722d3417fa5b48c4bcae2bc4712dd776cf353a1756"
+      },
+      "receipt": {
+        "bytes": 3155855,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "94f208978926e0e24b2eefe3da5c2dda2fefb4eb6095cfcd1dd09004fae9cd21"
+      },
+      "scene": "scene0231_01",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3019
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1722,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 6111805,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "250b07b3c6919c2c99e0d0e863e0d2c9f0ebaeebf60dae0daf4d802898fa9efa"
+      },
+      "new_image_inputs": 10332,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 648791,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "3cdc1b9e33e06f674e510851a0f5a8b2962c61b05741b2c5e9ca60c125563781"
+      },
+      "query_scores": {
+        "bytes": 1263514,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "861b6a1c3af22bb09be5d9d9055a232f720dc9348505c785aa402ad527d88751"
+      },
+      "receipt": {
+        "bytes": 3365109,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "eb1b59bdb69a1901753168781cdd16d8983b221bc8ff6914889858338e2df918"
+      },
+      "scene": "scene0231_02",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3390
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1073,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 3549960,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "fe908b6111f5fb1646e2fb920ff202ca6330d1f0adf8937d2a9b24b067b4033a"
+      },
+      "new_image_inputs": 6438,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 569699,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "3a1c0f48a291682b4eadf8b52ece6ca8b4690266d412d73a9984f0760a2b6d7e"
+      },
+      "query_scores": {
+        "bytes": 781217,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "60e430c1d3577735ff3a855e13e7f075a8a1cdd9b3901f92bf51588517ac5327"
+      },
+      "receipt": {
+        "bytes": 2245965,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "6a1452c2d78b611656e71c8344d478e7ef057ae2854c8186cb25a72d4d64eed0"
+      },
+      "scene": "scene0378_00",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 2935
+    },
+    {
+      "actual_adapter_AST": {
+        "change": "exact 200-attempt guard replaced by exact universe-exhaustion validator",
+        "changed_AST_nodes": 1,
+        "effective_AST": "aa502938f77deef47dc3f3dc6d5930261e42a8dc6c4b4650155388f7307a3116",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 28905,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+        "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1125,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "1373d7a5eea02028774acea865fda9177165d661",
+      "native_features": {
+        "bytes": 3719269,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "24d06ff392bc816728fd00e0e81378b9470adf69e8bde2c4f249a564eee31e38"
+      },
+      "new_image_inputs": 6750,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 573075,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "12f68e7a16ed13e74b6b20085616a046d2c8aa2390dd4db09bec9a781135b11c"
+      },
+      "query_scores": {
+        "bytes": 902984,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "290d4726d53f53b1456eb905b4e2daf1f92e927ec090caeabc5534d2729cb06d"
+      },
+      "receipt": {
+        "bytes": 2327719,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "514ce2918bac62c9e0ae93f32cf5c8c6041552c9697ff8b5a3bb8bcd405041f9"
+      },
+      "scene": "scene0378_01",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 2755
+    },
+    {
+      "actual_adapter_AST": {
+        "causal_replay": "unchanged original replay_captured; original CurrentLineage positive-ancestry guard retained",
+        "change": "original exhaustion guard; captured current membership resolves retired segment aliases",
+        "changed_AST_nodes": 2,
+        "effective_AST": "b84029fae4212fa1a900d25682dc655285316099736cf55981e0e2d029f237dc",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 8102,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/query_bridge.py",
+        "sha256": "f167043a4effd32140c12776c80d7ccc166ee00746889ee70b869df68283037b"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 56,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+      "native_features": {
+        "bytes": 4053099,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "b43f286c633ba7cdf3e4cbefa6d768439d5d5843b185c8a30b23c9ac5f62e2ee"
+      },
+      "new_image_inputs": 336,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 581978,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "eeafceba57495ad2eb598186b5d62f47595fb0eb9af550a2912eef0989178e19"
+      },
+      "query_scores": {
+        "bytes": 894171,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "396d1cbf2d53aed3ca4964b1d36066e95f669b61e940377eb2daaa589658d0fd"
+      },
+      "receipt": {
+        "bytes": 2834833,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "072f1a6325e524723cdffc7ae54051c80940e092179cec62be170c6c03357efb"
+      },
+      "scene": "scene0378_02",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3072
+    },
+    {
+      "actual_adapter_AST": {
+        "causal_replay": "unchanged original replay_captured; original CurrentLineage positive-ancestry guard retained",
+        "change": "original exhaustion guard; captured current membership resolves retired segment aliases",
+        "changed_AST_nodes": 2,
+        "effective_AST": "b84029fae4212fa1a900d25682dc655285316099736cf55981e0e2d029f237dc",
+        "encoder_cache_interface": "same raw FP32 batch API, task aliases to read-only parent arrays",
+        "original_AST": "8f7f3defe29c6eeab90b3dbd7a9ff48b42aa39f247d71b17efdb39f7defb6b07"
+      },
+      "actual_producer": {
+        "bytes": 8102,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/query_bridge.py",
+        "sha256": "f167043a4effd32140c12776c80d7ccc166ee00746889ee70b869df68283037b"
+      },
+      "actual_query_attempts": 200,
+      "budget_reason": "PRESCRIBED_BUDGET_SPENT",
+      "causal_query_budget": 200,
+      "encoder_batch_calls": 1241,
+      "full_positive_class_order_and_finite_scores_verified": true,
+      "leaf_freeze_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+      "native_features": {
+        "bytes": 3990839,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/native_query/native_features.pkl",
+        "sha256": "de276e375d871f6580ea4c4f55c4ddfd1b5fd707f340485a32d2a6a5e7c34ad0"
+      },
+      "new_image_inputs": 7446,
+      "original_model_and_checkpoint_exact": true,
+      "query_decisions": {
+        "bytes": 588024,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/native_query/query_decisions.json",
+        "sha256": "a67ebd073faa112b720ffb222d9044897b9e6abadabee9faf20d96e54c9ff060"
+      },
+      "query_scores": {
+        "bytes": 932312,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/native_query/query_scores.npz",
+        "sha256": "82dcd6c26d34b7c722c3a4eab2dbb5d08a575ca25bda7c2c782918726243bd9c"
+      },
+      "receipt": {
+        "bytes": 2500230,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/native_query/native_query_receipt.json",
+        "sha256": "77ee9d5ef766ef44f8a0e695b5ce8dba5cdf24f90cc43a6886967987c98ef62b"
+      },
+      "scene": "scene0518_00",
+      "scheduled_decision_frames": 200,
+      "status": "PASS",
+      "technical_universe": 3070
+    }
+  ],
+  "status": "PASS_FULL18_ACTUAL_NATIVE_QUERY_SOURCES"
+}

@@ -1,0 +1,1138 @@
+{
+  "blocked_evidence": {
+    "bytes": 6608,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/office1_dense_support_root_cause.json",
+    "sha256": "fa31a771f1c698aac82f910c77a84c63dd0ad39c3c90fbcd1a636bd074668953"
+  },
+  "blocked_scenes": [
+    "office1"
+  ],
+  "completed_scene_count": 25,
+  "does_not_prove_complete_172_outputs_14_pools_24_timings_or_publication": true,
+  "freeze_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+  "identity": "9b7786f495c4797e254dad037750d9582610d2e563dc545fa81e09821f1d10ab",
+  "new_neural_inference": 0,
+  "no_missing_feature_reconstructed_from_probabilities": true,
+  "no_preselected_view_replacement": true,
+  "observed_at_unix": 1791032061.039579,
+  "required_main_scene_count": 26,
+  "reviewer": "PRIMARY_CODEX",
+  "scenes": [
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 1,
+          "candidate_count": 4,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 4512,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office0/regions/G1_FC.json",
+            "sha256": "137512a9c498118ae772b125978db890da0234a4926ac3175d3ab5ef258799af"
+          }
+        },
+        "G3": {
+          "available_owners": 2,
+          "candidate_count": 4,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 6996,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office0/regions/G3_FC.json",
+            "sha256": "24d4bb29296767a092a205baec02d5e6ad0953adc76fc0d4503b1b408528bc9c"
+          }
+        },
+        "U2": {
+          "available_owners": 1,
+          "candidate_count": 4,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 4184,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office0/regions/U2_FC.json",
+            "sha256": "c4fc45afe28294bc6298b0558925ab947c86b933b391416c57ac735382824d45"
+          }
+        }
+      },
+      "failed_preselected_request_count": 6,
+      "features": {
+        "bytes": 12130,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office0/feature_vectors.npz",
+        "sha256": "ee558b37a13cfe1758a923267d9cd214c8b61202efafb2fdd6351fe746302deb"
+      },
+      "receipt": {
+        "bytes": 500975,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office0/receipt.json",
+        "sha256": "10b6dba8e9d2decf018ca2c9dbb209488e67c0dbc0bd9f2e90a5e319894904cb"
+      },
+      "registry": {
+        "bytes": 8633,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office0/registry.json",
+        "sha256": "3dadceecf17d648ae812183549b5f761800110decb7c72b98b66e73d51e8bb03"
+      },
+      "scene": "office0",
+      "status": "PASS",
+      "successful_vector_count": 4,
+      "text": {
+        "bytes": 171433,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/df4cab2e361a6f8a4cb41eca484e75d6c2f8a52bdbaeb63adcadb51db793467f.npz",
+        "sha256": "4dd731e19e1ac0cc22d47057c90c0edb99333a5ec6fb7091c2ba4fc7593f4c38"
+      },
+      "unique_selected_request_count": 10
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 4,
+          "candidate_count": 9,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 11383,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office2/regions/G1_FC.json",
+            "sha256": "703f1ed5fd6f40966b30642ae1868e712837726b45ac944be1657751c3b61a92"
+          }
+        },
+        "G3": {
+          "available_owners": 5,
+          "candidate_count": 9,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 15087,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office2/regions/G3_FC.json",
+            "sha256": "0b2481eca8aaa7461f6ce8c40e402c141a95ed818a45f7d511a252ebd0b01cf9"
+          }
+        },
+        "U2": {
+          "available_owners": 2,
+          "candidate_count": 9,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 7579,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office2/regions/U2_FC.json",
+            "sha256": "dcaa1347a71ffeb6dce4fe91c46a73ddc5fb389b89b108e249f378b6e42263fd"
+          }
+        }
+      },
+      "failed_preselected_request_count": 11,
+      "features": {
+        "bytes": 38329,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office2/feature_vectors.npz",
+        "sha256": "4885da2b9fbfcd99d1ecf0b4c7eb574a8a83ee18350d54e6b4b244ceff7d3eb5"
+      },
+      "receipt": {
+        "bytes": 566091,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office2/receipt.json",
+        "sha256": "cb2353b8df0ac5d5a5fe39a381d82a1420521c85fd561e3f323a0d1b08bf5c91"
+      },
+      "registry": {
+        "bytes": 9376,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office2/registry.json",
+        "sha256": "03aa76a9794bae985c9335b20e806818d29067f90dc898184801b12bc8b75d85"
+      },
+      "scene": "office2",
+      "status": "PASS",
+      "successful_vector_count": 13,
+      "text": {
+        "bytes": 171433,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/df4cab2e361a6f8a4cb41eca484e75d6c2f8a52bdbaeb63adcadb51db793467f.npz",
+        "sha256": "4dd731e19e1ac0cc22d47057c90c0edb99333a5ec6fb7091c2ba4fc7593f4c38"
+      },
+      "unique_selected_request_count": 24
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 3,
+          "candidate_count": 8,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 9679,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office3/regions/G1_FC.json",
+            "sha256": "86b6d372c42033154cfbe985a098bc2bc88cd8f3bf19f4a678946b3d31319020"
+          }
+        },
+        "G3": {
+          "available_owners": 7,
+          "candidate_count": 8,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 18399,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office3/regions/G3_FC.json",
+            "sha256": "2fb1a69f914241a49c17514237e4fdbbb478201b244f22463d1476ad0301377a"
+          }
+        },
+        "U2": {
+          "available_owners": 2,
+          "candidate_count": 8,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 7140,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office3/regions/U2_FC.json",
+            "sha256": "b0308431cd7e8e542b5fe62d57beebd6668db9eedaa6ae898b0901d8adb93c54"
+          }
+        }
+      },
+      "failed_preselected_request_count": 14,
+      "features": {
+        "bytes": 35447,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office3/feature_vectors.npz",
+        "sha256": "d7c1060e10803595689f18a7ff4187c8d110eeff508a15ee5948d3e52856c04c"
+      },
+      "receipt": {
+        "bytes": 578006,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office3/receipt.json",
+        "sha256": "5f750dda3ddeaf631d43821b6853c2823bc6cd0cbd60c75ac3a01684c788eb51"
+      },
+      "registry": {
+        "bytes": 9365,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office3/registry.json",
+        "sha256": "652744af58ee6a67da31dd0d94912caae9c0d643b262f230c835869a75d05f90"
+      },
+      "scene": "office3",
+      "status": "PASS",
+      "successful_vector_count": 12,
+      "text": {
+        "bytes": 171433,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/df4cab2e361a6f8a4cb41eca484e75d6c2f8a52bdbaeb63adcadb51db793467f.npz",
+        "sha256": "4dd731e19e1ac0cc22d47057c90c0edb99333a5ec6fb7091c2ba4fc7593f4c38"
+      },
+      "unique_selected_request_count": 26
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 3,
+          "candidate_count": 3,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 7348,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office4/regions/G1_FC.json",
+            "sha256": "bbc1001c194bf09597fac923f632b863e992fb6452959aec20383128451c7eb0"
+          }
+        },
+        "G3": {
+          "available_owners": 3,
+          "candidate_count": 3,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 8248,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office4/regions/G3_FC.json",
+            "sha256": "d310847e8e4234f79e8198feb97e48b6b53618d7fc6b86703a72a499e2c7039a"
+          }
+        },
+        "U2": {
+          "available_owners": 0,
+          "candidate_count": 3,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 2155,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office4/regions/U2_FC.json",
+            "sha256": "bb5028278dd6226bb57868fcd76a4bcf94e9d68e6bd35e92032b2841baf27c0f"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 23803,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office4/feature_vectors.npz",
+        "sha256": "833a3174311c941e5a7c6b8d41ab83009f17a015accf3b7b1ec1b7b35a1c8192"
+      },
+      "receipt": {
+        "bytes": 499914,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office4/receipt.json",
+        "sha256": "30ca23e9e94790402caaedfdfa75004abdaa1f46d9059d51e63df1f8c9ab79cc"
+      },
+      "registry": {
+        "bytes": 6672,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/office4/registry.json",
+        "sha256": "e48c67d5044af2c50a8c3315a865b0ec1c37f7556325588c57fe21850bb55216"
+      },
+      "scene": "office4",
+      "status": "PASS",
+      "successful_vector_count": 8,
+      "text": {
+        "bytes": 171433,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/df4cab2e361a6f8a4cb41eca484e75d6c2f8a52bdbaeb63adcadb51db793467f.npz",
+        "sha256": "4dd731e19e1ac0cc22d47057c90c0edb99333a5ec6fb7091c2ba4fc7593f4c38"
+      },
+      "unique_selected_request_count": 9
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 3,
+          "candidate_count": 14,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 11456,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room0/regions/G1_FC.json",
+            "sha256": "b31b347a5841ec85aee7fa249941e325c3e1dd87949e85df9bf630c0abaa0aaa"
+          }
+        },
+        "G3": {
+          "available_owners": 5,
+          "candidate_count": 14,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 16122,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room0/regions/G3_FC.json",
+            "sha256": "4bf075aaa01229c96dafd5501101aec21b8023f807a98ee3ad42eaf73f097e74"
+          }
+        },
+        "U2": {
+          "available_owners": 1,
+          "candidate_count": 14,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 7365,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room0/regions/U2_FC.json",
+            "sha256": "2141b67022e22e552c4da4b04597b64c098809bb3042998d8b3a0fea3f0e2f9c"
+          }
+        }
+      },
+      "failed_preselected_request_count": 11,
+      "features": {
+        "bytes": 26671,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room0/feature_vectors.npz",
+        "sha256": "37f4a04c8408b5d5656c83646be2694888fd01cbb31d2d2714307320db293fcb"
+      },
+      "receipt": {
+        "bytes": 546872,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room0/receipt.json",
+        "sha256": "8164cd73a93bdb06ae157db87f36a9e4a55402710346bb052fc89154ad521617"
+      },
+      "registry": {
+        "bytes": 11674,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room0/registry.json",
+        "sha256": "4533e09326fb9fd6f39121dfb417bcf4d25edcf71be18a77a44a5f75220ae07a"
+      },
+      "scene": "room0",
+      "status": "PASS",
+      "successful_vector_count": 9,
+      "text": {
+        "bytes": 171433,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/df4cab2e361a6f8a4cb41eca484e75d6c2f8a52bdbaeb63adcadb51db793467f.npz",
+        "sha256": "4dd731e19e1ac0cc22d47057c90c0edb99333a5ec6fb7091c2ba4fc7593f4c38"
+      },
+      "unique_selected_request_count": 20
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 3,
+          "candidate_count": 5,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 8266,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room1/regions/G1_FC.json",
+            "sha256": "44ffbbd2bc49e4bb5154305ba247a81d543763138abd72ffd72e37224d4c1c77"
+          }
+        },
+        "G3": {
+          "available_owners": 4,
+          "candidate_count": 5,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 11061,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room1/regions/G3_FC.json",
+            "sha256": "2149277de8fd873a59bb468cc9c754d499c508e009660b8eab0506c53fb41646"
+          }
+        },
+        "U2": {
+          "available_owners": 0,
+          "candidate_count": 5,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 2755,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room1/regions/U2_FC.json",
+            "sha256": "92b05bce2942c6a9c188c77a90ecd609e05402e900940f310007655aaefa47ba"
+          }
+        }
+      },
+      "failed_preselected_request_count": 6,
+      "features": {
+        "bytes": 20899,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room1/feature_vectors.npz",
+        "sha256": "ea39e2f85c24c2007769ff838a7499540e00c8953cb4dbc77b2d2e95bc83e96a"
+      },
+      "receipt": {
+        "bytes": 507986,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room1/receipt.json",
+        "sha256": "bdbca26f32043ac6c49995643f449c1a7bfd945b0121962ac2bc9176f5162764"
+      },
+      "registry": {
+        "bytes": 7383,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room1/registry.json",
+        "sha256": "65a028815d88db78ff85a9d9a09d051db885825aace9270c4b556bbcb1642162"
+      },
+      "scene": "room1",
+      "status": "PASS",
+      "successful_vector_count": 7,
+      "text": {
+        "bytes": 171433,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/df4cab2e361a6f8a4cb41eca484e75d6c2f8a52bdbaeb63adcadb51db793467f.npz",
+        "sha256": "4dd731e19e1ac0cc22d47057c90c0edb99333a5ec6fb7091c2ba4fc7593f4c38"
+      },
+      "unique_selected_request_count": 13
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 5,
+          "candidate_count": 9,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 12907,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room2/regions/G1_FC.json",
+            "sha256": "0ecb642e7e00f232359958c80440d2ed7de3421193e6d88c01a5ef4db763559b"
+          }
+        },
+        "G3": {
+          "available_owners": 7,
+          "candidate_count": 9,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 18046,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room2/regions/G3_FC.json",
+            "sha256": "a71e68996e9837deff2e6b6e0c184ae92105f715302741bd9d571beb2480a69b"
+          }
+        },
+        "U2": {
+          "available_owners": 3,
+          "candidate_count": 9,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 9154,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room2/regions/U2_FC.json",
+            "sha256": "3b9966f3965cc66955562b44ef2c563bb13212818821ecef2c97332493bf4ab5"
+          }
+        }
+      },
+      "failed_preselected_request_count": 4,
+      "features": {
+        "bytes": 55789,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room2/feature_vectors.npz",
+        "sha256": "6266bde3dd5403d2e8b1033b04b56dd608202e7f8686379fd1f69209e3471ddc"
+      },
+      "receipt": {
+        "bytes": 575765,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room2/receipt.json",
+        "sha256": "6cbba88315dc898d8b016063a690b3db1cf3c11858f8d0235f9012fdb4c50f15"
+      },
+      "registry": {
+        "bytes": 9522,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/room2/registry.json",
+        "sha256": "2bd8d453714ed3d4a7a3fa3a7b57eada835d1916523015ce9dc17e3316f7c04d"
+      },
+      "scene": "room2",
+      "status": "PASS",
+      "successful_vector_count": 19,
+      "text": {
+        "bytes": 171433,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/df4cab2e361a6f8a4cb41eca484e75d6c2f8a52bdbaeb63adcadb51db793467f.npz",
+        "sha256": "4dd731e19e1ac0cc22d47057c90c0edb99333a5ec6fb7091c2ba4fc7593f4c38"
+      },
+      "unique_selected_request_count": 23
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 2,
+          "candidate_count": 3,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 15672,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_00/regions/G1_FC.json",
+            "sha256": "713efcaa18641e805e720b0ff86d185691a4e7ca8c23ef103dab9d54d06dc99d"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 6327,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_00/feature_vectors.npz",
+        "sha256": "1e4b550ef134f94d6918eea8d3fc2a8a50320bcd79a6ee3fadd7c07d45c963d4"
+      },
+      "receipt": {
+        "bytes": 483699,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_00/receipt.json",
+        "sha256": "9aedb2b985a1e764a52bda9794d310aa712a8c3a62dd15f13a0be703884861d3"
+      },
+      "registry": {
+        "bytes": 7332,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_00/registry.json",
+        "sha256": "a756b4c56981d966907cbc05ea6f9227d436781da9bb9a2fd3a741a6fb410629"
+      },
+      "scene": "scene0011_00",
+      "status": "PASS",
+      "successful_vector_count": 2,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 3
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 5,
+          "candidate_count": 7,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 35103,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_01/regions/G1_FC.json",
+            "sha256": "3a4f96c4c2df39fc35f7388a307ee43762ee4aafb0bef7f7e70509964d09afd4"
+          }
+        }
+      },
+      "failed_preselected_request_count": 2,
+      "features": {
+        "bytes": 15066,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_01/feature_vectors.npz",
+        "sha256": "9dc0d21b6326803f5ae2020b894481f3481bd144e43edd066c9cec50f5937c34"
+      },
+      "receipt": {
+        "bytes": 507400,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_01/receipt.json",
+        "sha256": "1a6aeebd4899ab8bcef22fbedf461e4af3fe5179f6666574cd4eb924abf8c525"
+      },
+      "registry": {
+        "bytes": 10274,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0011_01/registry.json",
+        "sha256": "93c5d2adc69baf9388259b405798e29c851626254f78137958a46618d85a2d3e"
+      },
+      "scene": "scene0011_01",
+      "status": "PASS",
+      "successful_vector_count": 5,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 7
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 4,
+          "candidate_count": 7,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 28738,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_00/regions/G1_FC.json",
+            "sha256": "b45dfa57a0f10e23e92ce958bb767d76a0641682f54015d54edf7cb26b200e00"
+          }
+        }
+      },
+      "failed_preselected_request_count": 0,
+      "features": {
+        "bytes": 12133,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_00/feature_vectors.npz",
+        "sha256": "d7088de45fa53b9695350f07af83bf42100b7bef49a29b33834d6e0e79facc43"
+      },
+      "receipt": {
+        "bytes": 496794,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_00/receipt.json",
+        "sha256": "c16fae18ea0a4e9fdc9a85a8de1091884353cd331828273735ac25002b82bf7c"
+      },
+      "registry": {
+        "bytes": 18107,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_00/registry.json",
+        "sha256": "19c51909bbe1c9519961d220e3ed932c97bd7383f13a0a36fd2f7f8fc5e20798"
+      },
+      "scene": "scene0050_00",
+      "status": "PASS",
+      "successful_vector_count": 4,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 4
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 11,
+          "candidate_count": 13,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 72645,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_01/regions/G1_FC.json",
+            "sha256": "97d06477516807b60d0d34757e6fd22bcde1b9ac2f2a991228930c111e493984"
+          }
+        }
+      },
+      "failed_preselected_request_count": 0,
+      "features": {
+        "bytes": 32573,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_01/feature_vectors.npz",
+        "sha256": "e786951c8a0afd2c3dacac840643c1fe4d916fcf0ec3b497ad7dc749694914ad"
+      },
+      "receipt": {
+        "bytes": 549488,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_01/receipt.json",
+        "sha256": "af024db3092d9c8f76e0390ad4c65401c6a7b1306433bbf41baeefb1e2a891c8"
+      },
+      "registry": {
+        "bytes": 17541,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_01/registry.json",
+        "sha256": "3014afbc82f9a8f998c33d1746463a53c313952c39c64c4c72017546715479e1"
+      },
+      "scene": "scene0050_01",
+      "status": "PASS",
+      "successful_vector_count": 11,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 11
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 5,
+          "candidate_count": 7,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 34951,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_02/regions/G1_FC.json",
+            "sha256": "fe4ba038e98c4ff7dc7b94bb4040e2c8a7e079acea9961e38ed0f1d3ac004708"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 15039,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_02/feature_vectors.npz",
+        "sha256": "0d5a8cc5477129e103e38e60f3238b27af235a3178ad3c36f53c5b2a43535abe"
+      },
+      "receipt": {
+        "bytes": 510195,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_02/receipt.json",
+        "sha256": "03a3ae0a12981842dc4341e08e4d3a1d3f79d4e655c8be5886477cd0a2ee636a"
+      },
+      "registry": {
+        "bytes": 13942,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0050_02/registry.json",
+        "sha256": "3558854633746014ab302d36e0db66157e27cf1d5f89e9a881b83f6239593ac7"
+      },
+      "scene": "scene0050_02",
+      "status": "PASS",
+      "successful_vector_count": 5,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 6
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 0,
+          "candidate_count": 0,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 2592,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_00/regions/G1_FC.json",
+            "sha256": "8b88247f37c26fbba212b6746242a96a318c0bec6ee25ffb691cf77312b23720"
+          }
+        }
+      },
+      "failed_preselected_request_count": 0,
+      "features": {
+        "bytes": 409,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_00/feature_vectors.npz",
+        "sha256": "b2a1fa038a2edaf5a3277f3cb1901c3886c4debbf29cb7460a18d7a4757d80fa"
+      },
+      "receipt": {
+        "bytes": 461119,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_00/receipt.json",
+        "sha256": "e1970c0f741fe12e2eb8b11800aa2829badaabbbb8bd6f3c9a34364fb566f96d"
+      },
+      "registry": {
+        "bytes": 4169,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_00/registry.json",
+        "sha256": "46935fa59497e5abf5df6a7ce786ae7ab9b7debc9187287fd8b7251a92962a7a"
+      },
+      "scene": "scene0084_00",
+      "status": "PASS",
+      "successful_vector_count": 0,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 0
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 1,
+          "candidate_count": 3,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 9680,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_01/regions/G1_FC.json",
+            "sha256": "f9368c4aa8b5b952ff0036870265042ba0415ec6e385d9c96e6d3ff62fb749ff"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 3414,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_01/feature_vectors.npz",
+        "sha256": "b7ff16a19c44378286356afc572896398b85c0091f57bd38d285bc6e0042cca1"
+      },
+      "receipt": {
+        "bytes": 473792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_01/receipt.json",
+        "sha256": "66bb639f8757022257fd1a94a61241c87c5896d5eaf46236bb141e72bb6143d0"
+      },
+      "registry": {
+        "bytes": 5383,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_01/registry.json",
+        "sha256": "62716c90abb7934435ed2def11336aeb4b54b7e244f600fe4128d4e18c9c00ce"
+      },
+      "scene": "scene0084_01",
+      "status": "PASS",
+      "successful_vector_count": 1,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 2
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 1,
+          "candidate_count": 1,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 8893,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_02/regions/G1_FC.json",
+            "sha256": "dd202c9119971dd2b6ee79a56e0e67b992980ddb6bddd6c22dbeac90ebe3f1a5"
+          }
+        }
+      },
+      "failed_preselected_request_count": 0,
+      "features": {
+        "bytes": 3396,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_02/feature_vectors.npz",
+        "sha256": "44460ef658b7a434c8d3c888ee57296ee0544fad4b9d2e0998c55973d50f09be"
+      },
+      "receipt": {
+        "bytes": 470404,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_02/receipt.json",
+        "sha256": "c203be86428a17dd0ffbfdffef90dc86c4447dd95186dfee4e10c90bfccf267e"
+      },
+      "registry": {
+        "bytes": 4177,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0084_02/registry.json",
+        "sha256": "7662220cc4151f61d8cfe39137b1ec2c74d53981422e5af33ffc82ed990530bd"
+      },
+      "scene": "scene0084_02",
+      "status": "PASS",
+      "successful_vector_count": 1,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 1
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 8,
+          "candidate_count": 12,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 54953,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_00/regions/G1_FC.json",
+            "sha256": "dc9a7fa2df411634ba6b8ae74f08c2cd8ea73084202799316cf208047bbf7ab7"
+          }
+        }
+      },
+      "failed_preselected_request_count": 2,
+      "features": {
+        "bytes": 23767,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_00/feature_vectors.npz",
+        "sha256": "94a4cef12eb48ed65dea97581dfebb4c63ae42075c51a87f30fc1be769acc0c8"
+      },
+      "receipt": {
+        "bytes": 548757,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_00/receipt.json",
+        "sha256": "72eadadddd2ceefbf8212bb46ae481315dbb661dc0e964c9d19d640a394fdbba"
+      },
+      "registry": {
+        "bytes": 21006,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_00/registry.json",
+        "sha256": "b5945ae2348bb45c95b2e708c796ad8163966e3d8a38c00f1d2170085df86dcd"
+      },
+      "scene": "scene0168_00",
+      "status": "PASS",
+      "successful_vector_count": 8,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 10
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 2,
+          "candidate_count": 10,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 17936,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_01/regions/G1_FC.json",
+            "sha256": "2b4bd9c2845164c8ad6ff76b9cd8490182b7c69070b1b9e18a6232e4d06ad1b4"
+          }
+        }
+      },
+      "failed_preselected_request_count": 2,
+      "features": {
+        "bytes": 6314,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_01/feature_vectors.npz",
+        "sha256": "861e1746993a62d97b5c79af6906cb41f30f3fcd3ff00a39c7c44842294f6d23"
+      },
+      "receipt": {
+        "bytes": 490589,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_01/receipt.json",
+        "sha256": "6028d0b2d6ccd61c39b72b12b877a9c7e7f777428b3126bfa501859c98f9f0f9"
+      },
+      "registry": {
+        "bytes": 22755,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_01/registry.json",
+        "sha256": "c6a4394ee982f84492fbcff52593ee5ea6e3e328b809ccd9ceaec1857f0139ab"
+      },
+      "scene": "scene0168_01",
+      "status": "PASS",
+      "successful_vector_count": 2,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 4
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 4,
+          "candidate_count": 7,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 28909,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_02/regions/G1_FC.json",
+            "sha256": "01d3e2661edf2ba0a68f50d39feddddb69e68e1468e9ef5482603352cd1166b2"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 12132,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_02/feature_vectors.npz",
+        "sha256": "c5bd3c00d5835945cdd138fc594fdadddfd1a65614d47ed83c719642341b96e3"
+      },
+      "receipt": {
+        "bytes": 504152,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_02/receipt.json",
+        "sha256": "f2a6fbbacb33f0bf05cb8c5d7a0e1dbf4ef90a58f9740748df9e8e49feca4fac"
+      },
+      "registry": {
+        "bytes": 24536,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0168_02/registry.json",
+        "sha256": "bc8a985286f6424c76434f39635f0211c46f8f40b232562be4e71bd3e9be8101"
+      },
+      "scene": "scene0168_02",
+      "status": "PASS",
+      "successful_vector_count": 4,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 5
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 23,
+          "candidate_count": 37,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 152734,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_00/regions/G1_FC.json",
+            "sha256": "781bec9ae22d62d635d808004c18686848ce17bf7e7ac45c1a1feaecfd14cf53"
+          }
+        }
+      },
+      "failed_preselected_request_count": 3,
+      "features": {
+        "bytes": 67411,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_00/feature_vectors.npz",
+        "sha256": "e0ff0d98025168e28cf842d7b1c75d6b97f6d07349ba626bf9be9c14479c8ed1"
+      },
+      "receipt": {
+        "bytes": 679345,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_00/receipt.json",
+        "sha256": "42154672c4cab7a5bf0e476f09dd48966cea1f057943155bd98fcc667987ab80"
+      },
+      "registry": {
+        "bytes": 32360,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_00/registry.json",
+        "sha256": "bcc2f907beaf74dda093f70ad1ddfe610928bbeb24d8f60e1b81c70f40f5d8c9"
+      },
+      "scene": "scene0231_00",
+      "status": "PASS",
+      "successful_vector_count": 23,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 26
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 17,
+          "candidate_count": 25,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 113277,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_01/regions/G1_FC.json",
+            "sha256": "c1427b3d901fe7dfabc63cb61fd6140f8e921df9598d757d1f2593ccccd0c512"
+          }
+        }
+      },
+      "failed_preselected_request_count": 4,
+      "features": {
+        "bytes": 49999,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_01/feature_vectors.npz",
+        "sha256": "c49a91a87166c14090ec7e9c63a38199fb780a6db4d23ca5fec0befae9fa265c"
+      },
+      "receipt": {
+        "bytes": 619441,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_01/receipt.json",
+        "sha256": "25550cd93ddfb1f42ce7fe3595ed7620d837b87b0737ed61045cd465fec8b3cc"
+      },
+      "registry": {
+        "bytes": 31718,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_01/registry.json",
+        "sha256": "250394a414fa753ddb712388727bf399fc75fc7081a14385410557c74e54eca4"
+      },
+      "scene": "scene0231_01",
+      "status": "PASS",
+      "successful_vector_count": 17,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 21
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 15,
+          "candidate_count": 23,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 99780,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_02/regions/G1_FC.json",
+            "sha256": "4482bb5dde1858437ee3f7c68064048ce7ea7a57be5cc9eefd707049c15e7b67"
+          }
+        }
+      },
+      "failed_preselected_request_count": 0,
+      "features": {
+        "bytes": 44159,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_02/feature_vectors.npz",
+        "sha256": "5c4d30a6d2054c96ed053003498f635282325c8fc1e40e3ed223a13042bebf55"
+      },
+      "receipt": {
+        "bytes": 591089,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_02/receipt.json",
+        "sha256": "4ea011066694b12f239b280e9a038ab3e9a56f4b1d9470523e58d5457bc52594"
+      },
+      "registry": {
+        "bytes": 28888,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0231_02/registry.json",
+        "sha256": "8ec5e06b5ccfb1aecd63f4ef5615a6dd2000a3803e682781b7f1a1a18d064dab"
+      },
+      "scene": "scene0231_02",
+      "status": "PASS",
+      "successful_vector_count": 15,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 15
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 3,
+          "candidate_count": 4,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 22077,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_00/regions/G1_FC.json",
+            "sha256": "35a231c59704291c5233006328c680074e7dd2236f089fa62a3d082402d8aa14"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 9222,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_00/feature_vectors.npz",
+        "sha256": "1c96023edd24b1d3b0300662654246583beab7a08e0ae063c43a35d35c50c0e3"
+      },
+      "receipt": {
+        "bytes": 494151,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_00/receipt.json",
+        "sha256": "de79aa203455a93543e8966880344ac76fadbd24e8c9b326d8b58369a1a4970c"
+      },
+      "registry": {
+        "bytes": 12003,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_00/registry.json",
+        "sha256": "aff6a1ae9266d95ee20a52c1cdf1d2930930bf2cfcd1d36012e2d1b520234910"
+      },
+      "scene": "scene0378_00",
+      "status": "PASS",
+      "successful_vector_count": 3,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 4
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 4,
+          "candidate_count": 6,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 28706,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_01/regions/G1_FC.json",
+            "sha256": "62edba0528fc5148ce589011cc844df0ec26e4b3e45289b1e17c3535f82c8f08"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 12125,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_01/feature_vectors.npz",
+        "sha256": "92b093f96042b7103160619738b697ea6aeed557daa32ab7a26c2f471e1e7d6b"
+      },
+      "receipt": {
+        "bytes": 504114,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_01/receipt.json",
+        "sha256": "c7a8358e2c88157c44bb240c80187737994aaeab9604b55be117452398f17a81"
+      },
+      "registry": {
+        "bytes": 14031,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_01/registry.json",
+        "sha256": "6551451bae7ffd17f1e3658c2193bddbe4396f3273ea537b217d6318ef0a163c"
+      },
+      "scene": "scene0378_01",
+      "status": "PASS",
+      "successful_vector_count": 4,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 5
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 2,
+          "candidate_count": 2,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 15489,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_02/regions/G1_FC.json",
+            "sha256": "8c1ecddfaf81be918eb212b2ed4a7236aad416f20fac3f8b7077b5f232c4761c"
+          }
+        }
+      },
+      "failed_preselected_request_count": 0,
+      "features": {
+        "bytes": 6308,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_02/feature_vectors.npz",
+        "sha256": "68992a523479cdaca9978a9d2550207471473bbe829bc0b5b96b4a158ac8c0c2"
+      },
+      "receipt": {
+        "bytes": 478948,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_02/receipt.json",
+        "sha256": "4844ab051e1841221a788498fc301565366c09a350c5d5ae4ff1d83d6eaf4094"
+      },
+      "registry": {
+        "bytes": 14110,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0378_02/registry.json",
+        "sha256": "da4f44002662ee551715202a328942a268ec2bcdb61405c92a0bc5c4633c1cd5"
+      },
+      "scene": "scene0378_02",
+      "status": "PASS",
+      "successful_vector_count": 2,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 2
+    },
+    {
+      "arms": {
+        "G1": {
+          "available_owners": 5,
+          "candidate_count": 8,
+          "maximum_score_absolute_error": 0.0,
+          "source": {
+            "bytes": 35200,
+            "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0518_00/regions/G1_FC.json",
+            "sha256": "ff06ce535ada89da51ddc65cf01b26eff96776e1140dede04bdae73767a75fd6"
+          }
+        }
+      },
+      "failed_preselected_request_count": 1,
+      "features": {
+        "bytes": 15025,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0518_00/feature_vectors.npz",
+        "sha256": "9b9aab7cd732607122e65eb7637b523d46f94f91d901494a88b0ecad24b29a23"
+      },
+      "receipt": {
+        "bytes": 510672,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0518_00/receipt.json",
+        "sha256": "df510d1eef20d1226de682926a43a920ffa074a6b83c33462ca40c6994ca38d7"
+      },
+      "registry": {
+        "bytes": 16411,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0518_00/registry.json",
+        "sha256": "0f0be655a0f184e3032d21a309eb0665222c12db2eab109c23efcd31701a596a"
+      },
+      "scene": "scene0518_00",
+      "status": "PASS",
+      "successful_vector_count": 5,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "unique_selected_request_count": 6
+    }
+  ],
+  "status": "PASS_25_COMPLETE_WARM_FC_RECOVERIES_WITH_OFFICE1_BLOCK_RETAINED"
+}

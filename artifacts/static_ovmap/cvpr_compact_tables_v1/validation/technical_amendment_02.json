@@ -1,0 +1,30 @@
+{
+  "amendment": {
+    "affected_descendants": [
+      "predictions/office1",
+      "evaluation/office1",
+      "pools/replica8",
+      "diagnostics",
+      "tables",
+      "reports"
+    ],
+    "cold_reservations_before_amendment": 0,
+    "failed_view_replacement": false,
+    "id": "02",
+    "main_outcomes_seen": true,
+    "preflight_identity": "7529e329c584ce2b529ca391383365a673eeb2833ae2f3ccfb4b47a0813775ba",
+    "preserve_complete_CF18_pools": 6,
+    "preserve_unaffected_outputs": 164,
+    "reason": "Continue fixed independent conditions after the proven original office1 FC all-failed block; retain exhausted commands and all successful producer bytes; exact inherited-scoring scope/status bridge and identity-proven original per-class cache aliases only.",
+    "scientific_constants_or_method_recipes_changed": false
+  },
+  "focused_validation": "7a73c482ca7b6edf1466b966626760483e2724b42242bd297c6de041bd951283",
+  "freeze": {
+    "identity": "925c2241225793034c461673b19043944d1018afb5ae3a49751d51ffdef25ada",
+    "revision": "48fb39d3beae0a50ad369fc72c4bd439fca3fa7f",
+    "status": "IMPLEMENTATION_FROZEN"
+  },
+  "identity": "a73b717bed2d56a30afc305639013227ecfc0def53b5428ddbe84bae81d0ad6a",
+  "smoke_validation": "9da271d7166167d079f3b8ff7f3ae9794b316b1c4c14adbc05b57bc77111e4ea",
+  "status": "TECHNICAL_AMENDMENT_COMMITTED"
+}

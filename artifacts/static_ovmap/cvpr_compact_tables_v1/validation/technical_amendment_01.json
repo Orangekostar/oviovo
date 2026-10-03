@@ -1,0 +1,62 @@
+{
+  "amendment": {
+    "actual_validation": [
+      {
+        "bytes": 45262,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/query_alias_root_cause_audit.json",
+        "sha256": "818cac978d991f88d0b433f85b1ddd3db5f2ebf5ff9da9ce93102e7db1834735"
+      },
+      {
+        "bytes": 14680,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/query_alias_bridge_validation.json",
+        "sha256": "61c291c555e698124d723fb942985d6b6224bc9e987cc10a70910933fd4cce65"
+      },
+      {
+        "bytes": 10675,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_contract_tests.json",
+        "sha256": "f75a8a692741ede302a67d5b35f9db82213d23fb32abb06cdbd71e48c40eb952"
+      },
+      {
+        "bytes": 11454,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_smoke.json",
+        "sha256": "fcd62502e90d007627532e1df87dfcb08a9d5893ce8f83b9697c1db18e3095e7"
+      }
+    ],
+    "affected_descendants": [
+      "readouts/scene0378_02",
+      "contexts/scene0378_02.json",
+      "projected_views/scene0378_02",
+      "recovery/scene0378_02",
+      "native_recovery/scene0378_02",
+      "predictions/scene0378_02",
+      "evaluation/scene0378_02",
+      "readouts/scene0518_00",
+      "contexts/scene0518_00.json",
+      "projected_views/scene0518_00",
+      "recovery/scene0518_00",
+      "native_recovery/scene0518_00",
+      "predictions/scene0518_00",
+      "evaluation/scene0518_00"
+    ],
+    "cold_measurements_reserved": 0,
+    "common_native_maps_preserved": 26,
+    "complete_descendants_invalidated": [],
+    "completed_CF18_readouts_preserved": 16,
+    "documentation": {
+      "bytes": 4235,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/docs/paper/static_ovmap/cvpr_compact_tables_v1/TECHNICAL_AMENDMENT_01.md",
+      "sha256": "4cb61a1e3f0100267dbab690aba2dfd83172c47d9e07682d2ef9b6b7cfe03e20"
+    },
+    "main_metrics_observed_by_primary": false,
+    "main_outcomes_seen": true,
+    "projected_view_receipts_preserved": 24,
+    "reason": "Current native merged segment statistics can retain a retired owner. Interpret each recorded membership row through causal current segment aliases; preserve original positive-ancestry guard and replay. No parameters or method recipes change."
+  },
+  "freeze": {
+    "identity": "0e93a65bf9943c8d82dc6680edc2db3678045ca23c02a7b057c3a8a8febaefd5",
+    "revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+    "status": "IMPLEMENTATION_FROZEN"
+  },
+  "identity": "65c34de339bdf4723e9edc5227b66867846b5f8b19ee265d19374b0758c4fed3",
+  "status": "TECHNICAL_AMENDMENT_COMMITTED"
+}

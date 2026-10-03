@@ -45,3 +45,23 @@ The required totals remain 172 main outputs, 14 internal pools and 24 cold leave
 Validation uses the focused contract suite and its synthetic released-scoring
 fixture. Synthetic full-cohort packaging records stay in pytest temporary
 directories and are never counted as benchmark captures or release metrics.
+
+## Actual execution evidence
+
+The amendment freeze is `48fb39d3beae0a50ad369fc72c4bd439fca3fa7f`. The final
+current-source focused invocation passed 63 tests; its proof identity is
+`7a73c482ca7b6edf1466b966626760483e2724b42242bd297c6de041bd951283`.
+The unchanged eight-output smoke proof is
+`9da271d7166167d079f3b8ff7f3ae9794b316b1c4c14adbc05b57bc77111e4ea`.
+Canonical encode, predict and evaluate phases terminated successfully with
+`PARTIAL_WITH_TECHNICAL_BLOCKS`, preserving the original failed encode receipt.
+
+Actual coverage is 168 complete outputs plus 4 blocked conditions, and 10 full
+cohort pools plus 4 blocked Replica pools. The primary integration audit verifies
+all actual completed output/scoring file identities, full ordered pool inputs,
+summed per-class confusions, office1 Native/D2/U2 parity, A4 incumbent preservation
+and residual-only addition, and unchanged 164 prior outputs/six CF18 pools.
+Evidence identity is
+`71c4171282621555b4567e1204f633a6e58f8e9235a5e99d9d3a993e66a32833`.
+This execution made no new neural inference. Cold coverage remains 0/24 and final
+tables, review and publication remain incomplete.

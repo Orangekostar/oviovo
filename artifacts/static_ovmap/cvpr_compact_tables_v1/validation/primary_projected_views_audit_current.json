@@ -1,0 +1,1056 @@
+{
+  "checked_request_count": 454,
+  "complete_scenes_checked": 26,
+  "does_not_prove_final_predictions_metrics_timings_or_publication": true,
+  "freeze_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+  "identity": "2b7a5b2c10252ae03944e1faa571e3037b5d4016c3af65f5f2de7a987c8a342b",
+  "new_neural_inference": 0,
+  "observed_at_unix": 1791030413.9792929,
+  "pending_scenes": [],
+  "required_main_scenes": 26,
+  "reviewer": "PRIMARY_CODEX",
+  "scenes": [
+    {
+      "candidate_count": 4,
+      "capture": {
+        "bytes": 5715693,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office0/BB00_NATIVE/capture/office0/manifest.json",
+        "sha256": "4bebdfa89cd23d6e166a33dffd127798f79f95ea59238956df0a0dcd10e31b9d"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 210465,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office0/receipt.json",
+          "sha256": "d4fec5bee480ce176e57d20c6dce54742be9180b03b3efd3e9a1a8d40698068a"
+        },
+        {
+          "bytes": 17636,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office0/manifest.json",
+          "sha256": "88ba03e618557e9251ca9448bd3e3a547f7cce7b5b4d14f653947546461088f1"
+        },
+        {
+          "bytes": 8633,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office0/registry.json",
+          "sha256": "3dadceecf17d648ae812183549b5f761800110decb7c72b98b66e73d51e8bb03"
+        },
+        {
+          "bytes": 244493,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office0/frame_diagnostics.json",
+          "sha256": "59e92659a270862f8423599bc8ed9283924f5f38754f1ba2983ef4b068a2e6fa"
+        }
+      ],
+      "native": {
+        "bytes": 3281,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/office0/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "0b7aaa84d41ec9c21d6d7dc6af967f548bdb1b1dc599bca090b45fb3cc753cb4"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "office0",
+      "selected_masks_checked": 9,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 1,
+      "capture": {
+        "bytes": 4339712,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office1/BB00_NATIVE/capture/office1/manifest.json",
+        "sha256": "f808c1d9d6a4a13f7aeb6f6d6cc3a59818a425065ec99ae9218dc4a402930422"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 206986,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office1/receipt.json",
+          "sha256": "361e64af8a02eb82d6f3951fd1c38cea09ff4d5f37be29d0c6e941b1525d5f5d"
+        },
+        {
+          "bytes": 6694,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office1/manifest.json",
+          "sha256": "84b6b3c8582a68dbfa1fe2edd3cce691201243f3380383515a582d408865c56a"
+        },
+        {
+          "bytes": 5654,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office1/registry.json",
+          "sha256": "320fa9d7cf3e4ceca25b386c9edee2f2266d5bb9c8e1f4653a32b156da9d305d"
+        },
+        {
+          "bytes": 93006,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office1/frame_diagnostics.json",
+          "sha256": "45b5afb8606b36f6072375297d4d68da80422ded1c42d2f9874db882470bc7bf"
+        }
+      ],
+      "native": {
+        "bytes": 2923,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/office1/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "d79d669980ff58a79d8d71747108f49e41f8783e5464e7308c756b30eb9f08a0"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "office1",
+      "selected_masks_checked": 3,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 9,
+      "capture": {
+        "bytes": 5548929,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office2/BB00_NATIVE/capture/office2/manifest.json",
+        "sha256": "1415b13b056af361be73b2c11f95b6833a4f83d2861877adc2461a992e569ff9"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 217395,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office2/receipt.json",
+          "sha256": "4efbbfbe5f98040f7dc7a20392c7198ca56dcbbe3654ddabf41c4efc682602cd"
+        },
+        {
+          "bytes": 39408,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office2/manifest.json",
+          "sha256": "9b41ad5546aeb69fb07f3e598681cda4a0caf28c758d1cecd939ffab94841509"
+        },
+        {
+          "bytes": 9376,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office2/registry.json",
+          "sha256": "03aa76a9794bae985c9335b20e806818d29067f90dc898184801b12bc8b75d85"
+        },
+        {
+          "bytes": 506681,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office2/frame_diagnostics.json",
+          "sha256": "b834750c807bdcbc023eae29c74a51303b9e6644a38ee412295bd19398a1a925"
+        }
+      ],
+      "native": {
+        "bytes": 3501,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/office2/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "1e2feaad75225c1b44b0ed93afd086c177412a520dc67c7664c5c21993c81765"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "office2",
+      "selected_masks_checked": 21,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 8,
+      "capture": {
+        "bytes": 6917556,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office3/BB00_NATIVE/capture/office3/manifest.json",
+        "sha256": "50ad285bb73f6afdaee1b2cfe33ec392d1db70c55ab9cb43ba3c6faa904d727f"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 219187,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office3/receipt.json",
+          "sha256": "20d9f518ab1980e48a2c7ee0ce4fc42bb6ed1c1508f394a91470e8b8c18e1fb5"
+        },
+        {
+          "bytes": 44784,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office3/manifest.json",
+          "sha256": "4287f468afca3eda8211a3574dd3f0b1c8b258bdf6c80dac0a328fbc2e381404"
+        },
+        {
+          "bytes": 9365,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office3/registry.json",
+          "sha256": "652744af58ee6a67da31dd0d94912caae9c0d643b262f230c835869a75d05f90"
+        },
+        {
+          "bytes": 476992,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office3/frame_diagnostics.json",
+          "sha256": "db0672dff25054d5a7a0ec4625fd2b428294151cef5abb9e2ede34abc9b609d9"
+        }
+      ],
+      "native": {
+        "bytes": 3514,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/office3/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "44a96cfa2c4f083500ed3b24dff43c5691f58a8d30a6a2939c4e4d9458709603"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "office3",
+      "selected_masks_checked": 24,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 3,
+      "capture": {
+        "bytes": 5005734,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/office4/BB00_NATIVE/capture/office4/manifest.json",
+        "sha256": "4ab552c66a7f39e6fd5fdad68881193378c87ef0e8f515c317258842ed139ca3"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 210413,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office4/receipt.json",
+          "sha256": "aaa2c94328cf478731a290156d94659ee40bcd460e0476cfb65b3505b1f53a2c"
+        },
+        {
+          "bytes": 17594,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office4/manifest.json",
+          "sha256": "e5a7429a699d8b9b0578ffc1b4a1c058e7d1547643937efa307fa181ddf6c4ed"
+        },
+        {
+          "bytes": 6672,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office4/registry.json",
+          "sha256": "e48c67d5044af2c50a8c3315a865b0ec1c37f7556325588c57fe21850bb55216"
+        },
+        {
+          "bytes": 197712,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/office4/frame_diagnostics.json",
+          "sha256": "4271f7dd55f128104f08245741cacd8d5e4c4e88b98bb71b85c249cfed2acf08"
+        }
+      ],
+      "native": {
+        "bytes": 3219,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/office4/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "f630b6ec82ea5ad60a8803b5f1b29fbd96e4cae069d638de3deb8bd1f79361b0"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "office4",
+      "selected_masks_checked": 9,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 14,
+      "capture": {
+        "bytes": 7959330,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/room0/BB00_NATIVE/capture/room0/manifest.json",
+        "sha256": "25b3e136a8f4993383305693399a81da3e360167c4856e1f5eb383cb5e4f4521"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 212573,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room0/receipt.json",
+          "sha256": "ea0adb8582e288cdc9bdafc07de0d2c259164f63d5e16bf6c1afd66aedc1502f"
+        },
+        {
+          "bytes": 34249,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room0/manifest.json",
+          "sha256": "12e2a819d4e257e71e65234f358c8b7b470cd4abe60ee5bd8d5f16279fcdf218"
+        },
+        {
+          "bytes": 11674,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room0/registry.json",
+          "sha256": "4533e09326fb9fd6f39121dfb417bcf4d25edcf71be18a77a44a5f75220ae07a"
+        },
+        {
+          "bytes": 782166,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room0/frame_diagnostics.json",
+          "sha256": "c099df25ac71e130373b0aff157428bd1cfe2d3a9343172241901fd85de6b93a"
+        }
+      ],
+      "native": {
+        "bytes": 3614,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/room0/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "249fdf8556900391ace05f9ae7130e638ed68b932270a975810169f9ee6d7175"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "room0",
+      "selected_masks_checked": 18,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 5,
+      "capture": {
+        "bytes": 5206802,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/room1/BB00_NATIVE/capture/room1/manifest.json",
+        "sha256": "a0896c9dd9d3eab5fdf75a5afbae40c6b3a516a252b72e4d9c76d785f60b1c2d"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 209565,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room1/receipt.json",
+          "sha256": "2502bbfe3c515e74308889be36a23f3468c5c19620acbb85199ccb510e633c08"
+        },
+        {
+          "bytes": 24817,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room1/manifest.json",
+          "sha256": "918fd58a6934db3214691c5e6c41ad311b4dd65c9c0e0eb8a7ada954dfe94a0c"
+        },
+        {
+          "bytes": 7383,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room1/registry.json",
+          "sha256": "65a028815d88db78ff85a9d9a09d051db885825aace9270c4b556bbcb1642162"
+        },
+        {
+          "bytes": 314176,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room1/frame_diagnostics.json",
+          "sha256": "75e29b9726d0285ca832abca959d1a762c90d9f0f6dfadc555ac7a27e5728288"
+        }
+      ],
+      "native": {
+        "bytes": 3350,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/room1/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "3efb74b954017a26cb7a6d4864f761271448c9623713b6c5b183088f9870a2bf"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "room1",
+      "selected_masks_checked": 13,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 9,
+      "capture": {
+        "bytes": 6037962,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/maps/room2/BB00_NATIVE/capture/room2/manifest.json",
+        "sha256": "cc8c6cf27f8143caa1702b669bb9842f5150b35e3fdec02b0a54a6e6c7d44a97"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 213548,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room2/receipt.json",
+          "sha256": "610b88d62e943897196d5f70531b213357cbe5cdbbaf5efa21e7031f6daa9e91"
+        },
+        {
+          "bytes": 37445,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room2/manifest.json",
+          "sha256": "b232190e69e5ba6c0b64df72e30bca57bc2f6cd0df4bd6ec02cafaf736b4be6f"
+        },
+        {
+          "bytes": 9522,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room2/registry.json",
+          "sha256": "2bd8d453714ed3d4a7a3fa3a7b57eada835d1916523015ce9dc17e3316f7c04d"
+        },
+        {
+          "bytes": 516747,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/room2/frame_diagnostics.json",
+          "sha256": "f85a673bc7deaf1d1ee9c9dfe9a3f12df208b0b5b6929621c1109e26fe34cc0f"
+        }
+      ],
+      "native": {
+        "bytes": 3425,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/readouts/room2/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "02c3bd0b7d350303a7931aa2adb37c0e6960a21001517817ba14ba3dd778bf02"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "room2",
+      "selected_masks_checked": 20,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 3,
+      "capture": {
+        "bytes": 3881398,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0011_00/BB00_NATIVE/capture/scene0011_00/manifest.json",
+        "sha256": "adcaf41592f9eb492d6c5214010f65c05e584525d25e9d851af6d728a2cc9c86"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 221107,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_00/receipt.json",
+          "sha256": "aaec6e71ef518f314e72b53fdafe89dbb6633401928aedf1f65b7ba1ce698841"
+        },
+        {
+          "bytes": 14213,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_00/manifest.json",
+          "sha256": "f1a04ef13f650db65f2aa1ed8f2352353934f4cf3c2a7304ee0c4989dd947398"
+        },
+        {
+          "bytes": 7332,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_00/registry.json",
+          "sha256": "a756b4c56981d966907cbc05ea6f9227d436781da9bb9a2fd3a741a6fb410629"
+        },
+        {
+          "bytes": 189437,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_00/frame_diagnostics.json",
+          "sha256": "07e1ce0923b2ce5e015d5fcb359166ad675dcbe172a5a08156fee609c3321f1e"
+        }
+      ],
+      "native": {
+        "bytes": 3553,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "5d300513a810d21eef66fb23d600016e0183962b4ba37e18695b4bbd82f2608b"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0011_00",
+      "selected_masks_checked": 7,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 7,
+      "capture": {
+        "bytes": 4192457,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0011_01/BB00_NATIVE/capture/scene0011_01/manifest.json",
+        "sha256": "f1285c484fb9418766175c136d0bc230d62ae5862062d53135296e84d15025d0"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 224050,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_01/receipt.json",
+          "sha256": "96c684e61f218a6f9d4df35f969c355b9bb549e668f25f48967a37ef79fb3ad0"
+        },
+        {
+          "bytes": 23705,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_01/manifest.json",
+          "sha256": "ce3609d9668a4c104671234cbcb36b8c24c706ee4c8bafe37d6ab6c25976ede6"
+        },
+        {
+          "bytes": 10274,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_01/registry.json",
+          "sha256": "93c5d2adc69baf9388259b405798e29c851626254f78137958a46618d85a2d3e"
+        },
+        {
+          "bytes": 388614,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0011_01/frame_diagnostics.json",
+          "sha256": "0aa315d0f10381cc9ce0ed9b4c7cacb17bd37f5f8557bebd66e15ceba4326586"
+        }
+      ],
+      "native": {
+        "bytes": 4030,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "7c0da355014c1603fb88ba9a3e141210f2da5ced1e748376985d62483ff49f87"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0011_01",
+      "selected_masks_checked": 12,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 7,
+      "capture": {
+        "bytes": 5027468,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0050_00/BB00_NATIVE/capture/scene0050_00/manifest.json",
+        "sha256": "91f7d7683da39a74d712dc1add81a1ab2af07b5de37ffa467a33e4c18cbe81ab"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 223688,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_00/receipt.json",
+          "sha256": "48b999cb7e5f7ccaf645609ba981bde5c98e957dab879a8ad8fef16169b04b8a"
+        },
+        {
+          "bytes": 23481,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_00/manifest.json",
+          "sha256": "7fb7b041057c1135df540900c0d4e842876c736e19bedbda6faed903212891e8"
+        },
+        {
+          "bytes": 18107,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_00/registry.json",
+          "sha256": "19c51909bbe1c9519961d220e3ed932c97bd7383f13a0a36fd2f7f8fc5e20798"
+        },
+        {
+          "bytes": 393175,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_00/frame_diagnostics.json",
+          "sha256": "d51162ae8204e5b50756046c6cb56e5709d3dcd3538ab9f463c0cd78d23a1d06"
+        }
+      ],
+      "native": {
+        "bytes": 5651,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "1052b6717bbcfbcf7931d07251ad41338f40cc978bc803e4d1ef7348c6b07626"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0050_00",
+      "selected_masks_checked": 12,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 13,
+      "capture": {
+        "bytes": 5069035,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0050_01/BB00_NATIVE/capture/scene0050_01/manifest.json",
+        "sha256": "9db368f37f047d194827cb565e29c1087593f13827cc7debcb2754c87a3a6726"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 231920,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_01/receipt.json",
+          "sha256": "e24a2e00d427cfef7b61b78fd22babfad92f15f607845f1b0d5bf62d18fcf8b6"
+        },
+        {
+          "bytes": 49454,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_01/manifest.json",
+          "sha256": "ecc5a1e0917e05aed34ca7304971fb2899b6f839b445a014a416498c2ee7b85d"
+        },
+        {
+          "bytes": 17541,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_01/registry.json",
+          "sha256": "3014afbc82f9a8f998c33d1746463a53c313952c39c64c4c72017546715479e1"
+        },
+        {
+          "bytes": 696646,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_01/frame_diagnostics.json",
+          "sha256": "11a6f4fcf618d59308d0723dc625d9cbeef2648dc1d1f5396690e61b44a58db3"
+        }
+      ],
+      "native": {
+        "bytes": 5462,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "083304708880e52a4ab0788e24a4204527b07af8fd82d57b0064de903011ae1a"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0050_01",
+      "selected_masks_checked": 26,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 7,
+      "capture": {
+        "bytes": 5231628,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0050_02/BB00_NATIVE/capture/scene0050_02/manifest.json",
+        "sha256": "fae125e13c03c5fb41c30be87472f085db8bdc2f7c2df4d5b294680f87bb124f"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 225442,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_02/receipt.json",
+          "sha256": "2d52b7bd141518137ef90219c708f70832fef345cfb2e8010449cb81077ebaf5"
+        },
+        {
+          "bytes": 29045,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_02/manifest.json",
+          "sha256": "52f620385869a98bdbafddfd0bf6281ab38560b3ac4771bc80a0c36b8e5d4442"
+        },
+        {
+          "bytes": 13942,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_02/registry.json",
+          "sha256": "3558854633746014ab302d36e0db66157e27cf1d5f89e9a881b83f6239593ac7"
+        },
+        {
+          "bytes": 396402,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0050_02/frame_diagnostics.json",
+          "sha256": "919421f02239b07199216b59bf2bdc0ca46022cf225575e44b868353217c51d9"
+        }
+      ],
+      "native": {
+        "bytes": 5009,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "7d485bbf15d8e46b8593b62c0f472c839597d881f09c16f98d3258e8e793252c"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0050_02",
+      "selected_masks_checked": 15,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 0,
+      "capture": {
+        "bytes": 3018775,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0084_00/BB00_NATIVE/capture/scene0084_00/manifest.json",
+        "sha256": "da40fb9202c959b50601c52471580371c38c2517120041fb8a52c3d13cb1e2a5"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 216987,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_00/receipt.json",
+          "sha256": "5738b2c2cc2999607e0c8c1d928b9aa78d2a5a7189662f2e5cbc1fdb3e28a503"
+        },
+        {
+          "bytes": 1265,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_00/manifest.json",
+          "sha256": "b2c863f9205a57546da7215095e044ee882a62a0f464011cbfada22c9a1e451d"
+        },
+        {
+          "bytes": 4169,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_00/registry.json",
+          "sha256": "46935fa59497e5abf5df6a7ce786ae7ab9b7debc9187287fd8b7251a92962a7a"
+        },
+        {
+          "bytes": 35895,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_00/frame_diagnostics.json",
+          "sha256": "40b0a5d5206011b0e6eccc7be773b31524cb3678e19ed3dad5674d5ff4878777"
+        }
+      ],
+      "native": {
+        "bytes": 2756,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "321588da6e57b9d8eff69374ca262e4653b2c16f91703313722cdef32ad5f5f7"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0084_00",
+      "selected_masks_checked": 0,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 3,
+      "capture": {
+        "bytes": 3215032,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0084_01/BB00_NATIVE/capture/scene0084_01/manifest.json",
+        "sha256": "9f68cb2e003fb80b4351d75e1a2778c76b1d959bf78c0f5e1c4da271ea260157"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 219341,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_01/receipt.json",
+          "sha256": "c400cc1ee10a86c84e139061c099d6ddf4220246730eb8f81fae548a142e4a45"
+        },
+        {
+          "bytes": 8750,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_01/manifest.json",
+          "sha256": "d474bae1ff02f02adfe64f5eabd9a519a0b05aeeebdf48137d975ec803d3e98e"
+        },
+        {
+          "bytes": 5383,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_01/registry.json",
+          "sha256": "62716c90abb7934435ed2def11336aeb4b54b7e244f600fe4128d4e18c9c00ce"
+        },
+        {
+          "bytes": 190596,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_01/frame_diagnostics.json",
+          "sha256": "b1498117a37226fc33390d8347ca36b611515c3b72a402762639d74097db1191"
+        }
+      ],
+      "native": {
+        "bytes": 2840,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "b70d97ccec372bfd2b9b525b1caa5b80bcffad2aaf61dfaa58499e3bbf94f6af"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0084_01",
+      "selected_masks_checked": 4,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 1,
+      "capture": {
+        "bytes": 3033494,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0084_02/BB00_NATIVE/capture/scene0084_02/manifest.json",
+        "sha256": "0e43779f58e6f010bc80be43f3bb7d6e98919dd77d0f33ffa70eece1dcb4ef3f"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 218751,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_02/receipt.json",
+          "sha256": "3702d568c170c1322005b81173e8ee1abc85a0b1692fee14b6d9157fbe08a1bd"
+        },
+        {
+          "bytes": 6786,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_02/manifest.json",
+          "sha256": "c177f75640a4f25dfe25611d4cb2b5ec5c601ee0d43ec9b841dc56b468513bb4"
+        },
+        {
+          "bytes": 4177,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_02/registry.json",
+          "sha256": "7662220cc4151f61d8cfe39137b1ec2c74d53981422e5af33ffc82ed990530bd"
+        },
+        {
+          "bytes": 87643,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0084_02/frame_diagnostics.json",
+          "sha256": "732fe3cf2bc0c61fc44fec9ac6a0f98725715d481bd668bedc950c505b2b599e"
+        }
+      ],
+      "native": {
+        "bytes": 2664,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "af9f2c668d5d3d9bd0545af68561e832b5f90b5526d2c153262c604324ad51ed"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0084_02",
+      "selected_masks_checked": 3,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 12,
+      "capture": {
+        "bytes": 6599044,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0168_00/BB00_NATIVE/capture/scene0168_00/manifest.json",
+        "sha256": "7129fade54903037a868ab3bb262ae7111d70592304ccb4172ef8bdf16ed02d4"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 234642,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_00/receipt.json",
+          "sha256": "52d890750413e5a4ecdc86dcc79cc53406fe47d817dc34b2cca64b5bfcdc6e8d"
+        },
+        {
+          "bytes": 56566,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_00/manifest.json",
+          "sha256": "84cf2b9f3f1b079a40ab47af588f144f184831862c34bc65fdf55ea0577f8b21"
+        },
+        {
+          "bytes": 21006,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_00/registry.json",
+          "sha256": "b5945ae2348bb45c95b2e708c796ad8163966e3d8a38c00f1d2170085df86dcd"
+        },
+        {
+          "bytes": 655293,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_00/frame_diagnostics.json",
+          "sha256": "6ce75f87903752cccf1bd9771e4cb3cdc01e5e4325c33b6c6042906faaed2523"
+        }
+      ],
+      "native": {
+        "bytes": 6950,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "865609569a1fa322c58e91e5336dabf38622167f88a4f5931f74a8a7c4269326"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0168_00",
+      "selected_masks_checked": 30,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 10,
+      "capture": {
+        "bytes": 6552809,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0168_01/BB00_NATIVE/capture/scene0168_01/manifest.json",
+        "sha256": "db13a54ece9e916d4c2d3cd3b71dae616b275d5191ff20c0b831de86e5bb45d0"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 222285,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_01/receipt.json",
+          "sha256": "9a7638a2f61687adf876daf1cbdfeb4f36f3b05c486bec08d1ef8b58503968a8"
+        },
+        {
+          "bytes": 18192,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_01/manifest.json",
+          "sha256": "672cda38ded283883233e33ef0da3c7737f593ce9e8fc6ea204386d3995d9fcf"
+        },
+        {
+          "bytes": 22755,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_01/registry.json",
+          "sha256": "c6a4394ee982f84492fbcff52593ee5ea6e3e328b809ccd9ceaec1857f0139ab"
+        },
+        {
+          "bytes": 549409,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_01/frame_diagnostics.json",
+          "sha256": "f9411ede55cbe58daa3896ad8ba6e52c2fe5826cc799162d48dc1bdc6d3f3b78"
+        }
+      ],
+      "native": {
+        "bytes": 7001,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "72d90f690318196390eff7bbfcef1dfc6c30f605d65b8da4cbd84b36b32040eb"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0168_01",
+      "selected_masks_checked": 9,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 7,
+      "capture": {
+        "bytes": 6252159,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0168_02/BB00_NATIVE/capture/scene0168_02/manifest.json",
+        "sha256": "b60d8893189af876c70fec780315611dcd431b0f0f28e6936f521f5056aceda2"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 225227,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_02/receipt.json",
+          "sha256": "25c6093900e37fced8184bd7a92ad1f673359ba01b708f7e2faaedf641ece4ad"
+        },
+        {
+          "bytes": 27167,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_02/manifest.json",
+          "sha256": "7f76176b6f35cf7ee6761e38225bf175263b16d44061389f3da7ade482027c8f"
+        },
+        {
+          "bytes": 24536,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_02/registry.json",
+          "sha256": "bc8a985286f6424c76434f39635f0211c46f8f40b232562be4e71bd3e9be8101"
+        },
+        {
+          "bytes": 397295,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0168_02/frame_diagnostics.json",
+          "sha256": "02b24668469cf088a8745ddf50de6b40d2cd40b4bd744d5f085da643bbb0cc27"
+        }
+      ],
+      "native": {
+        "bytes": 7826,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "4dc10d4ac19331cdfdd149329e086036023b9a1afe780665ecb05caab8a24ef3"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0168_02",
+      "selected_masks_checked": 14,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 37,
+      "capture": {
+        "bytes": 6187750,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0231_00/BB00_NATIVE/capture/scene0231_00/manifest.json",
+        "sha256": "26067e8475b238a81c37186dd08ac52204d4a9b1b9b768f59c41143f4aa817e8"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 258355,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_00/receipt.json",
+          "sha256": "a564ab6bd3bf2c69a432f07fee498baacceae75571db80be70e2eeb4234e8439"
+        },
+        {
+          "bytes": 132724,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_00/manifest.json",
+          "sha256": "fa067a9a831133a31c2e23eecd24d88e1063d5248277ef3944c6562bc0f50986"
+        },
+        {
+          "bytes": 32360,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_00/registry.json",
+          "sha256": "bcc2f907beaf74dda093f70ad1ddfe610928bbeb24d8f60e1b81c70f40f5d8c9"
+        },
+        {
+          "bytes": 1923703,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_00/frame_diagnostics.json",
+          "sha256": "754f77aa940340d3cde732afd82317c5ffecf337f379b761ed0cab8d08d19240"
+        }
+      ],
+      "native": {
+        "bytes": 8463,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "cc33817dda6f2b9c62a192dcfa3f3b5c9eb52ac958a836333a5d2de47c7ac7a2"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0231_00",
+      "selected_masks_checked": 71,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 25,
+      "capture": {
+        "bytes": 5648631,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0231_01/BB00_NATIVE/capture/scene0231_01/manifest.json",
+        "sha256": "0ebb226f76781cd0370a122d47b2f804f09d749aedcdaf2b88b73065d116e753"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 244238,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_01/receipt.json",
+          "sha256": "f0695774445d001d17d30dbc65c454ed4b23659ede26f3905ad3988abbd2923b"
+        },
+        {
+          "bytes": 88581,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_01/manifest.json",
+          "sha256": "8aceff930e8af473875f5695547f0658f53ebf70b0b1005ba81e779ba815c274"
+        },
+        {
+          "bytes": 31718,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_01/registry.json",
+          "sha256": "250394a414fa753ddb712388727bf399fc75fc7081a14385410557c74e54eca4"
+        },
+        {
+          "bytes": 1312600,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_01/frame_diagnostics.json",
+          "sha256": "f6d6eaebec2a39517c3106c5748b33d67319174d79184a1f8818b9c4cc260964"
+        }
+      ],
+      "native": {
+        "bytes": 8703,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "0687e4aa00804cd21264e3baa960d56faa5d5bf7de3bf7e7ca052ac7d2228ad7"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0231_01",
+      "selected_masks_checked": 47,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 23,
+      "capture": {
+        "bytes": 6207298,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0231_02/BB00_NATIVE/capture/scene0231_02/manifest.json",
+        "sha256": "3e049bd1d66196a509b1bc25823bb2759b594f63fe43b6ca73df40cd4619a2c3"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 240118,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_02/receipt.json",
+          "sha256": "76c6ab6bec852ef46eb4f2eec240a986697114584d6bdd54868060cd883f50b2"
+        },
+        {
+          "bytes": 75428,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_02/manifest.json",
+          "sha256": "0d8fdebdde0ba7fa18ed18ccd8a0ca35603aa36c43c56bbf93da97e9e5600a57"
+        },
+        {
+          "bytes": 28888,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_02/registry.json",
+          "sha256": "8ec5e06b5ccfb1aecd63f4ef5615a6dd2000a3803e682781b7f1a1a18d064dab"
+        },
+        {
+          "bytes": 1211804,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0231_02/frame_diagnostics.json",
+          "sha256": "435f0f04f74f060487fa9a0308d7904e5bffc38f73ee8bc2cb55b51adf86ba07"
+        }
+      ],
+      "native": {
+        "bytes": 8217,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "4d0ac744cba645977e8daadfb036111ac09e24b7c81f0dcbe7ad13a29307e9f0"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0231_02",
+      "selected_masks_checked": 40,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 4,
+      "capture": {
+        "bytes": 5827974,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0378_00/BB00_NATIVE/capture/scene0378_00/manifest.json",
+        "sha256": "db4eeedccc69d81aef83996be4f2a5681342d19657b318eeb8988f4ecf5b369c"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 223462,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_00/receipt.json",
+          "sha256": "bdb0b565eebc01ff115bbcdafd23bbe2884c01e012c0d69ef112161408d004a4"
+        },
+        {
+          "bytes": 21541,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_00/manifest.json",
+          "sha256": "f7aecc85c36cb4d64723df0bf2696974c3d19986b5c45b745a05691dce8dd750"
+        },
+        {
+          "bytes": 12003,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_00/registry.json",
+          "sha256": "aff6a1ae9266d95ee20a52c1cdf1d2930930bf2cfcd1d36012e2d1b520234910"
+        },
+        {
+          "bytes": 242620,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_00/frame_diagnostics.json",
+          "sha256": "638c23e7536451aa917f02b0c7e503cb02c9dce8eb295c0c24a3378d40f7ce0e"
+        }
+      ],
+      "native": {
+        "bytes": 4661,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "a729085993d837657ab5c311d97ef8bce34ac9a681f2ec12c86d170d34560006"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0378_00",
+      "selected_masks_checked": 11,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 6,
+      "capture": {
+        "bytes": 5463875,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0378_01/BB00_NATIVE/capture/scene0378_01/manifest.json",
+        "sha256": "ea2d77e9e0a4da0fd9ecf6ee3140885536cc8f934939de04cd74f9f9abd19b78"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 225226,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_01/receipt.json",
+          "sha256": "2145044d486dae4bf4ff465944a02d8d5f9ee5b6fe550670bd1f436163f09566"
+        },
+        {
+          "bytes": 27109,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_01/manifest.json",
+          "sha256": "b67063e8d0289eba45cd8adbed06a15a9a918d1c1682e41c8923c14ad302d3a8"
+        },
+        {
+          "bytes": 14031,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_01/registry.json",
+          "sha256": "6551451bae7ffd17f1e3658c2193bddbe4396f3273ea537b217d6318ef0a163c"
+        },
+        {
+          "bytes": 346188,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_01/frame_diagnostics.json",
+          "sha256": "6b0c221d81394ba33cc005060486f7c99a0418ac2e84dde67afc3a6702a5d56c"
+        }
+      ],
+      "native": {
+        "bytes": 4991,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "40638748d1900587d1e156fcc22c82cbd452b3e0c0a446265c572b60cca2e0fa"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0378_01",
+      "selected_masks_checked": 14,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 2,
+      "capture": {
+        "bytes": 5949375,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0378_02/BB00_NATIVE/capture/scene0378_02/manifest.json",
+        "sha256": "6eee275d4f204defddb4d2678217628c03d5e89adbff508c6d6c4fb67302f3d3"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 220521,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_02/receipt.json",
+          "sha256": "3e39a0508c75ee2280e4f760b10957bc9b4a975c082254a0ed00e45369dda738"
+        },
+        {
+          "bytes": 12307,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_02/manifest.json",
+          "sha256": "b9898736fdd2146521b12627f5f171ae65a033f5fabbf3a9c3c55f8f42f9d228"
+        },
+        {
+          "bytes": 14110,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_02/registry.json",
+          "sha256": "da4f44002662ee551715202a328942a268ec2bcdb61405c92a0bc5c4633c1cd5"
+        },
+        {
+          "bytes": 141493,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0378_02/frame_diagnostics.json",
+          "sha256": "2ec2ecb17f48acc414eb6844982b53da04a388b53517f1c78e60fac2ed9ca674"
+        }
+      ],
+      "native": {
+        "bytes": 5329,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "0580e132b2dc488a0fe63257cfd3ff796f1a49a5de12340aaa22fb8d6610cbe1"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0378_02",
+      "selected_masks_checked": 6,
+      "status": "PASS"
+    },
+    {
+      "candidate_count": 8,
+      "capture": {
+        "bytes": 5469575,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/maps/scene0518_00/BB00_NATIVE/capture/scene0518_00/manifest.json",
+        "sha256": "8120c819093bc6ad70d3cf4507062ae36eeb422971198b21bc7f256ccc49ce85"
+      },
+      "completed_cameras": 200,
+      "evidence": [
+        {
+          "bytes": 226010,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0518_00/receipt.json",
+          "sha256": "98599057949838bd33a06d07efe16ab2c86db04a28c75391d1ade8ba418462a4"
+        },
+        {
+          "bytes": 30836,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0518_00/manifest.json",
+          "sha256": "f10353592c2c64ebc004d23c06e04bd7dcaa65d79b3033a73ffe68a958f776bb"
+        },
+        {
+          "bytes": 16411,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0518_00/registry.json",
+          "sha256": "0f0be655a0f184e3032d21a309eb0665222c12db2eab109c23efcd31701a596a"
+        },
+        {
+          "bytes": 447881,
+          "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0518_00/frame_diagnostics.json",
+          "sha256": "24a7725852c69d84de70ee555ec1271c31338b57efcf2ed663ae1e4184f57f2c"
+        }
+      ],
+      "native": {
+        "bytes": 5474,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/anchor/N0/manifest.json",
+        "sha256": "fa2d1f012001a71d1effe7957f2105d23b487f3c8ae32af35df2894c91cc0c1b"
+      },
+      "registry_recomputed_from_actual_surface_and_paint": true,
+      "scene": "scene0518_00",
+      "selected_masks_checked": 16,
+      "status": "PASS"
+    }
+  ],
+  "scope": "ACTUAL_MAIN_SOURCE_REGISTRIES_ALL_COMPLETED_CAMERAS_AND_SELECTED_MASKS",
+  "status": "PASS_FULL26_PROJECTED_INPUTS"
+}

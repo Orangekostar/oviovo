@@ -81,11 +81,12 @@ Files: `src/static_ovmap/cvpr_compact/{workflow,evaluation,diagnostics}.py`.
 Consumes locked outputs; produces 172 typed rows, 14 pools and actual matching evidence.
 
 - [x] Commit complete implementation plus freeze/experiment.json and exposure ledger before main predictions. Initial freeze `1373d7a5` and documented alias amendment `fd77ab22` are retained.
-- [ ] Expand mask registry with genuine Native-unavailable recovered owners, preserve unknown errors and exact original 1NN projection.
+- [x] Expand mask registry with genuine Native-unavailable recovered owners, preserve unknown errors and exact original 1NN projection for all available actual conditions.
 - [x] Implement the expanded-registry scoring wrapper and exercise the actual released evaluator on a synthetic full-owner fixture, including A5 unknown errors and exact resumption.
 - [x] Implement bounded workflow/CLI, shared recovery export and original per-class scene/pool summaries; verify original AP/semantic parity and successful pool resumption on synthetic data.
 - [x] Check actual released nine overlaps within1e-12 and retain original vector; test exact alias contexts including arrays, ranks, GT bytes and actual official view.
 - [ ] Execute all missing main leaves; lock predictions before label diagnostics; pool only full ordered cohorts.
+- [x] Execute office1's four independent fixed conditions and four full Replica pools through canonical phases, retaining its four proved blocked conditions and every prior successful record.
 - [ ] Derive common n/N, target-min100 coverage, added matcher TP/FP entries, ambiguity flags, old lost matches and changed ranks.
 - [x] Implement post-lock diagnosis using the unchanged original matcher observer; test sum-of-count n/N, actual TP50 additions, lost old matches and omitted unknown-owner ranks.
 
@@ -114,7 +115,7 @@ Files: `src/static_ovmap/cvpr_compact/tables.py`, four COMPACT_TABLES reports,
 
 ## Task 7: Acceptance And Publication
 
-- [x] Run the final current-source focused production validation (56 tests after amendment01) and real scene0056_00 eight-condition end-to-end check with exact baseline and shared-export parity; no whole-repository test sweep.
+- [x] Run the current-source focused production validation (63 tests after amendment02) and real scene0056_00 eight-condition end-to-end check with unchanged lock identity; no whole-repository test sweep.
 - [ ] Execute the specified all --resume command and verify idempotent exact-input reuse.
 - [ ] Audit every package requirement against actual files, receipts and outputs; retain unresolved items and keep goal active until full completion.
 - [ ] Keep compact release below50MiB, large maps/weights on shared storage with truthful manifests.
@@ -137,5 +138,7 @@ Canonical execution:
 - Actual main predictions and scoring rows are 164/172 across 25 fully completed scenes. All 6 CF18 pools cover their complete ordered 18-scene cohort; no Replica subset was pooled. The primary integration evidence is `validation/independent_execution_integration.json`, identity `ba72c1ee0b5be4e3b35ea7a605463b912de6915caa13a92a7b9074236f405db6`.
 - The primary audited all 25 complete FC recovery receipts against the actual selected plans, FP32 vectors, original FC text, area-weighted classification, class IDs and recorded failed views. Evidence is `validation/primary_warm_fc_recovery_audit.json`, identity `9b7786f495c4797e254dad037750d9582610d2e563dc545fa81e09821f1d10ab`. Office1 is explicitly excluded as the retained block, not counted as a complete recovery.
 - No actual cold timing has yet been reserved or measured. Office1's remaining independent predictions, blocked-condition orchestration, measured tables, the final requirement-by-requirement review and GitHub publication remain pending; incomplete cohort results must not be reported as official pools.
-- Amendment02 implements proof-bound partial condition construction and exact inherited scoring/pooling without changing the 164 completed producers. Eight targeted checks pass, including full ordered eight-scene pool scope, exact per-class aliases, and no retry of an exhausted FC leaf. Current-source final tests, the unchanged smoke, amendment freeze and actual office1 independent execution are the next gates; prospective counts are not measured completion.
+- Amendment02 is committed at `48fb39d3beae0a50ad369fc72c4bd439fca3fa7f`; current-source final validation passed63 tests and the original eight-condition smoke reused the exact `ccf0b2fd2cf29376abdb426abbdd9c46800ea2dbb07aa1ba786561629d568774` lock. Eight targeted checks cover full ordered pools, exact per-class aliases and no retry of an exhausted FC leaf.
+- Canonical encode, predict and evaluate phases are terminal and explicitly `PARTIAL_WITH_TECHNICAL_BLOCKS`. Actual coverage is168/172 outputs and10/14 whole-cohort pools. Office1 A0/A1/A4/U2 are measured; A2/A3/A5/G3 remain blocked without zero predictions or subset pools. The primary verified every completed payload/scoring hash, full ordered pool input and per-class confusion, A0/A1/U2 parity, A4 append-only support and unchanged prior164/six CF18 pools. Integration proof is `validation/partial_execution_integration.json`, identity `71c4171282621555b4567e1204f633a6e58f8e9235a5e99d9d3a993e66a32833`.
+- Next work is explicit per-arm cold preflight (office1 U2 has its actual independent complete parent; G1/G3 have no reservable successful parent), all valid single cold calls, typed unavailable full-cohort cells, diagnostics/reports, rendered QA, final327-requirement review and normal GitHub publication. The required172/14/24 totals remain unchanged; no global scientific COMPLETE has been claimed.
 - Previous scene0056_00 smoke receipts and failed commands are preserved. Explicit pre-freeze regeneration corrected only lossless legacy FP32 storage and environment-dependent probability-audit metadata; no scientific parameter, label decision, extra method or development map changed.

@@ -1,0 +1,37 @@
+{
+  "both_physical_payments_retained": true,
+  "complete_200_slot_frame_decisions": true,
+  "complete_200_unique_causal_query_attempts": true,
+  "corrected_leaf_freeze_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+  "failed_stage_physical_image_inputs": 6930,
+  "identity": "54a2eb496502e1c051d2a01e2de6433858cec9a88666848e4f3b8c20dacbe0fa",
+  "main_final_prediction_metrics_or_timings_not_proven_here": true,
+  "native_features": {
+    "bytes": 4053099,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/native_features.pkl",
+    "sha256": "b43f286c633ba7cdf3e4cbefa6d768439d5d5843b185c8a30b23c9ac5f62e2ee"
+  },
+  "native_features_byte_exact_to_previous_completed_native_stage": true,
+  "new_physical_encoder_batch_calls": 56,
+  "new_physical_image_inputs": 336,
+  "observed_at_unix": 1791028794.9194903,
+  "original_inference_and_query_policy_preserved": true,
+  "previous_failed_receipt": {
+    "bytes": 1200970,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/native_query_receipt.failed_1791028269006973453.json",
+    "sha256": "07d84f9de995f9332346b0aab3b66ddfb06477cd1e846e3315ef478d15d6793c"
+  },
+  "query_decisions": {
+    "bytes": 581978,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/query_decisions.json",
+    "sha256": "eeafceba57495ad2eb598186b5d62f47595fb0eb9af550a2912eef0989178e19"
+  },
+  "receipt": {
+    "bytes": 2834833,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/native_query/native_query_receipt.json",
+    "sha256": "072f1a6325e524723cdffc7ae54051c80940e092179cec62be170c6c03357efb"
+  },
+  "reviewer": "PRIMARY_CODEX",
+  "scene": "scene0378_02",
+  "status": "PASS_ACTUAL_REPAIRED_QUERY_LEAF"
+}

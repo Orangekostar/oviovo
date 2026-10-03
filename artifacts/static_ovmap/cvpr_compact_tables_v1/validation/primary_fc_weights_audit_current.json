@@ -1,0 +1,1281 @@
+{
+  "completed_scene_count": 18,
+  "does_not_prove_final_predictions_metrics_timings_or_publication": true,
+  "freeze_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+  "identity": "18ed7866c6eff6c68617b0b75c58e4650ddccef6a09981b6520356b405f7b898",
+  "new_neural_inference": 0,
+  "observed_at_unix": 1791030355.8887732,
+  "pending_scenes": [],
+  "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+  "previous_audit_identity": "201f4374e5974f8e098519b20868d3a3ca747381727a3069020943ea79fb84f4",
+  "previous_freeze_revision": "fd77ab2203f7e8af2ba9cd9e2ef36d652713ad24",
+  "producer_sources_inspected": [
+    {
+      "bytes": 7328,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/a7_evidence_upgrade/region_adapter.py",
+      "sha256": "68c33f3ee8452dd5de181b0388e9e65aee1360dc83deb3f381dd9e35a1d4b737"
+    },
+    {
+      "bytes": 19711,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/recovery_wave2/recovery_fc_worker.py",
+      "sha256": "162a5c8335281998abf579f4b823d31a70ea8edff296c53faf0da35f287ed20a"
+    },
+    {
+      "bytes": 26886,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/region_worker.py",
+      "sha256": "d5a9193dc95320cde684199428334f97da4130447c9abbe8ae2f25b7b3899976"
+    },
+    {
+      "bytes": 28905,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/base_sources.py",
+      "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+    }
+  ],
+  "required_scene_count": 18,
+  "reviewer": "PRIMARY_CODEX",
+  "scenes": [
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 362295,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/fc/receipt.json",
+        "sha256": "21aea93f185bbc061d3297526a9992b11dc2cd5c9c192434dd332988427e9fad"
+      },
+      "scene": "scene0011_00",
+      "source": {
+        "bytes": 326161,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/fc/F.json",
+        "sha256": "238afd95a91e40ccd7674fbca297567bf97604e1d59ff003b45e453f981709a0"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_00/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 485287,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/fc/receipt.json",
+        "sha256": "c295ddf851ace6a4c98079b38caa190dcec8985452b60b4ab82449176ad35fa1"
+      },
+      "scene": "scene0011_01",
+      "source": {
+        "bytes": 425465,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/fc/F.json",
+        "sha256": "4d8b8087c7f7b880217361cf0bcfdc8be07fc3c549a2beae25aa278c19b90441"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0011_01/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 717641,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/fc/receipt.json",
+        "sha256": "82b77397166c3a66895420ea0421764beaac53c045fddf09955501fab6185063"
+      },
+      "scene": "scene0050_00",
+      "source": {
+        "bytes": 704235,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/fc/F.json",
+        "sha256": "f023ee270130a74fa355d33b3c1099d337d3315c911ac2dd8d472c12ad566bac"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_00/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 690858,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/fc/receipt.json",
+        "sha256": "d785c4f14781b60f6fc74857e8851f716290778dd802e50f7ad1c4a1f3c241a8"
+      },
+      "scene": "scene0050_01",
+      "source": {
+        "bytes": 689720,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/fc/F.json",
+        "sha256": "356327a513693b8db132a095e6b8257544632daaeefee7162f2d59f05b8a0a8f"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_01/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 650046,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/fc/receipt.json",
+        "sha256": "5e8234b84a8c1ba39ea514a9ae1f7f5355286460c45e8fa693d6e61c352e8dd3"
+      },
+      "scene": "scene0050_02",
+      "source": {
+        "bytes": 605269,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/fc/F.json",
+        "sha256": "dbf4029c3d01d431b2ca9e4b186683ecdbb0d9a033464be96ae01434b7aec574"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0050_02/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 235158,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/fc/receipt.json",
+        "sha256": "12cbb605019286437e802a42f3995df277dfb66184c0d4c526abd9a03e961102"
+      },
+      "scene": "scene0084_00",
+      "source": {
+        "bytes": 201068,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/fc/F.json",
+        "sha256": "c07f2bee8a6d2a1939a4b5e933f5e3551c1c0b7ad3934f4ba4e34ac31733848c"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_00/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 253593,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/fc/receipt.json",
+        "sha256": "b29cbf5d138cced190f22a278df7e0cb7315c437b3f0409759ceeba839047d6b"
+      },
+      "scene": "scene0084_01",
+      "source": {
+        "bytes": 221013,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/fc/F.json",
+        "sha256": "c35a24b268262f2855bd92c7ea08d2b067873e94efe1e5b8e03eba4e17f344ac"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_01/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 207479,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/fc/receipt.json",
+        "sha256": "3b9abad5971459e818004700fb4bba6a07a1ae899fe0424f4bb92d7c05caea7b"
+      },
+      "scene": "scene0084_02",
+      "source": {
+        "bytes": 175324,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/fc/F.json",
+        "sha256": "a2be9b0ccee9bccc0e738bc1c4e7c072ef63b9cdf9e3740144b947672e8643cc"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0084_02/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 838615,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/fc/receipt.json",
+        "sha256": "ee69ebe0c10c4f43bbc37177f96cb3674c4273464326189180b4dcb7bb697a26"
+      },
+      "scene": "scene0168_00",
+      "source": {
+        "bytes": 847187,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/fc/F.json",
+        "sha256": "92258a8587067ef2b2764c816c166e71573e3253071ff0924ee6f014ed0b82af"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_00/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 826541,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/fc/receipt.json",
+        "sha256": "0c1fca55179efc6e9f77cb297ce8e4aec5388a44ee1cbf8dc1eaeb569750ae6f"
+      },
+      "scene": "scene0168_01",
+      "source": {
+        "bytes": 841984,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/fc/F.json",
+        "sha256": "c7c8c0c244a15d83fdcb17feb74f34c04245d9e8e8daaa4604cf178fb9ee0983"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_01/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 841785,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/fc/receipt.json",
+        "sha256": "4cfa704ac1f09fc7cb5ebc556a6fe2d9d4e9722c3084a31c4135b767f876e05c"
+      },
+      "scene": "scene0168_02",
+      "source": {
+        "bytes": 837044,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/fc/F.json",
+        "sha256": "f94ab9d91446c1438e55bfade16a94dfd5464e92c8763a35effa02728f52f82e"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0168_02/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 819896,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/fc/receipt.json",
+        "sha256": "c26da43aead8bb39a04ba4668da81d648da30892645086b70c8c15d6b6adddca"
+      },
+      "scene": "scene0231_00",
+      "source": {
+        "bytes": 834277,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/fc/F.json",
+        "sha256": "b8d56a84d3c6625edb8d76d909eb37347a69253321ca0de5cf3459f458bd93ac"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_00/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 801294,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/fc/receipt.json",
+        "sha256": "f0c210d9b6ffd326db196d23a5f87cb90ccc9e1ca17404a4f368d523059e072c"
+      },
+      "scene": "scene0231_01",
+      "source": {
+        "bytes": 823977,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/fc/F.json",
+        "sha256": "2fdb71c7bafef6e4533975a4a7207780ce1205171a50cfbcd41ce5a9cbeafa26"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_01/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 804416,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/fc/receipt.json",
+        "sha256": "9444d9860435750a1e3c2138cb82d90f2aabf78f402bb8d561e9b4f76aa5adf9"
+      },
+      "scene": "scene0231_02",
+      "source": {
+        "bytes": 837448,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/fc/F.json",
+        "sha256": "3b2170bf6ac21cb44d0ed8f5329cdfccefb994f1999e394137696e740f1ef4d8"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0231_02/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 560422,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/fc/receipt.json",
+        "sha256": "91ebc127d8648a18ffa7e7792556791941cb39de8ee08ef3b40bfe2ae1d0513e"
+      },
+      "scene": "scene0378_00",
+      "source": {
+        "bytes": 527548,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/fc/F.json",
+        "sha256": "a2bb6a1c51ebd399034bbefbd9353e1ed031fd2c042ab9947580b9329b2578fb"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_00/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 625714,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/fc/receipt.json",
+        "sha256": "170ac1d08b56f9dde1db4283f5d16a0d239146c6bc83ca1b6169897628fe766f"
+      },
+      "scene": "scene0378_01",
+      "source": {
+        "bytes": 586410,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/fc/F.json",
+        "sha256": "8b4571f50e081faa7aeacc084859197ab1bd97d188ff5b33b4c1ee68a8417751"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_01/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 657279,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/fc/receipt.json",
+        "sha256": "cac36dd883b821e65c568303234f1cde56bff436c11ccb935a54ce655e04b5c3"
+      },
+      "scene": "scene0378_02",
+      "source": {
+        "bytes": 627789,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/fc/F.json",
+        "sha256": "5e2ac5517b1fd0feaf730ce64a4174a733240cd7efe51509bd1a823d80cf5c4d"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0378_02/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    },
+    {
+      "physical_model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "random_active_parameters": false,
+      "receipt": {
+        "bytes": 706583,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/fc/receipt.json",
+        "sha256": "5be276cd9e654032b93dc36d1e1372b1f0f7bf42236c3487b004862f4c49613b"
+      },
+      "scene": "scene0518_00",
+      "source": {
+        "bytes": 689805,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/fc/F.json",
+        "sha256": "6a966b3c1195e6cdc394c02c7d0710420d9cd557550901aec6dd3301218f748e"
+      },
+      "status": "PASS",
+      "strict_loaded_key_count": 543,
+      "text": {
+        "bytes": 669136,
+        "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+        "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+      },
+      "weight_audit": {
+        "bytes": 210792,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/readouts/scene0518_00/BB00_NATIVE/fc/weight_audit.json",
+        "sha256": "d09d0307e3ff670ad77b44ff061270cdf54d061573822e0d3a6a5aad26f2ecfb"
+      },
+      "weights": [
+        {
+          "bytes": 2028,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
+          "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
+        },
+        {
+          "bytes": 524657,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "bytes": 589,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_config.json",
+          "sha256": "d90f9366b9ef73c1cc1d8c6ecadbd91ce1f4b421a6b15ed3428d0720a613040c"
+        },
+        {
+          "bytes": 1407151868,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/open_clip_model.safetensors",
+          "sha256": "1a8e47bdefd6d36202ec66a8975edda9e3c89560bcd1ecefe6f676311637a671"
+        },
+        {
+          "bytes": 472,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/special_tokens_map.json",
+          "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+        },
+        {
+          "bytes": 2224053,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer.json",
+          "sha256": "d8b124290bc4bcd18cd3f72747f525e2a1d8c266cf3089e52da38ee417564ac5"
+        },
+        {
+          "bytes": 806,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/tokenizer_config.json",
+          "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+        },
+        {
+          "bytes": 862328,
+          "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ]
+    }
+  ],
+  "status": "PASS_FULL18_CF_FC_SOURCES"
+}
