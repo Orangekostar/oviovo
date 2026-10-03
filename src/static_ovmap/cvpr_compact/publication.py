@@ -1,12 +1,13 @@
 """Measured compact artifacts, primary evidence audit and normal branch publication."""
 
-import gzip
 import hashlib
 import json
-from pathlib import Path
+import lzma
+from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
+import tarfile
 import time
 
 from static_ovmap.module_validation.contracts import atomic_write_json, canonical_digest
@@ -255,29 +256,105 @@ def check_public_json(value):
         raise ValueError("compact publication contains an apparent credential value")
 
 
+def _member_path(name):
+    path = PurePosixPath(name)
+    if path.is_absolute() or ".." in path.parts or not path.parts or path.as_posix() != name:
+        raise ValueError("invalid compact evidence member path")
+    return path
+
+
+def verify_evidence_archive(archive, members, *, extract_to=None):
+    expected = {row["path"]: row for row in members}
+    if len(expected) != len(members):
+        raise ValueError("duplicate compact evidence member path")
+    for name in expected:
+        _member_path(name)
+    destination = Path(extract_to).resolve() if extract_to is not None else None
+    seen, total = set(), 0
+    with tarfile.open(archive, "r|xz") as container:
+        for entry in container:
+            _member_path(entry.name)
+            if not entry.isfile() or entry.name not in expected or entry.name in seen:
+                raise ValueError("compact archive contains an unexpected member")
+            wanted = expected[entry.name]
+            if entry.size != wanted["bytes"]:
+                raise ValueError("compact evidence member size differs")
+            output = None
+            if destination is not None:
+                target = destination / entry.name
+                if not target.resolve().is_relative_to(destination):
+                    raise ValueError("compact evidence extraction leaves its destination path")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                output = target.open("xb")
+            digest = hashlib.sha256()
+            try:
+                with container.extractfile(entry) as source:
+                    while chunk := source.read(1024**2):
+                        digest.update(chunk)
+                        if output is not None:
+                            output.write(chunk)
+            finally:
+                if output is not None:
+                    output.close()
+            if digest.hexdigest() != wanted["sha256"]:
+                raise ValueError("compact evidence member hash differs from its original bytes")
+            seen.add(entry.name)
+            total += entry.size
+    if seen != set(expected):
+        raise ValueError("compact evidence archive omitted required members")
+    return {"file_count": len(seen), "original_bytes": total}
+
+
+def _pack_evidence(paths, archive, index):
+    members = [{**index.identity(path), "path": name} for name, path in sorted(paths.items())]
+    total = sum(row["bytes"] for row in members)
+    dictionary = min(256 * 1024**2, max(1024**2, 1 << max(0, total - 1).bit_length()))
+    archive.parent.mkdir(parents=True, exist_ok=True)
+    with lzma.LZMAFile(archive, "wb", format=lzma.FORMAT_XZ,
+            filters=[{"id": lzma.FILTER_LZMA2, "preset": 6, "dict_size": dictionary}]) as stream:
+        with tarfile.open(fileobj=stream, mode="w|", format=tarfile.PAX_FORMAT) as container:
+            for row in members:
+                _member_path(row["path"])
+                entry = tarfile.TarInfo(row["path"])
+                entry.size, entry.mode = row["bytes"], 0o644
+                with paths[row["path"]].open("rb") as source:
+                    container.addfile(entry, source)
+    verified = verify_evidence_archive(archive, members)
+    return {"members": members, "dictionary_bytes": dictionary, **verified,
+            "encoding": "XZ-compressed deterministic TAR; original file bytes preserved exactly"}
+
+
+def _direct_artifact(relative):
+    path = PurePosixPath(relative)
+    return (relative in ("matrix.json", "exposure_ledger.json", "scientific_coverage.json", "external/reference.json",
+                         "reports/analysis.json", "validation/requirement_catalog.json")
+            or path.parts[0] == "validation" and path.name != "actual_consumers_integration.json"
+            or path.parts[0] == "tables" and path.name not in ("costs.json", "supplement.json", "receipt.json"))
+
+
 def build_release(binding):
     root, repo = Path(binding["output_root"]), Path(binding["repository_root"])
     index = ConsumptionIndex(root / "validation/input_verifications.json")
     coverage = audit_measurements(binding, index=index)
     destination = repo / RELEASE_ROOT
-    copied, retained = [], {}
+    staging = root / "publication/release_payload"
+    copied, retained, payloads = [], {}, {}
 
     def copy(path, relative=None):
         path = Path(path)
         identity = index.identity(path)
         relative = relative or path.relative_to(root).as_posix()
-        target = destination / relative
+        _member_path(relative)
+        target = staging / relative
         if path.suffix == ".json":
             check_public_json(read(path))
         target.parent.mkdir(parents=True, exist_ok=True)
-        if path.suffix == ".json" and identity["bytes"] > 65536:
-            target = target.with_suffix(".json.gz")
-            target.write_bytes(gzip.compress(path.read_bytes(), mtime=0))
-            encoding = "gzip; original JSON bytes preserved exactly"
-        else:
-            shutil.copyfile(path, target)
-            encoding = "IDENTITY"
-        copied.append({"source": identity, "release": {**index.identity(target), "path": target.relative_to(repo).as_posix()},
+        if relative in payloads and index.identity(payloads[relative])["sha256"] != identity["sha256"]:
+            raise ValueError("two original files disagree at one compact release path")
+        shutil.copyfile(path, target)
+        payloads[relative] = target
+        encoding = "IDENTITY" if _direct_artifact(relative) else "TAR_XZ_MEMBER; original bytes preserved exactly"
+        copied.append({"source": identity, "release": {**index.identity(target), "path": RELEASE_ROOT + "/" + relative},
                        "encoding": encoding})
 
     def keep(item):
@@ -296,6 +373,9 @@ def build_release(binding):
     copy(root / "external/reference.json")
     for filename in ("final_contract_tests.json", "final_smoke.json", "final_table_visual_qa.json"):
         copy(root / "validation" / filename)
+    integration = root / "validation/actual_consumers_integration.json"
+    if integration.is_file():
+        copy(integration)
     for scene in [row["scene"] for row in experiment_matrix(load_spec(binding["spec"]))["anchors"]]:
         context = read(root / "contexts" / (scene + ".json"))
         copy(root / "contexts" / (scene + ".json"))
@@ -393,19 +473,58 @@ def build_release(binding):
                         "Cold timings are original physical observations; restore their exact receipts and do not replay reserved measurements.",
         "cold_timings_are_observations_not_reconstructible_samples": True}
     check_public_json(reconstruction)
-    atomic_write_json(destination / "shared_artifacts.json", reconstruction)
+    atomic_write_json(root / "publication/shared_artifacts.json", reconstruction)
+    copy(root / "publication/shared_artifacts.json", "shared_artifacts.json")
     catalog = requirement_catalog()
-    atomic_write_json(destination / "validation/requirement_catalog.json", catalog)
+    atomic_write_json(root / "publication/requirement_catalog.json", catalog)
+    copy(root / "publication/requirement_catalog.json", "validation/requirement_catalog.json")
+    archived = {name: path for name, path in payloads.items() if not _direct_artifact(name)}
+    archive_path = root / "publication/evidence.tar.xz"
+    archive = _pack_evidence(archived, archive_path, index)
+    destination.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(archive_path, destination / "evidence.tar.xz")
+    archive["file"] = {**index.identity(destination / "evidence.tar.xz"), "path": RELEASE_ROOT + "/evidence.tar.xz"}
+    # Preserve the failed older representation before replacing only owned paths.
+    history = root / "publication/previous_release_files"
+    for relative, source in payloads.items():
+        target = destination / relative
+        obsolete = [target.with_suffix(".json.gz")] if target.suffix == ".json" else []
+        if not _direct_artifact(relative):
+            obsolete.append(target)
+        for previous in obsolete:
+            if previous.is_file():
+                identity = index.identity(previous)
+                saved = history / identity["sha256"]
+                saved.parent.mkdir(parents=True, exist_ok=True)
+                if not saved.exists():
+                    shutil.copyfile(previous, saved)
+                index.identity(saved, identity)
+                previous.unlink()
+        if _direct_artifact(relative):
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+    readme = ("# Compact measured evidence\n\n"
+        "The direct tables, metrics, PDF, freeze and validation summaries accompany `evidence.tar.xz`. "
+        "The archive contains the original byte-for-byte JSON scores, decisions, matching traces, class metrics, "
+        "costs, failures and original cold receipts. `bundle.json` lists every member's original SHA256 and size.\n\n"
+        "From this directory, restore detailed evidence into a new directory with standard tools:\n\n"
+        "```bash\nmkdir compact_evidence\ntar -xJf evidence.tar.xz -C compact_evidence\n```\n\n"
+        "`compact_evidence/shared_artifacts.json` records immutable large dependencies and the production "
+        "reconstruction command. Relocate roots with `--path-map OLD=NEW`. Original reserved cold observations "
+        "must be restored, never replayed. Archive extraction performs no inference.\n")
+    (destination / "README.md").write_text(readme)
     files = sorted(path for path in destination.rglob("*") if path.is_file() and path.name not in ("bundle.json", "primary_review.json"))
     total = sum(path.stat().st_size for path in files)
     if total >= LIMIT_BYTES:
         raise RuntimeError("actual compact release exceeds50MiB; preserve evidence and compact its representation")
     manifest = {"status": "COMPACT_RELEASE_BUILT", "scientific_coverage_identity": coverage["identity"],
         "files": [{**index.identity(path), "path": path.relative_to(repo).as_posix()} for path in files],
-        "original_copies": copied, "bytes_excluding_bundle_and_primary_review": total,
+        "original_copies": copied, "evidence_archive": archive, "bytes_excluding_bundle_and_primary_review": total,
         "limit_bytes": LIMIT_BYTES, "primary_review": "PENDING", "publication": "PENDING_PUSH_VERIFICATION"}
     manifest["identity"] = canonical_digest(manifest)
     atomic_write_json(destination / "bundle.json", manifest)
+    if total + (destination / "bundle.json").stat().st_size >= LIMIT_BYTES:
+        raise RuntimeError("actual compact release including manifest exceeds50MiB")
     index.write_memo(root / "validation/input_verifications.json")
     return manifest
 
@@ -457,6 +576,9 @@ def verify_primary_review(binding, bundle):
         reviewed.add(path.resolve().relative_to(repo.resolve()).as_posix())
     if not expected_files <= reviewed:
         raise ValueError("primary review omitted actual implementation, reports or release files")
+    members = bundle.get("evidence_archive", {}).get("members", [])
+    if members and review.get("archived_members_reviewed") != members:
+        raise ValueError("primary review omitted original archived evidence members")
     return review
 
 

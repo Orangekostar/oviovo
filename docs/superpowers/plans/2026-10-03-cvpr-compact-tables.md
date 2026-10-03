@@ -111,7 +111,7 @@ Files: `src/static_ovmap/cvpr_compact/tables.py`, four COMPACT_TABLES reports,
 - [x] Implement one complete fractional scene/pool store and typed cells with receipt identities or source coordinates; test nulls, fixed full coverage, exact order and repeated A3 identities.
 - [x] Implement6/6/4-row booktabs TeX, JSON, CSV and cell provenance from typed data; compile and visually inspect a clearly marked synthetic9pt preview without overflow.
 - [ ] Populate the final generated files from actual172 outputs,14 pools and24 cold calls; synthetic artifacts are not release results.
-- [ ] Compile actual preview at >=8.5pt, visually inspect PDF and overflow; preserve all fixed rows and negative results.
+- [x] Compile actual preview at >=8.5pt, visually inspect PDF and overflow; preserve all fixed rows and negative results. Actual one-page9pt PDF has6/6/4 rows and no overfull boxes; primary visual QA is sealed separately.
 - [ ] Report full five metrics, paired A3-A0/A1/A4/A5 deltas, 2x2 effects, Pareto/guardrails, actual coverage/cost and separate status fields.
 - [x] Implement four report generators and paired analysis; test fixed A3, negative A3-A5 effects, null deltas, Pareto controls and conditional time differences. Actual reports remain pending full measured evidence.
 
@@ -145,3 +145,29 @@ Canonical execution:
 - Amendment03 completed the explicit per-arm cold preflight and all22 valid single cold calls. All24 fixed positions remain present, with two proved office1 blocks. Every observed feature/support/label/rank parity passed, maximum feature difference0.0; the full8-scene U2 mean is6.614763293619035 seconds. G1/G3 full-cohort means remain null. Canonical time resumption retained28 exact observation/parent/worker files and did not repeat a physical call.
 - Amendment04 consumer changes now pass73 focused tests. They retain172/14 typed positions with actual168/10 scientific coverage, null blocked full-cohort metrics/counts/times and explicit conditional-publication review. Actual diagnostic/table/report generation, measured-PDF QA, the final327-requirement review and normal GitHub publication remain pending. Required172/14/24 totals are unchanged; no global scientific COMPLETE has been claimed.
 - Previous scene0056_00 smoke receipts and failed commands are preserved. Explicit pre-freeze regeneration corrected only lossless legacy FP32 storage and environment-dependent probability-audit metadata; no scientific parameter, label decision, extra method or development map changed.
+
+## Amendment06: Full Fixed-Method Analysis And Lossless Publication
+
+Primary ownership: report semantics, packaging design, integration and review.
+Allowed source changes: `reports.py`, `publication.py` and the focused contract
+tests. The15 scientific producers,168 actual outputs,10 actual ordered pools,
+all26 diagnoses, original tables/PDF and22 reserved cold observations stay exact.
+
+- [x] Execute actual26-scene diagnostics and typed tables/reports, retaining
+  all172/14/24 positions with168/10/22 complete and explicit technical blocks.
+- [x] Complete actual rendered-PDF QA and actual consumer integration audit.
+- [x] Diagnose actual213MiB publication failure: repeated full JSON evidence
+  does not meet the50MiB target under separate gzip compression.
+- [x] Reproduce the omitted Replica U2/G3 Pareto scope with two failing assertions.
+- [ ] Compare all fixed cohort methods in Pareto analysis; keep the prescribed
+  A3 paired deltas and2x2 contrasts unchanged, and disclose unavailable inputs.
+- [ ] Validate deterministic lossless whole-evidence XZ packaging against every
+  original byte/hash; retain direct small tables, summaries and reconstruction
+  metadata, with a standard-library extraction interface for archived evidence.
+- [ ] Record preservation preflight, archive previous reports, run one final
+  current-source focused suite and reuse the same real eight-condition smoke;
+  freeze the documented consumer amendment before regenerating reports.
+- [ ] Build and audit the actual complete compact release below50MiB, including
+  manifest and eventual primary review. No technical block becomes COMPLETE.
+- [ ] Perform the327-requirement primary review, canonical all-resume reuse and
+  normal GitHub publication with full local/remote SHA verification.

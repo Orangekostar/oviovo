@@ -14,13 +14,13 @@
     "affected_descendants": [
       "reports"
     ],
-    "id": "06",
+    "id": "05",
     "main_outcomes_seen": true,
     "new_neural_inference": 0,
-    "preservation_preflight_identity": "3c9c2aa4ac13f260769c2fa90a2028868b2c3e053c788fdfec14a51d8366c55e",
-    "previous_freeze_identity": "2980fb8fbf4c2b12c91b26be5dbf41ff0b11d5dcf4d4baddadb5673d1d767850",
-    "previous_revision": "1c24a582d5cef72dec48fdba5302faa7136088a1",
-    "reason": "Include every fixed cohort method in descriptive Pareto scope and publish all original detailed evidence through verified deterministic TAR/XZ; preserve scientific outputs, tables/PDF and all reserved cold observations.",
+    "preservation_preflight_identity": "a989021cc11f8828d2bfe0f0640ae7ac023f779333bc05d794e94d636fe7c782",
+    "previous_freeze_identity": "9cdb331bd0aac15f5ad8003f61d4f7a4baef4aaa8ef99a1556363676bf623403",
+    "previous_revision": "3c95880a5c463a8475889db394834d17547ba234",
+    "reason": "Fix only sorted-key JSON report replay order and record actual committed report-generation provenance; retain all measured numeric artifacts and original report archive.",
     "unchanged_scientific_producers": [
       {
         "bytes": 28905,
@@ -576,7 +576,7 @@
     "sha256": "3f5ab03d6afb8a6a300abc3291305cf20c4e306791cadc380649e58e0349aba3"
   },
   "branch": "research/ovimap-cvpr-compact-tables-v1",
-  "created_at_unix": 1791048341.305442,
+  "created_at_unix": 1791045880.407292,
   "data_exposure": {
     "captures": {
       "scene0011_00": {
@@ -782,7 +782,7 @@
     "N": 0.010357429721631367,
     "Q": 0.010000492837221748
   },
-  "identity": "257e29d4286b4d3192409f1ff0f7bea59a490a6063287a1ab3d34fb0c3603eb8",
+  "identity": "2980fb8fbf4c2b12c91b26be5dbf41ff0b11d5dcf4d4baddadb5673d1d767850",
   "implementation_sources": [
     {
       "bytes": 82,
@@ -865,9 +865,9 @@
       "sha256": "b54e211d3daee7d3f5f81bba0f634e2d46eca55acbf1eaa1673b03c33fd32c74"
     },
     {
-      "bytes": 40302,
+      "bytes": 33238,
       "path": "src/static_ovmap/cvpr_compact/publication.py",
-      "sha256": "b280789f4d44682bae22d6e2cf147a58634c945334bba37df5847fb0b78ae7d7"
+      "sha256": "1b0bd55953fe54de663c4afc54410b3d46c4379aa58bb5e99e907846ae93b4c6"
     },
     {
       "bytes": 8102,
@@ -885,9 +885,9 @@
       "sha256": "d5a9193dc95320cde684199428334f97da4130447c9abbe8ae2f25b7b3899976"
     },
     {
-      "bytes": 25612,
+      "bytes": 25427,
       "path": "src/static_ovmap/cvpr_compact/reports.py",
-      "sha256": "9317c8ca97ee49b002723730ed4b378e24065870cec82562130c3d378f1d56f3"
+      "sha256": "aab23964363ec32876824bfdb897ae943b3457b089c6cdc72a253b4e13de4132"
     },
     {
       "bytes": 8403,
@@ -915,9 +915,9 @@
       "sha256": "cd9d31425b29cf9ac8e195e4238995cd67de5e792cd1c1319ffa22ea4884fcea"
     },
     {
-      "bytes": 147787,
+      "bytes": 145526,
       "path": "tests/evaluation/test_cvpr_compact_contracts.py",
-      "sha256": "46e6e6a05db44282fe6d5a23cbb136c213c9849b3e74b206d3239a288b884cf7"
+      "sha256": "563d83e8b028dc1771fc70b185c7e4112ed46e6e5b355ce1641775d1db6325ac"
     },
     {
       "bytes": 10046,
@@ -22450,12 +22450,12 @@
     "existing_map_smoke": {
       "bytes": 11640,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_smoke.json",
-      "sha256": "b440e3283cbb26cbc4a9418f35e3cb4ba45655f789494cb06119abe57b8f1a7d"
+      "sha256": "6aa71f78191b357ddd9b83aa62ddf7efcd9d306a57b6822d6479cbb8568ffaad"
     },
     "focused_tests": {
       "bytes": 10782,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_contract_tests.json",
-      "sha256": "ea27051fd4c5c097d651c63f43f7959b177b1c18cf0a86fabbfa3d0cbc3acf68"
+      "sha256": "0a033b98c95b31190f221e5d6c03449ad58224d06cecfdf1483578d63a3818dc"
     }
   }
 }

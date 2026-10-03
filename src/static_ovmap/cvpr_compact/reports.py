@@ -51,7 +51,8 @@ def analyze_results(spec, store, diagnosis, timing):
         raise ValueError("paired reporting changed its exact complete14-pool matrix")
     cohorts = {}
     for cohort in spec["cohorts"]:
-        values = {method: pools[(cohort, method)]["metrics"] for method in CONDITIONS}
+        methods = [row["id"] for row in spec["methods"] if cohort in row["cohorts"]]
+        values = {method: pools[(cohort, method)]["metrics"] for method in methods}
         a0, a1, a2, a3 = (values[method] for method in CONDITIONS[:4])
         deltas = {"A3_vs_" + short + "_pp": _delta(a3, values[method])
                   for short, method in (("A0", CONDITIONS[0]), ("A1", CONDITIONS[1]),
@@ -61,21 +62,22 @@ def analyze_results(spec, store, diagnosis, timing):
             "AP50_drop_at_most_0.10pp": None if recovery["ap50"] is None else recovery["ap50"] >= -.10,
             "mIoU_drop_at_most_0.10pp": None if recovery["miou"] is None else recovery["miou"] >= -.10}
         flags["all_preferences_met"] = None if any(value is None for value in flags.values()) else all(flags.values())
-        dominators = {method: [other for other in CONDITIONS if other != method
-            and _dominates(values[other], values[method], ("apall", "ap50", "miou"))] for method in CONDITIONS}
-        unavailable = [method for method in CONDITIONS
+        dominators = {method: [other for other in methods if other != method
+            and _dominates(values[other], values[method], ("apall", "ap50", "miou"))] for method in methods}
+        unavailable = [method for method in methods
                        if any(values[method][m] is None for m in ("apall", "ap50", "miou"))]
         cohorts[cohort] = {**deltas, "raw_metrics": values,
             "E_only_pp": _delta(a1, a0), "R_only_pp": _delta(a2, a0),
             "E_given_R_pp": _delta(a3, a2), "R_given_E_pp": recovery,
             "interaction_pp": {metric: None if any(row[metric] is None for row in (a0, a1, a2, a3))
                                else 100 * (a3[metric] - a2[metric] - a1[metric] + a0[metric]) for metric in METRICS},
-            "guardrails_vs_A1": flags, "metric_pareto_frontier": [method for method in CONDITIONS
+            "guardrails_vs_A1": flags, "metric_pareto_frontier": [method for method in methods
                 if not dominators[method] and all(values[method][m] is not None for m in ("apall", "ap50", "miou"))],
+            "metric_pareto_methods": methods,
             "metric_pareto_unavailable": unavailable, "metric_pareto_scope_complete": not unavailable,
             "A3_dominated_by": None if "CT_A3_ER" in unavailable else dominators["CT_A3_ER"],
             "pareto_metrics": ["apall", "ap50", "miou"],
-            "pool_identities": {method: pools[(cohort, method)]["receipt_identity"] for method in CONDITIONS}}
+            "pool_identities": {method: pools[(cohort, method)]["receipt_identity"] for method in methods}}
     recovery = {}
     for later, earlier in (("G1", "U2"), ("G3", "G1")):
         first, second = diagnosis["arms"][later], diagnosis["arms"][earlier]
@@ -209,7 +211,8 @@ def render_reports(binding, store, diagnosis, timing, reference, analysis, freez
         + "\n" + _markdown(["Cohort", "Metric Pareto frontier", "Undefined Pareto input"],
             [[cohort, ", ".join(row["metric_pareto_frontier"]), ", ".join(row["metric_pareto_unavailable"]) or "none"]
              for cohort, row in analysis["cohorts"].items()])
-        + "\nPareto frontiers use only controls with available APall/AP50/mIoU; missing controls are listed, "
+        + "\nPareto comparison includes every fixed method in each cohort (eight for Replica, six for CF18), "
+        "using available APall/AP50/mIoU; missing methods are listed, "
         "and the complete fixed-method frontier cannot be established when any input is unavailable. "
         "An unavailable A3 comparison is --, not evidence that A3 has no dominator. "
         "Any A3 dominator is reported without suppression. A3 versus A4 tests representation under the same "

@@ -1749,6 +1749,10 @@ def test_report_analysis_keeps_fixed_primary_negative_controls_and_null_deltas(t
     delta = result["cohorts"]["replica8"]["A3_vs_A5_pp"]
     assert delta["apall"] == pytest.approx(-2.)
     assert "CT_A5_FC_ONLY" in result["cohorts"]["replica8"]["A3_dominated_by"]
+    expected_methods = [row["id"] for row in spec["methods"] if "replica8" in row["cohorts"]]
+    assert result["cohorts"]["replica8"]["metric_pareto_methods"] == expected_methods
+    assert set(result["cohorts"]["replica8"]["pool_identities"]) == set(expected_methods)
+    assert {"CT_H_U2", "CT_G3"} <= set(result["cohorts"]["replica8"]["A3_dominated_by"])
     assert result["cohorts"]["scannet_cf18"]["A3_vs_A4_pp"]["miou"] is None
     assert result["cohorts"]["replica8"]["guardrails_vs_A1"]["APall_positive"]
     assert result["cohorts"]["replica8"]["interaction_pp"]["apall"] == pytest.approx(0.)
@@ -1792,7 +1796,8 @@ def test_partial_reports_preserve_unavailable_comparisons_and_actual_negative_co
     assert all(value is None for value in replica["interaction_pp"].values())
     assert replica["guardrails_vs_A1"]["all_preferences_met"] is None
     assert replica["metric_pareto_scope_complete"] is False
-    assert set(replica["metric_pareto_unavailable"]) == {"CT_A2_R", "CT_A3_ER", "CT_A5_FC_ONLY"}
+    assert set(replica["metric_pareto_unavailable"]) == {"CT_A2_R", "CT_A3_ER", "CT_A5_FC_ONLY", "CT_G3"}
+    assert replica["metric_pareto_frontier"] == ["CT_H_U2"]
     assert result["cohorts"]["scannet_cf18"]["A3_vs_A5_pp"]["apall"] == pytest.approx(-2.)
     for row in result["recovery"].values():
         assert row["source_available_delta"] is None and row["mean_seconds_delta"] is None
@@ -2263,21 +2268,42 @@ def test_release_contains_real_scores_decisions_matching_and_deterministic_compr
         else:
             call = write(leaf + "/call/receipt.json", {"actual_seconds": .5})
             write(leaf + "/receipt.json", {"recovery_receipt": str(call), "inputs": [], "outputs": []})
+    legacy = repo / publication.RELEASE_ROOT / "sources/office0/N.json.gz"
+    legacy.parent.mkdir(parents=True, exist_ok=True)
+    legacy.write_bytes(gzip.compress((root / "original/office0/N.json").read_bytes(), mtime=0))
+    legacy_identity = ConsumptionIndex().identity(legacy)
     first = publication.build_release(binding)
     second = publication.build_release(binding)
     assert first == second
     release = repo / publication.RELEASE_ROOT
-    assert json.loads(gzip.decompress((release / "sources/office0/N.json.gz").read_bytes())) == original_scores
-    decision_paths = list((release / "decisions").glob("*/*.json"))
+    archive = first["evidence_archive"]
+    extracted = tmp_path / "extracted"
+    restored = publication.verify_evidence_archive(repo / archive["file"]["path"], archive["members"], extract_to=extracted)
+    assert restored["file_count"] == len(archive["members"])
+    assert json.loads((extracted / "sources/office0/N.json").read_text()) == original_scores
+    source_path = root / "original/office0/N.json"
+    assert (extracted / "sources/office0/N.json").read_bytes() == source_path.read_bytes()
+    decision_paths = list((extracted / "decisions").glob("*/*.json"))
     assert len(decision_paths) == (168 if partial else 172)
     assert json.loads(decision_paths[0].read_text())["registry_checks"]["unknown_semantic_positive_owners"] == [8]
     assert json.loads(decision_paths[0].read_text())["all_positive_owner_labels"] == {"7": 1, "8": 0, "9": 2}
-    assert len(list((release / "evaluation").glob("*/*/matches.json.gz"))) == (168 if partial else 172)
-    assert len(list((release / "timing").glob("*/*/receipt.json"))) == 24
-    assert len(list((release / "timing").glob("*/*/call/receipt.json"))) == (22 if partial else 24)
+    assert len(list((extracted / "evaluation").glob("*/*/matches.json.gz"))) == (168 if partial else 172)
+    assert len(list((extracted / "timing").glob("*/*/receipt.json"))) == 24
+    assert len(list((extracted / "timing").glob("*/*/call/receipt.json"))) == (22 if partial else 24)
     if partial:
-        assert (release / "recovery/office1_U2/receipt.json").is_file()
-        assert not (release / "recovery/office1/regions/receipt.json").exists()
+        assert (extracted / "recovery/office1_U2/receipt.json").is_file()
+        assert not (extracted / "recovery/office1/regions/receipt.json").exists()
+    assert (release / "tables/result_store.json").is_file()
+    assert not (release / "sources/office0/N.json.gz").exists()
+    saved_legacy = root / "publication/previous_release_files" / legacy_identity["sha256"]
+    assert ConsumptionIndex().identity(saved_legacy)["sha256"] == legacy_identity["sha256"]
+    invalid = copy.deepcopy(archive["members"])
+    invalid[0]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="hash"):
+        publication.verify_evidence_archive(repo / archive["file"]["path"], invalid)
+    invalid[0]["path"] = "../outside.json"
+    with pytest.raises(ValueError, match="path"):
+        publication.verify_evidence_archive(repo / archive["file"]["path"], invalid)
     assert first["bytes_excluding_bundle_and_primary_review"] < publication.LIMIT_BYTES
     monkeypatch.setattr(publication, "LIMIT_BYTES", 1)
     with pytest.raises(RuntimeError, match="50MiB"):
@@ -2337,6 +2363,14 @@ def test_primary_review_allows_only_explicit_actual_blocks_without_claiming_comp
         save(changed)
         with pytest.raises(ValueError):
             publication.verify_primary_review(binding, {"identity": "synthetic-bundle", "files": []})
+    save(review)
+    members = [{"path": "scores/scene.json", "sha256": "a" * 64, "bytes": 10}]
+    bundle = {"identity": "synthetic-bundle", "files": [], "evidence_archive": {"members": members}}
+    with pytest.raises(ValueError, match="archiv"):
+        publication.verify_primary_review(binding, bundle)
+    review["archived_members_reviewed"] = members
+    save(review)
+    assert publication.verify_primary_review(binding, bundle) == review
 
 
 def test_legacy_region_cache_restores_only_losslessly_widened_original_fp32(tmp_path):
