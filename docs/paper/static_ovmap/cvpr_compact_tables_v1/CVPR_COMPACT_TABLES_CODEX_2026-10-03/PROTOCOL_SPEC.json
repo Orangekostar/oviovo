@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "task_id": "ovimap-cvpr-compact-tables-v1",
+  "date": "2026-10-03",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "1a1c4513ecf824c55274a456c40657271d631883",
+  "upstream_commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+  "branch": "research/ovimap-cvpr-compact-tables-v1",
+  "output_root": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001",
+  "parent_recovery_root": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001",
+  "parent_backbone_root": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001",
+  "cohorts": {
+    "replica8": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet_cf18": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0168_00",
+      "scene0168_01",
+      "scene0168_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "development_scenes": [
+    "scene0056_00",
+    "scene0534_00",
+    "scene0445_00",
+    "scene0626_00"
+  ],
+  "smoke_scene": "scene0056_00",
+  "physical_scan_families": 7,
+  "scope": {
+    "main_tables": 3,
+    "internal_methods": 8,
+    "main_scene_method_records": 172,
+    "main_pool_records": 14,
+    "main_anchor_maps": 26,
+    "max_new_successful_main_anchor_maps": 26,
+    "max_extra_development_anchor_maps": 0,
+    "extra_smoke_scene_method_records_max": 8,
+    "cold_recovery_replays": 24,
+    "new_algorithmic_mapper_variants": 0,
+    "external_system_retraining": false,
+    "external_system_full_reproduction": false,
+    "new_parameter_fits": 0,
+    "new_visual_backbone_search": false,
+    "new_dataset": false
+  },
+  "methods": [
+    {
+      "id": "CT_A0_NATIVE",
+      "short": "A0",
+      "existing": "NATIVE",
+      "recovery": "NONE",
+      "cohorts": [
+        "replica8",
+        "scannet_cf18"
+      ]
+    },
+    {
+      "id": "CT_A1_E",
+      "short": "A1",
+      "existing": "D2",
+      "recovery": "NONE",
+      "cohorts": [
+        "replica8",
+        "scannet_cf18"
+      ]
+    },
+    {
+      "id": "CT_A2_R",
+      "short": "A2",
+      "existing": "NATIVE",
+      "recovery": "G1_FC",
+      "cohorts": [
+        "replica8",
+        "scannet_cf18"
+      ]
+    },
+    {
+      "id": "CT_A3_ER",
+      "short": "A3",
+      "existing": "D2",
+      "recovery": "G1_FC",
+      "cohorts": [
+        "replica8",
+        "scannet_cf18"
+      ]
+    },
+    {
+      "id": "CT_A4_NATIVE_RECOVERY",
+      "short": "A4",
+      "existing": "D2",
+      "recovery": "G1_NATIVE",
+      "cohorts": [
+        "replica8",
+        "scannet_cf18"
+      ]
+    },
+    {
+      "id": "CT_A5_FC_ONLY",
+      "short": "A5",
+      "existing": "FC_ONLY_SAME_EVIDENCE",
+      "recovery": "G1_FC",
+      "cohorts": [
+        "replica8",
+        "scannet_cf18"
+      ]
+    },
+    {
+      "id": "CT_H_U2",
+      "short": "U2",
+      "existing": "D2",
+      "recovery": "ARCHIVED_U2_FC",
+      "cohorts": [
+        "replica8"
+      ]
+    },
+    {
+      "id": "CT_G3",
+      "short": "G3",
+      "existing": "D2",
+      "recovery": "G3_FC",
+      "cohorts": [
+        "replica8"
+      ]
+    }
+  ],
+  "frame_sampling": {
+    "algorithm": "assets.native_schedule",
+    "formula": "step=N//200; frame_ids=list(range(0,N,step))[:200]",
+    "planned_count": 200,
+    "preserve_original_indices": true,
+    "refill_invalid": false,
+    "existing_schedule_identity_required": true
+  },
+  "geometry": {
+    "mapper_recipe": "BB00_NATIVE",
+    "voxel_size_m": 0.01,
+    "instance_association": 4,
+    "reuse_requires": "identical frame/input/config/producer and valid geometry receipts",
+    "owner_support": "original native triangle-painted output for incumbents; residual raw support for absent owners",
+    "new_segmentation_or_association": false
+  },
+  "models": {
+    "native": "inherited siglip-l-16-384 FP32",
+    "query": "inherited frozen Q_GAIN checkpoint and standardizer",
+    "query_budget_max_attempts": 200,
+    "query_exhaustion": "stop honestly; do not duplicate requests",
+    "region": "inherited FC_FROZEN convnext_large_d_320 FP32",
+    "region_operator_pin": "9fd9450d22852d269d426b521663a127f3983a4b",
+    "region_resize_short": 800,
+    "region_resize_long_max": 1333,
+    "region_pad_multiple": 32,
+    "text_templates": 14,
+    "temperatures": "exact final N/Q/F vector used by archived Replica D2; same scalars for both cohorts, no CAL leave-one-out vector or fitting",
+    "new_text_encoding": "only identical frozen vocabulary/templates missing from cache"
+  },
+  "recovery": {
+    "minimum_residual_source_rows": 100,
+    "candidate_cap_per_scene": 128,
+    "priority": [
+      "residual_source_rows_desc",
+      "spatial_support_digest_asc"
+    ],
+    "support": "(raw_owner==i)&(native_painted_owner==0), i absent from incumbent positive owners",
+    "candidate_selection_uses_target_mesh": false,
+    "g1_max_views": 1,
+    "g3_max_views": 3,
+    "g3_contains_g1_prefix": true,
+    "new_view_selection_uses_historical_request_list": false,
+    "failed_view_replacement": false,
+    "incumbent_fc_missing_label": 0
+  },
+  "projection": {
+    "implementation": "Open3D tensor RaycastingScene on CPU, full frozen predicted mesh",
+    "coordinate_dtype": "float32",
+    "triangle_index_dtype": "uint32",
+    "pixel_coordinates": "integer u,v, inherited captured K",
+    "ray": "origin=t_c2w; direction=R_c2w @ inv(K) @ [u,v,1], not normalized",
+    "depth": "t_hit in camera z with stated rays",
+    "triangle_owner": "positive iff all three raw vertex owners agree; otherwise zero, still occludes",
+    "minimum_positive_depth_m": 1e-06,
+    "absolute_depth_tolerance_m": 0.02,
+    "relative_depth_tolerance": 0.02,
+    "depth_rule": "abs(t_hit-depth_m)<=max(0.02,0.02*depth_m)",
+    "invalid_depth_allowed": false,
+    "min_visible_pixels": 100,
+    "min_bbox_extent_pixels": 2,
+    "mask_growth_or_hole_filling": false,
+    "frame_selection": [
+      "visible_pixels_desc",
+      "frame_id_asc",
+      "mask_digest_asc"
+    ],
+    "canonical_bbox": "half-open x_min,y_min,x_max+1,y_max+1",
+    "native_crop_bbox": "legacy pixel maxima; do not silently fix native crop boundary behavior",
+    "ray_batch_pixels_max": 65536,
+    "raycast_threads": 4
+  },
+  "evaluation": {
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "aggregate": "ordered released dataset pool; semantic sum confusion",
+    "ap_thresholds": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "extra_ap_thresholds": [
+      0.25
+    ],
+    "target_min_points": 100,
+    "projection": "inherited Open3D FP32 1NN strict squared_distance<0.05**2",
+    "stored_metric_units": "fraction",
+    "main_display_units": "percent",
+    "main_decimals": 2,
+    "main_metrics": [
+      "apall",
+      "ap50",
+      "miou"
+    ],
+    "si_metrics": [
+      "ap25",
+      "macc"
+    ],
+    "partial_pool_allowed": false,
+    "unique_gt_counts_not_equal_score_entries": true,
+    "unknown_semantics": 0,
+    "threshold_spec_match_tolerance": 1e-12
+  },
+  "selection": {
+    "model_choice": "fixed pretrained checkpoints; no search",
+    "primary_method": "CT_A3_ER",
+    "freeze_before_new_main_metrics": true,
+    "change_primary_after_main_results": false,
+    "g3_can_replace_g1": false,
+    "development_performance_gate": false,
+    "deployment": "N0_UNCHANGED",
+    "final_decision": "report pairwise raw deltas, guardrail flags and Pareto set; no winner renaming",
+    "paired_reference": "CT_A1_E",
+    "guardrail_pp": {
+      "ap50": -0.1,
+      "miou": -0.1
+    },
+    "significance_claim": false
+  },
+  "timing": {
+    "scope": "feature-cache-cold incremental recovery, model already resident",
+    "cohort": "replica8",
+    "arms": [
+      "ARCHIVED_U2_FC",
+      "G1_FC",
+      "G3_FC"
+    ],
+    "repeats_per_scene_arm": 1,
+    "persistent_feature_reads": false,
+    "intra_run_frame_sharing": true,
+    "include": [
+      "candidate_registry",
+      "view_projection_or_archive_lookup",
+      "decode_preprocess",
+      "image_encoding",
+      "region_pool_projection",
+      "classification",
+      "output_and_rank_export"
+    ],
+    "exclude": [
+      "model_loading",
+      "geometry_mapping",
+      "benchmark_evaluation",
+      "dataset_download"
+    ],
+    "model_loading_reported_separately": true,
+    "cuda_synchronize_at_boundaries": true,
+    "statistics": "sum all eight measured scene costs / 8; not concurrent wall-time subtraction",
+    "gpu_lock_same_as_parent": true
+  },
+  "external_rows": {
+    "primary_route": "AUTHOR_REPORTED_AS_IN_OVI_TABLE3_SEPARATE_BLOCK",
+    "source": "https://arxiv.org/html/2603.26541v1#S4.T3",
+    "methods": [
+      "Mask3D + OpenMask3D",
+      "Segment3D + OpenMask3D",
+      "OVO-SLAM"
+    ],
+    "exact_prediction_protocol_verified": false,
+    "allow_cross_provenance_best_bolding": false,
+    "allow_new_external_model_install": false,
+    "missing_value": "NA with reason; never fabricate"
+  },
+  "resources": {
+    "map_workers": 2,
+    "threads_per_mapper": 8,
+    "eval_workers": 3,
+    "blas_threads_per_eval": 4,
+    "gpu_workers_per_device": 1,
+    "new_gpu_inference_allowed": true,
+    "retry_limit_same_leaf": 2,
+    "new_attempt_on_changed_input": true
+  },
+  "deliverables": [
+    "COMPACT_TABLES_RESULTS.md",
+    "COMPACT_TABLES_HANDOFF.md",
+    "COMPACT_TABLES_SELECTION.md",
+    "COMPACT_TABLES_CLAIMS.md",
+    "table1_main.tex",
+    "table2_ablation.tex",
+    "table3_recovery.tex",
+    "tables_main.json",
+    "tables_main.csv",
+    "cell_provenance.json",
+    "scientific_coverage.json",
+    "table_layout_preview.pdf"
+  ],
+  "publication": {
+    "normal_push_only": true,
+    "force_push": false,
+    "verify_full_remote_sha": true,
+    "compact_artifacts_mib_target": 50,
+    "upload_large_maps_or_weights": false,
+    "receipt_outside_commit": "publication/final.json"
+  }
+}

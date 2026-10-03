@@ -1,0 +1,25 @@
+% Layout template only. Production tables must be generated from table-cell records.
+\begin{table*}[!ht]
+\centering
+\caption{Complete-system results. The upper block is attributed context from OVI-MAP Table 3, not rerun here; exact external prediction protocols are not independently verified. The lower block is our paired reproduction. AP denotes the loaded released APall definition.}
+\label{tab:main}
+\fontsize{9}{10.5}\selectfont
+\setlength{\tabcolsep}{5pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{Replica-8} & \multicolumn{3}{c}{ScanNet-CF18} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Method & AP$\uparrow$ & AP50$\uparrow$ & mIoU$\uparrow$ & AP$\uparrow$ & AP50$\uparrow$ & mIoU$\uparrow$ \\
+\midrule
+\multicolumn{7}{l}{\emph{Reported in OVI-MAP (source values; not our measurements)}}\\
+Mask3D + OpenMask3D & -- & -- & -- & -- & -- & -- \\
+Segment3D + OpenMask3D & -- & -- & -- & -- & -- & -- \\
+OVO-SLAM & -- & -- & -- & -- & -- & -- \\
+\midrule
+\multicolumn{7}{l}{\emph{Paired evaluation under our fixed released-code protocol}}\\
+OVI-MAP (reproduced, A0) & -- & -- & -- & -- & -- & -- \\
+Ours: refinement only (A1) & -- & -- & -- & -- & -- & -- \\
+Ours: refinement + recovery (A3) & -- & -- & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular*}
+\end{table*}

@@ -1,0 +1,18 @@
+% Layout template only. A1/A3 metric cells are shared with Tables 1 and 2.
+\begin{table*}[!ht]
+\centering
+\caption{Recovery on Replica-8. $n/N$ is recovered owners over the same prelocked candidate pool, not true positives. TP/FP are added released-matcher score entries at IoU .50. Time is feature-cache-cold incremental recovery with the model resident, averaged over all eight scenes; model loading, mapping and evaluation are separate.}
+\label{tab:recovery}
+\fontsize{9}{10.5}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccrrrrr@{}}
+\toprule
+Entry & Max views & $n/N$ & TP50 & FP50 & AP & mIoU & Time (s) \\
+\midrule
+None (A1) & 0 & $0/N$ & 0 & 0 & -- & -- & 0 \\
+Archived U2 & 1 & -- & -- & -- & -- & -- & -- \\
+Independent G1 (A3) & 1 & -- & -- & -- & -- & -- & -- \\
+Independent G3 & 3 & -- & -- & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular*}
+\end{table*}

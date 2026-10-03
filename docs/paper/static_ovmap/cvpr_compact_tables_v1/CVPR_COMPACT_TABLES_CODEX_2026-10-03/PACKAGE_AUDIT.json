@@ -1,0 +1,234 @@
+{
+  "scope": "EXECUTION_PACKAGE_SPECIFICATION_ONLY",
+  "checks": [
+    {
+      "check": "All required package files exist",
+      "passed": true
+    },
+    {
+      "check": "Exact base SHA",
+      "passed": true
+    },
+    {
+      "check": "Exact upstream SHA",
+      "passed": true
+    },
+    {
+      "check": "Named release branch present",
+      "passed": true
+    },
+    {
+      "check": "Replica list/order",
+      "passed": true
+    },
+    {
+      "check": "CF18 list/order",
+      "passed": true
+    },
+    {
+      "check": "Seven ScanNet physical families",
+      "passed": true
+    },
+    {
+      "check": "No dev scene silently replaces a benchmark scene",
+      "passed": true
+    },
+    {
+      "check": "Eight unique internal methods",
+      "passed": true
+    },
+    {
+      "check": "All IDs bound in main prompt",
+      "passed": true
+    },
+    {
+      "check": "172 fixed scientific scene-method records",
+      "passed": true
+    },
+    {
+      "check": "14 internal pools",
+      "passed": true
+    },
+    {
+      "check": "26 common geometry maps not172",
+      "passed": true
+    },
+    {
+      "check": "Only U2/G3 limited to Replica",
+      "passed": true
+    },
+    {
+      "check": "No new fit/model search",
+      "passed": true
+    },
+    {
+      "check": "Shared table row bindings",
+      "passed": true
+    },
+    {
+      "check": "G1 independent of old requests",
+      "passed": true
+    },
+    {
+      "check": "G1/G3 nested fixed views",
+      "passed": true
+    },
+    {
+      "check": "Explicit full-scene projection/ray-depth definition",
+      "passed": true
+    },
+    {
+      "check": "A5 unknown no disguised native fallback",
+      "passed": true
+    },
+    {
+      "check": "Correct legacy metric overlap vector",
+      "passed": true
+    },
+    {
+      "check": "Source and scoring min100 kept separate",
+      "passed": true
+    },
+    {
+      "check": "One official primary rank mode",
+      "passed": true
+    },
+    {
+      "check": "Three figures not additional task",
+      "passed": true
+    },
+    {
+      "check": "24 single cold feature replays",
+      "passed": true
+    },
+    {
+      "check": "External reported context cannot become re-run claim",
+      "passed": true
+    },
+    {
+      "check": "Frozen A3, no benchmark winner renaming",
+      "passed": true
+    },
+    {
+      "check": "No automatic deployment",
+      "passed": true
+    },
+    {
+      "check": "Normal push and external receipt",
+      "passed": true
+    },
+    {
+      "check": "Reference checks actually executed",
+      "passed": true
+    },
+    {
+      "check": "PDF layout preview produced",
+      "passed": true
+    },
+    {
+      "check": "Table1 keeps readable type and placeholders",
+      "passed": true
+    },
+    {
+      "check": "Table2 keeps readable type and placeholders",
+      "passed": true
+    },
+    {
+      "check": "Table3 keeps readable type and placeholders",
+      "passed": true
+    }
+  ],
+  "checks_count": 34,
+  "passed_count": 34,
+  "all_passed": true,
+  "server_or_benchmark_run": false,
+  "new_model_inference": 0,
+  "production_Cpp_compilation": false,
+  "limitations": [
+    "No server data/model availability was tested",
+    "No G1 performance measured",
+    "External literature rows are not independently reproduced"
+  ],
+  "files": {
+    "TABLE_CONTRACTS.md": {
+      "bytes": 4689,
+      "sha256": "fbed0303fafe0cd37cda9a04505bf8980e9eee967f0ac3bf28945f702f168c4a"
+    },
+    "IMPLEMENTATION_CONTRACTS.md": {
+      "bytes": 16010,
+      "sha256": "446514517c7d9ffe3af57ee5b744ed704c5e1da3001307134151d3abfd74bb2e"
+    },
+    "literature_reference.json": {
+      "bytes": 1521,
+      "sha256": "a418e9705f3f483fdfae9388bc153aea1e302b2555f427b8954bc882b4896a49"
+    },
+    "TABLE_BINDINGS.json": {
+      "bytes": 1301,
+      "sha256": "e3bfefa1d16501030a6a6c4366269f6186340d1a26d79e554cacc580bd09312b"
+    },
+    "SOURCE_EVIDENCE.md": {
+      "bytes": 8206,
+      "sha256": "df72f2961f252c1d908d209b5ab7d6a2c3ec59f03caf3e853b37936cc0d5db3f"
+    },
+    "CODE_REVIEW_AND_PLAN_ZH.md": {
+      "bytes": 9125,
+      "sha256": "250be3c4661fce355c771697c13607af4b77740d7822be76c9c5c34482c65dcc"
+    },
+    "PROTOCOL_SPEC.json": {
+      "bytes": 10046,
+      "sha256": "dccb57798c9eaeb8d99b38455fe5a01586d1a2e8e790eba063179eeced91d88c"
+    },
+    "audit_package.py": {
+      "bytes": 6313,
+      "sha256": "56b3950bc8ca381a9ba110a242f65dc314f08b6068581273d13e8f78b5d144e8"
+    },
+    "README.md": {
+      "bytes": 1321,
+      "sha256": "43582d4dd3da48fab6b545a9e26bec82a89b764fabd3bd35c697256e2a43be9d"
+    },
+    "scannet_cf18.txt": {
+      "bytes": 234,
+      "sha256": "e33df7c4a7facbdd88c6b292ca96f8272b07b33e669fd425aee6eacbfe9e8e2d"
+    },
+    "replica8.txt": {
+      "bytes": 58,
+      "sha256": "928d25d6accad0894cebd0a708b31243eed3b5333353d1cc12d7649f94aabb06"
+    },
+    "REFERENCE_TEST_LOG.txt": {
+      "bytes": 1109,
+      "sha256": "48fcc5bce314802477a07034b55e9174c7e32bacb4479155a2fc35eabe40e7e6"
+    },
+    "REFERENCE_CHECK_RESULTS.json": {
+      "bytes": 175,
+      "sha256": "fdfa168eb7ead689dff8cfcd4c994c8326ccc34bbe72f310e43d8a67fb645720"
+    },
+    "CODEX_FINAL_EXECUTION_EN.md": {
+      "bytes": 27749,
+      "sha256": "b9b94749d0715e998e9273f16aa791f1c300363dbe1f1ddf6014b39515e4b6b4"
+    },
+    "reference_checks/check_contracts.py": {
+      "bytes": 6183,
+      "sha256": "7a339c89f419cb1a4b1e81ada8ea7cbbbf0df4c8626440feea73fe215526da52"
+    },
+    "tables/table2_ablation.tex": {
+      "bytes": 1183,
+      "sha256": "bf373a97b3ec74826fad449325fbc18797e0a8747e9c8e091b028db3053fa563"
+    },
+    "tables/table1_main.tex": {
+      "bytes": 1315,
+      "sha256": "700b635c77a594bf1f8ac9520c03a5b7865be87569a3d100e26120071716271d"
+    },
+    "tables/table_layout_preview.tex": {
+      "bytes": 708,
+      "sha256": "d81bc02dd18f01aa3d7abfa9624cb2d6e788f3af31cae88f3b420d4dd67e48ab"
+    },
+    "tables/table3_recovery.tex": {
+      "bytes": 913,
+      "sha256": "99ca15b5ecc4bf889823904f55caeebcc0e52e0983f007f7cac27d19949fc634"
+    },
+    "tables/table_layout_preview.pdf": {
+      "bytes": 140004,
+      "sha256": "34121f15e500332e04ab4cb0432ac3ee8dd80aa53a166792df863af4a045efb9"
+    }
+  }
+}

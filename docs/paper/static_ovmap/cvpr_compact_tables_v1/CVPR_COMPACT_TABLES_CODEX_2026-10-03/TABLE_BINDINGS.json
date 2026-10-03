@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "table1": {
+    "columns": [
+      "apall",
+      "ap50",
+      "miou"
+    ],
+    "cohorts": [
+      "replica8",
+      "scannet_cf18"
+    ],
+    "reported_rows": [
+      "Mask3D + OpenMask3D",
+      "Segment3D + OpenMask3D",
+      "OVO-SLAM"
+    ],
+    "measured_rows": [
+      "CT_A0_NATIVE",
+      "CT_A1_E",
+      "CT_A3_ER"
+    ],
+    "reported_source": "literature_reference.json",
+    "separate_provenance_blocks": true
+  },
+  "table2": {
+    "columns": [
+      "apall",
+      "ap50",
+      "miou"
+    ],
+    "cohorts": [
+      "replica8",
+      "scannet_cf18"
+    ],
+    "rows": [
+      "CT_A0_NATIVE",
+      "CT_A1_E",
+      "CT_A2_R",
+      "CT_A3_ER",
+      "CT_A4_NATIVE_RECOVERY",
+      "CT_A5_FC_ONLY"
+    ]
+  },
+  "table3": {
+    "cohort": "replica8",
+    "rows": [
+      "CT_A1_E",
+      "CT_H_U2",
+      "CT_A3_ER",
+      "CT_G3"
+    ],
+    "max_views": [
+      0,
+      1,
+      1,
+      3
+    ],
+    "columns": [
+      "recovered_n",
+      "candidate_N",
+      "added_tp50_entries",
+      "added_fp50_entries",
+      "apall",
+      "miou",
+      "cold_feature_incremental_seconds_mean"
+    ]
+  },
+  "all_repeated_metric_cells_reference_one_pooled_receipt": true,
+  "unknown_internal_values": "null; never use literature values to complete internal rows"
+}
