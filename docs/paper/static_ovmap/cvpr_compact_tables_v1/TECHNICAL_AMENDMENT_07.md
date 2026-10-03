@@ -23,8 +23,13 @@ fully covered and unresolved. The final external push receipt and postpublicatio
 review must resolve the later obligations from actual execution; readiness never
 proves upload, full scientific completion or objective completion.
 
-Only publication.py and the existing review-gate assertions change. The reports
-remain byte-identical with their original439128cd generation revision; the
-publisher already verifies their generator at that committed ancestor. All15
+Only publication.py and the existing review-gate assertions change. At the
+amendment freeze, the reports remain byte-identical with their original439128cd
+generation revision. Before the canonical all-resume run and final audit, archive
+that generation and align report metadata to the current committed freeze, as
+the canonical table phase runs the same report generator. Analysis and the three
+results/selection/claims reports must remain byte-identical; only the handoff's
+freeze revision and the report receipt provenance change. The publisher verifies
+the generator at each recorded generation commit. All15
 scientific producers, numeric artifacts, diagnostics, tables/PDF and22 original
 cold calls remain unchanged. No inference or scientific producer is replayed.

@@ -2381,6 +2381,16 @@ def test_primary_review_allows_only_explicit_actual_blocks_without_claiming_comp
     review["status"] = "READY_FOR_PUBLICATION_WITH_TECHNICAL_BLOCKS"
     save(review)
     assert publication.verify_primary_review(binding, bundle) == review
+    requirement_id = "IMPLEMENTATION_CONTRACTS.md:247"
+    catalog["requirements"].append({"id": requirement_id})
+    review["requirements"].append({"requirement_id": requirement_id, "status": "PENDING_PUBLICATION",
+        "pending_publication_step": "VERIFIED_COMPACT_ARTIFACTS_ON_GITHUB",
+        "evidence": [index.identity(evidence)],
+        "finding": "C10 requires publishing measured work even with actual technical blocks; the push is still pending."})
+    review["unresolved_required_items"].append(requirement_id)
+    review["pending_publication_steps"][requirement_id] = "VERIFIED_COMPACT_ARTIFACTS_ON_GITHUB"
+    save(review)
+    assert publication.verify_primary_review(binding, bundle) == review
     invalid = copy.deepcopy(review)
     invalid["requirements"][0].update(status="PENDING_PUBLICATION",
         pending_publication_step="NORMAL_PUSH_AND_FULL_REMOTE_SHA_VERIFICATION")
