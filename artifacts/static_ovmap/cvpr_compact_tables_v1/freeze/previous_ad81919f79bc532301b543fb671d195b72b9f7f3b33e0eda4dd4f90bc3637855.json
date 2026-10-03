@@ -10,61 +10,7 @@
     "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json",
     "sha256": "bc73c0b551c9ae5d3b1eb1276a2ddf6d462c5060c6eaf3ca18dbe4dfe8ce2905"
   },
-  "amendment": {
-    "actual_validation": [
-      {
-        "bytes": 45262,
-        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/query_alias_root_cause_audit.json",
-        "sha256": "818cac978d991f88d0b433f85b1ddd3db5f2ebf5ff9da9ce93102e7db1834735"
-      },
-      {
-        "bytes": 14680,
-        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/query_alias_bridge_validation.json",
-        "sha256": "61c291c555e698124d723fb942985d6b6224bc9e987cc10a70910933fd4cce65"
-      },
-      {
-        "bytes": 10675,
-        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_contract_tests.json",
-        "sha256": "f75a8a692741ede302a67d5b35f9db82213d23fb32abb06cdbd71e48c40eb952"
-      },
-      {
-        "bytes": 11454,
-        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_smoke.json",
-        "sha256": "fcd62502e90d007627532e1df87dfcb08a9d5893ce8f83b9697c1db18e3095e7"
-      }
-    ],
-    "affected_descendants": [
-      "readouts/scene0378_02",
-      "contexts/scene0378_02.json",
-      "projected_views/scene0378_02",
-      "recovery/scene0378_02",
-      "native_recovery/scene0378_02",
-      "predictions/scene0378_02",
-      "evaluation/scene0378_02",
-      "readouts/scene0518_00",
-      "contexts/scene0518_00.json",
-      "projected_views/scene0518_00",
-      "recovery/scene0518_00",
-      "native_recovery/scene0518_00",
-      "predictions/scene0518_00",
-      "evaluation/scene0518_00"
-    ],
-    "cold_measurements_reserved": 0,
-    "common_native_maps_preserved": 26,
-    "complete_descendants_invalidated": [],
-    "completed_CF18_readouts_preserved": 16,
-    "documentation": {
-      "bytes": 4235,
-      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/docs/paper/static_ovmap/cvpr_compact_tables_v1/TECHNICAL_AMENDMENT_01.md",
-      "sha256": "4cb61a1e3f0100267dbab690aba2dfd83172c47d9e07682d2ef9b6b7cfe03e20"
-    },
-    "main_metrics_observed_by_primary": false,
-    "main_outcomes_seen": true,
-    "previous_freeze_identity": "ad81919f79bc532301b543fb671d195b72b9f7f3b33e0eda4dd4f90bc3637855",
-    "previous_revision": "1373d7a5eea02028774acea865fda9177165d661",
-    "projected_view_receipts_preserved": 24,
-    "reason": "Current native merged segment statistics can retain a retired owner. Interpret each recorded membership row through causal current segment aliases; preserve original positive-ancestry guard and replay. No parameters or method recipes change."
-  },
+  "amendment": null,
   "anchor_inputs": [
     {
       "capture": {
@@ -542,7 +488,7 @@
     "sha256": "3f5ab03d6afb8a6a300abc3291305cf20c4e306791cadc380649e58e0349aba3"
   },
   "branch": "research/ovimap-cvpr-compact-tables-v1",
-  "created_at_unix": 1791027860.255441,
+  "created_at_unix": 1791014764.3082976,
   "data_exposure": {
     "captures": {
       "scene0011_00": {
@@ -748,7 +694,7 @@
     "N": 0.010357429721631367,
     "Q": 0.010000492837221748
   },
-  "identity": "0e93a65bf9943c8d82dc6680edc2db3678045ca23c02a7b057c3a8a8febaefd5",
+  "identity": "ad81919f79bc532301b543fb671d195b72b9f7f3b33e0eda4dd4f90bc3637855",
   "implementation_sources": [
     {
       "bytes": 82,
@@ -831,11 +777,6 @@
       "sha256": "3ed7d171fba8821381944db92519018ac19dcd77104c11728abf4b577691d325"
     },
     {
-      "bytes": 8102,
-      "path": "src/static_ovmap/cvpr_compact/query_bridge.py",
-      "sha256": "f167043a4effd32140c12776c80d7ccc166ee00746889ee70b869df68283037b"
-    },
-    {
       "bytes": 17928,
       "path": "src/static_ovmap/cvpr_compact/recovery_run.py",
       "sha256": "031bd263c9d4fa99b6dd8cacccab931be5a0e30635775f11187b9b713aa6a97d"
@@ -866,9 +807,9 @@
       "sha256": "c294d49f9e7b709d328689073977c42b81762e484b602068406eb1d1c2196332"
     },
     {
-      "bytes": 17675,
+      "bytes": 17659,
       "path": "src/static_ovmap/cvpr_compact/workflow.py",
-      "sha256": "b56a77f40bed0917127c6cebf61558ee81994b8beafb8b1d985798b1dbf59f47"
+      "sha256": "31afb5286a2f249686f1f4e67b573f7d70383f076dbd2e2a213e2e1b378a0093"
     },
     {
       "bytes": 997,
@@ -876,9 +817,9 @@
       "sha256": "cd9d31425b29cf9ac8e195e4238995cd67de5e792cd1c1319ffa22ea4884fcea"
     },
     {
-      "bytes": 106498,
+      "bytes": 101244,
       "path": "tests/evaluation/test_cvpr_compact_contracts.py",
-      "sha256": "ee3b50d230e8d8fc7b7807d68bb021a4dc53207ece71b14fb248d4cbfdf3e77d"
+      "sha256": "3bfabe049080e899fc0444650cc95186b7f3d5b2e8e3c159ea0d1e41ab6c7f0c"
     },
     {
       "bytes": 10046,
@@ -991,7 +932,7 @@
       "sha256": "d81bc02dd18f01aa3d7abfa9624cb2d6e788f3af31cae88f3b420d4dd67e48ab"
     }
   ],
-  "main_outcomes_seen": true,
+  "main_outcomes_seen": false,
   "matrix_identity": "e52b3632acae3afbf8cab5477258532b714297806a2a78cb50db92ff2ef4175d",
   "methods": [
     {
@@ -22409,14 +22350,14 @@
   "untouched_confirmation_claim": false,
   "validation": {
     "existing_map_smoke": {
-      "bytes": 11454,
+      "bytes": 11274,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_smoke.json",
-      "sha256": "fcd62502e90d007627532e1df87dfcb08a9d5893ce8f83b9697c1db18e3095e7"
+      "sha256": "13fab81b83095a713ff8891bc8b942de99fff050ff2500e009a1e729954facb7"
     },
     "focused_tests": {
-      "bytes": 10675,
+      "bytes": 10416,
       "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/final_contract_tests.json",
-      "sha256": "f75a8a692741ede302a67d5b35f9db82213d23fb32abb06cdbd71e48c40eb952"
+      "sha256": "c45cf0845a01da9d004f48b64297ca960c36a1f219b4c3ae86603a3ddfecacd2"
     }
   }
 }

@@ -11,7 +11,7 @@ from static_ovmap.module_validation.scannet_study import load_prediction
 from static_ovmap.recovery_wave2.binding import ConsumptionIndex, read
 
 from .anchor import run_anchors
-from .base_sources import run_base_sources
+from .query_bridge import run_base_sources
 from .benchmark_inputs import prepare_inputs
 from .binding import bind_inputs
 from .projected_views import _verified_identity, build_projected_views
@@ -23,7 +23,7 @@ from .timing import _process
 
 PHASES = ("bind", "prepare", "anchors", "views", "encode", "predict", "evaluate", "time", "tables", "publish", "all")
 GPU_MODULES = {"recovery_run", "native_region_worker", "timing"}
-REQUIRED_MODULES = ("protocol", "binding", "benchmark_inputs", "anchor", "base_sources", "projected_views",
+REQUIRED_MODULES = ("protocol", "binding", "benchmark_inputs", "anchor", "base_sources", "query_bridge", "projected_views",
     "outputs", "region_worker", "native_region_worker", "prediction_worker", "evaluation", "recovery_run",
     "runtime", "timing", "diagnostics", "external", "costs", "tables", "reports", "freezing", "publication", "workflow")
 WORKER_DEPENDENCIES = {

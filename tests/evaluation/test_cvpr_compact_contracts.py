@@ -18,6 +18,104 @@ from static_ovmap.recovery_wave2.recovery_registry import build_registry
 SPEC = Path(__file__).resolve().parents[2] / "configs/static_ovmap/cvpr_compact_tables_v1.json"
 
 
+def test_compact_captured_frames_resolve_retired_membership_before_causal_registration(monkeypatch):
+    from types import SimpleNamespace
+    from static_ovmap.cvpr_compact.query_bridge import CapturedFrames
+    from static_ovmap.module_validation.query_study import CapturedFrames as OriginalFrames
+    from static_ovmap.module_validation.query_lineage import CurrentLineage
+    from static_ovmap.module_validation.query_state import QueryPolicyState, NativeCombineState
+
+    original = {"label_instances_scope": "all_known_labels",
+        "aliases": [{"old_label": 54, "resolved_label": 51}],
+        "label_instances": [{"segment_label": 5, "instance_label": 5},
+            {"segment_label": 51, "instance_label": 0},
+            {"segment_label": 54, "instance_label": 5}]}
+    candidates = [SimpleNamespace(owner_id=5, frame_index=35, overlap_pixels=100,
+        camera_pose=np.eye(4), request_id="request")]
+    state, combine = QueryPolicyState("Q_GAIN", 1), NativeCombineState()
+    lineage = CurrentLineage()
+    lineage.advance(original, state, combine, np.ones((1, 1)))
+    with pytest.raises(ValueError, match="no complete positive ancestry"):
+        lineage.register_candidates(candidates)
+
+    def load_current(self, index):
+        self.current = {"snapshot": copy.deepcopy(original), "candidates": candidates}
+        return self.current
+
+    monkeypatch.setattr(OriginalFrames, "load", load_current)
+    frames = object.__new__(CapturedFrames)
+    frames._compact_aliases = {}
+    normalized = frames.load(35)["snapshot"]
+    assert original["label_instances"][-1]["instance_label"] == 5
+    assert len(normalized["label_instances"]) == len(original["label_instances"])
+    assert normalized["label_instances"][-1]["instance_label"] == 0
+    state, combine = QueryPolicyState("Q_GAIN", 1), NativeCombineState()
+    lineage = CurrentLineage()
+    lineage.advance(normalized, state, combine, np.ones((1, 1)))
+    lineage.register_candidates(candidates)
+    assert lineage.requests["request"]["segments"] == frozenset({5})
+
+    next_snapshot = copy.deepcopy(original)
+    next_snapshot["aliases"] = []
+    next_snapshot["label_instances"][0]["instance_label"] = 0
+    frames.current = None
+    original = next_snapshot
+    normalized = frames.load(36)["snapshot"]
+    assert normalized["label_instances"][-1]["instance_label"] == 0
+    lineage.advance(normalized, state, combine, np.ones((1, 1)))
+    with pytest.raises(ValueError, match="no complete positive ancestry"):
+        lineage.register_candidates(candidates)
+
+
+@pytest.mark.parametrize("aliases,rows,error", [
+    ([{"old_label": 1, "resolved_label": 2}, {"old_label": 2, "resolved_label": 1}],
+        [{"segment_label": 1, "instance_label": 7}, {"segment_label": 2, "instance_label": 7}], "cyclic"),
+    ([{"old_label": 1, "resolved_label": 2}], [{"segment_label": 1, "instance_label": 7}], "missing"),
+])
+def test_compact_alias_bridge_rejects_unproven_current_membership(aliases, rows, error):
+    from static_ovmap.cvpr_compact.query_bridge import normalize_alias_snapshot
+
+    with pytest.raises(ValueError, match=error):
+        normalize_alias_snapshot({"label_instances_scope": "all_known_labels",
+            "aliases": aliases, "label_instances": rows}, {})
+
+
+def test_compact_native_adapter_preserves_original_inference_and_replay():
+    import ast
+    import inspect
+    from static_ovmap.backbone_wave1 import semantic_readout
+    from static_ovmap.cvpr_compact.query_bridge import adapt_native_function, replay_captured
+    from static_ovmap.module_validation.query_study import replay_captured as original_replay
+
+    original = inspect.getsource(semantic_readout.run_native_query)
+    worker, adapter = adapt_native_function(lambda *args: None, lambda *args: None)
+    assert inspect.getsource(semantic_readout.run_native_query) == original
+    assert adapter["original_AST"] == canonical_digest(ast.dump(ast.parse(original)))
+    assert adapter["changed_AST_nodes"] == 2
+    assert "static_ovmap.cvpr_compact.query_bridge" in worker.__code__.co_names
+    assert inspect.signature(worker) == inspect.signature(semantic_readout.run_native_query)
+    assert replay_captured is original_replay
+
+
+def test_compact_alias_bridge_dispatch_preserves_failed_worker_log(tmp_path, monkeypatch):
+    from static_ovmap.cvpr_compact import base_sources, query_bridge
+    from static_ovmap.recovery_wave2.binding import ConsumptionIndex
+
+    captured = {}
+
+    def execute(argv, cwd, log_path, **kwargs):
+        captured.update(argv=argv, log_path=log_path, cwd=cwd)
+        return {"status": "COMPLETE"}
+
+    monkeypatch.setattr(base_sources, "execute_leaf", execute)
+    binding = {"repository_root": str(tmp_path), "gpu": 2}
+    job = {"output_root": str(tmp_path / "native_query")}
+    result = query_bridge._run_worker(binding, "python", job, "native-query", ConsumptionIndex())
+    assert result["status"] == "COMPLETE"
+    assert captured["argv"][2] == "static_ovmap.cvpr_compact.query_bridge"
+    assert captured["log_path"].name == "run.alias_bridge.log"
+
+
 def plane(z=2., owner=7):
     xyz = np.array([[-3., -3., z], [3., -3., z], [3., 3., z], [-3., 3., z]], np.float32)
     faces = np.array([[0, 1, 2], [0, 2, 3]], np.int64)
@@ -413,7 +511,7 @@ def test_main_execution_requires_committed_implementation_freeze(tmp_path):
 
     spec = json.loads(SPEC.read_text())
     binding = {"spec": str(SPEC), "cohorts": spec["cohorts"], "output_root": str(tmp_path),
-        "repository_root": str(SPEC.parents[2]), "scenes": {"scene0056_00": {
+        "repository_root": str(tmp_path), "scenes": {"scene0056_00": {
             "availability": "REUSABLE_VERIFIED_BB00_NATIVE_ANCHOR"}}}
     binding["identity"] = canonical_digest(binding)
     assert require_frozen_execution(binding, "scene0056_00") == "DEVELOPMENT_ONLY_EXISTING_ANCHOR"
@@ -515,16 +613,18 @@ def test_existing_f_keeps_original_selection_and_cap_exclusions_unavailable():
 
 def test_all_fresh_base_source_entries_gate_before_models_and_outputs(tmp_path):
     from static_ovmap.cvpr_compact.base_sources import run_base_sources, run_existing_fc, run_native_query
+    from static_ovmap.cvpr_compact.query_bridge import run_base_sources as bridged_sources, run_native_query as bridged_native
 
     spec = json.loads(SPEC.read_text())
     binding = {"spec": str(SPEC), "cohorts": spec["cohorts"], "output_root": str(tmp_path),
-        "repository_root": str(SPEC.parents[2]), "scenes": {}}
+        "repository_root": str(tmp_path), "scenes": {}}
     binding["identity"] = canonical_digest(binding)
     path = tmp_path / "binding.json"
     path.write_text(json.dumps(binding))
     job = {"binding": str(path), "scene": "scene0011_00"}
     for call in (lambda: run_base_sources(binding, job["scene"]),
-                 lambda: run_native_query(job), lambda: run_existing_fc(job)):
+                 lambda: run_native_query(job), lambda: run_existing_fc(job),
+                 lambda: bridged_sources(binding, job["scene"]), lambda: bridged_native(job)):
         with pytest.raises(RuntimeError, match="freeze"):
             call()
     assert list(tmp_path.iterdir()) == [path]
