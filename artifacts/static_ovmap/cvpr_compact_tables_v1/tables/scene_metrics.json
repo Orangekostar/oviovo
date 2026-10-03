@@ -1,0 +1,3414 @@
+[
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "89e57bc68f96d1facd908c42fcb3ce3acc6cf237091d56ae0cef744ea700d9de",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3125,
+      "ap50": 0.15,
+      "apall": 0.09097222222222222,
+      "macc": 0.2944833718751463,
+      "miou": 0.1693695912738186
+    },
+    "receipt_identity": "9cb7c973779617f7c3af2a6771e32cc8571a1a5e145b0bfb8b79bf847ca5dd7c",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_A0_NATIVE.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "d1e79d2740797d0d1257490174cd3cefc624a4a17ee9db4d2488bb605d5e6af5",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4125,
+      "ap50": 0.20625,
+      "apall": 0.125,
+      "macc": 0.36173662238167004,
+      "miou": 0.25108520937203643
+    },
+    "receipt_identity": "22e5f50ae96ba77eb7612330f59936e7e986e32b9a6db3d6f830d52167c4eab3",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_A1_E.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "19132ecbac37da41389b3c2b0c8ae5672994c3814454d04ff5f7a21da4368c39",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3125,
+      "ap50": 0.15,
+      "apall": 0.09097222222222222,
+      "macc": 0.29696084935262373,
+      "miou": 0.17184706875129607
+    },
+    "receipt_identity": "a40fd62e4ec038ec7f9621f89e824736c125c257d1eacff8d8308facac563aac",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_A2_R.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "afcd1f3fbb2dab006c0d97937ef60d2786b82eeabb36280d5263e7ffcfd6a46e",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4125,
+      "ap50": 0.20625,
+      "apall": 0.125,
+      "macc": 0.3642140998591475,
+      "miou": 0.2532852093720364
+    },
+    "receipt_identity": "38478f5ea1818186590a145cc4d03bb90071b00954c1287a72dda15d6cefe7a4",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_A3_ER.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "03082185d47aaf7d5f49594349d288d34188d55e36de36e82e7d930c6fbe0211",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4125,
+      "ap50": 0.20625,
+      "apall": 0.125,
+      "macc": 0.36173662238167004,
+      "miou": 0.2510251687455722
+    },
+    "receipt_identity": "534e7348b53d81d0d10b0ea1ab2401945797e5621fb8a5aec16cc3daf52fe987",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "59e2d6ac95057883f202eb6b57aab6209fbeea35ffd7626afe1c2f6ae759e760",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.45,
+      "ap50": 0.23125,
+      "apall": 0.12777777777777777,
+      "macc": 0.38216180794802773,
+      "miou": 0.28324888388982683
+    },
+    "receipt_identity": "51a787f9cbf5cb243dbce555cf90a34210181fcf0b53f1d3af73317443d4db85",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_A5_FC_ONLY.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "afcd1f3fbb2dab006c0d97937ef60d2786b82eeabb36280d5263e7ffcfd6a46e",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4125,
+      "ap50": 0.20625,
+      "apall": 0.125,
+      "macc": 0.3642140998591475,
+      "miou": 0.2532852093720364
+    },
+    "receipt_identity": "bdbfe774ccbecb93ac2e637b54bd466cf19dc086229dfc70639fce76db494dbf",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_H_U2.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "30ad061bdc729f603b712652344d5145ba99da10a3259d6bb6aa411a334c13ad",
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4125,
+      "ap50": 0.20625,
+      "apall": 0.125,
+      "macc": 0.36781770346275117,
+      "miou": 0.25609748186293607
+    },
+    "receipt_identity": "d14da5c371660ceb112d289de60ac654913f8e001f203967e88601fe61affa36",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office0/rows/CT_G3.json",
+    "scene": "office0",
+    "scorer_context_identity": "ecad60891cc4173fa4a2316552ad6fa4957f8479be1079f80ccd2c619961055f",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "48ad7c78b77444ab0d452b50b5e651a6dd646e2308638ee6e4686218fb971c68",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25,
+      "ap50": 0.25,
+      "apall": 0.08333333333333333,
+      "macc": 0.18697806135609907,
+      "miou": 0.14329903725467114
+    },
+    "receipt_identity": "be23ce0c682b006694a571c60ca3b3fccdaa3a8196c7775940a154c19d9c3e1c",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/rows/CT_A0_NATIVE.json",
+    "scene": "office1",
+    "scorer_context_identity": "3a01a313e017309bb41cb7eac0b5f822bea0cbf7006af955d0bc51e4b2595eac",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "fe96128b15e430f1729877eb4cac0f37d89c1c01acd9374bfeb3fcc6951c5041",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19117647058823528,
+      "ap50": 0.19117647058823528,
+      "apall": 0.08006535947712418,
+      "macc": 0.20406169159288295,
+      "miou": 0.1438560445279301
+    },
+    "receipt_identity": "d547e01087d61bda2c82dadb1c1d3965df62851f6cad1d0d42fce58f14349d2a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/rows/CT_A1_E.json",
+    "scene": "office1",
+    "scorer_context_identity": "3a01a313e017309bb41cb7eac0b5f822bea0cbf7006af955d0bc51e4b2595eac",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "blocked_condition": {
+      "block_identity": "0a633ad73d2b471435113d5ea95cbf0629ad2cd60f936232187ac187a1ed23fe",
+      "method": "CT_A2_R",
+      "reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED",
+      "recovery_source": "G1_FC",
+      "scene": "office1",
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "cohort": "replica8",
+    "evaluation_identity": null,
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": null,
+      "ap50": null,
+      "apall": null,
+      "macc": null,
+      "miou": null
+    },
+    "receipt_identity": "cbf350eb12df107ea7e1bea4cb13fbfa97e1d04579832f9c6c6f2b40456b65fb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/receipt.json",
+    "scene": "office1",
+    "scorer_context_identity": null,
+    "source_kind": "UNAVAILABLE",
+    "status": "BLOCKED_TECHNICAL",
+    "technical_block": {
+      "GT_input": false,
+      "failed_receipt_identity": "6e251034eb84b75e807791172acfaf383a4532876965bf67c719457d498ab1ab",
+      "failed_requests": [
+        {
+          "frame_id": 1950,
+          "reason": "EMPTY_DENSE_MASK_SUPPORT",
+          "request_id": "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00",
+          "status": "UNAVAILABLE_TECHNICAL_FAILURE",
+          "target_mask_sha256": "52fb9fbdee80bbcad90ae061344269d502222d3e69ae8c58eeb8cf83ced32977"
+        }
+      ],
+      "failed_view_replacement": false,
+      "identity": "0a633ad73d2b471435113d5ea95cbf0629ad2cd60f936232187ac187a1ed23fe",
+      "projected_manifest_identity": "70deae7b1144991eec8d8393e55fe48d3177392091ffe5f2f3ddaa4c0e54be09",
+      "recovery_source": "G1_FC",
+      "scene": "office1",
+      "schema": "compact-selected-semantic-block-v1",
+      "selected_request_ids": [
+        "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00"
+      ],
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "unavailable_reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED"
+  },
+  {
+    "blocked_condition": {
+      "block_identity": "0a633ad73d2b471435113d5ea95cbf0629ad2cd60f936232187ac187a1ed23fe",
+      "method": "CT_A3_ER",
+      "reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED",
+      "recovery_source": "G1_FC",
+      "scene": "office1",
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "cohort": "replica8",
+    "evaluation_identity": null,
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": null,
+      "ap50": null,
+      "apall": null,
+      "macc": null,
+      "miou": null
+    },
+    "receipt_identity": "cbf350eb12df107ea7e1bea4cb13fbfa97e1d04579832f9c6c6f2b40456b65fb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/receipt.json",
+    "scene": "office1",
+    "scorer_context_identity": null,
+    "source_kind": "UNAVAILABLE",
+    "status": "BLOCKED_TECHNICAL",
+    "technical_block": {
+      "GT_input": false,
+      "failed_receipt_identity": "6e251034eb84b75e807791172acfaf383a4532876965bf67c719457d498ab1ab",
+      "failed_requests": [
+        {
+          "frame_id": 1950,
+          "reason": "EMPTY_DENSE_MASK_SUPPORT",
+          "request_id": "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00",
+          "status": "UNAVAILABLE_TECHNICAL_FAILURE",
+          "target_mask_sha256": "52fb9fbdee80bbcad90ae061344269d502222d3e69ae8c58eeb8cf83ced32977"
+        }
+      ],
+      "failed_view_replacement": false,
+      "identity": "0a633ad73d2b471435113d5ea95cbf0629ad2cd60f936232187ac187a1ed23fe",
+      "projected_manifest_identity": "70deae7b1144991eec8d8393e55fe48d3177392091ffe5f2f3ddaa4c0e54be09",
+      "recovery_source": "G1_FC",
+      "scene": "office1",
+      "schema": "compact-selected-semantic-block-v1",
+      "selected_request_ids": [
+        "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00"
+      ],
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "unavailable_reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "a18247ed19e786b5225a8c3a9fbf5c6d2c124c3a7c788bb7c08fcb9069f31981",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19117647058823528,
+      "ap50": 0.19117647058823528,
+      "apall": 0.08006535947712418,
+      "macc": 0.20406169159288295,
+      "miou": 0.1438560445279301
+    },
+    "receipt_identity": "0a173413f30320510254de748ee3f7b02a7bf70549efdf7c60e71cc0f5689594",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "office1",
+    "scorer_context_identity": "3a01a313e017309bb41cb7eac0b5f822bea0cbf7006af955d0bc51e4b2595eac",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "blocked_condition": {
+      "block_identity": "0a633ad73d2b471435113d5ea95cbf0629ad2cd60f936232187ac187a1ed23fe",
+      "method": "CT_A5_FC_ONLY",
+      "reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED",
+      "recovery_source": "G1_FC",
+      "scene": "office1",
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "cohort": "replica8",
+    "evaluation_identity": null,
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": null,
+      "ap50": null,
+      "apall": null,
+      "macc": null,
+      "miou": null
+    },
+    "receipt_identity": "cbf350eb12df107ea7e1bea4cb13fbfa97e1d04579832f9c6c6f2b40456b65fb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/receipt.json",
+    "scene": "office1",
+    "scorer_context_identity": null,
+    "source_kind": "UNAVAILABLE",
+    "status": "BLOCKED_TECHNICAL",
+    "technical_block": {
+      "GT_input": false,
+      "failed_receipt_identity": "6e251034eb84b75e807791172acfaf383a4532876965bf67c719457d498ab1ab",
+      "failed_requests": [
+        {
+          "frame_id": 1950,
+          "reason": "EMPTY_DENSE_MASK_SUPPORT",
+          "request_id": "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00",
+          "status": "UNAVAILABLE_TECHNICAL_FAILURE",
+          "target_mask_sha256": "52fb9fbdee80bbcad90ae061344269d502222d3e69ae8c58eeb8cf83ced32977"
+        }
+      ],
+      "failed_view_replacement": false,
+      "identity": "0a633ad73d2b471435113d5ea95cbf0629ad2cd60f936232187ac187a1ed23fe",
+      "projected_manifest_identity": "70deae7b1144991eec8d8393e55fe48d3177392091ffe5f2f3ddaa4c0e54be09",
+      "recovery_source": "G1_FC",
+      "scene": "office1",
+      "schema": "compact-selected-semantic-block-v1",
+      "selected_request_ids": [
+        "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00"
+      ],
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "unavailable_reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "fe96128b15e430f1729877eb4cac0f37d89c1c01acd9374bfeb3fcc6951c5041",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19117647058823528,
+      "ap50": 0.19117647058823528,
+      "apall": 0.08006535947712418,
+      "macc": 0.20406169159288295,
+      "miou": 0.1438560445279301
+    },
+    "receipt_identity": "02852623f913ae40f311070e2e40987ac3b60e0a92a603ae752bad34d4620412",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/rows/CT_H_U2.json",
+    "scene": "office1",
+    "scorer_context_identity": "3a01a313e017309bb41cb7eac0b5f822bea0cbf7006af955d0bc51e4b2595eac",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "blocked_condition": {
+      "block_identity": "9d0969529f18b16dd2d7f6e756bf58552cb03a2871c64c30738fbc6e6eeaa914",
+      "method": "CT_G3",
+      "reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED",
+      "recovery_source": "G3_FC",
+      "scene": "office1",
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "cohort": "replica8",
+    "evaluation_identity": null,
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": null,
+      "ap50": null,
+      "apall": null,
+      "macc": null,
+      "miou": null
+    },
+    "receipt_identity": "cbf350eb12df107ea7e1bea4cb13fbfa97e1d04579832f9c6c6f2b40456b65fb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office1/receipt.json",
+    "scene": "office1",
+    "scorer_context_identity": null,
+    "source_kind": "UNAVAILABLE",
+    "status": "BLOCKED_TECHNICAL",
+    "technical_block": {
+      "GT_input": false,
+      "failed_receipt_identity": "6e251034eb84b75e807791172acfaf383a4532876965bf67c719457d498ab1ab",
+      "failed_requests": [
+        {
+          "frame_id": 1950,
+          "reason": "EMPTY_DENSE_MASK_SUPPORT",
+          "request_id": "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00",
+          "status": "UNAVAILABLE_TECHNICAL_FAILURE",
+          "target_mask_sha256": "52fb9fbdee80bbcad90ae061344269d502222d3e69ae8c58eeb8cf83ced32977"
+        },
+        {
+          "frame_id": 1940,
+          "reason": "EMPTY_DENSE_MASK_SUPPORT",
+          "request_id": "e39dd4f85b0c25aeabded06e614a346b967561833d74e5d563c9fa3347ef8c4c",
+          "status": "UNAVAILABLE_TECHNICAL_FAILURE",
+          "target_mask_sha256": "9ea7286c2f00d957be3aac0bc7042c3422164c983917796e8ad8fc51b1ff0008"
+        },
+        {
+          "frame_id": 1930,
+          "reason": "EMPTY_DENSE_MASK_SUPPORT",
+          "request_id": "9dcf345baeb80d68df37166d0f4881cfc5f8250e543ee1bc4a348f89c07a7c90",
+          "status": "UNAVAILABLE_TECHNICAL_FAILURE",
+          "target_mask_sha256": "f8b2299f6f2f14273b9207edfad7bea983ca19db68de538ce04654a703b7ebe7"
+        }
+      ],
+      "failed_view_replacement": false,
+      "identity": "9d0969529f18b16dd2d7f6e756bf58552cb03a2871c64c30738fbc6e6eeaa914",
+      "projected_manifest_identity": "70deae7b1144991eec8d8393e55fe48d3177392091ffe5f2f3ddaa4c0e54be09",
+      "recovery_source": "G3_FC",
+      "scene": "office1",
+      "schema": "compact-selected-semantic-block-v1",
+      "selected_request_ids": [
+        "2eed1eb6c6e69c3d17281025a356ec716ca895d61f20f37d2aa5c4ab4ee64f00",
+        "e39dd4f85b0c25aeabded06e614a346b967561833d74e5d563c9fa3347ef8c4c",
+        "9dcf345baeb80d68df37166d0f4881cfc5f8250e543ee1bc4a348f89c07a7c90"
+      ],
+      "status": "BLOCKED_TECHNICAL"
+    },
+    "unavailable_reason": "ALL_SELECTED_SEMANTIC_REQUESTS_FAILED"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "5081757766b4946e7060585e1d5baef9531c806a34e48a930a888c023e20e2c3",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4490196078431372,
+      "ap50": 0.29166666666666663,
+      "apall": 0.0923202614379085,
+      "macc": 0.3996627820541923,
+      "miou": 0.35104464300083893
+    },
+    "receipt_identity": "080195e7ca6da22ca60d4e960cf9d6b7f9894643d7bf1d304e7afacf3806cb6a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_A0_NATIVE.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "34b605e6bbb6dee7a5ffa45ec168d0fd3555afb705f1d7aa3e68f31228c4f6df",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.5156862745098039,
+      "ap50": 0.3034313725490196,
+      "apall": 0.10277777777777777,
+      "macc": 0.4359693643042321,
+      "miou": 0.3927243335173565
+    },
+    "receipt_identity": "7be1a43b148d1132e03febfc9ea5d703ce3472770f061d2b3beb2a0cb3a27f60",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_A1_E.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "1ad4153150ed3a9d7023202283aab7da681314ac6f5286f35277a181c19577ab",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4490196078431372,
+      "ap50": 0.29166666666666663,
+      "apall": 0.0923202614379085,
+      "macc": 0.399693661778027,
+      "miou": 0.35071062129390784
+    },
+    "receipt_identity": "ad50ea40df4f0dca3523dc77eb5ec7702744be321d6bdd3974181079ca36d396",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_A2_R.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "4f215a31d3d4fc27d554d775666cde0360ab46ea0826e06a5572ed86ecab8a28",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.5156862745098039,
+      "ap50": 0.3034313725490196,
+      "apall": 0.10277777777777777,
+      "macc": 0.43600024402806675,
+      "miou": 0.3923884907844433
+    },
+    "receipt_identity": "2b217df1ae0b77c2516210cbc23eae08aec3506a9759eeff3163a395eae1e352",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_A3_ER.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "5822674b50e93954028630d036846a28566b90d97f061243cdbaa7a2283c6c5f",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.5156862745098039,
+      "ap50": 0.3034313725490196,
+      "apall": 0.10277777777777777,
+      "macc": 0.43600024402806675,
+      "miou": 0.38964313031132614
+    },
+    "receipt_identity": "6946a6ea0ca4db64afd9a278eeade573dfcbd341568b0974fb7b7d735c5772ce",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "186b320e38166c38ab870e4ec85566619b2e6f272819305f996a31055adc4c6c",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4411764705882353,
+      "ap50": 0.22892156862745097,
+      "apall": 0.09537037037037037,
+      "macc": 0.34118898494101996,
+      "miou": 0.3116216275129743
+    },
+    "receipt_identity": "6eceb4ea6175ea25b831d1180cc7057802e3748e954ff4f27d08ebffbccbea6b",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_A5_FC_ONLY.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "b1269e8dfcb58de908e530c0cecac3c6c250340c1dc470914979f225e07cd30a",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.5254901960784314,
+      "ap50": 0.3034313725490196,
+      "apall": 0.10277777777777777,
+      "macc": 0.43858885094338684,
+      "miou": 0.39533223646140914
+    },
+    "receipt_identity": "9397403630c566fb46555a7e5f4638e2667b952a159265c611c154b6df34e11f",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_H_U2.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "35aba0bd682891ce5e12834cd5ff98312db166838d7e7e8cb25de7ade4c4a680",
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.5156862745098039,
+      "ap50": 0.3034313725490196,
+      "apall": 0.10277777777777777,
+      "macc": 0.4403006426015932,
+      "miou": 0.39668415844644767
+    },
+    "receipt_identity": "1bd9b2c48035219d7f0b771039c741aa8374dffc4858810f9af197e4841aa5eb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office2/rows/CT_G3.json",
+    "scene": "office2",
+    "scorer_context_identity": "a66c10cf1b7a71fca6b536d0a8e1a71e8f0401f3a701e899dfeca1c40fcb0638",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "32a755de63e2b414c3d6df7a729981b2f27f4e88f8e9b6323f988318b21a8fc5",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.28695652173913044,
+      "ap50": 0.14891304347826087,
+      "apall": 0.06642512077294685,
+      "macc": 0.302615948612185,
+      "miou": 0.28793847086447505
+    },
+    "receipt_identity": "d8a963cdf49186d004e85385ab9a071b1fca6b996a72748e7da1001194250c66",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_A0_NATIVE.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "721382b724899db0060d99acaf4b68f38270dafed9f9e96c1da97d167bc37223",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3978260869565218,
+      "ap50": 0.23369565217391305,
+      "apall": 0.08506441223832528,
+      "macc": 0.36919836142941054,
+      "miou": 0.3429757905540226
+    },
+    "receipt_identity": "12465c62db545a06477fd6fffbf9c90ef25cba487fb36055357abf6159fb7d5d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_A1_E.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "764435ac07234851d9c1d779e6e893e37b4d8e1501bd992416e11f746b9dce95",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.29782608695652174,
+      "ap50": 0.14891304347826087,
+      "apall": 0.06642512077294685,
+      "macc": 0.3211771801498689,
+      "miou": 0.30185864921238353
+    },
+    "receipt_identity": "453aebea99d31729927427c4a9080501fd8b94c510ea435a751de0127f491611",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_A2_R.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "018f7a8e5c5e506b47ef2c99ee60d4de3073bef3f72c63a784d0086dde9407f4",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.40869565217391307,
+      "ap50": 0.23369565217391305,
+      "apall": 0.08506441223832528,
+      "macc": 0.38775959296709456,
+      "miou": 0.35689596890193115
+    },
+    "receipt_identity": "bb5d0b87268c5de01d409ae3e0a48a5096530b5ba4d91c8f7f91ff157ad895dc",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_A3_ER.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "9e126fe8757c9859f1c5290953ee904e6c4bf213c381eaa8c87e914d03fa69aa",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.40869565217391307,
+      "ap50": 0.23369565217391305,
+      "apall": 0.08506441223832528,
+      "macc": 0.38775959296709456,
+      "miou": 0.35180397820886644
+    },
+    "receipt_identity": "b34d9975561cb6fd609f45e435d1167c017b8481037c63ccd0d72b83d29eecf4",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "2fbb5bb34ef0faa17d118f1d88d83f2b30f64e3b5cb427a495edc6c8551c7ea3",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.33057971014492754,
+      "ap50": 0.1827536231884058,
+      "apall": 0.07727053140096618,
+      "macc": 0.30145803515663905,
+      "miou": 0.2570595965993142
+    },
+    "receipt_identity": "57ed014bd70733ae4399d4a3655326a7a83f4941f603c6dd3eb8b51e677ec67a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_A5_FC_ONLY.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "6863d943a44d6b4474fe98db346fe9d2cc25f99e0e0f0ad9210fac19a05f5501",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.45217391304347826,
+      "ap50": 0.27717391304347827,
+      "apall": 0.1140499194847021,
+      "macc": 0.39364363429889704,
+      "miou": 0.362407397771569
+    },
+    "receipt_identity": "88da53c62d5952efa398f1beb495784de07c3db82f6ba42131a4d66aab362381",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_H_U2.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "8dbe7df53d2d6166a91ac0ebdbe77e5981133b4d18aad517ff9f1287c7348e8f",
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.40869565217391307,
+      "ap50": 0.23369565217391305,
+      "apall": 0.08506441223832528,
+      "macc": 0.3963703851599763,
+      "miou": 0.36546565815788506
+    },
+    "receipt_identity": "e61fd8325b49a32a032052701d940ee0bf4af8e11086e86ee956928d5dd23c5a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office3/rows/CT_G3.json",
+    "scene": "office3",
+    "scorer_context_identity": "b4ffad8326210f7fa93dc6301179b76b8716c1413e25f882e3e2a55d3fdb5015",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "55c41523394c35b49fd742e5f2c38480d9129ca9536880349854f5f1f9fb0cd0",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.46153846153846156,
+      "ap50": 0.2692307692307692,
+      "apall": 0.1581196581196581,
+      "macc": 0.4397713048134114,
+      "miou": 0.386667396402346
+    },
+    "receipt_identity": "5c4bead89d29551f7d54206c685cd151f4ff3aced4c52047ae2c9b04adcc4ea2",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_A0_NATIVE.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "a287131562505950b27383ddf35ae45fd62faf42d0a5a9fe44bc4d628f82c6fc",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.46153846153846156,
+      "ap50": 0.2692307692307692,
+      "apall": 0.1581196581196581,
+      "macc": 0.488358469157611,
+      "miou": 0.4346856068022352
+    },
+    "receipt_identity": "66524ac24e11775b2975a8aa5670eb39729949a1ad077962607565b7c3a364d7",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_A1_E.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "5751d42195d6279d1a6314d6e4e0bd368332d7afc9dd11c9c0023cccfecf8527",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.46153846153846156,
+      "ap50": 0.2692307692307692,
+      "apall": 0.1581196581196581,
+      "macc": 0.4397713048134114,
+      "miou": 0.38663134138542127
+    },
+    "receipt_identity": "a5eb77d43c4994acb4637d147265a0769a8d26d8806162fbd3a2e0b7a79c3886",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_A2_R.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "22e5c7960f9ca893d4e2b7da58ab9760f0eceb1dd4d8599d0f2456efc5b6b7a1",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.46153846153846156,
+      "ap50": 0.2692307692307692,
+      "apall": 0.1581196581196581,
+      "macc": 0.488358469157611,
+      "miou": 0.4346495517853105
+    },
+    "receipt_identity": "0696f0f6ce26e6d8034b5dfa271fdc864356b02a736e1913dbb936b15ca85f36",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_A3_ER.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "dd533efc204b726f9f4cd43419f742fbeee9ab88eb4bc33a38b40d1bbfb00842",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.46153846153846156,
+      "ap50": 0.2692307692307692,
+      "apall": 0.1581196581196581,
+      "macc": 0.488358469157611,
+      "miou": 0.4346856068022352
+    },
+    "receipt_identity": "b9ff79ecc02330ce5592c397cdd776f59e92ee9b0d295283a2e4997dc273585a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "3808af3fac5078167a75f1cc248e632255f3774f58750960d344fce5ef53e566",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.1769230769230769,
+      "ap50": 0.15384615384615385,
+      "apall": 0.0811965811965812,
+      "macc": 0.21705384413630646,
+      "miou": 0.2140932139728858
+    },
+    "receipt_identity": "7a98d15583a8e48ceba2a7ab38408ff3daecc5dd407440e5e5b919c9ecca4a48",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_A5_FC_ONLY.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "a287131562505950b27383ddf35ae45fd62faf42d0a5a9fe44bc4d628f82c6fc",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.46153846153846156,
+      "ap50": 0.2692307692307692,
+      "apall": 0.1581196581196581,
+      "macc": 0.488358469157611,
+      "miou": 0.4346856068022352
+    },
+    "receipt_identity": "1f56c136d94973c7f92c3d276c87f5588533a8b52e9d1c96d1d03f8f62e9d629",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_H_U2.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "22e5c7960f9ca893d4e2b7da58ab9760f0eceb1dd4d8599d0f2456efc5b6b7a1",
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.46153846153846156,
+      "ap50": 0.2692307692307692,
+      "apall": 0.1581196581196581,
+      "macc": 0.488358469157611,
+      "miou": 0.4346495517853105
+    },
+    "receipt_identity": "51d383e6fb084ff1f3d4c34ef5aaf7af2700c44ca05d835cbb8bd1a0354138a1",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/office4/rows/CT_G3.json",
+    "scene": "office4",
+    "scorer_context_identity": "687f2f3eeafe3e10f5d5f4fa40c81d75e71a27621ccdbf103b6f8248c1d7c2d0",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "15a8fff847f243841565668e1c41f34653a3d10d450efd99c1ff65f60a23fc0a",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.39336557539682543,
+      "ap50": 0.33217592592592593,
+      "apall": 0.1489840534979424,
+      "macc": 0.36964736525879777,
+      "miou": 0.33210982638225767
+    },
+    "receipt_identity": "f5f36f317f37ec1da882299d9644e18e2224140a1b23ed68796c46b761c06bf2",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_A0_NATIVE.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "1b14b431b552266d4f9b40cb1efe663f5daf51d3966fef02f198aa47941c1c9d",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4891327711640212,
+      "ap50": 0.4527116402116402,
+      "apall": 0.22101888594944152,
+      "macc": 0.44510704630455084,
+      "miou": 0.3741500026073245
+    },
+    "receipt_identity": "1f73904b2c820336119e3b4984f68de1b56b864fa3fcc14455a70f59a3c81151",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_A1_E.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "d15eae9f7a35bb45d1e1c93ecd0d72741fd12f2f35589dc9c6da61bd0fa13077",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.39336557539682543,
+      "ap50": 0.33217592592592593,
+      "apall": 0.1489840534979424,
+      "macc": 0.36965544195167255,
+      "miou": 0.3318825854266944
+    },
+    "receipt_identity": "cd1991736f5e5498076496199215da89c23a1164420ba2c0ad1801d093674c26",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_A2_R.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "4790d414dce6389e1b07a3538c91770bc5aad708c24afbcc84ad4d70645e3715",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4891327711640212,
+      "ap50": 0.4527116402116402,
+      "apall": 0.22101888594944152,
+      "macc": 0.4451151229974256,
+      "miou": 0.3740102703512425
+    },
+    "receipt_identity": "70e6a13f4ab5395ebbbed7f9a321d94b558d2f02f70d0f42eff749b8056276c0",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_A3_ER.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "8f544b8287a62966b55e3c02d7f77eb685b61c4d7d1c9a9deb7f5d81da7d9df1",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4891327711640212,
+      "ap50": 0.4527116402116402,
+      "apall": 0.22101888594944152,
+      "macc": 0.44510704630455084,
+      "miou": 0.3741500026073245
+    },
+    "receipt_identity": "5ccd8339cb781899b77d26f0ac4cbaed9c4dea5a05188d68fd28daa72496c45d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "7a1e7e258e11160d9ed4261bb99c790c5cd4ce0d68361f266cb3e007aa87e796",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4497809193121693,
+      "ap50": 0.41335978835978837,
+      "apall": 0.2097663139329806,
+      "macc": 0.4279910922006622,
+      "miou": 0.3555714103388857
+    },
+    "receipt_identity": "af356ff22b1f9f9119295b5041c0d469ce4e8ea57e221b599a75c4e38abbfa5f",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_A5_FC_ONLY.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "7895f6fbbd97c04e5ffa74692bf0428e4c46d11939747fcb996da0bed115cdef",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4891327711640212,
+      "ap50": 0.4527116402116402,
+      "apall": 0.22101888594944152,
+      "macc": 0.44510704630455084,
+      "miou": 0.3741500026073245
+    },
+    "receipt_identity": "bad930fc5b45f41e6af158f9a46bddac87d908ffb3a90af41dc3499f5f38d979",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_H_U2.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "5215be4688ddcd4f73293aa931a725f669a7103dbac1a393526451927f931dc9",
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4891327711640212,
+      "ap50": 0.4527116402116402,
+      "apall": 0.22101888594944152,
+      "macc": 0.4499694919294645,
+      "miou": 0.37872725148331793
+    },
+    "receipt_identity": "740f090f77f84a756b2aed00c5aa80c7b0964d1e18489a0dfe313d8ed3d1a093",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room0/rows/CT_G3.json",
+    "scene": "room0",
+    "scorer_context_identity": "c540ff6d39f60e38f36b9a4c09defecba552c483633ab18ff683e52c897bd5da",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "3188378cd2829ffa1983b9bd2a487ea33dec44f4fd97b6c41bf75f385f3f6e61",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.36466165413533835,
+      "ap50": 0.16290726817042608,
+      "apall": 0.09036480089111668,
+      "macc": 0.3141059992353649,
+      "miou": 0.2894439004813449
+    },
+    "receipt_identity": "97831b4c2663fa6570628a9c0d54bd8dbd58e2e990e3079b23017703132db830",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_A0_NATIVE.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "c13654fb9ccaff5d28e3567e5a3c2d952d4a5f42c0fe9455fb46809cf55c2534",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.48872180451127817,
+      "ap50": 0.2343358395989975,
+      "apall": 0.15886939571150097,
+      "macc": 0.36460087129231683,
+      "miou": 0.3113840797598369
+    },
+    "receipt_identity": "501d357e00614273b98172380664aeb534d8b844f8c8537bb1ecfc06b474a52f",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_A1_E.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "1e773049873537f73c39844df8a9b6bf939382a9be8370b2c9dddd6b257cacfe",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.36466165413533835,
+      "ap50": 0.16290726817042608,
+      "apall": 0.09036480089111668,
+      "macc": 0.3199166568317368,
+      "miou": 0.2951573898904864
+    },
+    "receipt_identity": "4fdbdce723faeb889d2fddde8f50ccc0ae5bc2714fda851a2ad2b75c04593177",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_A2_R.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "26e74ab6d9b830a670debab718f7d548525927ff1b0a7f928d9825c8d60b7613",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.48872180451127817,
+      "ap50": 0.2343358395989975,
+      "apall": 0.15886939571150097,
+      "macc": 0.3704115288886887,
+      "miou": 0.3170013813504733
+    },
+    "receipt_identity": "7786d205b30bd77acbe395ca515bd60452f4e645b147371b5953b7996fb3f0fe",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_A3_ER.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "090b497b659cfef338e83868eadb1d08beb4275de6d3ad79514d9e79da37bad5",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.48872180451127817,
+      "ap50": 0.2343358395989975,
+      "apall": 0.15886939571150097,
+      "macc": 0.39446198240342795,
+      "miou": 0.3271663907264919
+    },
+    "receipt_identity": "030c22e82015d32f6d7abc7e62f31b518080cb70a50478a5d6701d4c9f3a7422",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "7d84db0aa95c9eba4ec64dd450dacabc52f8d65c50cc1e1c54da42469dce0899",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.43922305764411024,
+      "ap50": 0.22556390977443608,
+      "apall": 0.15204678362573099,
+      "macc": 0.3540678149522509,
+      "miou": 0.2923160198830898
+    },
+    "receipt_identity": "cd0d7968e659caf5a4cc750b73d3c0afa5cc5b6ccced70c3f1c52d984367f81a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_A5_FC_ONLY.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "c13654fb9ccaff5d28e3567e5a3c2d952d4a5f42c0fe9455fb46809cf55c2534",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.48872180451127817,
+      "ap50": 0.2343358395989975,
+      "apall": 0.15886939571150097,
+      "macc": 0.36460087129231683,
+      "miou": 0.3113840797598369
+    },
+    "receipt_identity": "d01c1bee3dc7f80f06dfdef31eb10529b39985f6d2b066fa75ffdf8d1dec8695",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_H_U2.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "4dd5064f823e638c9021eb60184e69c00cf62af221a53327d470f549006dc2a3",
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.48872180451127817,
+      "ap50": 0.2343358395989975,
+      "apall": 0.15886939571150097,
+      "macc": 0.3704115288886887,
+      "miou": 0.3152492771956231
+    },
+    "receipt_identity": "0446d78facf94a673519396b1d73aec3fe8ea031985ea9ac123d9f70f500a4be",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room1/rows/CT_G3.json",
+    "scene": "room1",
+    "scorer_context_identity": "b385bc7881f0400bf7c0db5b0efbae840fc21eac5d1a75984898f285c1e70597",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "0a9e5235f25850016bc2849f0ec834f3443675578c994668fb34b0d9327dc8f3",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4015625,
+      "ap50": 0.32968749999999997,
+      "apall": 0.18547453703703703,
+      "macc": 0.3735806811021154,
+      "miou": 0.34623316257716363
+    },
+    "receipt_identity": "1b596ef531f1d1156a3a980c34f0b73a16261de5df94246d506ecbecb8eec87e",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_A0_NATIVE.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "EXACT_REUSE",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "200b2b2a06c9382304515bc5f44564e1c7746320db64b5aa7a098815571ab5d3",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.42447916666666663,
+      "ap50": 0.3567708333333333,
+      "apall": 0.2041087962962963,
+      "macc": 0.4273223177189828,
+      "miou": 0.3869190642028569
+    },
+    "receipt_identity": "6dcd376fb3e5abf667d809cb729fd37658deae69d540ad9f3383b984494a9df1",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_A1_E.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "067c821aa16e5af94efb0ba864c6fb4874c340f2115556d5d29b45495d16b03f",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4171875,
+      "ap50": 0.34531249999999997,
+      "apall": 0.1976273148148148,
+      "macc": 0.403041062536181,
+      "miou": 0.3751982247967292
+    },
+    "receipt_identity": "258a5dbd7fd94542f3a1e985a1500f1f7331dadea4b3725659ce923d392288d8",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_A2_R.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "3efc0511b5cbde1fa9f4c54f14011eda3f0f1b44c4d7146a8c79ae93b1d33d7b",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.44010416666666663,
+      "ap50": 0.3723958333333333,
+      "apall": 0.21495949074074072,
+      "macc": 0.45678269915304853,
+      "miou": 0.4156961766745869
+    },
+    "receipt_identity": "a2c4f5d3d7000c0cbcf96d9e0fc1a6430098df1ef11fe971769efd4022069be7",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_A3_ER.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "ca1486775ca267afdcd925ad54fd016fc888985f3cc4190170940f2486f50955",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.42447916666666663,
+      "ap50": 0.3567708333333333,
+      "apall": 0.2041087962962963,
+      "macc": 0.4357835257158009,
+      "miou": 0.39503795382622253
+    },
+    "receipt_identity": "775dd7e3b4cc2aea879d7931c4fa369294cc6c299ff4ad4ae839acef7bd9e9cb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "875256368ede862e6fb3ae9317bb2c9a35e0afca9c07cedd7ecaf3cf90f5fb79",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3104166666666667,
+      "ap50": 0.24739583333333331,
+      "apall": 0.13857060185185185,
+      "macc": 0.3768091385842551,
+      "miou": 0.33277993347966334
+    },
+    "receipt_identity": "47966c7290f2ad3f27fe0f63145c07a5eef8744459e553d737f2d9513234d15d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_A5_FC_ONLY.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "f90ae7a565e7fc6ba6b8b6e76e475b59d7b8fc72019e60af32aa05e08e01ea61",
+    "method_id": "CT_H_U2",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4583333333333333,
+      "ap50": 0.390625,
+      "apall": 0.2169849537037037,
+      "macc": 0.44558062539413723,
+      "miou": 0.40414957617747715
+    },
+    "receipt_identity": "3aaff73eeb292a72c232a19f42c6c8bf3d390bbf7d7e1b2fa6b02cfa29f4cc9c",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_H_U2.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "replica8",
+    "evaluation_identity": "7578057bb7538fa9a10c389c48c213d018defecd6dbcaea6e61a79cf540fccc4",
+    "method_id": "CT_G3",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4583333333333333,
+      "ap50": 0.390625,
+      "apall": 0.2169849537037037,
+      "macc": 0.46202944778751487,
+      "miou": 0.42020626597232763
+    },
+    "receipt_identity": "98e480094e90c7cd2f4d5ca6a47c48c255c727b9e9c406e9c5360bfd17d0c334",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/room2/rows/CT_G3.json",
+    "scene": "room2",
+    "scorer_context_identity": "4ce9fd51c2452e3141626abd6b3e05403ed45153d07600dbb2be06bfcc7fec3b",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "dd7f256330e738ff46d101f908d1c86f62a8fa29129420d63a3c6854d736c828",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.34444444444444444,
+      "ap50": 0.1204074074074074,
+      "apall": 0.04613947677836567,
+      "macc": 0.3227327973310192,
+      "miou": 0.2170455447809308
+    },
+    "receipt_identity": "b68b6d5ca31b9c2a050faf0dfdbbd9e6afd6b209be91267b67cbff1677b75c5c",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_00/rows/CT_A0_NATIVE.json",
+    "scene": "scene0011_00",
+    "scorer_context_identity": "b12a0f1673c39ccd0bfd80a75b148acd8372bd4154f18245ae9742a376b95843",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "4bcc81d2e7bca160ef0cf4b3b0602dc2a820f8db1c614ce6bc341097d0ce3a30",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19166666666666668,
+      "ap50": 0.1592962962962963,
+      "apall": 0.05539873603762493,
+      "macc": 0.267609072560747,
+      "miou": 0.2013796776366525
+    },
+    "receipt_identity": "bc744371d39af6b7016fb7232a5eb74394befbc4c8b71781ebd1a9272644663b",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_00/rows/CT_A1_E.json",
+    "scene": "scene0011_00",
+    "scorer_context_identity": "b12a0f1673c39ccd0bfd80a75b148acd8372bd4154f18245ae9742a376b95843",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "43d51741d4ee8dfcec4758a2a4434a1a8792fca17d6a77f2821cd54c79fe958f",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.34444444444444444,
+      "ap50": 0.1204074074074074,
+      "apall": 0.04613947677836567,
+      "macc": 0.3236376254597342,
+      "miou": 0.2178562729374799
+    },
+    "receipt_identity": "cf428abf18a50500e7af84a6d6efb4af16c3352a21c503072e790e5ef80e80ea",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_00/rows/CT_A2_R.json",
+    "scene": "scene0011_00",
+    "scorer_context_identity": "b12a0f1673c39ccd0bfd80a75b148acd8372bd4154f18245ae9742a376b95843",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "73c440fa49b24e80dede8ab7d69468670280fafb00f66b270d414e142ce11cbf",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19166666666666668,
+      "ap50": 0.1592962962962963,
+      "apall": 0.05539873603762493,
+      "macc": 0.26851390068946196,
+      "miou": 0.20227028273890207
+    },
+    "receipt_identity": "c472f2d49245ba1513245369b2ea85ba6b6d4677711d4e4941f13bea18f7227d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_00/rows/CT_A3_ER.json",
+    "scene": "scene0011_00",
+    "scorer_context_identity": "b12a0f1673c39ccd0bfd80a75b148acd8372bd4154f18245ae9742a376b95843",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "082039bad79b4dc5772ca5f4abac9676f81d652a09b647cccb653eed5abe01bb",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19166666666666668,
+      "ap50": 0.1592962962962963,
+      "apall": 0.05539873603762493,
+      "macc": 0.267609072560747,
+      "miou": 0.2013796776366525
+    },
+    "receipt_identity": "b47dac9afbd2fc5cc169fde56e1ab5357747fb1ad3a20d43319f451520bd6120",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_00/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0011_00",
+    "scorer_context_identity": "b12a0f1673c39ccd0bfd80a75b148acd8372bd4154f18245ae9742a376b95843",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "1bd4b849d3e8f51ab00022a7f8a8bf5815a6d7b5b8a3b133db6f3fc20616085b",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.12000000000000001,
+      "ap50": 0.08,
+      "apall": 0.019814814814814813,
+      "macc": 0.17268539118359444,
+      "miou": 0.14833292917783147
+    },
+    "receipt_identity": "0bbb580f2f5cf0e14bd98949830eb0b04bbb3d18b0a143a4c086f8f1f30a1680",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_00/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0011_00",
+    "scorer_context_identity": "b12a0f1673c39ccd0bfd80a75b148acd8372bd4154f18245ae9742a376b95843",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "30b39b2ff6cd22f85d4cc1629385175101b1c74e0ed56c4fb7cff681ea0a0b83",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35714285714285715,
+      "ap50": 0.21428571428571427,
+      "apall": 0.04668069584736252,
+      "macc": 0.30406657481458294,
+      "miou": 0.24739664413445517
+    },
+    "receipt_identity": "af41be2c740eb21d2b03d15a613a751fd290b0a71b9e110171faff3b1b8a5b9e",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_01/rows/CT_A0_NATIVE.json",
+    "scene": "scene0011_01",
+    "scorer_context_identity": "be50d75c7a7dfcee238a2a380460252764dc6cb6fdfd1bf76e5aa9706243e598",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "03fbebc6f48c459ed7a0ecaeea75cc23d80e0e0bdea50da3840fa58169d367e3",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35714285714285715,
+      "ap50": 0.21428571428571427,
+      "apall": 0.04668069584736252,
+      "macc": 0.3255346895318169,
+      "miou": 0.261562135553816
+    },
+    "receipt_identity": "73a575315f659685581080c50b95f6b0f6c373422a4bf90290c733a68121ac43",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_01/rows/CT_A1_E.json",
+    "scene": "scene0011_01",
+    "scorer_context_identity": "be50d75c7a7dfcee238a2a380460252764dc6cb6fdfd1bf76e5aa9706243e598",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "72fbd701eee6129bab31dc95459f901c2ff71bf74cd395c9a98237de8acd21f3",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35714285714285715,
+      "ap50": 0.21428571428571427,
+      "apall": 0.04668069584736252,
+      "macc": 0.3047180104070763,
+      "miou": 0.24802620904013242
+    },
+    "receipt_identity": "8a552c927b804024381473daa9d74519b6cb5238046ead93d5302a615ed3b094",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_01/rows/CT_A2_R.json",
+    "scene": "scene0011_01",
+    "scorer_context_identity": "be50d75c7a7dfcee238a2a380460252764dc6cb6fdfd1bf76e5aa9706243e598",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "c9237f0091c2e2b01a61f39b69131cd3f5e6efe7d2f9b7e863196d1f4efce5be",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35714285714285715,
+      "ap50": 0.21428571428571427,
+      "apall": 0.04668069584736252,
+      "macc": 0.3261861251243104,
+      "miou": 0.2621917004594933
+    },
+    "receipt_identity": "eb79277aa3efae2599b00e2dad87bcd3191733d21609e7d5b4625ea44fced5d1",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_01/rows/CT_A3_ER.json",
+    "scene": "scene0011_01",
+    "scorer_context_identity": "be50d75c7a7dfcee238a2a380460252764dc6cb6fdfd1bf76e5aa9706243e598",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "fe5ceaf54cb1238fa93993a84f02972fa005103ace820f803fa370ebd023eda0",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35714285714285715,
+      "ap50": 0.21428571428571427,
+      "apall": 0.04668069584736252,
+      "macc": 0.3257189924841416,
+      "miou": 0.2617402508918991
+    },
+    "receipt_identity": "0b4ed1fca85a356c98cea0c6dd9fc5062ad9d5cf96951195db5aa9759b353542",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_01/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0011_01",
+    "scorer_context_identity": "be50d75c7a7dfcee238a2a380460252764dc6cb6fdfd1bf76e5aa9706243e598",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "ef9b8ade068a7db73eee7eeaebe0545cec77dc6ff690c33dea3cb36b13eb6c4f",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.14464285714285713,
+      "ap50": 0.0375,
+      "apall": 0.004365079365079365,
+      "macc": 0.20827806667084017,
+      "miou": 0.1460473951100371
+    },
+    "receipt_identity": "d0d3df1e285cb0a837d96e32c9047b79cc19b4c8b9c93105ada1fa5a65a07e9d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0011_01/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0011_01",
+    "scorer_context_identity": "be50d75c7a7dfcee238a2a380460252764dc6cb6fdfd1bf76e5aa9706243e598",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "19f2b9a6724207e3129bb7a50f3cc77b136b400dcbc9350c1d41091522b6b565",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.36363636363636365,
+      "ap50": 0.3181818181818182,
+      "apall": 0.14646464646464646,
+      "macc": 0.4177546015448602,
+      "miou": 0.31056462046143857
+    },
+    "receipt_identity": "509a10094f4fb8045a04cf101bb8c2a7921c639c3a7560d714c4ecf5d5c451b3",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_00/rows/CT_A0_NATIVE.json",
+    "scene": "scene0050_00",
+    "scorer_context_identity": "f7c49e492b8d0fe52e553d3c8bb5744ea96a67e8d096efa2ddbb302eacbf9a00",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "d9b44037a529489f2ceadb6e4c860a733033ce3fc24acf5073399ae6754c1878",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35000000000000003,
+      "ap50": 0.35000000000000003,
+      "apall": 0.15984848484848485,
+      "macc": 0.38178473373994437,
+      "miou": 0.2845204055639855
+    },
+    "receipt_identity": "8369cafa5b80a885cd9b12636a13e814e1378c09ce544345f40d9bac78916219",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_00/rows/CT_A1_E.json",
+    "scene": "scene0050_00",
+    "scorer_context_identity": "f7c49e492b8d0fe52e553d3c8bb5744ea96a67e8d096efa2ddbb302eacbf9a00",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "0e3e89274b5f5eb3ea0202edc85d13955df54fb4206be060cf6895ac4c2565a3",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.36363636363636365,
+      "ap50": 0.3181818181818182,
+      "apall": 0.14646464646464646,
+      "macc": 0.41777615809178886,
+      "miou": 0.3105861648449203
+    },
+    "receipt_identity": "ca6973558412c14974f5ed46838ff843e908e6143aee006f87366e926a43f97a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_00/rows/CT_A2_R.json",
+    "scene": "scene0050_00",
+    "scorer_context_identity": "f7c49e492b8d0fe52e553d3c8bb5744ea96a67e8d096efa2ddbb302eacbf9a00",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "2b712372d7f3ad8fc1b74ad438f215cefac56fe57b3ae7df99b59e20165bb931",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35000000000000003,
+      "ap50": 0.35000000000000003,
+      "apall": 0.15984848484848485,
+      "macc": 0.381806290286873,
+      "miou": 0.284534325312428
+    },
+    "receipt_identity": "43826420adb67b01cba99d95bfa89f56208731545684797e4fa4905f70244b2e",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_00/rows/CT_A3_ER.json",
+    "scene": "scene0050_00",
+    "scorer_context_identity": "f7c49e492b8d0fe52e553d3c8bb5744ea96a67e8d096efa2ddbb302eacbf9a00",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "4dca61398666088eb834314eef9e470a8f3a67c39ef0fda60f05ef272ce843ca",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35000000000000003,
+      "ap50": 0.35000000000000003,
+      "apall": 0.15984848484848485,
+      "macc": 0.38178473373994437,
+      "miou": 0.2845204055639855
+    },
+    "receipt_identity": "2d7f0afe3d4ff739b94d3738192f6252558b28f053d2af23d1eab5c195a44df4",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_00/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0050_00",
+    "scorer_context_identity": "f7c49e492b8d0fe52e553d3c8bb5744ea96a67e8d096efa2ddbb302eacbf9a00",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "98a2842539125dcce7715c5b254523ef81cb566c40d6cd73ccc588d3c88ff713",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4090909090909091,
+      "ap50": 0.4090909090909091,
+      "apall": 0.24242424242424243,
+      "macc": 0.3574217391696624,
+      "miou": 0.3289843402768716
+    },
+    "receipt_identity": "4f18c01512bf53463bb5eadf5b95775eb5e1bcbb772f68d8592b5406c23f4c0d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_00/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0050_00",
+    "scorer_context_identity": "f7c49e492b8d0fe52e553d3c8bb5744ea96a67e8d096efa2ddbb302eacbf9a00",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "b68bc38f345810813d3e1adc401ec460eee2e19c7b7b230b6c65fe9f33032488",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4,
+      "ap50": 0.275,
+      "apall": 0.13333333333333333,
+      "macc": 0.3845424791949876,
+      "miou": 0.31160546867455435
+    },
+    "receipt_identity": "4fff2ce2ed10699fbde7043f517eef52443e726bf8a77a63b63197fde37e8d80",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_01/rows/CT_A0_NATIVE.json",
+    "scene": "scene0050_01",
+    "scorer_context_identity": "5858352cb8bf2a7faec45c46939ecd0af3310d791aab6c20d07de031f2d78a68",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "7395dad4a7dccb42fd2624703ec6cbd74b8d247b5aed6d167bc9d2ba9582b68d",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.475,
+      "ap50": 0.3,
+      "apall": 0.1527777777777778,
+      "macc": 0.40298024041440594,
+      "miou": 0.3393117058017066
+    },
+    "receipt_identity": "5839ed15c98cf60b94ff31ec6971159bf3887397dbf856c7b239a6a47f98dce0",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_01/rows/CT_A1_E.json",
+    "scene": "scene0050_01",
+    "scorer_context_identity": "5858352cb8bf2a7faec45c46939ecd0af3310d791aab6c20d07de031f2d78a68",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "e60261da7e13f1dfc667dcb3b0b710095aabe9f68d506c85e9fee4d68487af00",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4,
+      "ap50": 0.275,
+      "apall": 0.13333333333333333,
+      "macc": 0.3845424791949876,
+      "miou": 0.311252797188044
+    },
+    "receipt_identity": "fcdbfaa9a23539efdd91939ce37db15d59a59fb6bc1eb067dc1efb2581e2d277",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_01/rows/CT_A2_R.json",
+    "scene": "scene0050_01",
+    "scorer_context_identity": "5858352cb8bf2a7faec45c46939ecd0af3310d791aab6c20d07de031f2d78a68",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "648c74b146b0204116bc346af0ca967349b39dd9c70e28036a0352093fbd36a8",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.475,
+      "ap50": 0.3,
+      "apall": 0.1527777777777778,
+      "macc": 0.40298024041440594,
+      "miou": 0.3389590343151963
+    },
+    "receipt_identity": "d68aab82a7955c5592200e4947426e90c7a4ca00295fdf0f310105b35b67de9b",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_01/rows/CT_A3_ER.json",
+    "scene": "scene0050_01",
+    "scorer_context_identity": "5858352cb8bf2a7faec45c46939ecd0af3310d791aab6c20d07de031f2d78a68",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "e622e91aa9872437b2ca21f1731b350d3ecb559d7a909219d6ff4d19c048a80f",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.475,
+      "ap50": 0.3,
+      "apall": 0.1527777777777778,
+      "macc": 0.40298024041440594,
+      "miou": 0.3393117058017066
+    },
+    "receipt_identity": "86d532dd30c2531f6084de6048dc7d30a17c413f9eeb1bb6cdde03b8c3a5bda4",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_01/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0050_01",
+    "scorer_context_identity": "5858352cb8bf2a7faec45c46939ecd0af3310d791aab6c20d07de031f2d78a68",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "a38974a4ba3dcbe51c23b3f5aa33a5b1a3cf966fb9afb9fa4f1ae948ccd9466a",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.425,
+      "ap50": 0.3,
+      "apall": 0.1638888888888889,
+      "macc": 0.3618295067768076,
+      "miou": 0.31091754116896564
+    },
+    "receipt_identity": "5f2021c9e407a33860ee4db32311153560475c19a5ea85ef7550d83173a5f429",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_01/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0050_01",
+    "scorer_context_identity": "5858352cb8bf2a7faec45c46939ecd0af3310d791aab6c20d07de031f2d78a68",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "6a8eccb9ce11f44da4b9becf3e77fde36999d43c202c68405707b3661624a972",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4842105263157894,
+      "ap50": 0.4473684210526316,
+      "apall": 0.22514619883040934,
+      "macc": 0.43336948949575066,
+      "miou": 0.38379296334233926
+    },
+    "receipt_identity": "09dfecc089ba6de3e14d2885bb555978c7800c7822263aa17c7a671411edf7b8",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_02/rows/CT_A0_NATIVE.json",
+    "scene": "scene0050_02",
+    "scorer_context_identity": "11d5a516d72054bc90ec09fb345b6172e6b69ecbd84545f1596c99af835dfb18",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "cc7bf5657561cda9d7b061d2cce57fde594876c90efaf321ec4a758bdcefa127",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.45789473684210524,
+      "ap50": 0.42105263157894735,
+      "apall": 0.23391812865497075,
+      "macc": 0.40856626075138014,
+      "miou": 0.36286273872336927
+    },
+    "receipt_identity": "ca8477ca1f5acad9444235fde619405f81ec5c1fd19bc9586653f14c77e28255",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_02/rows/CT_A1_E.json",
+    "scene": "scene0050_02",
+    "scorer_context_identity": "11d5a516d72054bc90ec09fb345b6172e6b69ecbd84545f1596c99af835dfb18",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "96f91c5a1b9ee5989f533c96f449a3751f9f7362e58b769b082b2d61de4b166d",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.4842105263157894,
+      "ap50": 0.4473684210526316,
+      "apall": 0.22514619883040934,
+      "macc": 0.43336948949575066,
+      "miou": 0.38379296334233926
+    },
+    "receipt_identity": "2e32434cd881358be011425c7440c049b7e40f99a0367f25efd401e5da115884",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_02/rows/CT_A2_R.json",
+    "scene": "scene0050_02",
+    "scorer_context_identity": "11d5a516d72054bc90ec09fb345b6172e6b69ecbd84545f1596c99af835dfb18",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "c230a2b22c467b1f9aba08357c16fd82a39cb296cbbf0cb8dd656979c994a259",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.45789473684210524,
+      "ap50": 0.42105263157894735,
+      "apall": 0.23391812865497075,
+      "macc": 0.40856626075138014,
+      "miou": 0.36286273872336927
+    },
+    "receipt_identity": "681fd4791d8e8d4743dc724e3ddc3fb2b2c69f9fa941ea2d48103a1bed1f4386",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_02/rows/CT_A3_ER.json",
+    "scene": "scene0050_02",
+    "scorer_context_identity": "11d5a516d72054bc90ec09fb345b6172e6b69ecbd84545f1596c99af835dfb18",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "af4b9c8e6b210ab1b165965a24652374afa60b0d12d0d1f8d0938cae60499fdd",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.45789473684210524,
+      "ap50": 0.42105263157894735,
+      "apall": 0.23391812865497075,
+      "macc": 0.40856626075138014,
+      "miou": 0.36286273872336927
+    },
+    "receipt_identity": "64dafbcf0be75b95ba4fb4991fd5f7a9919687a8e407a3ceb7836c028e4b852d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_02/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0050_02",
+    "scorer_context_identity": "11d5a516d72054bc90ec09fb345b6172e6b69ecbd84545f1596c99af835dfb18",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "59079e843aa5ec751f93f80e44e27980840bcaa2ac38405c92b5acc819b1f7c3",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.2894736842105263,
+      "ap50": 0.2631578947368421,
+      "apall": 0.15204678362573099,
+      "macc": 0.2756348326021265,
+      "miou": 0.2403014815682562
+    },
+    "receipt_identity": "00e407d21a511775327bc6270bd17caff0225d2ac6be38b4eabba0039a8b5f04",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0050_02/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0050_02",
+    "scorer_context_identity": "11d5a516d72054bc90ec09fb345b6172e6b69ecbd84545f1596c99af835dfb18",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "8422b3314b509e8fafa4a7717e9459e2a69726c815b6f434af5d3d414ff59e5f",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.20833333333333334,
+      "ap50": 0.19791666666666666,
+      "apall": 0.12037037037037036,
+      "macc": 0.20885676833214614,
+      "miou": 0.16786903603073292
+    },
+    "receipt_identity": "2c557d9397b6a0bbbc72fe92767e92e50452ef73762b768b9b22e187fa4941fe",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_00/rows/CT_A0_NATIVE.json",
+    "scene": "scene0084_00",
+    "scorer_context_identity": "fdec2cec750e1b82dedc094d3c91e42ba526bba842114e9150a0389d86e66925",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "26c0f03171035af10fe4abaa850702f4fdf73f9478680df8c399a4a3665e1979",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.34722222222222215,
+      "ap50": 0.3263888888888889,
+      "apall": 0.15162037037037038,
+      "macc": 0.2865624682585377,
+      "miou": 0.25862356822795507
+    },
+    "receipt_identity": "7bdb065fc9d6135f46e05551bff3c9ba4ec316a68bc2f8dad004357b5599d16e",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_00/rows/CT_A1_E.json",
+    "scene": "scene0084_00",
+    "scorer_context_identity": "fdec2cec750e1b82dedc094d3c91e42ba526bba842114e9150a0389d86e66925",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "8422b3314b509e8fafa4a7717e9459e2a69726c815b6f434af5d3d414ff59e5f",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.20833333333333334,
+      "ap50": 0.19791666666666666,
+      "apall": 0.12037037037037036,
+      "macc": 0.20885676833214614,
+      "miou": 0.16786903603073292
+    },
+    "receipt_identity": "c46fd9e05a51c4958bbfd6d25634f2bddfc2f2902b023ad030eb1b9c5c593944",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_00/rows/CT_A2_R.json",
+    "scene": "scene0084_00",
+    "scorer_context_identity": "fdec2cec750e1b82dedc094d3c91e42ba526bba842114e9150a0389d86e66925",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "26c0f03171035af10fe4abaa850702f4fdf73f9478680df8c399a4a3665e1979",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.34722222222222215,
+      "ap50": 0.3263888888888889,
+      "apall": 0.15162037037037038,
+      "macc": 0.2865624682585377,
+      "miou": 0.25862356822795507
+    },
+    "receipt_identity": "10977a2c2bd471911f5b385a8f50c4ff13f6472082b6440d59fa8fb6ac18b1d1",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_00/rows/CT_A3_ER.json",
+    "scene": "scene0084_00",
+    "scorer_context_identity": "fdec2cec750e1b82dedc094d3c91e42ba526bba842114e9150a0389d86e66925",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "26c0f03171035af10fe4abaa850702f4fdf73f9478680df8c399a4a3665e1979",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.34722222222222215,
+      "ap50": 0.3263888888888889,
+      "apall": 0.15162037037037038,
+      "macc": 0.2865624682585377,
+      "miou": 0.25862356822795507
+    },
+    "receipt_identity": "33ddc8307376ba8880bcbe48f479b4abf3051cf59eb0cd5e2b656e870c9da14e",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_00/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0084_00",
+    "scorer_context_identity": "fdec2cec750e1b82dedc094d3c91e42ba526bba842114e9150a0389d86e66925",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "73031ac8d4185d7337c0c8f123ff6948869db8b6975c6dbfb8d760fba14fe68f",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3368055555555555,
+      "ap50": 0.2847222222222222,
+      "apall": 0.1099537037037037,
+      "macc": 0.25956844704993026,
+      "miou": 0.2262808474632001
+    },
+    "receipt_identity": "d2d7ff32d00a0e2b3079de54b41c099fb5b932d19f3d7fa458927b9ea9e66ee8",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_00/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0084_00",
+    "scorer_context_identity": "fdec2cec750e1b82dedc094d3c91e42ba526bba842114e9150a0389d86e66925",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "4ddaf45ff05c729bf746c0cd6ff13057a20a21e80d28385109280c6f326542f8",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.26,
+      "ap50": 0.18,
+      "apall": 0.09666666666666666,
+      "macc": 0.23367490177391528,
+      "miou": 0.20606148056008763
+    },
+    "receipt_identity": "08f2b83918843c4bfa80ed2208493b97fbea67083f87867a9d42850db2085bef",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_01/rows/CT_A0_NATIVE.json",
+    "scene": "scene0084_01",
+    "scorer_context_identity": "c350cbc0ffa5ee071f630ab67505dbbb76959ca7026bad9e7359ad47f13bceab",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "1a5c5f4df3c4dd4e03050c9ccc6a6bc06ee17dc1bfb5fc1679fdee62fbe8c09b",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.27,
+      "ap50": 0.18,
+      "apall": 0.09666666666666666,
+      "macc": 0.23564382153178814,
+      "miou": 0.21204586027398492
+    },
+    "receipt_identity": "aa66facfcaa061a4cd44489a575b89c9b1d4c07534338afb187daa3d906b4e59",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_01/rows/CT_A1_E.json",
+    "scene": "scene0084_01",
+    "scorer_context_identity": "c350cbc0ffa5ee071f630ab67505dbbb76959ca7026bad9e7359ad47f13bceab",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "af909b23abb05859543f585aa07c9a01f17e55d6ff9dd6b3b9efb0dd781aa1a3",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.27,
+      "ap50": 0.18,
+      "apall": 0.09666666666666666,
+      "macc": 0.23674273497468792,
+      "miou": 0.20773301450800677
+    },
+    "receipt_identity": "1ce468f1060d0c3fab26e659c684766c31ebf565d015bcee50551c1a47ad8a95",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_01/rows/CT_A2_R.json",
+    "scene": "scene0084_01",
+    "scorer_context_identity": "c350cbc0ffa5ee071f630ab67505dbbb76959ca7026bad9e7359ad47f13bceab",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "792f1eb7c8da512958a6ac06bccc8b479d549bb3315a858849d57c201c04ffc0",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.28,
+      "ap50": 0.18,
+      "apall": 0.09666666666666666,
+      "macc": 0.23871165473256079,
+      "miou": 0.2134481082589391
+    },
+    "receipt_identity": "21795a9fad354dc085d3cf2a3e652cc5087257d4bde61031bb7816da5835eaeb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_01/rows/CT_A3_ER.json",
+    "scene": "scene0084_01",
+    "scorer_context_identity": "c350cbc0ffa5ee071f630ab67505dbbb76959ca7026bad9e7359ad47f13bceab",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "c84cde79d1c799d54bedddb1cbcb45ad3bdad4de50904b486a1373af6c41c41f",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.27,
+      "ap50": 0.18,
+      "apall": 0.09666666666666666,
+      "macc": 0.23564382153178814,
+      "miou": 0.21204586027398492
+    },
+    "receipt_identity": "1ced40ff208038c1914a650781e9aca0daaec7b4531e097f1b42ef0a63ae4a02",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_01/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0084_01",
+    "scorer_context_identity": "c350cbc0ffa5ee071f630ab67505dbbb76959ca7026bad9e7359ad47f13bceab",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "052b30a7af7c73a4c55fa6e889a8a7c1696436187d5db275a8aa6b4c24c3f729",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.24,
+      "ap50": 0.14,
+      "apall": 0.056666666666666664,
+      "macc": 0.16162079825968761,
+      "miou": 0.13700959062594598
+    },
+    "receipt_identity": "03205f4194333eae5b4bc4bbd273ea3d15fad84b32b0e0624e09cfa0824c073b",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_01/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0084_01",
+    "scorer_context_identity": "c350cbc0ffa5ee071f630ab67505dbbb76959ca7026bad9e7359ad47f13bceab",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "b76461fe0dddcd72493b3887e424ed18db274af34e63c305ac856d687f6169dc",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25,
+      "ap50": 0.12878787878787878,
+      "apall": 0.06986531986531985,
+      "macc": 0.2181390649707965,
+      "miou": 0.18653916191256376
+    },
+    "receipt_identity": "bd2591a373ee8f29bcb5b4f62a9239cd3598418c8b4b423dc014fa1c9d93b912",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_02/rows/CT_A0_NATIVE.json",
+    "scene": "scene0084_02",
+    "scorer_context_identity": "93e0b7753503d070556a74cd4fbac6a07e4d95490f63fd08321205ffa503aefd",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "a5a024d4a85c80bdea01df2b7614fe0f344142be4b2c95b8a38c662b8ea68d04",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3674242424242424,
+      "ap50": 0.23106060606060605,
+      "apall": 0.10774410774410774,
+      "macc": 0.3162835242480999,
+      "miou": 0.26163479648612065
+    },
+    "receipt_identity": "f1e51b208ff02c42063cae6f16e9efa3392e90577d168dad1d15720866699e74",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_02/rows/CT_A1_E.json",
+    "scene": "scene0084_02",
+    "scorer_context_identity": "93e0b7753503d070556a74cd4fbac6a07e4d95490f63fd08321205ffa503aefd",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "149f1739e62f735190b418b8b350f44c6d7c67efc4fe99d961338c1f60301aa0",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25,
+      "ap50": 0.12878787878787878,
+      "apall": 0.06986531986531985,
+      "macc": 0.2181390649707965,
+      "miou": 0.18653916191256376
+    },
+    "receipt_identity": "4f03c64e27818d401a300644e520cfd753bbccf91d122dc339322477dd5d6990",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_02/rows/CT_A2_R.json",
+    "scene": "scene0084_02",
+    "scorer_context_identity": "93e0b7753503d070556a74cd4fbac6a07e4d95490f63fd08321205ffa503aefd",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "c7517de836d13e5891d67c35b69d2fd3fb49219adeeba551d0399cbb561cf9c6",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3674242424242424,
+      "ap50": 0.23106060606060605,
+      "apall": 0.10774410774410774,
+      "macc": 0.3162835242480999,
+      "miou": 0.26163479648612065
+    },
+    "receipt_identity": "b9ffca31572c01b4651f41b8d26eef0762ac345a1bb5b4e87a559af3672229d9",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_02/rows/CT_A3_ER.json",
+    "scene": "scene0084_02",
+    "scorer_context_identity": "93e0b7753503d070556a74cd4fbac6a07e4d95490f63fd08321205ffa503aefd",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "1ece866b7e059ae53a9e058bef544ec8f699416a71a613f447352dde13fc5eb8",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3674242424242424,
+      "ap50": 0.23106060606060605,
+      "apall": 0.10774410774410774,
+      "macc": 0.3162835242480999,
+      "miou": 0.26163479648612065
+    },
+    "receipt_identity": "79a27de68cd349f089af1424abfd22ea61251bcd93f6cc18e1e94108eb979cd9",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_02/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0084_02",
+    "scorer_context_identity": "93e0b7753503d070556a74cd4fbac6a07e4d95490f63fd08321205ffa503aefd",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "10159f1c4cb959caa7e1e2bf94c36dece69aac6e075ad795a81430887d1e0333",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.2462121212121212,
+      "ap50": 0.17045454545454544,
+      "apall": 0.08080808080808081,
+      "macc": 0.25069573536947365,
+      "miou": 0.20365151747926546
+    },
+    "receipt_identity": "e98fd47b0508b314dae2b61b2ee123c90a83ae64c08f0c03782b88f8afd72ac6",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0084_02/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0084_02",
+    "scorer_context_identity": "93e0b7753503d070556a74cd4fbac6a07e4d95490f63fd08321205ffa503aefd",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "9d008250c84ef3251b210c71d27fdddf5e80e28f6a243e1ecd66be2061a158a2",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.31486111111111115,
+      "ap50": 0.2740972222222222,
+      "apall": 0.12911779835390946,
+      "macc": 0.299945388372719,
+      "miou": 0.2384629036975158
+    },
+    "receipt_identity": "c476e5c4f37c1695aec546c9dd9081dc26a4d22582d0fb764a8d5341ccb9915c",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_00/rows/CT_A0_NATIVE.json",
+    "scene": "scene0168_00",
+    "scorer_context_identity": "4cb5411c4e0131234c2f5d2c57ede4a0f9f4a981e3d0e7eab86cb2943ca437c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "c91679675b0e6b465a81d8a4ce29b43c02bcf6ca8f5b5adaeb8ff4d3a8c94290",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35630555555555554,
+      "ap50": 0.29444444444444445,
+      "apall": 0.12142489711934155,
+      "macc": 0.3043434904636137,
+      "miou": 0.2461128995513643
+    },
+    "receipt_identity": "f5d12b9347ad106148dd6f2161ad44883ba20494fd59e6fb053a1f8c7071c5e6",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_00/rows/CT_A1_E.json",
+    "scene": "scene0168_00",
+    "scorer_context_identity": "4cb5411c4e0131234c2f5d2c57ede4a0f9f4a981e3d0e7eab86cb2943ca437c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "5d5632e0fdf4c67b2418425f0cb3631463062e918c45e47e6130f3db9f78b80c",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.31486111111111115,
+      "ap50": 0.2740972222222222,
+      "apall": 0.12911779835390946,
+      "macc": 0.30017041477004636,
+      "miou": 0.2385755768222662
+    },
+    "receipt_identity": "92be9fdf42fbf950c1070ebf35ae05aeef98d18cd7a70878cbdfc13b547ccb15",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_00/rows/CT_A2_R.json",
+    "scene": "scene0168_00",
+    "scorer_context_identity": "4cb5411c4e0131234c2f5d2c57ede4a0f9f4a981e3d0e7eab86cb2943ca437c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "1f9fe10ec6171fd5568343386b5be0cc8a86b1ffb81dfa595b0987f489bda6b0",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35630555555555554,
+      "ap50": 0.29444444444444445,
+      "apall": 0.12142489711934155,
+      "macc": 0.30456851686094105,
+      "miou": 0.2462255726761147
+    },
+    "receipt_identity": "34fc932635a88cdb71441c8feef290b72d4b0117e54c028b4c8448d00fa4be21",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_00/rows/CT_A3_ER.json",
+    "scene": "scene0168_00",
+    "scorer_context_identity": "4cb5411c4e0131234c2f5d2c57ede4a0f9f4a981e3d0e7eab86cb2943ca437c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "4ae89ef7c030e214be8ee7ee2a1d4ca087e8582494049a821c864cc146f92535",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.35630555555555554,
+      "ap50": 0.29444444444444445,
+      "apall": 0.12142489711934155,
+      "macc": 0.3043954196322277,
+      "miou": 0.24608535267628864
+    },
+    "receipt_identity": "790b8c93bb9c4fc5257aa22b09a21b260cbbabf167b668c0d60bf337e15cf3ce",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_00/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0168_00",
+    "scorer_context_identity": "4cb5411c4e0131234c2f5d2c57ede4a0f9f4a981e3d0e7eab86cb2943ca437c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "328bc5d6465c04d7b0f782f2ee1a46c757e343cda11238a5f269a6d04501de27",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.41833333333333333,
+      "ap50": 0.34097222222222223,
+      "apall": 0.13557098765432096,
+      "macc": 0.29784658502431927,
+      "miou": 0.2686666870616347
+    },
+    "receipt_identity": "aba718d3cdf55cd6c2a02ec1c90d5ced86b7e504e3df3c159277ad520b8b3a37",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_00/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0168_00",
+    "scorer_context_identity": "4cb5411c4e0131234c2f5d2c57ede4a0f9f4a981e3d0e7eab86cb2943ca437c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "0a09b31ec841034cd7a5b4d9bc967f755dd02b99a874a95c37904bade77e36b5",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.10724637681159421,
+      "ap50": 0.08534420289855073,
+      "apall": 0.05152173913043478,
+      "macc": 0.13802592763659274,
+      "miou": 0.08851620033889153
+    },
+    "receipt_identity": "a8b5d60fa7e88ec5fdf20f1297ad5a9223614404f524614bead86b41f10f10de",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_01/rows/CT_A0_NATIVE.json",
+    "scene": "scene0168_01",
+    "scorer_context_identity": "c36e4ebc27497e3f7c6a53ae543fcd85f839f64b83b3b9004739f8752cea0253",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "45bb5e68006d261dcdc257b385ed12ae7156f5b049344adf9dbe26dbc366a9d6",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19528985507246374,
+      "ap50": 0.1766614906832298,
+      "apall": 0.09333505866114561,
+      "macc": 0.21743587227129002,
+      "miou": 0.1643693073179144
+    },
+    "receipt_identity": "fea7ee0012de82b94aadc075197cb61dda9e2f223ed4057907bc62992047a764",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_01/rows/CT_A1_E.json",
+    "scene": "scene0168_01",
+    "scorer_context_identity": "c36e4ebc27497e3f7c6a53ae543fcd85f839f64b83b3b9004739f8752cea0253",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "ab1c6e82fe4d824c26a59b5592b35f5966389c8e116ad6aa4c056231e3546bfa",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.10724637681159421,
+      "ap50": 0.08534420289855073,
+      "apall": 0.05152173913043478,
+      "macc": 0.13802592763659274,
+      "miou": 0.08851620033889153
+    },
+    "receipt_identity": "cdda24c45e6be19d93bc2334b1badc6b346ca1ea14e51f3c129bf046a92c2182",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_01/rows/CT_A2_R.json",
+    "scene": "scene0168_01",
+    "scorer_context_identity": "c36e4ebc27497e3f7c6a53ae543fcd85f839f64b83b3b9004739f8752cea0253",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "ab03f77e2cbec482da8b9869c5afdad8d2f30e73926a855aec0049bc7ac619d1",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19528985507246374,
+      "ap50": 0.1766614906832298,
+      "apall": 0.09333505866114561,
+      "macc": 0.21743587227129002,
+      "miou": 0.1643693073179144
+    },
+    "receipt_identity": "5f27615c988f46c55fc0199cd74c78d02c7475a8fc4961f8f2d4fbeddfd3ca83",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_01/rows/CT_A3_ER.json",
+    "scene": "scene0168_01",
+    "scorer_context_identity": "c36e4ebc27497e3f7c6a53ae543fcd85f839f64b83b3b9004739f8752cea0253",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "675f121667bb7fd3c621e0de86b304f402fedc7f3d4556e684db4681f5f654d8",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19528985507246374,
+      "ap50": 0.1766614906832298,
+      "apall": 0.09333505866114561,
+      "macc": 0.21743587227129002,
+      "miou": 0.1643693073179144
+    },
+    "receipt_identity": "bd42effe3f83d033fadcb3ea7e9eb487e8c7482eab8c76e171c880fad76a0735",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_01/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0168_01",
+    "scorer_context_identity": "c36e4ebc27497e3f7c6a53ae543fcd85f839f64b83b3b9004739f8752cea0253",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "98fe6f2afecfdee2e2216908d0d57fd653c8213d4b5b156c546cc9ed45133d46",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.15507246376811595,
+      "ap50": 0.14420289855072466,
+      "apall": 0.06022544283413848,
+      "macc": 0.15007877524748167,
+      "miou": 0.12913129122769915
+    },
+    "receipt_identity": "6a006ff3e8db0be88310d311a21e5632f70eca719374a09d2bcd467921adae5f",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_01/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0168_01",
+    "scorer_context_identity": "c36e4ebc27497e3f7c6a53ae543fcd85f839f64b83b3b9004739f8752cea0253",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "deeb07a844392ab7eaa23e22083a72849d646e73165706561ca35d8803a24fb9",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.1757246376811594,
+      "ap50": 0.11888586956521739,
+      "apall": 0.05522846215780997,
+      "macc": 0.15716912408094721,
+      "miou": 0.1267468967508866
+    },
+    "receipt_identity": "64e896cd733d2be389cbbba89931a09400b28289b863e61ff111d681374f6ea9",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_02/rows/CT_A0_NATIVE.json",
+    "scene": "scene0168_02",
+    "scorer_context_identity": "d48662c1ee6cc515061096a3b2e5b947d9b2f46622764dfc93a9738f5451fab9",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "943d1531609ee6beefd3441144a325d4f434634bad3586d6989a763ab5a856c0",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.1648550724637681,
+      "ap50": 0.1514945652173913,
+      "apall": 0.10232991143317229,
+      "macc": 0.185243319433369,
+      "miou": 0.15585929843220128
+    },
+    "receipt_identity": "17b9d964efe594bf54d03a331b32450cc67fc8cfed39773eabc46267e4a52b0d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_02/rows/CT_A1_E.json",
+    "scene": "scene0168_02",
+    "scorer_context_identity": "d48662c1ee6cc515061096a3b2e5b947d9b2f46622764dfc93a9738f5451fab9",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "eb978a0a700f6fc0a2e5beced2907e1a4f1506acf9907ffb81c53c6471d7c157",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.1757246376811594,
+      "ap50": 0.11888586956521739,
+      "apall": 0.05522846215780997,
+      "macc": 0.15716912408094721,
+      "miou": 0.1267468967508866
+    },
+    "receipt_identity": "bae8ae8dc178fa674cf7c57c9216f80d14db007a5e158223b812ed0a77292ab9",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_02/rows/CT_A2_R.json",
+    "scene": "scene0168_02",
+    "scorer_context_identity": "d48662c1ee6cc515061096a3b2e5b947d9b2f46622764dfc93a9738f5451fab9",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "07d0318e0eee96dd9453dc35505459dc3d4ad402fa55387825f196c056268c8a",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.1648550724637681,
+      "ap50": 0.1514945652173913,
+      "apall": 0.10232991143317229,
+      "macc": 0.185243319433369,
+      "miou": 0.15585929843220128
+    },
+    "receipt_identity": "627e917ed9a6ff3337cd9ed9a23dd25aaeb7789280a428d3a0ab26b3ccee72d3",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_02/rows/CT_A3_ER.json",
+    "scene": "scene0168_02",
+    "scorer_context_identity": "d48662c1ee6cc515061096a3b2e5b947d9b2f46622764dfc93a9738f5451fab9",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "0ab02709b15911d65b6c96f68a6608c70dd7129a4772aaf44799597ead33064d",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.1648550724637681,
+      "ap50": 0.1514945652173913,
+      "apall": 0.10232991143317229,
+      "macc": 0.185243319433369,
+      "miou": 0.1556721636416542
+    },
+    "receipt_identity": "502747af002f2a0b0e79b133e5cdfb0107bfdb4ddc5ce875ef113f8082827878",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_02/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0168_02",
+    "scorer_context_identity": "d48662c1ee6cc515061096a3b2e5b947d9b2f46622764dfc93a9738f5451fab9",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "3722c65c7c0a7da53d9a58403ca56e300b022aba7da8dd9fdc5e22cb44c1ac33",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.1721014492753623,
+      "ap50": 0.161231884057971,
+      "apall": 0.11246980676328501,
+      "macc": 0.1703988611747379,
+      "miou": 0.15396933224488882
+    },
+    "receipt_identity": "9a430e7c78006511a49ff351b058d4a93c8250bbad34c00abf2de9dbf9a7b67b",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0168_02/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0168_02",
+    "scorer_context_identity": "d48662c1ee6cc515061096a3b2e5b947d9b2f46622764dfc93a9738f5451fab9",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "d6382bbcaae60e8488488bd0a3a3ba854ed6f379b97fa7dd8466aa0d094a841c",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.15335213032581455,
+      "ap50": 0.08364661654135337,
+      "apall": 0.035470620996936784,
+      "macc": 0.1653727384488843,
+      "miou": 0.12930288324678857
+    },
+    "receipt_identity": "3478d58dce2222365c2de8d8803978568c1d7810d345d8d69d86665ae8b565d1",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_00/rows/CT_A0_NATIVE.json",
+    "scene": "scene0231_00",
+    "scorer_context_identity": "a9a4aa8fab4feea65323ff251fc0314026abe4afa381d616b3d9ddddec7dbb44",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "90ff1c8f421d99d77da3e730cc48ed945b9525823d4c87d2b9d751bae8003b28",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.18327067669172933,
+      "ap50": 0.118734335839599,
+      "apall": 0.04229323308270677,
+      "macc": 0.20662449781481643,
+      "miou": 0.154064186667191
+    },
+    "receipt_identity": "665ec9644f5a579f05a2306d7f037eb17912ab29d5eb490978bcee85be88b684",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_00/rows/CT_A1_E.json",
+    "scene": "scene0231_00",
+    "scorer_context_identity": "a9a4aa8fab4feea65323ff251fc0314026abe4afa381d616b3d9ddddec7dbb44",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "5afcba06518207e9064b9891cc159a9d79bf8f7416d6b12319cea3babda3136b",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.15335213032581455,
+      "ap50": 0.08364661654135337,
+      "apall": 0.035470620996936784,
+      "macc": 0.1669661735035256,
+      "miou": 0.1303929646389772
+    },
+    "receipt_identity": "6540ba34b88b0cbb1459a85ceaa9205682a1b6b85ef80ae9a3788e249a7069b7",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_00/rows/CT_A2_R.json",
+    "scene": "scene0231_00",
+    "scorer_context_identity": "a9a4aa8fab4feea65323ff251fc0314026abe4afa381d616b3d9ddddec7dbb44",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "8e5ec906cfecc07a887467010de542ee49d78b7a0e6a47f9978fea093c3cbc51",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.18327067669172933,
+      "ap50": 0.118734335839599,
+      "apall": 0.04229323308270677,
+      "macc": 0.20821793286945775,
+      "miou": 0.15468405462140788
+    },
+    "receipt_identity": "cf35d0083827db269c92337f5f1895fd6699dfc6758b11b03ae95a3e20f0484b",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_00/rows/CT_A3_ER.json",
+    "scene": "scene0231_00",
+    "scorer_context_identity": "a9a4aa8fab4feea65323ff251fc0314026abe4afa381d616b3d9ddddec7dbb44",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "f23b42bb17306506c222cc0bda3684aa42b288bfb830fae10e1190fada826021",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.18327067669172933,
+      "ap50": 0.118734335839599,
+      "apall": 0.04229323308270677,
+      "macc": 0.20843742039999086,
+      "miou": 0.15578535387651943
+    },
+    "receipt_identity": "13c5dc7eb1098df9aa3e7f38e70b0b6314c1bae3746075b826b48efd830a7c79",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_00/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0231_00",
+    "scorer_context_identity": "a9a4aa8fab4feea65323ff251fc0314026abe4afa381d616b3d9ddddec7dbb44",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "4784adc5d5419f1808aed3cb59ff3e772318781dcee91a4829af6f100a199e04",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.15845864661654135,
+      "ap50": 0.09210526315789473,
+      "apall": 0.020224171539961013,
+      "macc": 0.14738373341901498,
+      "miou": 0.11142741384251088
+    },
+    "receipt_identity": "89b0db320e172592429c8919c304ea03d29ed077acc64d99551decdbfc726513",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_00/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0231_00",
+    "scorer_context_identity": "a9a4aa8fab4feea65323ff251fc0314026abe4afa381d616b3d9ddddec7dbb44",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "b8d96ae0d9d67def3f1ea20162af5c3b76de0ca99bfd1b11c930158c56848e6e",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.08183940242763772,
+      "ap50": 0.0315359477124183,
+      "apall": 0.007280319535221495,
+      "macc": 0.12419134486979622,
+      "miou": 0.09604684944351116
+    },
+    "receipt_identity": "bc83a12093b2da5acbfab6fdbcb3638b470c1e03bfb851c1bf79d92dc0d0bfeb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_01/rows/CT_A0_NATIVE.json",
+    "scene": "scene0231_01",
+    "scorer_context_identity": "2274f62f1b0f036847c8c220018e805341b5b3051b4eff436085cd3d73ccef74",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "f43cd00dcc1ca1337627549b6dc059a34a4539cf83c90f1c9012946cc2f7f716",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.22514005602240894,
+      "ap50": 0.07647058823529412,
+      "apall": 0.033605664488017425,
+      "macc": 0.2067523870388107,
+      "miou": 0.1733456734764965
+    },
+    "receipt_identity": "13c77ffb200d2c3777ff8f5cc7ec2718c566af4262822da3792a90fcc5d45853",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_01/rows/CT_A1_E.json",
+    "scene": "scene0231_01",
+    "scorer_context_identity": "2274f62f1b0f036847c8c220018e805341b5b3051b4eff436085cd3d73ccef74",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "175f24c1ff647a43aee1e9a13a849b20e6035fb40e30356aa0ac3fbac4f53a78",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.08183940242763772,
+      "ap50": 0.0315359477124183,
+      "apall": 0.007280319535221495,
+      "macc": 0.12490032149777212,
+      "miou": 0.0966473395976573
+    },
+    "receipt_identity": "cd6b3fec12a0ee367b8fdaf075651a48ddb89be02ad6630d41f9b2c8717751a2",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_01/rows/CT_A2_R.json",
+    "scene": "scene0231_01",
+    "scorer_context_identity": "2274f62f1b0f036847c8c220018e805341b5b3051b4eff436085cd3d73ccef74",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "d520f643ba781d6649a9337221cc8190685a8f2f0a4a2844374142fe16de8dee",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.22514005602240894,
+      "ap50": 0.07647058823529412,
+      "apall": 0.033605664488017425,
+      "macc": 0.2074613636667866,
+      "miou": 0.1740317216663881
+    },
+    "receipt_identity": "9d48630db692ec160ca35cb457232a7824cc9475ab36ca99b8f298bb4bb35aba",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_01/rows/CT_A3_ER.json",
+    "scene": "scene0231_01",
+    "scorer_context_identity": "2274f62f1b0f036847c8c220018e805341b5b3051b4eff436085cd3d73ccef74",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "c9dadd3d8826f2ea93c12a664d09b171094d3a372694d0d43a1b1a62ed9662fa",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.22514005602240894,
+      "ap50": 0.07647058823529412,
+      "apall": 0.033605664488017425,
+      "macc": 0.20680130086415954,
+      "miou": 0.17265319678586516
+    },
+    "receipt_identity": "dc87d45b211097346d6e628a05891a2961ea673484d6678c9305fb34c5008848",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_01/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0231_01",
+    "scorer_context_identity": "2274f62f1b0f036847c8c220018e805341b5b3051b4eff436085cd3d73ccef74",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "b23de11f83222591bfc3d8ba1505fd72f8110838f75a961b96011df9425f0200",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.17759103641456583,
+      "ap50": 0.07401960784313726,
+      "apall": 0.03306100217864923,
+      "macc": 0.14831119137982124,
+      "miou": 0.1394868400125276
+    },
+    "receipt_identity": "934500a13967e04488040f81e109b7bca823abd389a0d2e4058f164ddc9ce9ee",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_01/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0231_01",
+    "scorer_context_identity": "2274f62f1b0f036847c8c220018e805341b5b3051b4eff436085cd3d73ccef74",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "34d5a465d34758e6970d8158793f31cd06678a9dc66399ed3845e67bc633cd23",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.14214015151515152,
+      "ap50": 0.033984375,
+      "apall": 0.01145833333333333,
+      "macc": 0.15427482012838523,
+      "miou": 0.11957331625834919
+    },
+    "receipt_identity": "8230954084ab5bda4f621e61dff477212c3b6b04cdf3e6ff9aaa858a2730e496",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_02/rows/CT_A0_NATIVE.json",
+    "scene": "scene0231_02",
+    "scorer_context_identity": "f328c1441844c6af7b85ce10dcaf3c2e0ff2230d1f6f765ed998a92daf8db8c3",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "407fa8a9501e2556f6cfcaba19810a9b599fce2c81c66bea1aafbb71b6ef4536",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19446022727272727,
+      "ap50": 0.0921875,
+      "apall": 0.04131944444444445,
+      "macc": 0.19589659459145314,
+      "miou": 0.16431250990477353
+    },
+    "receipt_identity": "eecaf05473a74a846390c8fe9835ada555e1690a510880576cb130bd64dbd572",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_02/rows/CT_A1_E.json",
+    "scene": "scene0231_02",
+    "scorer_context_identity": "f328c1441844c6af7b85ce10dcaf3c2e0ff2230d1f6f765ed998a92daf8db8c3",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "b5504cb270908bd9b60507a46d19a350a454b2838243dddede492f951d88fe2b",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.14214015151515152,
+      "ap50": 0.033984375,
+      "apall": 0.01145833333333333,
+      "macc": 0.1566560901390576,
+      "miou": 0.12147647019419602
+    },
+    "receipt_identity": "a9185d916bdace53a29cd47eb833f27f3051a1eb301a2d4d12b6c6eef4bc18ea",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_02/rows/CT_A2_R.json",
+    "scene": "scene0231_02",
+    "scorer_context_identity": "f328c1441844c6af7b85ce10dcaf3c2e0ff2230d1f6f765ed998a92daf8db8c3",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "08900c73bfd22f9e22f2d1fde0433cecf71518bad082f6032b8d5320b9d00d61",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19446022727272727,
+      "ap50": 0.0921875,
+      "apall": 0.04131944444444445,
+      "macc": 0.19827786460212551,
+      "miou": 0.16617044954341187
+    },
+    "receipt_identity": "f06b3176aa5973156098246e722c95d921952d307916e291c92f674ab399aca4",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_02/rows/CT_A3_ER.json",
+    "scene": "scene0231_02",
+    "scorer_context_identity": "f328c1441844c6af7b85ce10dcaf3c2e0ff2230d1f6f765ed998a92daf8db8c3",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "540db70f21bbbe24c3ca2086b38885ba82be29f8ea9b62651ca53bbf13a2ee1f",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.19446022727272727,
+      "ap50": 0.0921875,
+      "apall": 0.04131944444444445,
+      "macc": 0.19589659459145314,
+      "miou": 0.16431250990477353
+    },
+    "receipt_identity": "87c5bdd82fa547cc2e3255f9cb4f0cf539a3dea4b3449e3c3c82af91241ad50e",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_02/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0231_02",
+    "scorer_context_identity": "f328c1441844c6af7b85ce10dcaf3c2e0ff2230d1f6f765ed998a92daf8db8c3",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "7b50a2af6c52244faa8f2d468ffb115ff194f4c3220293b91f96850d3867847c",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.2169034090909091,
+      "ap50": 0.08125,
+      "apall": 0.051041666666666666,
+      "macc": 0.12692830718866227,
+      "miou": 0.11823922378451236
+    },
+    "receipt_identity": "9d7bf41eebbd3a99d8eee55250a8e0b412b76fc1956406c53c6d78d39825e272",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0231_02/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0231_02",
+    "scorer_context_identity": "f328c1441844c6af7b85ce10dcaf3c2e0ff2230d1f6f765ed998a92daf8db8c3",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "1b4d8c2cd89184dc810c11e7f6fa162a73104d713b16094740be40683383e1c2",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25757575757575757,
+      "ap50": 0.1553030303030303,
+      "apall": 0.0867003367003367,
+      "macc": 0.30994783176084645,
+      "miou": 0.2009904737728932
+    },
+    "receipt_identity": "f58d75c695db84a6754a6044d28f301ef60efc4ec2fde26082118336ae1e04fc",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_00/rows/CT_A0_NATIVE.json",
+    "scene": "scene0378_00",
+    "scorer_context_identity": "ee24edf76ac595d88ddbea19df04cd9464a047c14d863ac33ee2319e6a5ad561",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "ba217d25019231e0c7cfc31448fa71bc3e884ef694b535335bbd7a6e93980372",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.240530303030303,
+      "ap50": 0.16098484848484848,
+      "apall": 0.08270202020202021,
+      "macc": 0.2924795738241752,
+      "miou": 0.19565567369336645
+    },
+    "receipt_identity": "b306f845139567a5bcde4616a55f490ff81f2318b45c3017cfa6243cb528e349",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_00/rows/CT_A1_E.json",
+    "scene": "scene0378_00",
+    "scorer_context_identity": "ee24edf76ac595d88ddbea19df04cd9464a047c14d863ac33ee2319e6a5ad561",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "8906e125769c1cbef24cb942711a525316207b6e4502df762666207d10d042ea",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25757575757575757,
+      "ap50": 0.1553030303030303,
+      "apall": 0.0867003367003367,
+      "macc": 0.31019949151685633,
+      "miou": 0.20079800584556978
+    },
+    "receipt_identity": "1b2fc18ff2ab2025dad7a915a61575eba6153dc0a6d1aaa708c82877e0039bf4",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_00/rows/CT_A2_R.json",
+    "scene": "scene0378_00",
+    "scorer_context_identity": "ee24edf76ac595d88ddbea19df04cd9464a047c14d863ac33ee2319e6a5ad561",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "a267fa73252b8b41039e02dfff7a9d5cdd2de1f534b823a4a097244a7daf1857",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.240530303030303,
+      "ap50": 0.16098484848484848,
+      "apall": 0.08270202020202021,
+      "macc": 0.29273123358018505,
+      "miou": 0.19555653770576178
+    },
+    "receipt_identity": "357cc4ffca6a3f6e1af80d3b1b5b5957da5ada779a1e5016cc1c0c120c5d8324",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_00/rows/CT_A3_ER.json",
+    "scene": "scene0378_00",
+    "scorer_context_identity": "ee24edf76ac595d88ddbea19df04cd9464a047c14d863ac33ee2319e6a5ad561",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "190a277a25e6ad4938c930ff6b191f249d6de51fe1bd20f84ef2b877b928124c",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.240530303030303,
+      "ap50": 0.16098484848484848,
+      "apall": 0.08270202020202021,
+      "macc": 0.2924795738241752,
+      "miou": 0.19534512207538882
+    },
+    "receipt_identity": "acc44e0137e9913c90b89402809e43650beae297eda2a01ac7d651c80f1b52fb",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_00/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0378_00",
+    "scorer_context_identity": "ee24edf76ac595d88ddbea19df04cd9464a047c14d863ac33ee2319e6a5ad561",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "9dd4e6d63239098848820101edbafbee2d33bcc09fdf73e8830fa5f22b4b2708",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.26136363636363635,
+      "ap50": 0.18181818181818182,
+      "apall": 0.11616161616161616,
+      "macc": 0.25525770609882725,
+      "miou": 0.20682191624499058
+    },
+    "receipt_identity": "ee7c83d9b49d7c8614384a8ce27927b854f80f11c2f863e70dbac6a316eb2f29",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_00/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0378_00",
+    "scorer_context_identity": "ee24edf76ac595d88ddbea19df04cd9464a047c14d863ac33ee2319e6a5ad561",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "69105f4f9d6ac45db30b48a3fb7c8a6b3eeaf07a6d44a9389c6967ced386451f",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3571256038647343,
+      "ap50": 0.1859903381642512,
+      "apall": 0.08584943639291465,
+      "macc": 0.3501235034627546,
+      "miou": 0.2527645677952703
+    },
+    "receipt_identity": "d8d4ad60d3ea627cffeef1fa4a6205d08f6234a14d7dc4b438fcfffdc3c1642d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_01/rows/CT_A0_NATIVE.json",
+    "scene": "scene0378_01",
+    "scorer_context_identity": "d5c5ee718aaeaf23ffd7b970d0cccc69d9d9015ad91a5afeff5ea1d0b81669f2",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "94df6b9253df0e49b37eca896aef85c2d44b8f4136e730267a3be7afd5e95ff8",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3353864734299517,
+      "ap50": 0.1642512077294686,
+      "apall": 0.08534621578099838,
+      "macc": 0.3606755489299121,
+      "miou": 0.27558164018713943
+    },
+    "receipt_identity": "273630b17df5535abb8dbeae9210ee3363b7d3241a70cb120aa3577a3a16c8a4",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_01/rows/CT_A1_E.json",
+    "scene": "scene0378_01",
+    "scorer_context_identity": "d5c5ee718aaeaf23ffd7b970d0cccc69d9d9015ad91a5afeff5ea1d0b81669f2",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "3ce82b161176dfac4927dbc0c98676a7a038982399eda73145be18bc402b897b",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3571256038647343,
+      "ap50": 0.1859903381642512,
+      "apall": 0.08584943639291465,
+      "macc": 0.3504238801986828,
+      "miou": 0.2530534529534086
+    },
+    "receipt_identity": "603ea3ddf02085b482d764d6bfec6d6645d98a3b5afcb0f02470d9eb1fa44990",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_01/rows/CT_A2_R.json",
+    "scene": "scene0378_01",
+    "scorer_context_identity": "d5c5ee718aaeaf23ffd7b970d0cccc69d9d9015ad91a5afeff5ea1d0b81669f2",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "e816a14333fd7320f7213029955f80f60610a67cbfc49247c60ec9de3a34cca6",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3353864734299517,
+      "ap50": 0.1642512077294686,
+      "apall": 0.08534621578099838,
+      "macc": 0.3609759256658403,
+      "miou": 0.27587051695080983
+    },
+    "receipt_identity": "32fe481bc209a563533352628baa405e81951bf49ff6c3efd0416c1970ec43f7",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_01/rows/CT_A3_ER.json",
+    "scene": "scene0378_01",
+    "scorer_context_identity": "d5c5ee718aaeaf23ffd7b970d0cccc69d9d9015ad91a5afeff5ea1d0b81669f2",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "0ed1c6c4b7de7fa7939d5d98dbae4113625acead229263f17db7aaea6d0df978",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3353864734299517,
+      "ap50": 0.1642512077294686,
+      "apall": 0.08534621578099838,
+      "macc": 0.3606755489299121,
+      "miou": 0.27558164018713943
+    },
+    "receipt_identity": "66ff079121e321a034ff81b1bbb8009a308f91b0fda72fda4bbf2312946f209d",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_01/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0378_01",
+    "scorer_context_identity": "d5c5ee718aaeaf23ffd7b970d0cccc69d9d9015ad91a5afeff5ea1d0b81669f2",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "bfabfcf29528f688d36aa0dbc3fced44bb28e08206dfd40280e26cef886ad817",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.29347826086956524,
+      "ap50": 0.13043478260869565,
+      "apall": 0.07004830917874397,
+      "macc": 0.3113579781068055,
+      "miou": 0.2451624942873881
+    },
+    "receipt_identity": "5101f746d7501a6d625806b9b0c5b8f11e106864b98e1ede983e248aff6e229c",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_01/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0378_01",
+    "scorer_context_identity": "d5c5ee718aaeaf23ffd7b970d0cccc69d9d9015ad91a5afeff5ea1d0b81669f2",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "4965ae158891aeda3f87dcdf37ee7e152d08163ae9afce5134685105fbbf6216",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.29312499999999997,
+      "ap50": 0.2489583333333333,
+      "apall": 0.0824074074074074,
+      "macc": 0.30379370286831237,
+      "miou": 0.20589564934451396
+    },
+    "receipt_identity": "6700144ef2545c6e39ea67fbb469e25b150940ba541168dd30354b763c3e55ba",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_02/rows/CT_A0_NATIVE.json",
+    "scene": "scene0378_02",
+    "scorer_context_identity": "6d4b35ed677d02e16a09e57ce5cc0d553e0525e0bf5a0c6da909a68f1938e2c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "e4d34f3301e829d9c145c60e6f727b153bad85ba21991b0f398491c5bfc4b581",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.31666666666666665,
+      "ap50": 0.2729166666666667,
+      "apall": 0.0800925925925926,
+      "macc": 0.3791708513409394,
+      "miou": 0.2532214211636635
+    },
+    "receipt_identity": "df8df9ef7262e5052e91a4e17aad9b08c0b128b299877ae8f7e7a5a9a1e1e809",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_02/rows/CT_A1_E.json",
+    "scene": "scene0378_02",
+    "scorer_context_identity": "6d4b35ed677d02e16a09e57ce5cc0d553e0525e0bf5a0c6da909a68f1938e2c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "49c1265de1b21dc1816789db3f1545171c2fe3855374688df4995a23e91a29e2",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.29312499999999997,
+      "ap50": 0.2489583333333333,
+      "apall": 0.0824074074074074,
+      "macc": 0.30379370286831237,
+      "miou": 0.20589564934451396
+    },
+    "receipt_identity": "ef488e0f26b4b3954b8e0a0e898017998b6b5b4d8ef8982ac2e725c61e94711e",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_02/rows/CT_A2_R.json",
+    "scene": "scene0378_02",
+    "scorer_context_identity": "6d4b35ed677d02e16a09e57ce5cc0d553e0525e0bf5a0c6da909a68f1938e2c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "99c1f9f763a0f514d6593361fd707571375891ee16db6add4d3a53d45734a0bc",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.31666666666666665,
+      "ap50": 0.2729166666666667,
+      "apall": 0.0800925925925926,
+      "macc": 0.3791708513409394,
+      "miou": 0.2532214211636635
+    },
+    "receipt_identity": "6dbf499d36e5cb5c81591adc01ee5af14da5b4268b880e4436010bca0047123c",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_02/rows/CT_A3_ER.json",
+    "scene": "scene0378_02",
+    "scorer_context_identity": "6d4b35ed677d02e16a09e57ce5cc0d553e0525e0bf5a0c6da909a68f1938e2c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "f2e837b7e5a60272d789db2d38d248c16e7f3375983bfc29b2ad3d0f76cda329",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.31666666666666665,
+      "ap50": 0.2729166666666667,
+      "apall": 0.0800925925925926,
+      "macc": 0.3791708513409394,
+      "miou": 0.2532214211636635
+    },
+    "receipt_identity": "dd459ce3fb7e427b51330d16b44048c2b9deb2daf7c9833d32e75986262b75a1",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_02/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0378_02",
+    "scorer_context_identity": "6d4b35ed677d02e16a09e57ce5cc0d553e0525e0bf5a0c6da909a68f1938e2c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "f9a24f1575067614d50fc3ad499dce59e7a821ac6a12dd2d00c6901549082faa",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.3,
+      "ap50": 0.2875,
+      "apall": 0.08472222222222223,
+      "macc": 0.3139098065845163,
+      "miou": 0.23642022241771934
+    },
+    "receipt_identity": "30b01eb9bf3dcdf83d4ecdd8334e15d9c7be7ee40e261cc03e8c2352edc90d94",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0378_02/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0378_02",
+    "scorer_context_identity": "6d4b35ed677d02e16a09e57ce5cc0d553e0525e0bf5a0c6da909a68f1938e2c5",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "863ea99c373553d40f24df8fea183f560cd2af75571c4f9e67bf547ee5a62def",
+    "method_id": "CT_A0_NATIVE",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.15476190476190474,
+      "ap50": 0.14285714285714285,
+      "apall": 0.09523809523809523,
+      "macc": 0.2387740876591236,
+      "miou": 0.20284473689478924
+    },
+    "receipt_identity": "5bc16ff2f28f55575f9b38c51516d19faf2e50e85af7b471306b57b8dd5239ec",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0518_00/rows/CT_A0_NATIVE.json",
+    "scene": "scene0518_00",
+    "scorer_context_identity": "4fab8bcd2624a0e26a39933069d0d64bd7813a371f65d5f4fb4716cf42183be4",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "52ca6e812814867ea866cf18290e0fc9ab5dfb7873460008d2d0baae4a0031f6",
+    "method_id": "CT_A1_E",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25,
+      "ap50": 0.17857142857142858,
+      "apall": 0.11507936507936507,
+      "macc": 0.308948533181851,
+      "miou": 0.27121827441990737
+    },
+    "receipt_identity": "79298b4600562abed6216d145c86a6d054010adba31d3930cb32b542f1ea835a",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0518_00/rows/CT_A1_E.json",
+    "scene": "scene0518_00",
+    "scorer_context_identity": "4fab8bcd2624a0e26a39933069d0d64bd7813a371f65d5f4fb4716cf42183be4",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "ff7ef71ee90b4daaa491c04c8490318ebcbace7eeb09e9713599d2ec5bc195aa",
+    "method_id": "CT_A2_R",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.15476190476190474,
+      "ap50": 0.14285714285714285,
+      "apall": 0.09523809523809523,
+      "macc": 0.2387740876591236,
+      "miou": 0.20284473689478924
+    },
+    "receipt_identity": "28f66a76e0c19fc946eb2ef9e08888d77630da87dd5e65765bf0bf8c0c4fdfea",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0518_00/rows/CT_A2_R.json",
+    "scene": "scene0518_00",
+    "scorer_context_identity": "4fab8bcd2624a0e26a39933069d0d64bd7813a371f65d5f4fb4716cf42183be4",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "5420fcb83202d9f6d2c724fbb4e7318666718728ec3bb34374c8e857a38db7cc",
+    "method_id": "CT_A3_ER",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25,
+      "ap50": 0.17857142857142858,
+      "apall": 0.11507936507936507,
+      "macc": 0.308948533181851,
+      "miou": 0.27121827441990737
+    },
+    "receipt_identity": "c0664012a64d1829a768cf1eed0cc40a1f4d91b9f2e67d571e5646dd169eec91",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0518_00/rows/CT_A3_ER.json",
+    "scene": "scene0518_00",
+    "scorer_context_identity": "4fab8bcd2624a0e26a39933069d0d64bd7813a371f65d5f4fb4716cf42183be4",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "6ee9898b70d9f08f277f7a2846bde12518d179c6a9055d733fbf02564f6e0878",
+    "method_id": "CT_A4_NATIVE_RECOVERY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.25,
+      "ap50": 0.17857142857142858,
+      "apall": 0.11507936507936507,
+      "macc": 0.3116492487253456,
+      "miou": 0.2727539962460227
+    },
+    "receipt_identity": "aac0d8132d8b5b352fea55aeb8fe123e7d0ad4e9f8d46eef5f570aa9f8d958b5",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0518_00/rows/CT_A4_NATIVE_RECOVERY.json",
+    "scene": "scene0518_00",
+    "scorer_context_identity": "4fab8bcd2624a0e26a39933069d0d64bd7813a371f65d5f4fb4716cf42183be4",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  },
+  {
+    "cohort": "scannet_cf18",
+    "evaluation_identity": "4c6bafa098ea2ffc3da24c5c36e3a1640ad546d9c47dc71b0fb98bfe7bf71ab7",
+    "method_id": "CT_A5_FC_ONLY",
+    "metric_unit": "FRACTION",
+    "metrics": {
+      "ap25": 0.17857142857142858,
+      "ap50": 0.10714285714285714,
+      "apall": 0.06746031746031746,
+      "macc": 0.2449684476827527,
+      "miou": 0.2107747124117557
+    },
+    "receipt_identity": "8dd0a8b03e94a164b6a1bc17c4a872911226d62ab3f5cd51edc50b9885770f52",
+    "receipt_path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0518_00/rows/CT_A5_FC_ONLY.json",
+    "scene": "scene0518_00",
+    "scorer_context_identity": "4fab8bcd2624a0e26a39933069d0d64bd7813a371f65d5f4fb4716cf42183be4",
+    "source_kind": "MEASURED",
+    "status": "COMPLETE"
+  }
+]

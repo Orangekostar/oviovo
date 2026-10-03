@@ -1,0 +1,23 @@
+% Generated from typed receipt-backed tables_main.json.
+\begin{table*}[!ht]
+\centering
+\caption{Controlled ablations on the same geometry. E is fixed D2 refinement; R is independent single-view FC recovery. A0--A3 form the E $\times$ R design. A4 uses the same G1 view with native recognition. A5 uses the same incumbent FC evidence, with unknown output where unavailable; it has no native fallback. Undefined metrics are --; reasons are recorded in cell provenance. Technical blocks are --: office1 has no positive FC support at the fixed dense resolution; full cohorts are never replaced by subsets. A5 retains Native-derived incumbent support; FC-only denotes its conditional readout.}
+\label{tab:ablation}
+\fontsize{9}{10.5}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccrrrrrr@{}}
+\toprule
+& & & \multicolumn{3}{c}{Replica-8} & \multicolumn{3}{c}{ScanNet-CF18} \\
+\cmidrule(lr){4-6}\cmidrule(l){7-9}
+Configuration & Existing & Recovery & AP & AP50 & mIoU & AP & AP50 & mIoU \\
+\midrule
+A0: native & Native & None & 8.63 & 21.48 & 27.24 & 7.18 & 15.72 & 16.38 \\
+A1: E only & D2 & None & 11.74 & 24.50 & 29.69 & 8.31 & 17.96 & 19.00 \\
+A2: R only & Native & G1-FC & -- & -- & -- & 7.12 & 15.61 & 16.42 \\
+A3: E + R & D2 & G1-FC & -- & -- & -- & 8.23 & 17.84 & 19.03 \\
+\midrule
+A4: native recovery & D2 & G1-Native & 11.74 & 24.50 & 29.82 & 8.30 & 17.93 & 18.99 \\
+A5: FC-only & FC & G1-FC & -- & -- & -- & 8.34 & 17.47 & 17.97 \\
+\bottomrule
+\end{tabular*}
+\end{table*}

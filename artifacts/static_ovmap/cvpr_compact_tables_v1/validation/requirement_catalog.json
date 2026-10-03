@@ -1,0 +1,2197 @@
+{
+  "identity": "e5d62a1bdd6e372e3715c11b7f20d69ac47eaf4a73b94f1ef52b02e16abb4459",
+  "package": [
+    {
+      "path": "PROTOCOL_SPEC.json",
+      "sha256": "62fb947c66b2cb8f3857a3a45a56da53f3adb849689007ee0da3150278067785"
+    },
+    {
+      "path": "TABLE_BINDINGS.json",
+      "sha256": "025d71f42e8cbeb96998738eadf3217317b33e38a3ccd6a8876c1a4ecdcb68fd"
+    }
+  ],
+  "requirements": [
+    {
+      "heading": "# Final Codex execution instruction \u2014 compact CVPR experiment tables",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:1",
+      "line": 1,
+      "requirement": "# Final Codex execution instruction \u2014 compact CVPR experiment tables",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:3",
+      "line": 3,
+      "requirement": "## 0. Mandate and fixed result scope",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:5",
+      "line": 5,
+      "requirement": "Implement, execute, analyze, render and publish the three manuscript tables defined\nhere. Do not merely produce another plan, mock table or smoke-test report. Use this\ninstruction together with IMPLEMENTATION_CONTRACTS.md, TABLE_CONTRACTS.md and\nPROTOCOL_SPEC.json. These documents are a single specification; their numeric\nchoices agree. Resolve a genuine contradiction by documenting it before dependent\nmeasurements, not by choosing the version that scores better.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:12",
+      "line": 12,
+      "requirement": "Repository: `Orangekostar/oviovo`.\nBase: `1a1c4513ecf824c55274a456c40657271d631883`.\nNew branch: `research/ovimap-cvpr-compact-tables-v1`.\nTask root: `/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001`.\nParent recovery: `/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001`.\nParent backbone: `/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001`.\nUpstream OVI source pin: `f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424`.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:20",
+      "line": 20,
+      "requirement": "Use a new worktree; preserve existing branches, assets, binaries and completed\nreceipts. Resume an existing task worktree only when its task/base/spec identity\nmatches. Normal fixes are permitted; no destructive checkout, forced push or\nsilent replacement of historical artifacts.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:25",
+      "line": 25,
+      "requirement": "The scope is two cohorts, eight internal configurations and THREE main tables.\nMain output count is 172 scene-method records; shared geometry consists of 26\nnative maps, not 172 reconstructions. A3 is the preregistered full method, not an\nalias for whichever row later wins. G3 stays a diagnostic. No new neural training,\nQ-head fitting, temperature fitting, weight search, SAM replacement, association\nvariant, renderer parameter sweep or extra benchmark is authorized.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:32",
+      "line": 32,
+      "requirement": "Negative and mixed results are valid scientific outputs. Completion is not a\npromise of a positive result. Do not hide a stronger simple control or substitute\nU2 results for unexecuted G1. Deployment remains `N0_UNCHANGED`.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:36",
+      "line": 36,
+      "requirement": "Copy PROTOCOL_SPEC.json verbatim to\n`configs/static_ovmap/cvpr_compact_tables_v1.json` in the new worktree. The script\nmust accept `--spec`, `--phase`, `--resume`, `--gpu`, and repeatable `--path-map`\nfor relocating old referenced roots without changing file identities. Use the\ninherited main/native/FC interpreter paths; default controller is\n`/home/ww/miniconda3/envs/ovimap-map/bin/python`. Select the GPU from the inherited\nworking job configuration unless an explicit `--gpu` is supplied; use the same\nphysical device for the Table3 timing series and report it.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 0. Mandate and fixed result scope",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:45",
+      "line": 45,
+      "requirement": "Required final run, from the new worktree:\n```bash\n/home/ww/miniconda3/envs/ovimap-map/bin/python \\\n  scripts/evaluation/run_ovimap_cvpr_compact.py \\\n  --spec configs/static_ovmap/cvpr_compact_tables_v1.json --phase all --resume\n```\nThe command must exist and execute the workload by the end of development; it is\nnot a command claimed to be available on the unmodified parent commit.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 1. Repository reading and binding, before development decisions",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:54",
+      "line": 54,
+      "requirement": "## 1. Repository reading and binding, before development decisions",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 1. Repository reading and binding, before development decisions",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:56",
+      "line": 56,
+      "requirement": "Inspect the exact base files listed in SOURCE_EVIDENCE.md. Bind actual effective\nproducer sources and model assets from the parent receipts; a Git HEAD alone does\nnot establish which Python wrapper produced a cached feature. Reuse archived\nproducer sources when required by their receipts. Do not weaken old identity\nchecks to make a mismatched cache appear usable.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 1. Repository reading and binding, before development decisions",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:62",
+      "line": 62,
+      "requirement": "Create `src/static_ovmap/cvpr_compact/` and an entry script\n`scripts/evaluation/run_ovimap_cvpr_compact.py`. Reuse low-level verified utilities;\ndo NOT repurpose the old task IDs, developer-only scene selectors, recovery arms,\nconfirmation-lock APIs, or task-local publication assumptions.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 1. Repository reading and binding, before development decisions",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:67",
+      "line": 67,
+      "requirement": "The existing `backbone_wave1.readouts.build_sources` shows the N/Q/F data path,\n`recovery_wave2` supplies fixed-support exports and expanded-registry evaluation,\nand `module_validation` supplies raw preparation and native capture. Their high-\nlevel runners are restricted to old scenes and are not a CF18 driver.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 1. Repository reading and binding, before development decisions",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:72",
+      "line": 72,
+      "requirement": "Write `resolved_inputs.json` once for the task, containing:\n- exact cohort order and per-capture physical family / prior exposure;\n- original RGB-D, poses, aligned captured RGB/depth, camera intrinsics and 200-slot\n  schedule; input units and image color convention;\n- reusable map/TSDF/surface/capture/native-deferred metadata and source receipts;\n- actual native binary, mapping options, upstream patch stack and producer hashes;\n- N/Q/FC assets, category/text order, Q scaler/checkpoint and final temperatures;\n- read-only parent caches and the new writable content cache;\n- per-leaf source/resource availability, without claiming that local CF18 assets\n  exist until they have actually been inspected.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 1. Repository reading and binding, before development decisions",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:83",
+      "line": 83,
+      "requirement": "Use configured parent roots and linked manifests first. Search plausible dataset\nroots once, to a bounded depth. Hash each consumed artifact once and reuse an\nunchanged filesystem-stamp memo. Do not recursively re-audit every historical\nmap or repeatedly hash all model files for each object.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 2. Benchmarks, frames and dataset preparation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:88",
+      "line": 88,
+      "requirement": "## 2. Benchmarks, frames and dataset preparation",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 2. Benchmarks, frames and dataset preparation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:90",
+      "line": 90,
+      "requirement": "Replica order is `replica8.txt` (office0\u20134, room0\u20132).\nScanNet order is `scannet_cf18.txt`, all eighteen explicitly listed captures.\nThese are seven physical ScanNet scene families, not eighteen independent rooms.\nThe old four development scenes do not count as CF18 and cannot fill any CF18 cell.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 2. Benchmarks, frames and dataset preparation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:95",
+      "line": 95,
+      "requirement": "Use `assets.native_schedule(N)`: step=N//200; the first 200 elements of\nrange(0,N,step), with the original indices. Keep matching inherited schedules\nexactly. Do not substitute linspace sampling, refill invalid slots, or borrow\nextra frames for G1. Read source N from the sensor/export record. Preserve native\nhandling of invalid poses, no-segment frames and other genuinely skipped slots.\nStore both scheduled and actually completed frames.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 2. Benchmarks, frames and dataset preparation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:102",
+      "line": 102,
+      "requirement": "Prepare only missing inputs for these eighteen ScanNet captures. Reuse the user's\nalready authorized official ScanNet downloader and existing consent/access. Download\nonly the required .sens/.txt/mesh/segments/aggregation/label-map files from the\nverified original layout; do not accept new terms or obtain alternative credentials.\nUse `export_sensor` with original JPEG bytes and native depth conversion. Do not\nuse `prepare_plan` (which selects unrelated random families) or `export_development`\n(which silently excludes other roles). A new fixed-list bridge is required.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 2. Benchmarks, frames and dataset preparation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:110",
+      "line": 110,
+      "requirement": "Obtain the exact ScanNet200 and Replica valid IDs, names, original text matrices\nand annotation conversion from the pinned implementation and parent receipts.\nThe mapper's legacy task flag can differ from final Scannet200 evaluation; do not\nchange geometry because of a scoring-vocabulary name. Evaluation geometry/labels\nmust never become the input to the recovery visibility projector.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 2. Benchmarks, frames and dataset preparation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:116",
+      "line": 116,
+      "requirement": "If access is genuinely unavailable, produce a named blocked leaf and continue all\nindependent work. A partial CF18 pool is NOT a CF18 score. Never drop a troublesome\ncapture. Do not initiate another dataset or external-system retraining to compensate.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 3. Common native maps and exact E baseline",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:120",
+      "line": 120,
+      "requirement": "## 3. Common native maps and exact E baseline",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 3. Common native maps and exact E baseline",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:122",
+      "line": 122,
+      "requirement": "The only common geometry recipe is BB00_NATIVE: original CropFormer, native depth\nfusion and mode-4 instance association, actual inherited remaining options, and\n0.01 m voxels. Reuse compatible original maps; generate a missing native map once\nfor a sequence. Do not apply SYNC, RAW, RATIO, BIDIR, A/S recovery-wave mapping changes.\nNo algorithmic C++ changes are needed. If installation requires an isolated rebuild\nof the existing capture stack, document it and validate one short disabled-hook\npath; never rebuild every dependency or alter the original binary in place.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 3. Common native maps and exact E baseline",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:130",
+      "line": 130,
+      "requirement": "For a new capture, adapt the actual BB00 command and its environment from the\nparent receipt. Preserve the already verified CropFormer model/config and output\nPNG conversion. Reuse identical precomputed masks when present. Explicitly bind\nscene/path/schedule substitutions rather than treating an old development receipt\nas a new main-benchmark receipt.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 3. Common native maps and exact E baseline",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:136",
+      "line": 136,
+      "requirement": "Generate/recover Native and N/Q/F exactly once per map:\n- N: original successful retained observations, original top-10 storage / actual\n  native readout limit, canonical-relative Native labels and separate cosine N\n  scores for D2. Do not confuse the two score representations.\n- Q: frozen Q_GAIN policy and scaler, own causal acquisition history, maximum 200\n  attempted queries. A genuinely exhausted candidate stream stops with its actual\n  count; do not fabricate/repeat acquisitions to satisfy the old exact-200 assert.\n  Use the already implemented exhaustion behavior as the template.\n- F: original FC_FROZEN dense region operators, existing-object static requests,\n  original maximum-three-view selection and area aggregation. Preserve its genuine\n  technical failures, cap exclusions and availability.\n- E: the original D2 grouped probability fusion, using the exact published final\n  N/Q/F temperature vector used by the archived Replica D2, shared across the new\n  main cohorts. Bind its three actual values and source receipt; do not substitute\n  a leave-one-CAL-scene-out vector or fit CF18-specific scalars. Verify the eight\n  archived Replica anchors use this final vector. Actual source availability is\n  respected. No fourth source and no new gamma.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 3. Common native maps and exact E baseline",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:154",
+      "line": 154,
+      "requirement": "A0 and A1 must have identical incumbent owner partitions; only classes differ.\nUse the original triangle-painted incumbent support, not the full numerical raw\nowner raster. Match the eight historic Replica A0/A1 anchors by payload and scorer\nidentity when reuse is possible. Do not force exact agreement with historical\nrounded metrics after an actual remapping; report the paired new baseline instead.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 4. Freeze the experiment before new main-cohort evaluation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:160",
+      "line": 160,
+      "requirement": "## 4. Freeze the experiment before new main-cohort evaluation",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 4. Freeze the experiment before new main-cohort evaluation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:162",
+      "line": 162,
+      "requirement": "All visual models, prompts, temperatures, recovery thresholds and the eight method\nrecipes are fixed by this package. There is no learned-model selection or new\nscalar fitting. A3/G1 is the named full method; G3 is NOT eligible to replace it.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 4. Freeze the experiment before new main-cohort evaluation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:166",
+      "line": 166,
+      "requirement": "Develop/test on the existing `scene0056_00` capture and synthetic fixtures first.\nAt most eight smoke outputs on that one existing development map are allowed; they\nare not part of the 172 main outputs. Correct technical defects, do not tune new\nthreshold grids based on these scores. A technical projected-mask montage may be\nviewed without GT labels to verify camera alignment, not to choose successful objects.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 4. Freeze the experiment before new main-cohort evaluation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:172",
+      "line": 172,
+      "requirement": "Commit the implementation and `freeze/experiment.json` before any new main-cohort\nmetric or result-driven choice. The freeze records all 26 sequences, method IDs,\nmodels, numerical constants, preselected full method and data-exposure ledger.\nMain input preparation and label-free capture may precede this commit. New main\npredictions used to assess performance and all main scoring follow the commit.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 4. Freeze the experiment before new main-cohort evaluation",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:178",
+      "line": 178,
+      "requirement": "Fixes discovered later remain permitted, but freeze an amendment, state whether\nmain outcomes were seen, invalidate and rerun only affected descendants, and\nnever call that corrected run an untouched confirmation. Do not rename A3 to A5\nor pick different methods for different tables after seeing main scores.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 5. Independent geometry-driven views: implement G1/G3",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:183",
+      "line": 183,
+      "requirement": "## 5. Independent geometry-driven views: implement G1/G3",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 5. Independent geometry-driven views: implement G1/G3",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:185",
+      "line": 185,
+      "requirement": "Follow C1\u2013C5 in IMPLEMENTATION_CONTRACTS.md exactly. This is the only new scientific\ninput-generation module. It MUST NOT depend on whether an owner had a captured\nnative request. A geometrically visible eligible owner with zero archived requests\nmust still be able to receive a G1 request.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 5. Independent geometry-driven views: implement G1/G3",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:190",
+      "line": 190,
+      "requirement": "Construct the same omitted-owner registry as recovery_wave2 on the frozen raw\nsurface and native-painted incumbent support: absent positive owner ID, at least\n100 residual source rows, maximum 128 candidates with the existing spatial ordering.\nThis is the shared candidate denominator for U2, G1 and G3. Do not use GT vertex\ncounts or GT labels to select or rank requests.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 5. Independent geometry-driven views: implement G1/G3",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:196",
+      "line": 196,
+      "requirement": "Raycast the FULL predicted mesh, including non-candidate and unknown-owner triangles,\nfrom each original completed RGB-D camera. Use aligned captured RGB uint8 and\n`depth_m` float32 with its exact K and pose. Do not repeat depth conversion, color\nwarping or world-axis alignment. Assign a face owner only when all three vertex\nraw owners agree; other triangles remain occluders with owner zero.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 5. Independent geometry-driven views: implement G1/G3",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:202",
+      "line": 202,
+      "requirement": "Use integer pixel rays with camera z component 1, without normalizing the ray;\nfirst-hit ray parameter is then optical-axis depth. Accept only finite positive\nmeasured depth and the fixed tolerance max(0.02 m, 0.02*measured depth). Require at\nleast 100 valid target pixels and bbox extent at least 2 in each direction. Do not\ndilate, fill holes, use target-only occlusion, substitute GT geometry, or recover\nwith a different method when there is no admissible view.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 5. Independent geometry-driven views: implement G1/G3",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:209",
+      "line": 209,
+      "requirement": "Rank each object's valid views by decreasing mask pixels, then original frame ID,\nthen mask digest. G1 takes the first; G3 the first three distinct frames. G1 is an\nexact prefix of G3. Selection is finalized before any class score is read. Failure\nof the selected view does not authorize looking for a better-classified view.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 5. Independent geometry-driven views: implement G1/G3",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:214",
+      "line": 214,
+      "requirement": "Create a new projected-request schema with final geometry identity, raw owner,\nframe/K/pose/RGB/depth/mask identities, score-independent selection rank and both\ncanonical half-open and legacy native crop boxes. Do not fake a native paid request,\nsegment lineage or historical map state. Read-back of G1 manifests must not call\n`_load_request` on nonexistent old capture arrays.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 6. Encode requests once and construct the eight outputs",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:220",
+      "line": 220,
+      "requirement": "## 6. Encode requests once and construct the eight outputs",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 6. Encode requests once and construct the eight outputs",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:222",
+      "line": 222,
+      "requirement": "Use the actual pinned N and F inference operators and text matrices. Shared full-\nframe FC tensors are reusable across targets and methods only under the effective\nmodel/preprocessing/tensor identity; new masks need their own region pooling.\nNo cached probabilities may be used to reconstruct missing visual features.\nBatch by frame, pool all required regions, then release dense tensors as needed.\nNew output must live in the new cache. Preserve parent caches read-only.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 6. Encode requests once and construct the eight outputs",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:229",
+      "line": 229,
+      "requirement": "For G1_FC, a successful unit region vector is matched to the original FC text\nprototypes with cosine similarity. G3 aggregates successful PRESELECTED views by\noriginal valid-mask pixel area and normalizes once. Do not borrow unselected views\nor change prompts. Zero successful selected views means unavailable, not Native\nfallback. For G1_NATIVE, feed the same RGB frame and full target mask (also used as\nits union mask) through original six crops and original single-native classification.\nKeep the native bbox quirk explicit as in C4; this is a same-view comparison, not a\nsame-backbone/pooling-only ablation.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 6. Encode requests once and construct the eight outputs",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:238",
+      "line": 238,
+      "requirement": "| ID | Existing owners | Omitted owners | Required cohort |\n|---|---|---|---|\n| CT_A0_NATIVE | original Native | none | 8 + 18 |\n| CT_A1_E | fixed D2 | none | 8 + 18 |\n| CT_A2_R | original Native | G1_FC | 8 + 18 |\n| CT_A3_ER | fixed D2 | same G1_FC | 8 + 18 |\n| CT_A4_NATIVE_RECOVERY | fixed D2 | same G1 view, native encoder | 8 + 18 |\n| CT_A5_FC_ONLY | original F evidence only | same G1_FC | 8 + 18 |\n| CT_H_U2 | fixed D2 | exact archived U2 rule | Replica only |\n| CT_G3 | fixed D2 | G3_FC | Replica only |",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 6. Encode requests once and construct the eight outputs",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:249",
+      "line": 249,
+      "requirement": "A2/A3/A5 use exactly the same recovered FC owners, masks and labels. A4 may have\ndifferent technical availability; disclose the common-success comparison using\nsaved scores, without creating another main benchmark row. A5 existing owners use\nexactly the original A1 F observations, not fewer, and do not obtain extra G1 views.\nIf F is unavailable, retain its geometric owner support and assign semantic class\n0 (unknown). No hidden Native fallback. Describe A5 as \"FC-only, matched evidence\",\nnot an exhaustive optimal FC pipeline on all possible observations.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 6. Encode requests once and construct the eight outputs",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:257",
+      "line": 257,
+      "requirement": "Original incumbent masks are immutable in all eight arms. Recovery appends only\n(raw_owner==i) & (native_painted_owner==0) for an absent owner. Recognition uses the\nfull visible owner mask, not a differently clipped residual mask. New labels may\nchange official instance ranks; recompute them. Only A0/A1/A2/A3/A4/U2/G3 guarantee\npositive valid incumbent labels. A5 needs a new export wrapper allowing class 0;\ndo not weaken the old `expanded_prediction` restrictions globally.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 7. Released evaluation and actual recovery outcomes",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:264",
+      "line": 264,
+      "requirement": "## 7. Released evaluation and actual recovery outcomes",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 7. Released evaluation and actual recovery outcomes",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:266",
+      "line": 266,
+      "requirement": "Use the pinned released evaluator and the current-class official area ranks, NOT\nfrozen N0 ranking or fused semantic probability as confidence. The metric APall\nuses nine thresholds .50 through .90. Record the actual loaded float values;\nvalidate their mathematical values with tolerance 1e-12, not Python-list exact\nequality against decimal literals. Never replace the loaded evaluator vector. AP25 and mAcc are calculated and retained in\nSI even though not displayed in Tables 1\u20132. Serialize scores/metrics with their\nunits: fractions in machine files, percent once at presentation, deltas in pp.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 7. Released evaluation and actual recovery outcomes",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:274",
+      "line": 274,
+      "requirement": "Build an evaluator context for each ACTUAL owner partition. In particular, the\nN0-source mask registry must include new recovered owners as genuinely unavailable\nN rows; otherwise the evaluator silently cannot see the recovered masks. A5's\nunknown class is excluded by the released positive-class instance export but\nremains an error/unknown in the semantic confusion matrix. No GT subsetting to\nonly the exported or correctly classified objects.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 7. Released evaluation and actual recovery outcomes",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:281",
+      "line": 281,
+      "requirement": "Pool every method over the complete ordered cohort using the released evaluate\ncall; sum confusion matrices before computing mIoU/mAcc. Never average scene AP.\nA missing CF18 sequence yields an incomplete pool and NA in the main table, with\nper-scene work preserved. Equal score values are not evidence of equal predictions.\nExact aliases require owner, semantics, official rank, geometry, projection, GT\ncontext and ordered pooling identity agreement.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 7. Released evaluation and actual recovery outcomes",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:288",
+      "line": 288,
+      "requirement": "For Table 3, trace added TP50/FP50 SCORE ENTRIES using the actual released matcher,\nwith terminal parity to its computed AP. Retain duplicate/tie/ambiguous identities\nand old TP losses in the evidence file. Do not silently replace these by unique\nGT counts. Aggregate the same definition across all eight Replica captures.\nCompute n/N from the common prelocked candidate registry and actual successful\nrecovered outputs. Also store target-min100 eligible counts; source-min100 and\nscoring-min100 are different spaces.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 8. Measure Table 3 time; no warm-cache \"zero cost\" claim",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:296",
+      "line": 296,
+      "requirement": "## 8. Measure Table 3 time; no warm-cache \"zero cost\" claim",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 8. Measure Table 3 time; no warm-cache \"zero cost\" claim",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:298",
+      "line": 298,
+      "requirement": "Perform exactly one measured recovery-only replay for each of U2/G1/G3 on each\nReplica scene: at most 24 timing replays, no new method variants or map builds.\nThis supplements the cached scientific runs; it does NOT increase the 172 result\ncount. Use isolated empty feature caches per scene/arm and forbid reading parent\nor other-arm feature tensors during these timing runs. Reuse weights and text\nprototypes already resident in memory, and reuse per-frame encoding within that\none arm only.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 8. Measure Table 3 time; no warm-cache \"zero cost\" claim",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:306",
+      "line": 306,
+      "requirement": "The main column is **feature-cache-cold incremental recovery time, model resident,\ns/scene**. Include own candidate lookup, archived request recovery OR independent\nfull-mesh visibility/request construction, image decode/preprocessing, all distinct\nnecessary image encodings, region pooling/projection, classification, and output/\nrank export. Exclude mapping, benchmark scoring, model loading and downloading;\nrecord model load time separately. Synchronize CUDA at timed boundaries. Do not\nsubtract overlapping worker wall times or estimate cold time by summing unrelated\nwarm-cache hits. Build and run the standalone recovery callable under the timer.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 8. Measure Table 3 time; no warm-cache \"zero cost\" claim",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:315",
+      "line": 315,
+      "requirement": "Serialize these timing runs against this task's other mapper/evaluation jobs;\nrecord concurrent external load if apparent, but do not kill unrelated processes.\nStore cold-replay feature/prediction parity with scientific outputs. Do not use a\nnewly changed cold replay's score as a different silent experiment. No-op scenes\nstill incur measured eligibility-check overhead; only the \"none\" reference has\nzero incremental recovery cost. Report the arithmetic mean over all eight scenes\n(not only recovered scenes); also retain all stage times and hardware in SI.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 8. Measure Table 3 time; no warm-cache \"zero cost\" claim",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:323",
+      "line": 323,
+      "requirement": "No repeated bootstraps of GPU timings, power profiling, new budget curve or online\nbenchmark. One valid timed sample per scene/arm is enough for this scope. Missing\nreal timings are NA with a reason, never zero or an invented speedup.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 9. External comparison rows: attribution, not a new model zoo",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:327",
+      "line": 327,
+      "requirement": "## 9. External comparison rows: attribution, not a new model zoo",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 9. External comparison rows: attribution, not a new model zoo",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:329",
+      "line": 329,
+      "requirement": "The three external rows remain Mask3D+OpenMask3D, Segment3D+OpenMask3D and OVO-SLAM.\nUse the authored OVI Table 3 values in a SEPARATE \"reported in OVI-MAP\" block with\ncitation, source version/table location, their input/supervision setting and the\nflag `AUTHOR_PROTOCOL_AS_REPORTED`. Read the source values; do not regenerate them\nfrom our baselines, infer missing cells or interchange columns.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 9. External comparison rows: attribution, not a new model zoo",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:335",
+      "line": 335,
+      "requirement": "The shared dataset description does not prove byte-exact scorer/threshold/rank\ncompatibility of external predictions. Do not merge these values into the paired\nreproduction block or claim their raw protocol has been independently verified.\nNo global-best bolding, computed speedup, significance or SOTA claim across that\nboundary. This is a compact literature context, not three newly reproduced systems.\nIf exact local released predictions with verified protocol are already present,\nthey may be evaluated once and flagged REEVALUATED instead; keep a single main row\nand retain the original literature value in provenance. Do not install/train all\nthree systems, retrieve new checkpoints or launch up to 78 external runs by default.\nAn unavailable/mismatched source cell stays NA; the internal experiment is not\nreplaced by a fabricated complete table. Publication distinguishes internal-\nmeasurement completion from external protocol-comparability status.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 10. Generate the actual three tables and analysis",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:348",
+      "line": 348,
+      "requirement": "## 10. Generate the actual three tables and analysis",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 10. Generate the actual three tables and analysis",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:350",
+      "line": 350,
+      "requirement": "Use one typed result store and the exact row mapping in TABLE_CONTRACTS.md and TABLE_BINDINGS.json.\nExport JSON, CSV and three LaTeX files; no hand-entered numeric copies. Every cell\nmust point to the corresponding pooled receipt or attributed external source.\nA0/A1/A3 in Table 1, Table 2 and Table 3 refer to the SAME predictions and values.\nProduce the actual rendered table preview using the available LaTeX environment,\ninspect overflow/readability, and fix formatting without deleting unfavorable rows.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 10. Generate the actual three tables and analysis",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:357",
+      "line": 357,
+      "requirement": "Main tables: 6, 6 and 4 rows. Main table font at least 8.5 pt; prefer 9 pt. Use\nbooktabs and grouped dataset headings, no vertical rules, tiny text or forced\nnegative spacing. If the conference template imposes a larger minimum, follow it.\nPlaceholders are allowed only in the execution package; completed experiment cells\nmust contain results or explicit NA status. Do not write paper-ready claims for\nincomplete G1 or CF18 results.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 10. Generate the actual three tables and analysis",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:364",
+      "line": 364,
+      "requirement": "Analyze compactly:\n- Table 1: A3\u2013A0 total effect and A3\u2013A1 recovery increment in each dataset.\n- Table 2: the 2x2, A3 vs A4 and A3 vs A5, using full maps; preserve negative results.\n- Table 3: whether independent requests enlarge usable coverage, produce TP rather\n  than FP, and whether three views justify cost. Do not infer gain from n alone.\n- Report raw pairwise deltas and Pareto tradeoffs, plus flags for APall>0 and\n  AP50/mIoU drops no greater than .10 pp versus A1. These flags are descriptive\n  engineering preferences, not significance tests or a reason to suppress rows.\nA3 stays named full method whether or not it wins. State when a simple control\nmakes part of the proposed framework unnecessary.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 11. Bounded execution, validation and fault handling",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:375",
+      "line": 375,
+      "requirement": "## 11. Bounded execution, validation and fault handling",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 11. Bounded execution, validation and fault handling",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:377",
+      "line": 377,
+      "requirement": "Default: two native CPU map jobs with eight threads each, three evaluation jobs\nwith four BLAS threads each, one shared GPU worker per designated device. Reuse the\nexisting lock; do not kill other users' processes or claim remote GPUs are available.\nAllow actual new CropFormer/native/FC inference only for required missing anchors\nand changed views. Count image inputs separately from batch calls and region ops.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 11. Bounded execution, validation and fault handling",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:383",
+      "line": 383,
+      "requirement": "Use one focused test invocation for new functions, one real development end-to-end\npath and an unchanged-baseline parity check. Checks must cover camera z, occluders,\nno-request owners, fixed G1/G3 prefix, unknown A5 labels, append-only support,\nexpanded evaluation and table reuse/units. Test production call sites, not only\na reference kernel. Do not run the whole CROVE/dynamic/repository test suite, hash\nall historic files, inspect every old map, or build unrelated models. No test-count\nquota; do not grow tests merely to report a larger number.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 11. Bounded execution, validation and fault handling",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:391",
+      "line": 391,
+      "requirement": "Bound identical-leaf retries to two automatic retries. Preserve failed commands\nand costs. Fix the underlying error before rerunning its dependency descendants.\nAn incomplete TSDF capture is restarted only for that capture, not all finished\nmaps. Do not change precision, frame list, resolution or candidate criteria to\nsilently avoid OOM. Chunking/scheduling changes preserving exact inputs are allowed.\nA semantic-inference all-failed condition is a technical block, not a valid zero\nrecovery result. Genuine no-visible-view outcomes are valid scientific outcomes.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 11. Bounded execution, validation and fault handling",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:399",
+      "line": 399,
+      "requirement": "Expose phases `bind`, `prepare`, `anchors`, `views`, `encode`, `predict`,\n`evaluate`, `time`, `tables`, `publish`, and `all`. Make `all --resume` execute all\nmissing authorized work and preserve exact complete work. No automatic expansion\ninto W040+U2 or a new parameter sweep. Do not deploy the selected candidate.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 12. Publication and final acceptance",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:404",
+      "line": 404,
+      "requirement": "## 12. Publication and final acceptance",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 12. Publication and final acceptance",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:406",
+      "line": 406,
+      "requirement": "Create in the repository:\n- `docs/paper/static_ovmap/COMPACT_TABLES_RESULTS.md`;\n- `COMPACT_TABLES_HANDOFF.md`, `COMPACT_TABLES_SELECTION.md`, `COMPACT_TABLES_CLAIMS.md`\n  in the same directory;\n- actual new module/script/tests, task configuration and any narrowly needed\n  compatibility bridge (with inherited component attribution);\n- `artifacts/static_ovmap/cvpr_compact_tables_v1/` with experiment matrix, input/\n  source manifests, per-scene and pooled metrics, compact sources/decisions,\n  coverage/matching evidence, cold timings, cost/failure ledger, freeze record,\n  three LaTeX tables, table preview, cell provenance, and validation summary.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 12. Publication and final acceptance",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:417",
+      "line": 417,
+      "requirement": "Target a compact artifact set below 50 MiB. Keep large scans, tensors, models,\nTSDFs and full-size masks in shared storage with a manifest and exact reconstruction\ncommands. Include real compact scores/decisions/metrics on GitHub, not only absolute\npaths. Never publish ScanNet access secrets, model credentials or copyrighted fonts.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 12. Publication and final acceptance",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:422",
+      "line": 422,
+      "requirement": "Before publishing, run one goal-completion review linking each required output to\nactual files. Implementation, scientific coverage, external comparison provenance,\ntiming coverage, performance outcome and publication are SEPARATE status fields.\nFull internal scientific completion means 172 complete fixed outputs (identity-\nproven aliases allowed), 14 complete internal pools and all 24 timing leaves.\nResource blocks cannot be relabeled COMPLETE. If a parent-scope incompatibility\nprevents reuse, fix the new bridge, not the old frozen parent.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 12. Publication and final acceptance",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:430",
+      "line": 430,
+      "requirement": "Commit actual changes; normal push to the named branch. Read local full HEAD and\n`git ls-remote origin refs/heads/research/ovimap-cvpr-compact-tables-v1`; only when\nboth full 40-character SHAs agree write `publication/final.json` in shared storage\nwith `PUSH_VERIFIED`. Do not create an infinite verification-commit chain; the final\nreceipt lives outside its own commit. No force push or unrelated branch mutation.\nAn authentication failure produces the exact retry command and PUSH_FAILED status,\nnot a request for credentials in the report or a claim that upload succeeded.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "## 12. Publication and final acceptance",
+      "id": "CODEX_FINAL_EXECUTION_EN.md:438",
+      "line": 438,
+      "requirement": "Final response: link the four published MD reports, give the full verified SHA,\nreport 26-sequence/internal-pool/timing coverage, the three concise tables, A3\npaired deltas and the strongest simple control, actual compute, and remaining\nblocks. Do not claim new unseen-scene generalization solely because files have a\nnew date, nor that synthetic checks prove the method improves accuracy.",
+      "source": "CODEX_FINAL_EXECUTION_EN.md"
+    },
+    {
+      "heading": "# Implementation contracts \u2014 compact tables",
+      "id": "IMPLEMENTATION_CONTRACTS.md:1",
+      "line": 1,
+      "requirement": "# Implementation contracts \u2014 compact tables",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "# Implementation contracts \u2014 compact tables",
+      "id": "IMPLEMENTATION_CONTRACTS.md:3",
+      "line": 3,
+      "requirement": "These definitions are proposed frozen experimental choices except where explicitly\nidentified as inherited behavior. They are not claims that G1 has already improved\naccuracy. Function names under cvpr_compact below are interfaces to IMPLEMENT.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C0. One native anchor and a narrow new interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:7",
+      "line": 7,
+      "requirement": "## C0. One native anchor and a narrow new interface",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C0. One native anchor and a narrow new interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:9",
+      "line": 9,
+      "requirement": "Suggested modules and required responsibilities:",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C0. One native anchor and a narrow new interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:11",
+      "line": 11,
+      "requirement": "| New module | Reuse / reference | Required responsibility |\n|---|---|---|\n| binding.py | recovery_wave2.binding ConsumptionIndex/PathResolver | New 26-sequence binding; do not impersonate old task IDs |\n| benchmark_inputs.py | assets.native_schedule; scannet_frames.export_sensor | Fixed CF18 acquisition/export, no random family selection |\n| anchor.py | BB00_NATIVE capture; semantic_readout; recovery native-worker exhaustion adapter | Reuse/build one map and N/Q/F per sequence |\n| projected_views.py | Open3D RaycastingScene; captured camera conventions | Complete-scene visibility and new independent requests |\n| region_worker.py | region_adapter; recovery ContentCache | FC readout of new binary masks without old-request dependency |\n| native_region_worker.py | VLModel.encode_image_with_bbox; single_native_classifier | Same G1 view under original native six-crop operator |\n| outputs.py | PredictionPayload/save_prediction/native_ranks | Fixed-support A0\u2013A5/U2/G3, A5 unknown semantics supported |\n| evaluation.py | SceneEvaluator/expanded_native_registry/pool | Exact mask universe, official scores and 14 pools |\n| diagnostics.py | released_trace; recovery mechanisms | n/N, actual new TP/FP entries, old losses/ranking changes |\n| timing.py | same production standalone recovery callable | 24 feature-cache-cold replays with resident model |\n| tables.py | TABLE_CONTRACTS.md | One source of truth -> three tables, CSV, JSON, provenance |\n| workflow.py | existing runtime/resource locks | Bounded phase orchestration and restart/reuse |\n| publication.py | normal Git operations | Actual release and full-SHA external receipt |",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C0. One native anchor and a narrow new interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:27",
+      "line": 27,
+      "requirement": "Names may be consolidated into fewer files, but responsibilities and entrypoints\nmust remain clear in the handoff. Reuse the frozen category order in every array.\nNever connect an old owner's feature to a new map solely because the integer ID\ncoincides. Geometry, registry and original request lineage must match.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C1. Candidate support and fairness",
+      "id": "IMPLEMENTATION_CONTRACTS.md:32",
+      "line": 32,
+      "requirement": "## C1. Candidate support and fairness",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C1. Candidate support and fairness",
+      "id": "IMPLEMENTATION_CONTRACTS.md:34",
+      "line": 34,
+      "requirement": "Let b(v) be the native triangle-painted owner and r(v) the raw numerical owner on\nthe SAME fixed source mesh rows. Let I be all positive b values. Candidate i must\nnot be in I; its export support is K_i={v:r(v)=i and b(v)=0}. Require |K_i|>=100\nsource rows, then order by (-|K_i|, spatial_support_digest), cap at 128 per scene.\nReuse recovery_registry.build_registry unchanged when its input contracts match.\nA1's D2 and A0's Native have exactly the same I and b.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C1. Candidate support and fairness",
+      "id": "IMPLEMENTATION_CONTRACTS.md:41",
+      "line": 41,
+      "requirement": "The cap applies before GT or visual scores, identically to every recovery condition.\nTable 3 N=sum per-scene candidate counts before observation availability. No active\nobject boundary completion: if i is already in I, its missing boundary pixels are\nnot a recovery candidate in this experiment. Do not split K_i into independent\nextra instances. Keep all original raw owners and all mesh faces for occlusion,\neven when they are ineligible for recovery.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C1. Candidate support and fairness",
+      "id": "IMPLEMENTATION_CONTRACTS.md:48",
+      "line": 48,
+      "requirement": "A0/A1 never change b. A2/A3/A4/U2/G3 preserve b on b>0 and append only K_i for a\nsuccessful classification. A2/A3/A5 share exactly the same successful G1_FC set.\nTechnical availability differences against A4/U2 are reported, not concealed by\nonly evaluating the intersection. The small common-success diagnostics reuse\nexisting scores and do not count as an extra method grid.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C2. Full-scene geometric visibility (not target-only splatting)",
+      "id": "IMPLEMENTATION_CONTRACTS.md:54",
+      "line": 54,
+      "requirement": "## C2. Full-scene geometric visibility (not target-only splatting)",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C2. Full-scene geometric visibility (not target-only splatting)",
+      "id": "IMPLEMENTATION_CONTRACTS.md:56",
+      "line": 56,
+      "requirement": "Inputs: the final PREDICTED source mesh (X, triangles, r), each aligned captured\nRGB image I_t, measured `depth_m` D_t, K_t and camera-to-world pose [R_t,t_t].\nThese are the 200-slot native capture inputs, not target evaluation meshes or\npreprocessed GT vertex labels. Use completed frames only. Final geometry projected\ninto historical cameras is OFFLINE processing; do not label it causal online.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C2. Full-scene geometric visibility (not target-only splatting)",
+      "id": "IMPLEMENTATION_CONTRACTS.md:62",
+      "line": 62,
+      "requirement": "Build a CPU Open3D tensor raycasting acceleration structure once per scene in\nscientific execution. Preserve original triangle ordering in a mapping to primitive\nIDs. Every geometrically nondegenerate triangle is an occluder. A face receives\npositive owner i only if its three raw vertex owners are the same positive i;\na mixed/zero face has owner0 but still blocks surfaces behind it. Do not erase\nunknown/other-owner triangles, regenerate a mesh or change geometry normals.\nInvalid indices/nonfinite geometry are input defects. Zero-area triangles can be\nexcluded from the raycaster with their exact original indices recorded; the saved\nprediction geometry is never modified.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C2. Full-scene geometric visibility (not target-only splatting)",
+      "id": "IMPLEMENTATION_CONTRACTS.md:72",
+      "line": 72,
+      "requirement": "At integer image coordinates (u,v), construct:\nq=inv(K_t)@[u,v,1], o=t_t, d=R_t@q; submit [o,d] in float32.\nDo NOT normalize d. With this convention X_hit=o+t_hit*d and t_hit equals camera-z\n(the third camera coordinate of q is1). This avoids confusing Euclidean ray range\nwith measured optical-axis depth. If using another ray helper, prove equivalent\nrays rather than assuming its half-pixel/extrinsic convention matches.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C2. Full-scene geometric visibility (not target-only splatting)",
+      "id": "IMPLEMENTATION_CONTRACTS.md:79",
+      "line": 79,
+      "requirement": "At each pixel accept:\n- a finite hit with t_hit>1e-6 and positive homogeneous face owner;\n- finite D_t>1e-6;\n- abs(t_hit-D_t)<=max(0.02,0.02*D_t).\nThe constants are fixed DESIGN choices for this wave, not estimated best values.\nA front occluder prevents a farther candidate from receiving that pixel, even if\nthe occluder has owner0. Invalid/missing measured depth gives no evidence, not a\nhallucinated successful projection. No dilation, connected-component completion,\nSAM calls or hidden 2D ground-truth masks.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C2. Full-scene geometric visibility (not target-only splatting)",
+      "id": "IMPLEMENTATION_CONTRACTS.md:89",
+      "line": 89,
+      "requirement": "For candidate i, M_it is all accepted pixels with hit owner i. Use the whole\nvisible raw owner, not only the exported residual K_i. Require >=100 pixels and\nhalf-open bbox width,height >=2. Record per-stage counts (frustum/hit owner/depth-\nconsistent/support eligible), so a zero-view result is distinguishable from a\ncamera convention bug. Process at most 65,536 rays per CPU batch, four threads.\nChunking must not change visibility or owner decisions.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C3. G1/G3 view choice and new request identity",
+      "id": "IMPLEMENTATION_CONTRACTS.md:96",
+      "line": 96,
+      "requirement": "## C3. G1/G3 view choice and new request identity",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C3. G1/G3 view choice and new request identity",
+      "id": "IMPLEMENTATION_CONTRACTS.md:98",
+      "line": 98,
+      "requirement": "For every candidate build candidate views over all completed scheduled frames,\nincluding frames that contain NO native semantic request for that owner. Do not\ncall reconcile_requests to decide G visibility. Sort admissible views by\n(-visible_mask_pixels, original_frame_id, mask_digest). G1=first view, G3=first\nup-to-three distinct frames. No semantic entropy, confidence or GT is used for\nchoice. Do not replace a failed selected view. G3 may aggregate the remaining\nsuccessful members of its preselected list; report exactly which members failed.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C3. G1/G3 view choice and new request identity",
+      "id": "IMPLEMENTATION_CONTRACTS.md:106",
+      "line": 106,
+      "requirement": "Store a new `ProjectedRegionRequest` with:\nrequest_id, schema, scene, final_geometry_digest, raw_owner, frame_id, K/pose\nidentities, aligned_RGB/depth identities, mask digest/path, canonical bbox,\nlegacy-native bbox, visible pixels, selection rank, projector-version/config.\nIts source is the final map snapshot, not a fictitious historical insertion state.\nStore pixel masks compactly and share masks across A2/A3/A4/A5/G3; different models\nmust have different encoded-evidence keys.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C3. G1/G3 view choice and new request identity",
+      "id": "IMPLEMENTATION_CONTRACTS.md:114",
+      "line": 114,
+      "requirement": "The new loader must read these new masks and the actual captured frame bytes.\nThe legacy `_load_request` can only read real legacy request arrays. Do not create\nan old RegionRequest with false `native_selected_request_ids` or paid-Q receipts.\nRaw geometry IDs used for a projected request need no artificial segment lineage.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C4. Bounding boxes and the native comparison",
+      "id": "IMPLEMENTATION_CONTRACTS.md:119",
+      "line": 119,
+      "requirement": "## C4. Bounding boxes and the native comparison",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C4. Bounding boxes and the native comparison",
+      "id": "IMPLEMENTATION_CONTRACTS.md:121",
+      "line": 121,
+      "requirement": "Internal new bbox is half-open [xmin,ymin,xmax+1,ymax+1]. The old native capture\nactually stores pixel maxima and calls a crop function that slices with exclusive\nupper indices and clips to W-1/H-1. Preserve this historical operator for A4:\nlegacy_native_box=[xmin,ymin,xmax,ymax], union_mask=M_it, and the original image.\nRecord both boxes. Do not silently fix the old last-pixel behavior, and do not\nmake cache identities collide between different crop conventions.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C4. Bounding boxes and the native comparison",
+      "id": "IMPLEMENTATION_CONTRACTS.md:128",
+      "line": 128,
+      "requirement": "This yields the same selected scene/frame/target-mask evidence for A3/A4, but\nnot an artificial assertion that SigLIP crops and FC dense pooling consume\nidentical pixels/tensors. That representation difference is the intended control.\nThe FC mask is resized by nearest-neighbor, represented as +/-1, padded with -1,\nthen downsampled inside the inherited pooling operator. A 0/1 substitute changes\nthe `>0` support and is not permitted.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C5. Region encoding and failures",
+      "id": "IMPLEMENTATION_CONTRACTS.md:135",
+      "line": 135,
+      "requirement": "## C5. Region encoding and failures",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C5. Region encoding and failures",
+      "id": "IMPLEMENTATION_CONTRACTS.md:137",
+      "line": 137,
+      "requirement": "FC: same effective `convnext_large_d_320` frozen checkpoint, operators, FP32,\n800-short/1333-max resize, 32 padding and original fourteen text templates.\nPreserve unit per-view vectors and visible-pixel weighting followed by final L2\nnormalization. A new source vector is a cosine vector in its own text space,\nnot a probability mistakenly softmaxed a second time. Recovery labels are argmax\nof this full frozen vocabulary. No temperature fit is needed for a single recovery\nsource. Existing E remains exactly the frozen D2. Bind the final N/Q/F scalar vector used\nby archived Replica D2 and use it for both main cohorts; do not substitute CAL\nleave-one-out scalars or fit dataset-specific replacements.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C5. Region encoding and failures",
+      "id": "IMPLEMENTATION_CONTRACTS.md:147",
+      "line": 147,
+      "requirement": "Native recovery: original same-frame six-crop image encoding, stored vector and\n`single_native_classifier` FP32 canonical-relative readout. Its label is genuine\nnative output; do not introduce a learned cross-encoder calibration.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C5. Region encoding and failures",
+      "id": "IMPLEMENTATION_CONTRACTS.md:151",
+      "line": 151,
+      "requirement": "Region evidence key must include actual image tensor/model/operator identity,\ntarget mask, resize/crop convention and text identity for scores. Dense tensors\ncan share image identity across masks; pooled vectors cannot. A selected mask\nthat disappears at dense resolution becomes EMPTY_DENSE_MASK_SUPPORT, not an\ninvitation to dilate it or secretly use a different view. A worker failing every\nvisual request is a technical block, not a scientific zero-recovery conclusion.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C5. Region encoding and failures",
+      "id": "IMPLEMENTATION_CONTRACTS.md:158",
+      "line": 158,
+      "requirement": "A5: old owners with unavailable F retain owner support but semantic0. Existing\nF scores already computed for A1 are reused; no native fallback. This is explicitly\na matched-evidence FC-only control, not a claim to test every possible all-FC\nview-selection design. Its standalone dependency cost still includes the process\nthat constructed the common native-painted support; do not assert an end-to-end\nFC-only speedup by omitting that shared prerequisite.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C6. Exact predicted outputs and metric interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:165",
+      "line": 165,
+      "requirement": "## C6. Exact predicted outputs and metric interface",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C6. Exact predicted outputs and metric interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:167",
+      "line": 167,
+      "requirement": "Use PredictionPayload(branch='COMBO'), which permits nonnegative semantics and one\nlabel per positive owner; unowned rows must remain class0. A5 unknown positive\nowners require zero rank and no positive instance line under the official export.\nDo not delete their target points from semantic evaluation. Extend the output\nwrapper in the new module instead of weakening legacy recovered-label validation.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C6. Exact predicted outputs and metric interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:173",
+      "line": 173,
+      "requirement": "For each new owner partition, construct a corresponding evaluation context:\nsource-row geometry/projection unchanged, full positive owner dictionary includes\nrecovered and unknown owners, N availability correctly false for new owners.\n`SceneEvaluator` currently creates masks from that dictionary; using the unexpanded\nN dictionary would remove the exact effect this experiment is intended to measure.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C6. Exact predicted outputs and metric interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:179",
+      "line": 179,
+      "requirement": "Recompute official ranks in target space with >=100 target points, same predicted\nclass maximum area denominator, .6f serialization. The source row cap/threshold\nmust not be confused with this target test. Keep all target labels/points used by\nthe released protocol, including errors and unknown output.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C6. Exact predicted outputs and metric interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:184",
+      "line": 184,
+      "requirement": "The released np.arange vector has ordinary floating-point representation noise.\nCheck its nine values against the specification within1e-12 and retain its exact\nloaded representation in the receipt; never rewrite evaluator thresholds.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C6. Exact predicted outputs and metric interface",
+      "id": "IMPLEMENTATION_CONTRACTS.md:188",
+      "line": 188,
+      "requirement": "Store complete typed scene metrics in fractions, GT-present-class confusion,\nmatching traces and actual scoring-context hash. Pool the full ordered cohort.\nExpected unique internal pools: six on each of the two cohorts plus U2 and G3 on\nReplica =14. The same pool populates every occurrence of a table cell.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C7. Table 3 mechanism measurements",
+      "id": "IMPLEMENTATION_CONTRACTS.md:193",
+      "line": 193,
+      "requirement": "## C7. Table 3 mechanism measurements",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C7. Table 3 mechanism measurements",
+      "id": "IMPLEMENTATION_CONTRACTS.md:195",
+      "line": 195,
+      "requirement": "N is candidate registry size summed over8. n is actual source-available appended\nowners, including owners too small after target projection; disclose the separate\nscoring-eligible count in SI. Ratios use summed counts, not average scene ratios.\nTP50/FP50 are added scoring entries identified from actual released matching trace.\nAn ambiguous tie is stored as ambiguous and not arbitrarily attributed; show a\nflag in the table if it affects a displayed number. Old lost matches and old rank\nchanges remain in SI so \"append-only\" is not misreported as guaranteed harm-free.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C7. Table 3 mechanism measurements",
+      "id": "IMPLEMENTATION_CONTRACTS.md:203",
+      "line": 203,
+      "requirement": "U2 vsG1 changes the source of the view/mask; only A3 vsA4 is the same new view with\na different encoder. U2 can have fewer available objects. No GT-purity filtering\nis allowed in either output. GT-majority summaries are post-lock diagnosis only.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C8. Exact cold-feature-cache runtime definition",
+      "id": "IMPLEMENTATION_CONTRACTS.md:207",
+      "line": 207,
+      "requirement": "## C8. Exact cold-feature-cache runtime definition",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C8. Exact cold-feature-cache runtime definition",
+      "id": "IMPLEMENTATION_CONTRACTS.md:209",
+      "line": 209,
+      "requirement": "Table3 uses one production standalone recovery run per scene/arm, maximum24.\nStart with the base anchor and model weights/text resident. Persistent dense,\npooled-vector, new-view/projection and classification result caches are disabled.\nThe isolated task may share one image encoding among regions within the same arm.\nMeasure the whole recovery callable including candidate/view work and output,\nwith CUDA synchronization. Rebuild the geometric projection/BVH in the G runs;\nU2 performs its real archive lookup. Keep model loading and common mapping out\nof this incremental column but report them separately.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C8. Exact cold-feature-cache runtime definition",
+      "id": "IMPLEMENTATION_CONTRACTS.md:218",
+      "line": 218,
+      "requirement": "Report mean=sum(all8scene measured seconds)/8. An empty-candidate scene runs and\ncontributes its real eligibility overhead. Do not count blank scenes as0 unless\nthe measured operation really is an excluded no-op reference. The no-recovery\nrow is0 by definition. No run on a second GPU architecture mixed into the mean.\nTiming replay uses the same fixed selections/decisions; compare parity and record\nFP32 numerical tolerance, but labels and exported support must match. A technical\nfix requires regenerating affected scientific outputs, not using two definitions.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C9. Scope, exposure and inference accounting",
+      "id": "IMPLEMENTATION_CONTRACTS.md:226",
+      "line": 226,
+      "requirement": "## C9. Scope, exposure and inference accounting",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C9. Scope, exposure and inference accounting",
+      "id": "IMPLEMENTATION_CONTRACTS.md:228",
+      "line": 228,
+      "requirement": "There are 172 main fixed scene-method records, at most8 additional development\nsmoke outputs and24 timing replays. Timing replays are computation, not independent\nscientific trials. At most26 new successful main native maps if none can be reused;\nno new development map and no geometry-variant grid. CropFormer/N/Q/FC image calls\nneeded for missing main anchors are authorized and counted, not called zeroGPU.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C9. Scope, exposure and inference accounting",
+      "id": "IMPLEMENTATION_CONTRACTS.md:234",
+      "line": 234,
+      "requirement": "Do not inspect new target labels while building/picking G views. Preserve old\ncalibration and Q training support lists; record physical-family overlap with\nCF18 without secretly dropping benchmark captures. Replica remains exposed. Do\nnot call CF18 a full ScanNet200 validation split, eighteen independent rooms, or\nuntouched until exposure evidence supports that narrow claim.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C10. Completion is multidimensional",
+      "id": "IMPLEMENTATION_CONTRACTS.md:240",
+      "line": 240,
+      "requirement": "## C10. Completion is multidimensional",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C10. Completion is multidimensional",
+      "id": "IMPLEMENTATION_CONTRACTS.md:242",
+      "line": 242,
+      "requirement": "Use separate fields:\nimplementation_status; main_scene_outputs (complete/172); internal_pools\n(complete/14); cold_timing_leaves(complete/24); benchmark_coverage;\nexternal_provenance_status; performance_outcome; publication_status.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C10. Completion is multidimensional",
+      "id": "IMPLEMENTATION_CONTRACTS.md:247",
+      "line": 247,
+      "requirement": "Technical no-view is a valid complete result with no additions. Missing data,\nmissing evidence files, inaccessible model or scorer errors are blocked leaves.\nDo not write a global COMPLETE if CF18 is only partially scored. Publish the\nimplemented and measured work even when a real external prerequisite remains.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "## C10. Completion is multidimensional",
+      "id": "IMPLEMENTATION_CONTRACTS.md:252",
+      "line": 252,
+      "requirement": "Final comparison names A3 and simple baselines are fixed. Report five raw metrics\nand all paired deltas. A positive point estimate is not a statistical guarantee;\nparameter bands are not equivalence tests. Do not retrofit the method definition\nto whichever benchmark favors it.",
+      "source": "IMPLEMENTATION_CONTRACTS.md"
+    },
+    {
+      "heading": "# Three tables, one result store",
+      "id": "TABLE_CONTRACTS.md:1",
+      "line": 1,
+      "requirement": "# Three tables, one result store",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 1 \u2014 complete-system context (six rows)",
+      "id": "TABLE_CONTRACTS.md:3",
+      "line": 3,
+      "requirement": "## Table 1 \u2014 complete-system context (six rows)",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 1 \u2014 complete-system context (six rows)",
+      "id": "TABLE_CONTRACTS.md:5",
+      "line": 5,
+      "requirement": "Columns: Method; Replica APall/AP50/mIoU; ScanNet-CF18 APall/AP50/mIoU.\nTop block, visibly marked `reported in OVI-MAP (not rerun)`:\n1. Mask3D + OpenMask3D\n2. Segment3D + OpenMask3D\n3. OVO-SLAM (ordinary setting, NOT its 30-fps variant)\nBottom paired block:\n4. OVI-MAP (reproduced): CT_A0_NATIVE\n5. Ours \u2014 refinement only: CT_A1_E\n6. Ours \u2014 refinement + recovery: CT_A3_ER",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 1 \u2014 complete-system context (six rows)",
+      "id": "TABLE_CONTRACTS.md:15",
+      "line": 15,
+      "requirement": "The table caption distinguishes attributed reported values from our paired runs.\nExternal input/supervision/scorer verification belongs in setup/provenance. Unless\nraw predictions/scorer identity are verified, do not claim uniform byte-exact\nprotocol or bold a global best across blocks. User-owned E uses a fitted Q head\nand frozen calibrated scalars: do not describe all components as training-free.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 1 \u2014 complete-system context (six rows)",
+      "id": "TABLE_CONTRACTS.md:21",
+      "line": 21,
+      "requirement": "The included literature_reference.json is a numeric transcription of the authored\narXivv1 Table3 for these THREE rows. It is not a reproduction result. Before final\npublication check against the accessible final CVF paper/table, record differences\nwithout silently overwriting the chosen source version. If the versions disagree,\nkeep the chosen version explicitly named; never average versions or swap columns.\nKnown source caution: the reported ScanNet Mask3D+OM3D AP25 is lower than its AP50;\nkeep an anomaly note, do not invent a correction. AP25 is not a main-table column.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 2 \u2014 six controlled conditions",
+      "id": "TABLE_CONTRACTS.md:29",
+      "line": 29,
+      "requirement": "## Table 2 \u2014 six controlled conditions",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 2 \u2014 six controlled conditions",
+      "id": "TABLE_CONTRACTS.md:31",
+      "line": 31,
+      "requirement": "Columns: Configuration; existing-owner readout; recovery; same six metric columns.\nCompact implementation may shorten names with a caption legend, never rename U2\nas G1. Exact rows A0,A1,A2,A3,A4,A5.\nA0\u2013A3 are the refinement x recovery 2x2. Recovery FC evidence is identical in\nA2/A3/A5; A4 has the same selected G1 frame/mask but original native representation.\nA5 uses exactly A1's existing F evidence and unknown0 where unavailable. It may\nwin; report that. No additional table of dozens of historical modules.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 3 \u2014 recovery mechanism, Replica only (four rows)",
+      "id": "TABLE_CONTRACTS.md:39",
+      "line": 39,
+      "requirement": "## Table 3 \u2014 recovery mechanism, Replica only (four rows)",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Table 3 \u2014 recovery mechanism, Replica only (four rows)",
+      "id": "TABLE_CONTRACTS.md:41",
+      "line": 41,
+      "requirement": "Columns: recovery entry; max views; recovered n/N; added TP50; added FP50;\nAPall; mIoU; incremental semantic time(s/scene).\nRows: none/CT_A1_E; archived U2/CT_H_U2; independent G1/CT_A3_ER;\nindependent G3/CT_G3.\nAll rows use D2 for existing owners. n/N counts source-available appended owners\nin the shared geometry-defined candidate registry. TP/FP are released matcher score\nentries, not an unqualified unique-object count. Retain target-min100 eligibility,\nambiguous ties, lost old matches and old rank changes in SI.\nTime: feature-cache-cold, model resident; one run per8scene/3arm; include required\nprojection, encoding, pooling and export, not mapping or evaluator. Loading is\nreported separately. This is NOT end-to-end throughput or real-time FPS.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Single source of truth and cells",
+      "id": "TABLE_CONTRACTS.md:53",
+      "line": 53,
+      "requirement": "## Single source of truth and cells",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Single source of truth and cells",
+      "id": "TABLE_CONTRACTS.md:55",
+      "line": 55,
+      "requirement": "Internal `scene_metrics.json` and `pooled_metrics.json` store metric fractions.\n`tables_main.json` cell objects require:\n- table_id,row_id,column_id,metric;\n- source_kind (MEASURED/EXACT_REUSE/AUTHOR_REPORTED/UNAVAILABLE);\n- value_fraction (ornull), display_unit=percent (time/count columns typed separately);\n- cohort, ordered_scene_ids, completed/required coverage;\n- method_id or cited author method; scoring_protocol_id;\n- receipt_path+identity OR source_url+version+table/row/column;\n- unavailable_reason where needed.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Single source of truth and cells",
+      "id": "TABLE_CONTRACTS.md:65",
+      "line": 65,
+      "requirement": "No hand-written numeric LaTeX. The production generator populates the supplied\nlayout from these typed records. The same A3 Replica cell must numerically and\nprovenance-wise match across all three tables. External reported values retain\ntheir source precision; paired results display2decimals (full precision inJSON).\nA null is `--` with a caption/status reference, not0. Pool only complete cohorts.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Single source of truth and cells",
+      "id": "TABLE_CONTRACTS.md:71",
+      "line": 71,
+      "requirement": "Write per-scene and per-class values, AP25/mAcc and detailed cost in one SI bundle,\nnot new main experiments. Setup must state input geometry source, single-label\ninstance masks, official rank formula, actual overlap list, valid ID order,\n200-slot schedule and offline/frozen status. Layout target: THREE readable full-\nwidth booktabs tables, 6/6/4 rows, body >=8.5pt (prefer9pt). No large ability matrix,\nextra benchmark, new figure-generation task or full manuscript-writing scope.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Ready-to-run table outputs after the experiment",
+      "id": "TABLE_CONTRACTS.md:78",
+      "line": 78,
+      "requirement": "## Ready-to-run table outputs after the experiment",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "## Ready-to-run table outputs after the experiment",
+      "id": "TABLE_CONTRACTS.md:80",
+      "line": 80,
+      "requirement": "`tables/table1_main.tex`, `table2_ablation.tex`, `table3_recovery.tex`,\n`table_layout_preview.tex`, `table_layout_preview.pdf`, plus JSON/CSV and\n`cell_provenance.json`. The supplied PDF is a PLACEHOLDER layout only. Replace\ninternal placeholders from actual receipts; runLaTeX and visually inspect the\nregenerated preview. Do not change a row to improve the story.",
+      "source": "TABLE_CONTRACTS.md"
+    },
+    {
+      "heading": "# Source evidence and task binding",
+      "id": "SOURCE_EVIDENCE.md:1",
+      "line": 1,
+      "requirement": "# Source evidence and task binding",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "# Source evidence and task binding",
+      "id": "SOURCE_EVIDENCE.md:3",
+      "line": 3,
+      "requirement": "Checked on 2026-10-03. Repository paths below are frozen to 1a1c4513ecf824c55274a456c40657271d631883.\nEvidence is code/record inspection, not proof that the user server currently has every referenced data file.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S01. User-approved compact scope",
+      "id": "SOURCE_EVIDENCE.md:6",
+      "line": 6,
+      "requirement": "## S01. User-approved compact scope\n- Source: attachment:COMPACT_EXPERIMENT_PLAN_ZH.md\n- Observed / relevance: Three tables, two cohorts, eight internal methods; cited artifact is the previous approved plan.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S02. Pinned project head",
+      "id": "SOURCE_EVIDENCE.md:10",
+      "line": 10,
+      "requirement": "## S02. Pinned project head\n- Source: https://api.github.com/repos/Orangekostar/oviovo/git/ref/heads/research/ovimap-recovery-wave2-v1\n- Observed / relevance: Live ref was read; pinned task uses 1a1c4513ecf824c55274a456c40657271d631883.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S03. OVI benchmark list",
+      "id": "SOURCE_EVIDENCE.md:14",
+      "line": 14,
+      "requirement": "## S03. OVI benchmark list\n- Source: https://github.com/OVI-MAP/OVI-MAP/blob/f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424/scripts/eval_sem_seg.py\n- Observed / relevance: main(): exact eight and eighteen sequence lists; exporter and pooling.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S04. Native frame schedule",
+      "id": "SOURCE_EVIDENCE.md:18",
+      "line": 18,
+      "requirement": "## S04. Native frame schedule\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/module_validation/assets.py\n- Observed / relevance: native_schedule(): floor step and first 200 original slots.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S05. ScanNet streaming inputs",
+      "id": "SOURCE_EVIDENCE.md:22",
+      "line": 22,
+      "requirement": "## S05. ScanNet streaming inputs\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/module_validation/scannet_frames.py\n- Observed / relevance: export_sensor/_export(): original JPEG, depth scale, native registration and no refill.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S06. Authorized fixed download",
+      "id": "SOURCE_EVIDENCE.md:26",
+      "line": 26,
+      "requirement": "## S06. Authorized fixed download\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/module_validation/scannet_download.py\n- Observed / relevance: Required suffixes and official downloader parsing; prepare_plan is old12+2 and must not selectCF18.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S07. Scope-limited capture runner",
+      "id": "SOURCE_EVIDENCE.md:30",
+      "line": 30,
+      "requirement": "## S07. Scope-limited capture runner\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/module_validation/scannet_runtime.py\n- Observed / relevance: development_rows/capture_development are not general arbitrary-cohort entrypoints.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S08. Current NQF anchor pipeline",
+      "id": "SOURCE_EVIDENCE.md:34",
+      "line": 34,
+      "requirement": "## S08. Current NQF anchor pipeline\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/backbone_wave1/readouts.py\n- Observed / relevance: build_sources/fuse_readout, Native owner universe and original FC request gating.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S09. Recovery binder",
+      "id": "SOURCE_EVIDENCE.md:38",
+      "line": 38,
+      "requirement": "## S09. Recovery binder\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/recovery_wave2/binding.py\n- Observed / relevance: Old task identity and12-scene scope; memoized input identity and actual inherited model receipts.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S10. Current raw registry",
+      "id": "SOURCE_EVIDENCE.md:42",
+      "line": 42,
+      "requirement": "## S10. Current raw registry\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/recovery_wave2/recovery_registry.py\n- Observed / relevance: Absent owners, residual raw support, spatial ordering and historical-only reconcile_requests.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S11. FC request worker",
+      "id": "SOURCE_EVIDENCE.md:46",
+      "line": 46,
+      "requirement": "## S11. FC request worker\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/recovery_wave2/recovery_fc_worker.py\n- Observed / relevance: U2/U3-only high-level inputs; actual ContentCache/model/text binding and selected mask processing.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S12. Captured camera convention",
+      "id": "SOURCE_EVIDENCE.md:50",
+      "line": 50,
+      "requirement": "## S12. Captured camera convention\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/module_validation/native_capture.py\n- Observed / relevance: before_insertion RGB/depth_m/pose/K; after_raycast legacy bbox/request identity.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S13. Native six-crop semantics",
+      "id": "SOURCE_EVIDENCE.md:54",
+      "line": 54,
+      "requirement": "## S13. Native six-crop semantics\n- Source: https://github.com/OVI-MAP/OVI-MAP/blob/f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424/scripts/vl_models.py\n- Observed / relevance: VLModel.encode_image_with_bbox preserves native exclusive slices and pixel-max clipping.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S14. Region feature operator",
+      "id": "SOURCE_EVIDENCE.md:58",
+      "line": 58,
+      "requirement": "## S14. Region feature operator\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/a7_evidence_upgrade/region_adapter.py\n- Observed / relevance: image_tensor/signed_mask/region_vector/load_model: FP32, \u00b11 masks,14templates, fixed OVRCOAT operator source.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S15. Existing native/query features",
+      "id": "SOURCE_EVIDENCE.md:62",
+      "line": 62,
+      "requirement": "## S15. Existing native/query features\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/backbone_wave1/semantic_readout.py\n- Observed / relevance: reconstruct_native/run_native_query: original order, Q causal queries, exact200 assertion in older wrapper.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S16. Newer own-map bridge",
+      "id": "SOURCE_EVIDENCE.md:66",
+      "line": 66,
+      "requirement": "## S16. Newer own-map bridge\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/recovery_wave2/readouts.py\n- Observed / relevance: Newer native-worker exhaustion accounting, inherited N/Q/F, still hard-gated to old task.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S17. Recovery source semantics",
+      "id": "SOURCE_EVIDENCE.md:70",
+      "line": 70,
+      "requirement": "## S17. Recovery source semantics\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/recovery_wave2/recovery_sources.py\n- Observed / relevance: single_native_classifier/native_single_sources and true U2 request construction.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S18. Fixed-support append",
+      "id": "SOURCE_EVIDENCE.md:74",
+      "line": 74,
+      "requirement": "## S18. Fixed-support append\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/recovery_wave2/export.py\n- Observed / relevance: expanded_prediction: old support/class preservation, positive class restriction, official ranks.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S19. Payload schema",
+      "id": "SOURCE_EVIDENCE.md:78",
+      "line": 78,
+      "requirement": "## S19. Payload schema\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/module_validation/evaluation.py\n- Observed / relevance: PredictionPayload permits positive owner with unknown0; one label per owner and complete ranks.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S20. Expanded evaluation",
+      "id": "SOURCE_EVIDENCE.md:82",
+      "line": 82,
+      "requirement": "## S20. Expanded evaluation\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/recovery_wave2/evaluation.py\n- Observed / relevance: expanded_native_registry/evaluate_scene/pool_cohort; new mask registry and exact context aliases.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S21. Official evaluation adapter",
+      "id": "SOURCE_EVIDENCE.md:86",
+      "line": 86,
+      "requirement": "## S21. Official evaluation adapter\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/m2_reviewer_study/evaluation.py\n- Observed / relevance: SceneEvaluator masks from N0 dictionary; official_view, confusion and whole-cohort pool.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S22. Released AP thresholds",
+      "id": "SOURCE_EVIDENCE.md:90",
+      "line": 90,
+      "requirement": "## S22. Released AP thresholds\n- Source: https://github.com/OVI-MAP/OVI-MAP/blob/f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424/scripts/eval_utils.py\n- Observed / relevance: np.arange(.5,.95,.05), min100; evaluate actual loaded vector rather than presumedCOCO defaults.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S23. Existing results/constraints",
+      "id": "SOURCE_EVIDENCE.md:94",
+      "line": 94,
+      "requirement": "## S23. Existing results/constraints\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/docs/paper/static_ovmap/RECOVERY_WAVE2_RESULTS.md\n- Observed / relevance: D2/U2 history, candidate funnel, no new G1 measurement; local availability must be bound.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S24. OVI authored protocol and comparison",
+      "id": "SOURCE_EVIDENCE.md:98",
+      "line": 98,
+      "requirement": "## S24. OVI authored protocol and comparison\n- Source: https://arxiv.org/html/2603.26541v1\n- Observed / relevance: Section4, Table3, supplementary datasets. Source of attributed external values, not raw prediction parity.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S25. Open3D ray parameter",
+      "id": "SOURCE_EVIDENCE.md:102",
+      "line": 102,
+      "requirement": "## S25. Open3D ray parameter\n- Source: https://www.open3d.org/docs/release/python_api/open3d.t.geometry.RaycastingScene.html\n- Observed / relevance: cast_rays first hit and unnormalized direction units. New ray convention is mathematically specified inC2.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## S26. D2 actual operator",
+      "id": "SOURCE_EVIDENCE.md:106",
+      "line": 106,
+      "requirement": "## S26. D2 actual operator\n- Source: https://github.com/Orangekostar/oviovo/blob/1a1c4513ecf824c55274a456c40657271d631883/src/static_ovmap/paired_evidence_study/residuals.py\n- Observed / relevance: simple_dependence PE_D2_GROUPED: available N/Q group andF group; not learned reliability.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## Proposed, not observed capabilities",
+      "id": "SOURCE_EVIDENCE.md:110",
+      "line": 110,
+      "requirement": "## Proposed, not observed capabilities",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "heading": "## Proposed, not observed capabilities",
+      "id": "SOURCE_EVIDENCE.md:112",
+      "line": 112,
+      "requirement": "G1/G3 projected requests, new CF18 runner, A5 unknown-aware table exporter and cold timing wrapper are new work in this task. No source above is claimed to implement them already.\nThe fixed 2cm/2% visibility tolerance and homogeneous-face label rule are explicit design choices, not values attributed to OVI or proven optimal.\nUpstream README corrects the paper voxel-size typo to 0.01m; use actual inherited configuration and record a conflict instead of silently changing it.\nThe three external rows are reported context. Their full scorer identities have not been independently recovered; no cross-provenance numerical superiority claim is certified by this package.",
+      "source": "SOURCE_EVIDENCE.md"
+    },
+    {
+      "id": "PROTOCOL_SPEC.schema_version",
+      "requirement": 1,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.task_id",
+      "requirement": "ovimap-cvpr-compact-tables-v1",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.date",
+      "requirement": "2026-10-03",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.repository",
+      "requirement": "Orangekostar/oviovo",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.base_commit",
+      "requirement": "1a1c4513ecf824c55274a456c40657271d631883",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.upstream_commit",
+      "requirement": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.branch",
+      "requirement": "research/ovimap-cvpr-compact-tables-v1",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.output_root",
+      "requirement": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.parent_recovery_root",
+      "requirement": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.parent_backbone_root",
+      "requirement": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.cohorts.replica8",
+      "requirement": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.cohorts.scannet_cf18",
+      "requirement": [
+        "scene0011_00",
+        "scene0011_01",
+        "scene0050_00",
+        "scene0050_01",
+        "scene0050_02",
+        "scene0084_00",
+        "scene0084_01",
+        "scene0084_02",
+        "scene0168_00",
+        "scene0168_01",
+        "scene0168_02",
+        "scene0231_00",
+        "scene0231_01",
+        "scene0231_02",
+        "scene0378_00",
+        "scene0378_01",
+        "scene0378_02",
+        "scene0518_00"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.development_scenes",
+      "requirement": [
+        "scene0056_00",
+        "scene0534_00",
+        "scene0445_00",
+        "scene0626_00"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.smoke_scene",
+      "requirement": "scene0056_00",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.physical_scan_families",
+      "requirement": 7,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.main_tables",
+      "requirement": 3,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.internal_methods",
+      "requirement": 8,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.main_scene_method_records",
+      "requirement": 172,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.main_pool_records",
+      "requirement": 14,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.main_anchor_maps",
+      "requirement": 26,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.max_new_successful_main_anchor_maps",
+      "requirement": 26,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.max_extra_development_anchor_maps",
+      "requirement": 0,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.extra_smoke_scene_method_records_max",
+      "requirement": 8,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.cold_recovery_replays",
+      "requirement": 24,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.new_algorithmic_mapper_variants",
+      "requirement": 0,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.external_system_retraining",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.external_system_full_reproduction",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.new_parameter_fits",
+      "requirement": 0,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.new_visual_backbone_search",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.scope.new_dataset",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.methods",
+      "requirement": [
+        {
+          "cohorts": [
+            "replica8",
+            "scannet_cf18"
+          ],
+          "existing": "NATIVE",
+          "id": "CT_A0_NATIVE",
+          "recovery": "NONE",
+          "short": "A0"
+        },
+        {
+          "cohorts": [
+            "replica8",
+            "scannet_cf18"
+          ],
+          "existing": "D2",
+          "id": "CT_A1_E",
+          "recovery": "NONE",
+          "short": "A1"
+        },
+        {
+          "cohorts": [
+            "replica8",
+            "scannet_cf18"
+          ],
+          "existing": "NATIVE",
+          "id": "CT_A2_R",
+          "recovery": "G1_FC",
+          "short": "A2"
+        },
+        {
+          "cohorts": [
+            "replica8",
+            "scannet_cf18"
+          ],
+          "existing": "D2",
+          "id": "CT_A3_ER",
+          "recovery": "G1_FC",
+          "short": "A3"
+        },
+        {
+          "cohorts": [
+            "replica8",
+            "scannet_cf18"
+          ],
+          "existing": "D2",
+          "id": "CT_A4_NATIVE_RECOVERY",
+          "recovery": "G1_NATIVE",
+          "short": "A4"
+        },
+        {
+          "cohorts": [
+            "replica8",
+            "scannet_cf18"
+          ],
+          "existing": "FC_ONLY_SAME_EVIDENCE",
+          "id": "CT_A5_FC_ONLY",
+          "recovery": "G1_FC",
+          "short": "A5"
+        },
+        {
+          "cohorts": [
+            "replica8"
+          ],
+          "existing": "D2",
+          "id": "CT_H_U2",
+          "recovery": "ARCHIVED_U2_FC",
+          "short": "U2"
+        },
+        {
+          "cohorts": [
+            "replica8"
+          ],
+          "existing": "D2",
+          "id": "CT_G3",
+          "recovery": "G3_FC",
+          "short": "G3"
+        }
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.frame_sampling.algorithm",
+      "requirement": "assets.native_schedule",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.frame_sampling.formula",
+      "requirement": "step=N//200; frame_ids=list(range(0,N,step))[:200]",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.frame_sampling.planned_count",
+      "requirement": 200,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.frame_sampling.preserve_original_indices",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.frame_sampling.refill_invalid",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.frame_sampling.existing_schedule_identity_required",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.geometry.mapper_recipe",
+      "requirement": "BB00_NATIVE",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.geometry.voxel_size_m",
+      "requirement": 0.01,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.geometry.instance_association",
+      "requirement": 4,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.geometry.reuse_requires",
+      "requirement": "identical frame/input/config/producer and valid geometry receipts",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.geometry.owner_support",
+      "requirement": "original native triangle-painted output for incumbents; residual raw support for absent owners",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.geometry.new_segmentation_or_association",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.native",
+      "requirement": "inherited siglip-l-16-384 FP32",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.query",
+      "requirement": "inherited frozen Q_GAIN checkpoint and standardizer",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.query_budget_max_attempts",
+      "requirement": 200,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.query_exhaustion",
+      "requirement": "stop honestly; do not duplicate requests",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.region",
+      "requirement": "inherited FC_FROZEN convnext_large_d_320 FP32",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.region_operator_pin",
+      "requirement": "9fd9450d22852d269d426b521663a127f3983a4b",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.region_resize_short",
+      "requirement": 800,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.region_resize_long_max",
+      "requirement": 1333,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.region_pad_multiple",
+      "requirement": 32,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.text_templates",
+      "requirement": 14,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.temperatures",
+      "requirement": "exact final N/Q/F vector used by archived Replica D2; same scalars for both cohorts, no CAL leave-one-out vector or fitting",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.models.new_text_encoding",
+      "requirement": "only identical frozen vocabulary/templates missing from cache",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.minimum_residual_source_rows",
+      "requirement": 100,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.candidate_cap_per_scene",
+      "requirement": 128,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.priority",
+      "requirement": [
+        "residual_source_rows_desc",
+        "spatial_support_digest_asc"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.support",
+      "requirement": "(raw_owner==i)&(native_painted_owner==0), i absent from incumbent positive owners",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.candidate_selection_uses_target_mesh",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.g1_max_views",
+      "requirement": 1,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.g3_max_views",
+      "requirement": 3,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.g3_contains_g1_prefix",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.new_view_selection_uses_historical_request_list",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.failed_view_replacement",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.recovery.incumbent_fc_missing_label",
+      "requirement": 0,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.implementation",
+      "requirement": "Open3D tensor RaycastingScene on CPU, full frozen predicted mesh",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.coordinate_dtype",
+      "requirement": "float32",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.triangle_index_dtype",
+      "requirement": "uint32",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.pixel_coordinates",
+      "requirement": "integer u,v, inherited captured K",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.ray",
+      "requirement": "origin=t_c2w; direction=R_c2w @ inv(K) @ [u,v,1], not normalized",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.depth",
+      "requirement": "t_hit in camera z with stated rays",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.triangle_owner",
+      "requirement": "positive iff all three raw vertex owners agree; otherwise zero, still occludes",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.minimum_positive_depth_m",
+      "requirement": 1e-06,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.absolute_depth_tolerance_m",
+      "requirement": 0.02,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.relative_depth_tolerance",
+      "requirement": 0.02,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.depth_rule",
+      "requirement": "abs(t_hit-depth_m)<=max(0.02,0.02*depth_m)",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.invalid_depth_allowed",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.min_visible_pixels",
+      "requirement": 100,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.min_bbox_extent_pixels",
+      "requirement": 2,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.mask_growth_or_hole_filling",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.frame_selection",
+      "requirement": [
+        "visible_pixels_desc",
+        "frame_id_asc",
+        "mask_digest_asc"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.canonical_bbox",
+      "requirement": "half-open x_min,y_min,x_max+1,y_max+1",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.native_crop_bbox",
+      "requirement": "legacy pixel maxima; do not silently fix native crop boundary behavior",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.ray_batch_pixels_max",
+      "requirement": 65536,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.projection.raycast_threads",
+      "requirement": 4,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.rank_mode",
+      "requirement": "OFFICIAL_CURRENT_CLASS",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.aggregate",
+      "requirement": "ordered released dataset pool; semantic sum confusion",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.ap_thresholds",
+      "requirement": [
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.extra_ap_thresholds",
+      "requirement": [
+        0.25
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.target_min_points",
+      "requirement": 100,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.projection",
+      "requirement": "inherited Open3D FP32 1NN strict squared_distance<0.05**2",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.stored_metric_units",
+      "requirement": "fraction",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.main_display_units",
+      "requirement": "percent",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.main_decimals",
+      "requirement": 2,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.main_metrics",
+      "requirement": [
+        "apall",
+        "ap50",
+        "miou"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.si_metrics",
+      "requirement": [
+        "ap25",
+        "macc"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.partial_pool_allowed",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.unique_gt_counts_not_equal_score_entries",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.unknown_semantics",
+      "requirement": 0,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.evaluation.threshold_spec_match_tolerance",
+      "requirement": 1e-12,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.model_choice",
+      "requirement": "fixed pretrained checkpoints; no search",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.primary_method",
+      "requirement": "CT_A3_ER",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.freeze_before_new_main_metrics",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.change_primary_after_main_results",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.g3_can_replace_g1",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.development_performance_gate",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.deployment",
+      "requirement": "N0_UNCHANGED",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.final_decision",
+      "requirement": "report pairwise raw deltas, guardrail flags and Pareto set; no winner renaming",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.paired_reference",
+      "requirement": "CT_A1_E",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.guardrail_pp.ap50",
+      "requirement": -0.1,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.guardrail_pp.miou",
+      "requirement": -0.1,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.selection.significance_claim",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.scope",
+      "requirement": "feature-cache-cold incremental recovery, model already resident",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.cohort",
+      "requirement": "replica8",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.arms",
+      "requirement": [
+        "ARCHIVED_U2_FC",
+        "G1_FC",
+        "G3_FC"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.repeats_per_scene_arm",
+      "requirement": 1,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.persistent_feature_reads",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.intra_run_frame_sharing",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.include",
+      "requirement": [
+        "candidate_registry",
+        "view_projection_or_archive_lookup",
+        "decode_preprocess",
+        "image_encoding",
+        "region_pool_projection",
+        "classification",
+        "output_and_rank_export"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.exclude",
+      "requirement": [
+        "model_loading",
+        "geometry_mapping",
+        "benchmark_evaluation",
+        "dataset_download"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.model_loading_reported_separately",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.cuda_synchronize_at_boundaries",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.statistics",
+      "requirement": "sum all eight measured scene costs / 8; not concurrent wall-time subtraction",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.timing.gpu_lock_same_as_parent",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.external_rows.primary_route",
+      "requirement": "AUTHOR_REPORTED_AS_IN_OVI_TABLE3_SEPARATE_BLOCK",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.external_rows.source",
+      "requirement": "https://arxiv.org/html/2603.26541v1#S4.T3",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.external_rows.methods",
+      "requirement": [
+        "Mask3D + OpenMask3D",
+        "Segment3D + OpenMask3D",
+        "OVO-SLAM"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.external_rows.exact_prediction_protocol_verified",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.external_rows.allow_cross_provenance_best_bolding",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.external_rows.allow_new_external_model_install",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.external_rows.missing_value",
+      "requirement": "NA with reason; never fabricate",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.map_workers",
+      "requirement": 2,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.threads_per_mapper",
+      "requirement": 8,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.eval_workers",
+      "requirement": 3,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.blas_threads_per_eval",
+      "requirement": 4,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.gpu_workers_per_device",
+      "requirement": 1,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.new_gpu_inference_allowed",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.retry_limit_same_leaf",
+      "requirement": 2,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.resources.new_attempt_on_changed_input",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.deliverables",
+      "requirement": [
+        "COMPACT_TABLES_RESULTS.md",
+        "COMPACT_TABLES_HANDOFF.md",
+        "COMPACT_TABLES_SELECTION.md",
+        "COMPACT_TABLES_CLAIMS.md",
+        "table1_main.tex",
+        "table2_ablation.tex",
+        "table3_recovery.tex",
+        "tables_main.json",
+        "tables_main.csv",
+        "cell_provenance.json",
+        "scientific_coverage.json",
+        "table_layout_preview.pdf"
+      ],
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.publication.normal_push_only",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.publication.force_push",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.publication.verify_full_remote_sha",
+      "requirement": true,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.publication.compact_artifacts_mib_target",
+      "requirement": 50,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.publication.upload_large_maps_or_weights",
+      "requirement": false,
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "PROTOCOL_SPEC.publication.receipt_outside_commit",
+      "requirement": "publication/final.json",
+      "source": "PROTOCOL_SPEC.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.schema_version",
+      "requirement": 1,
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table1.columns",
+      "requirement": [
+        "apall",
+        "ap50",
+        "miou"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table1.cohorts",
+      "requirement": [
+        "replica8",
+        "scannet_cf18"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table1.reported_rows",
+      "requirement": [
+        "Mask3D + OpenMask3D",
+        "Segment3D + OpenMask3D",
+        "OVO-SLAM"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table1.measured_rows",
+      "requirement": [
+        "CT_A0_NATIVE",
+        "CT_A1_E",
+        "CT_A3_ER"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table1.reported_source",
+      "requirement": "literature_reference.json",
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table1.separate_provenance_blocks",
+      "requirement": true,
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table2.columns",
+      "requirement": [
+        "apall",
+        "ap50",
+        "miou"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table2.cohorts",
+      "requirement": [
+        "replica8",
+        "scannet_cf18"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table2.rows",
+      "requirement": [
+        "CT_A0_NATIVE",
+        "CT_A1_E",
+        "CT_A2_R",
+        "CT_A3_ER",
+        "CT_A4_NATIVE_RECOVERY",
+        "CT_A5_FC_ONLY"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table3.cohort",
+      "requirement": "replica8",
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table3.rows",
+      "requirement": [
+        "CT_A1_E",
+        "CT_H_U2",
+        "CT_A3_ER",
+        "CT_G3"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table3.max_views",
+      "requirement": [
+        0,
+        1,
+        1,
+        3
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.table3.columns",
+      "requirement": [
+        "recovered_n",
+        "candidate_N",
+        "added_tp50_entries",
+        "added_fp50_entries",
+        "apall",
+        "miou",
+        "cold_feature_incremental_seconds_mean"
+      ],
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.all_repeated_metric_cells_reference_one_pooled_receipt",
+      "requirement": true,
+      "source": "TABLE_BINDINGS.json"
+    },
+    {
+      "id": "TABLE_BINDINGS.unknown_internal_values",
+      "requirement": "null; never use literature values to complete internal rows",
+      "source": "TABLE_BINDINGS.json"
+    }
+  ]
+}

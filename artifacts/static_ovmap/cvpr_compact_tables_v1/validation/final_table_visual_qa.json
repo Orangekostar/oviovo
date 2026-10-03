@@ -1,0 +1,76 @@
+{
+  "actual_measured_pdf_inspected": true,
+  "identity": "6a2065774dca10cc65ca8e602c2c38fd6a616973f9d187d1cec38c7ac1942fb9",
+  "inputs": [
+    {
+      "bytes": 1778,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/tables/table1_main.tex",
+      "sha256": "73e81e6e540404fed33d3ac16d9b651b84de4dbef9f2dac68fb95d3e721ce376"
+    },
+    {
+      "bytes": 1522,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/tables/table2_ablation.tex",
+      "sha256": "e6dfe14aefee04ad5d39703d0a756b058b7d83af93eda93c7e82b16e903bfa8d"
+    },
+    {
+      "bytes": 1262,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/tables/table3_recovery.tex",
+      "sha256": "bce22fe29b21ec21908d7798db12fd64a7243032da368792985e3cd27ea53b1d"
+    },
+    {
+      "bytes": 12737,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/tables/table_layout_preview.log",
+      "sha256": "888ec6725c24614ef8f7e8fea5cd57cbb96546b6620f1ce620b315f7e4ca3f90"
+    }
+  ],
+  "inspection": "All three fixed full-width tables and captions are readable on the actual single-page raster. Dataset headings, attributed external block, all6/6/4 rows, unavailable markers, U2 counts/time and negative CF18 results are present. No row text, numbers or captions overlap or extend beyond their layout.",
+  "minimum_body_font_pt": 9,
+  "outputs": [
+    {
+      "bytes": 264151,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/artifacts/static_ovmap/cvpr_compact_tables_v1/validation/actual_table_preview-1.png",
+      "sha256": "b8afd13c1582dcfa9243e34918de825d505b621d26e37e6a5a46713a34971e1e"
+    }
+  ],
+  "overfull_boxes": 0,
+  "page_count": 1,
+  "pdf": {
+    "bytes": 90728,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/tables/table_layout_preview.pdf",
+    "sha256": "ac97cc9512591263736b3c3315e4165f9a87972d624938f58940a534c2b0e8f4"
+  },
+  "published_rendered_pages": [
+    {
+      "bytes": 264151,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/artifacts/static_ovmap/cvpr_compact_tables_v1/validation/actual_table_preview-1.png",
+      "sha256": "b8afd13c1582dcfa9243e34918de825d505b621d26e37e6a5a46713a34971e1e"
+    }
+  ],
+  "readable": true,
+  "rendered_pages": [
+    {
+      "bytes": 264151,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/actual_table_preview-1.png",
+      "sha256": "b8afd13c1582dcfa9243e34918de825d505b621d26e37e6a5a46713a34971e1e"
+    }
+  ],
+  "renderer_argv": [
+    "pdftoppm",
+    "-png",
+    "-r",
+    "130",
+    "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/tables/table_layout_preview.pdf",
+    "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/validation/actual_table_preview"
+  ],
+  "reviewer": "PRIMARY_CODEX",
+  "rows_and_captions_unclipped": true,
+  "scientific_completion_claim": false,
+  "status": "PASS",
+  "table_receipt_identity": "7177b954ecc0bddf698de80c4bb9d706a38beb8d207c4620fe02d877409f8384",
+  "table_row_counts": {
+    "table1": 6,
+    "table2": 6,
+    "table3": 4
+  },
+  "tables_identity": "93d6a2fa04b479674185da0f8db7a911ef42092c5de1deef5f58ae8e4047dfa5"
+}

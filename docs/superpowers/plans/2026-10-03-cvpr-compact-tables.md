@@ -192,7 +192,12 @@ the evidence classification and full code/artifact review remain in progress.
   rejects changed metadata ordering while preserving existing table bytes.
 - [x] Preserve amendment08 release/review/report and failed canonical-command
   artifacts before replacing owned consumer metadata.
-- [ ] Validate current74 focused tests and unchanged eight-condition smoke,
-  freeze the consumer correction, and review the updated compact release.
+- [x] Validate current74 focused tests and unchanged eight-condition smoke;
+  freeze the consumer correction at69297ee372fb3ac297a8e221c5a541dbfa87a75a.
+- [x] Build the actual amendment09 release at44,250,790 bytes before its new
+  primary review. Original scientific, cold and numeric artifacts are exact.
+- [x] Review the updated compact release against all327 original requirements:
+  292 proven complete,28 scientific-blocked,7 later publication obligations.
+  Current release including its primary review occupies45,117,460 bytes.
 - [ ] Execute actual canonical all-resume through normal publication and verify
   the full remote SHA. Scientific counts remain168/172,10/14 and22/24.

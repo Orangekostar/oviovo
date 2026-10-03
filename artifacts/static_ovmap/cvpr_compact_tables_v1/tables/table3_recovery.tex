@@ -1,0 +1,18 @@
+% Generated from typed receipt-backed tables_main.json.
+\begin{table*}[!ht]
+\centering
+\caption{Recovery on Replica-8. $n/N$ is recovered owners over the same prelocked candidate pool, not true positives. TP/FP are added released-matcher score entries at IoU .50. Time is feature-cache-cold incremental recovery with the model resident, averaged over all eight scenes; model loading, mapping and evaluation are separate. Undefined metrics are --; reasons are recorded in cell provenance. Technical blocks are --: office1 has no positive FC support at the fixed dense resolution; full cohorts are never replaced by subsets. $\dagger$ marks additional mixed old/new tied score entries with unresolved attribution; displayed TP/FP counts contain only definite added entries.}
+\label{tab:recovery}
+\fontsize{9}{10.5}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccrrrrr@{}}
+\toprule
+Entry & Max views & $n/N$ & TP50 & FP50 & AP & mIoU & Time (s) \\
+\midrule
+None (A1) & 0 & $0/53$ & 0 & 0 & 11.74 & 29.69 & 0 \\
+Archived U2 & 1 & $9/53$ & 3 & 2 & 12.39 & 30.17 & 6.61 \\
+Independent G1 (A3) & 1 & -- & -- & -- & -- & -- & -- \\
+Independent G3 & 3 & -- & -- & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular*}
+\end{table*}

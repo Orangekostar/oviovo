@@ -1,0 +1,283 @@
+{
+  "identity": "28589f37b080c0f7b270a544f720d99f9cd75ff13963865fbce4cd3caa184565",
+  "implementation_sources": [
+    {
+      "bytes": 82,
+      "path": "src/static_ovmap/cvpr_compact/__init__.py",
+      "sha256": "f04b56e9e0430788d557ca6a18c94796da3da7539bf75a2e98f027f48c25d135"
+    },
+    {
+      "bytes": 19599,
+      "path": "src/static_ovmap/cvpr_compact/anchor.py",
+      "sha256": "b730d4664c7f7dc2daa51f8d4aa6db9de0645992e0383253585bee7806e25769"
+    },
+    {
+      "bytes": 28905,
+      "path": "src/static_ovmap/cvpr_compact/base_sources.py",
+      "sha256": "2bba92d0d98d969b98701407175d349c0180c2c57f9ddc11d3e7f852033d483a"
+    },
+    {
+      "bytes": 10703,
+      "path": "src/static_ovmap/cvpr_compact/benchmark_inputs.py",
+      "sha256": "55a2cfefd2b20249cf82187f81d91263625c2f240ebcdd9608e77f128668a2ea"
+    },
+    {
+      "bytes": 15419,
+      "path": "src/static_ovmap/cvpr_compact/binding.py",
+      "sha256": "b5646bbd04a77eb9788ea3807a70cfb09290ba2f145935b57d53f0ca88df75d7"
+    },
+    {
+      "bytes": 20388,
+      "path": "src/static_ovmap/cvpr_compact/costs.py",
+      "sha256": "e9b3de04fadcabc287a91480b658798e8e92ab218bf1ce0f6bcc7085cabb01ac"
+    },
+    {
+      "bytes": 20646,
+      "path": "src/static_ovmap/cvpr_compact/diagnostics.py",
+      "sha256": "16137606198e8fe3540ef1e56549447ff15223a8bc2c7f1822ea34e07e7cc28f"
+    },
+    {
+      "bytes": 28805,
+      "path": "src/static_ovmap/cvpr_compact/evaluation.py",
+      "sha256": "2ac7e87f58909fdc470ef41c86cc5a4b004c2109e3922f64df4afc246fbb0244"
+    },
+    {
+      "bytes": 6361,
+      "path": "src/static_ovmap/cvpr_compact/external.py",
+      "sha256": "138b43025cdc07a9f580e99d0e726a42f294b3899d7f5c96423f625fc16538c3"
+    },
+    {
+      "bytes": 9857,
+      "path": "src/static_ovmap/cvpr_compact/freezing.py",
+      "sha256": "d57912a20698446ff146868f64c87a279d919a37fa878804f93abe3676395e1d"
+    },
+    {
+      "bytes": 12375,
+      "path": "src/static_ovmap/cvpr_compact/native_region_worker.py",
+      "sha256": "8d083944408a7e873879f7faab3079941bf5704848fd3dab69e32a62d3d95b4c"
+    },
+    {
+      "bytes": 9391,
+      "path": "src/static_ovmap/cvpr_compact/outputs.py",
+      "sha256": "c6c24d4f543b55e5eadea2cf375d23fa67ea54bbfe889c2fcce3327a6a9c07fd"
+    },
+    {
+      "bytes": 26996,
+      "path": "src/static_ovmap/cvpr_compact/partial_execution.py",
+      "sha256": "3839162a9134fc0257a33c206c7f97cbaf710bd85b15d0609526e31fc03b1cae"
+    },
+    {
+      "bytes": 9961,
+      "path": "src/static_ovmap/cvpr_compact/prediction_worker.py",
+      "sha256": "502618109f7080957137f2b478a9197f45337229ee523f8c5e528b7d0f77b320"
+    },
+    {
+      "bytes": 19423,
+      "path": "src/static_ovmap/cvpr_compact/projected_views.py",
+      "sha256": "2b340d502ee87256c25b614850a560c46d67eafd8d66ad18ba72925f5a3d714a"
+    },
+    {
+      "bytes": 2792,
+      "path": "src/static_ovmap/cvpr_compact/protocol.py",
+      "sha256": "b54e211d3daee7d3f5f81bba0f634e2d46eca55acbf1eaa1673b03c33fd32c74"
+    },
+    {
+      "bytes": 41839,
+      "path": "src/static_ovmap/cvpr_compact/publication.py",
+      "sha256": "cc5232b091ec4330b767b6c7c4f2caa1dc1756ae8a535d0ea7d2edc8676ac067"
+    },
+    {
+      "bytes": 8102,
+      "path": "src/static_ovmap/cvpr_compact/query_bridge.py",
+      "sha256": "f167043a4effd32140c12776c80d7ccc166ee00746889ee70b869df68283037b"
+    },
+    {
+      "bytes": 17928,
+      "path": "src/static_ovmap/cvpr_compact/recovery_run.py",
+      "sha256": "031bd263c9d4fa99b6dd8cacccab931be5a0e30635775f11187b9b713aa6a97d"
+    },
+    {
+      "bytes": 26886,
+      "path": "src/static_ovmap/cvpr_compact/region_worker.py",
+      "sha256": "d5a9193dc95320cde684199428334f97da4130447c9abbe8ae2f25b7b3899976"
+    },
+    {
+      "bytes": 25612,
+      "path": "src/static_ovmap/cvpr_compact/reports.py",
+      "sha256": "9317c8ca97ee49b002723730ed4b378e24065870cec82562130c3d378f1d56f3"
+    },
+    {
+      "bytes": 8403,
+      "path": "src/static_ovmap/cvpr_compact/runtime.py",
+      "sha256": "312e5f38402366d62302ce04d1c73fdd67cac94e282a579dfce3e6840dbcf1be"
+    },
+    {
+      "bytes": 36044,
+      "path": "src/static_ovmap/cvpr_compact/tables.py",
+      "sha256": "816d119772b162d629b958ea15865d864c8440bd41cc91275164dce913173ed2"
+    },
+    {
+      "bytes": 31572,
+      "path": "src/static_ovmap/cvpr_compact/timing.py",
+      "sha256": "75517b5ed46d3c3e383d6518239a80872f1090c455f885d06d8f0b8325efb3a5"
+    },
+    {
+      "bytes": 24054,
+      "path": "src/static_ovmap/cvpr_compact/workflow.py",
+      "sha256": "e6fec0432f4bf82f164e0ceafd47d660c42cce5790162d98139f676acf818411"
+    },
+    {
+      "bytes": 997,
+      "path": "scripts/evaluation/run_ovimap_cvpr_compact.py",
+      "sha256": "cd9d31425b29cf9ac8e195e4238995cd67de5e792cd1c1319ffa22ea4884fcea"
+    },
+    {
+      "bytes": 154937,
+      "path": "tests/evaluation/test_cvpr_compact_contracts.py",
+      "sha256": "7992f015999c52316acf793b0d700662b61cb7e901c98c8040ca065a0b93650e"
+    },
+    {
+      "bytes": 10046,
+      "path": "configs/static_ovmap/cvpr_compact_tables_v1.json",
+      "sha256": "dccb57798c9eaeb8d99b38455fe5a01586d1a2e8e790eba063179eeced91d88c"
+    },
+    {
+      "bytes": 27749,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/CODEX_FINAL_EXECUTION_EN.md",
+      "sha256": "b9b94749d0715e998e9273f16aa791f1c300363dbe1f1ddf6014b39515e4b6b4"
+    },
+    {
+      "bytes": 9125,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/CODE_REVIEW_AND_PLAN_ZH.md",
+      "sha256": "250be3c4661fce355c771697c13607af4b77740d7822be76c9c5c34482c65dcc"
+    },
+    {
+      "bytes": 16010,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/IMPLEMENTATION_CONTRACTS.md",
+      "sha256": "446514517c7d9ffe3af57ee5b744ed704c5e1da3001307134151d3abfd74bb2e"
+    },
+    {
+      "bytes": 6179,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/PACKAGE_AUDIT.json",
+      "sha256": "20c2a201deaf88493e255f265de69bae43e7da767e16327f7403438a6a517c33"
+    },
+    {
+      "bytes": 10046,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/PROTOCOL_SPEC.json",
+      "sha256": "dccb57798c9eaeb8d99b38455fe5a01586d1a2e8e790eba063179eeced91d88c"
+    },
+    {
+      "bytes": 1321,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/README.md",
+      "sha256": "43582d4dd3da48fab6b545a9e26bec82a89b764fabd3bd35c697256e2a43be9d"
+    },
+    {
+      "bytes": 175,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/REFERENCE_CHECK_RESULTS.json",
+      "sha256": "fdfa168eb7ead689dff8cfcd4c994c8326ccc34bbe72f310e43d8a67fb645720"
+    },
+    {
+      "bytes": 1109,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/REFERENCE_TEST_LOG.txt",
+      "sha256": "48fcc5bce314802477a07034b55e9174c7e32bacb4479155a2fc35eabe40e7e6"
+    },
+    {
+      "bytes": 8206,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/SOURCE_EVIDENCE.md",
+      "sha256": "df72f2961f252c1d908d209b5ab7d6a2c3ec59f03caf3e853b37936cc0d5db3f"
+    },
+    {
+      "bytes": 1301,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/TABLE_BINDINGS.json",
+      "sha256": "e3bfefa1d16501030a6a6c4366269f6186340d1a26d79e554cacc580bd09312b"
+    },
+    {
+      "bytes": 4689,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/TABLE_CONTRACTS.md",
+      "sha256": "fbed0303fafe0cd37cda9a04505bf8980e9eee967f0ac3bf28945f702f168c4a"
+    },
+    {
+      "bytes": 6313,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/audit_package.py",
+      "sha256": "56b3950bc8ca381a9ba110a242f65dc314f08b6068581273d13e8f78b5d144e8"
+    },
+    {
+      "bytes": 1521,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/literature_reference.json",
+      "sha256": "a418e9705f3f483fdfae9388bc153aea1e302b2555f427b8954bc882b4896a49"
+    },
+    {
+      "bytes": 6183,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/reference_checks/check_contracts.py",
+      "sha256": "7a339c89f419cb1a4b1e81ada8ea7cbbbf0df4c8626440feea73fe215526da52"
+    },
+    {
+      "bytes": 58,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/replica8.txt",
+      "sha256": "928d25d6accad0894cebd0a708b31243eed3b5333353d1cc12d7649f94aabb06"
+    },
+    {
+      "bytes": 234,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/scannet_cf18.txt",
+      "sha256": "e33df7c4a7facbdd88c6b292ca96f8272b07b33e669fd425aee6eacbfe9e8e2d"
+    },
+    {
+      "bytes": 1315,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/tables/table1_main.tex",
+      "sha256": "700b635c77a594bf1f8ac9520c03a5b7865be87569a3d100e26120071716271d"
+    },
+    {
+      "bytes": 1183,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/tables/table2_ablation.tex",
+      "sha256": "bf373a97b3ec74826fad449325fbc18797e0a8747e9c8e091b028db3053fa563"
+    },
+    {
+      "bytes": 913,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/tables/table3_recovery.tex",
+      "sha256": "99ca15b5ecc4bf889823904f55caeebcc0e52e0983f007f7cac27d19949fc634"
+    },
+    {
+      "bytes": 140004,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/tables/table_layout_preview.pdf",
+      "sha256": "34121f15e500332e04ab4cb0432ac3ee8dd80aa53a166792df863af4a045efb9"
+    },
+    {
+      "bytes": 708,
+      "path": "docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/tables/table_layout_preview.tex",
+      "sha256": "d81bc02dd18f01aa3d7abfa9624cb2d6e788f3af31cae88f3b420d4dd67e48ab"
+    }
+  ],
+  "logical_condition_count": 8,
+  "main_performance_outcomes_seen": false,
+  "new_development_map_count": 0,
+  "outputs": [
+    {
+      "bytes": 214745,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/projected_views/scene0056_00/receipt.json",
+      "sha256": "c452c73f1ea46a8fe29eeca3f1ac2b99f458a4c887c85d7b98c7011d6d1a6e9e"
+    },
+    {
+      "bytes": 493269,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/recovery/scene0056_00/receipt.json",
+      "sha256": "9949fa09cc7d9fd19b523718a06c486c14000a21034f9f5a8ffa6b30ae5c0853"
+    },
+    {
+      "bytes": 9490,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/native_recovery/scene0056_00/receipt.json",
+      "sha256": "edca7976a07fc9c940e36d2db2c4403071ef08d8bc46b504adcdd7e6af722452"
+    },
+    {
+      "bytes": 619589,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/predictions/scene0056_00/receipt.json",
+      "sha256": "ca33dc5325250ff80c0caf959c46d673e3273296c4e14934fa31160e9eb10178"
+    },
+    {
+      "bytes": 231455,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/evaluation/scene0056_00/receipt.json",
+      "sha256": "1036e5b1f450adbc5da7af1b1b438329cf1cf0487c43504e774f4b07c2dccaff"
+    }
+  ],
+  "prediction_lock_identity": "ccf0b2fd2cf29376abdb426abbdd9c46800ea2dbb07aa1ba786561629d568774",
+  "scene": "scene0056_00",
+  "status": "COMPLETE"
+}

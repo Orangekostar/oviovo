@@ -1,0 +1,267 @@
+{
+  "all_30_pdf_values_agree": true,
+  "author_scannet_scene_cohort_verified_equal_to_CF18": false,
+  "cohort_keys_are_table_placement_only": true,
+  "differences_from_provided_transcription": [
+    {
+      "chosen_pdf_percent": 6.8,
+      "cohort": "replica8",
+      "method": "Mask3D + OpenMask3D",
+      "metric": "ap25",
+      "provided_percent": 16.8
+    },
+    {
+      "chosen_pdf_percent": 4.5,
+      "cohort": "replica8",
+      "method": "Mask3D + OpenMask3D",
+      "metric": "ap50",
+      "provided_percent": 14.5
+    },
+    {
+      "chosen_pdf_percent": 8.6,
+      "cohort": "scannet_cf18",
+      "method": "Mask3D + OpenMask3D",
+      "metric": "miou",
+      "provided_percent": 18.6
+    },
+    {
+      "chosen_pdf_percent": 8.0,
+      "cohort": "scannet_cf18",
+      "method": "Mask3D + OpenMask3D",
+      "metric": "ap50",
+      "provided_percent": 18.0
+    },
+    {
+      "chosen_pdf_percent": 4.5,
+      "cohort": "scannet_cf18",
+      "method": "Segment3D + OpenMask3D",
+      "metric": "miou",
+      "provided_percent": 14.5
+    },
+    {
+      "chosen_pdf_percent": 5.0,
+      "cohort": "scannet_cf18",
+      "method": "Segment3D + OpenMask3D",
+      "metric": "ap25",
+      "provided_percent": 15.0
+    },
+    {
+      "chosen_pdf_percent": 3.9,
+      "cohort": "scannet_cf18",
+      "method": "Segment3D + OpenMask3D",
+      "metric": "ap50",
+      "provided_percent": 13.9
+    }
+  ],
+  "external_protocol_status": "AUTHOR_PROTOCOL_AS_REPORTED",
+  "full_scorer_protocol_independently_verified": false,
+  "identity": "7499a1092303d7e6eb59bf198283c84915d5358b87263e6c3ac0fbd089a578cb",
+  "input_supervision_notes": {
+    "OVO-SLAM": "Ordinary online setting, excluding the 30-fps variant.",
+    "offline_rows": "Mask3D/Segment3D mesh masks with OpenMask3D RGB-D labeling; pretrained components, not independently reproduced here."
+  },
+  "inputs": [
+    {
+      "bytes": 45550013,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_arxiv_v1.pdf",
+      "sha256": "abbb5e569218a0aecbe9155069f15a14e8044ef7d9474737b5a459dc7a8d3fc8"
+    },
+    {
+      "bytes": 106330,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_arxiv_v1.txt",
+      "sha256": "f4a410286b33895ee0e7d57630fb20abeaa10f10b6ef4426e354ab8fc0a80a0a"
+    },
+    {
+      "bytes": 25064122,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_cvf_final.pdf",
+      "sha256": "52622c8aae5c864ed093f802af5cec936058c13f2910f7740015f08c6280bf58"
+    },
+    {
+      "bytes": 89441,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_cvf_final.txt",
+      "sha256": "1fa9d1f4744da71ab145d89af5b7be66fec81bb302fa1dfee0646dbeb7800e9d"
+    },
+    {
+      "bytes": 816126,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_cvf_table3_page.png",
+      "sha256": "5e6a5231c72e8a7d51b3eba8ec184e7a95101a8d515707a3fdd4904b74896cc1"
+    },
+    {
+      "bytes": 1521,
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/literature_reference.json",
+      "sha256": "a418e9705f3f483fdfae9388bc153aea1e302b2555f427b8954bc882b4896a49"
+    }
+  ],
+  "producer": {
+    "bytes": 6361,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/external.py",
+    "sha256": "138b43025cdc07a9f580e99d0e726a42f294b3899d7f5c96423f625fc16538c3"
+  },
+  "provided_anomaly_note": "The supplied ScanNet Mask3D AP25<AP50 note is retained in the original. The verified PDF values are AP25=10.4 and AP50=8.0; no correction was inferred.",
+  "provided_file_overwritten": false,
+  "provided_transcription": {
+    "full_scorer_protocol_independently_verified": false,
+    "publishing_rule": "Separate reported-context block; no paired deltas/SOTA claims across provenance boundary.",
+    "rows": [
+      {
+        "method": "Mask3D + OpenMask3D",
+        "note": "ScanNet AP25<AP50 as authored; do not repair by assumption",
+        "replica8": {
+          "ap25": 16.8,
+          "ap50": 14.5,
+          "apall": 3.2,
+          "macc": 29.4,
+          "miou": 18.7
+        },
+        "scannet_cf18": {
+          "ap25": 10.4,
+          "ap50": 18.0,
+          "apall": 5.1,
+          "macc": 17.5,
+          "miou": 18.6
+        }
+      },
+      {
+        "method": "Segment3D + OpenMask3D",
+        "replica8": {
+          "ap25": 19.9,
+          "ap50": 15.2,
+          "apall": 9.0,
+          "macc": 30.9,
+          "miou": 17.3
+        },
+        "scannet_cf18": {
+          "ap25": 15.0,
+          "ap50": 13.9,
+          "apall": 2.3,
+          "macc": 13.5,
+          "miou": 14.5
+        }
+      },
+      {
+        "method": "OVO-SLAM",
+        "note": "ordinary row, not 30-fps constrained variant",
+        "replica8": {
+          "ap25": 28.1,
+          "ap50": 17.5,
+          "apall": 9.1,
+          "macc": 34.0,
+          "miou": 24.9
+        },
+        "scannet_cf18": {
+          "ap25": 19.4,
+          "ap50": 12.6,
+          "apall": 5.5,
+          "macc": 27.8,
+          "miou": 14.6
+        }
+      }
+    ],
+    "source_table": 3,
+    "source_url": "https://arxiv.org/html/2603.26541v1",
+    "source_version": "arXiv v1; numeric column labels preserved",
+    "status": "AUTHOR_REPORTED_NOT_REPRODUCED",
+    "units": "percent"
+  },
+  "published_decimal_places": 1,
+  "publishing_rule": "Separate reported-context block; no paired deltas/SOTA claims across provenance boundary.",
+  "rows": [
+    {
+      "method": "Mask3D + OpenMask3D",
+      "replica8": {
+        "ap25": 6.8,
+        "ap50": 4.5,
+        "apall": 3.2,
+        "macc": 29.4,
+        "miou": 18.7
+      },
+      "scannet_cf18": {
+        "ap25": 10.4,
+        "ap50": 8.0,
+        "apall": 5.1,
+        "macc": 17.5,
+        "miou": 8.6
+      }
+    },
+    {
+      "method": "Segment3D + OpenMask3D",
+      "replica8": {
+        "ap25": 19.9,
+        "ap50": 15.2,
+        "apall": 9.0,
+        "macc": 30.9,
+        "miou": 17.3
+      },
+      "scannet_cf18": {
+        "ap25": 5.0,
+        "ap50": 3.9,
+        "apall": 2.3,
+        "macc": 13.5,
+        "miou": 4.5
+      }
+    },
+    {
+      "method": "OVO-SLAM",
+      "replica8": {
+        "ap25": 28.1,
+        "ap50": 17.5,
+        "apall": 9.1,
+        "macc": 34.0,
+        "miou": 24.9
+      },
+      "scannet_cf18": {
+        "ap25": 19.4,
+        "ap50": 12.6,
+        "apall": 5.5,
+        "macc": 27.8,
+        "miou": 14.6
+      }
+    }
+  ],
+  "selection_reason": "Choose the visually verified author PDF representation explicitly. Both PDFs agree; the supplied HTML transcription differs. No version averaging or column swapping.",
+  "source_pdf_page": 6,
+  "source_printed_page": 12611,
+  "source_table": 3,
+  "source_url": "https://openaccess.thecvf.com/content/CVPR2026/papers/Deng_OVI-MAP_Open-Vocabulary_Instance-Semantic_Mapping_CVPR_2026_paper.pdf",
+  "source_version": "CVPR 2026 CVF final PDF; independently checked against arXiv v1 PDF",
+  "sources": {
+    "arxiv_v1": {
+      "extracted_text": {
+        "bytes": 106330,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_arxiv_v1.txt",
+        "sha256": "f4a410286b33895ee0e7d57630fb20abeaa10f10b6ef4426e354ab8fc0a80a0a"
+      },
+      "pdf": {
+        "bytes": 45550013,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_arxiv_v1.pdf",
+        "sha256": "abbb5e569218a0aecbe9155069f15a14e8044ef7d9474737b5a459dc7a8d3fc8"
+      },
+      "url": "https://arxiv.org/pdf/2603.26541v1"
+    },
+    "cvf_final": {
+      "extracted_text": {
+        "bytes": 89441,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_cvf_final.txt",
+        "sha256": "1fa9d1f4744da71ab145d89af5b7be66fec81bb302fa1dfee0646dbeb7800e9d"
+      },
+      "pdf": {
+        "bytes": 25064122,
+        "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_cvf_final.pdf",
+        "sha256": "52622c8aae5c864ed093f802af5cec936058c13f2910f7740015f08c6280bf58"
+      },
+      "url": "https://openaccess.thecvf.com/content/CVPR2026/papers/Deng_OVI-MAP_Open-Vocabulary_Instance-Semantic_Mapping_CVPR_2026_paper.pdf"
+    }
+  },
+  "status": "AUTHOR_REPORTED_NOT_REPRODUCED",
+  "supplied_file": {
+    "bytes": 1521,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/docs/paper/static_ovmap/cvpr_compact_tables_v1/CVPR_COMPACT_TABLES_CODEX_2026-10-03/literature_reference.json",
+    "sha256": "a418e9705f3f483fdfae9388bc153aea1e302b2555f427b8954bc882b4896a49"
+  },
+  "units": "percent",
+  "visual_table_page": {
+    "bytes": 816126,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_cvf_table3_page.png",
+    "sha256": "5e6a5231c72e8a7d51b3eba8ec184e7a95101a8d515707a3fdd4904b74896cc1"
+  }
+}
