@@ -1758,6 +1758,8 @@ def test_report_analysis_keeps_fixed_primary_negative_controls_and_null_deltas(t
                   hardware={"name": "synthetic GPU", "compute_capability": "8.6", "uuid": "synthetic-uuid"})
     binding = {"identity": "synthetic-binding", "output_root": str(tmp_path), "repository_root": str(tmp_path)}
     reports = render_reports(binding, store, diagnosis, timing, reference, result, "a" * 40)
+    restored = json.loads(json.dumps(result, sort_keys=True))
+    assert render_reports(binding, store, diagnosis, timing, reference, restored, "a" * 40) == reports
     assert set(reports) == {"COMPACT_TABLES_RESULTS.md", "COMPACT_TABLES_HANDOFF.md",
                            "COMPACT_TABLES_SELECTION.md", "COMPACT_TABLES_CLAIMS.md"}
     assert "-2.00" in reports["COMPACT_TABLES_RESULTS.md"]

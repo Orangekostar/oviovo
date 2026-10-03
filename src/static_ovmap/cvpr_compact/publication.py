@@ -1,6 +1,7 @@
 """Measured compact artifacts, primary evidence audit and normal branch publication."""
 
 import gzip
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -198,10 +199,19 @@ def audit_measurements(binding, *, index=None):
     if reports["primary_method"] != "CT_A3_ER" or reports["deployment"] != "N0_UNCHANGED":
         raise ValueError("publication cannot change the fixed primary method or deployment")
     from .reports import analyze_results, render_reports
+    report_revision = reports["freeze_revision"]
+    if not re.fullmatch(r"[0-9a-f]{40}", report_revision):
+        raise ValueError("reports must retain their actual full generation-freeze revision")
+    repo = Path(binding["repository_root"])
+    subprocess.run(["git", "merge-base", "--is-ancestor", report_revision, "HEAD"], cwd=repo, check=True)
+    producer = index.identity(Path(__file__).with_name("reports.py"), reports["producer"])
+    committed = subprocess.check_output(["git", "show", report_revision + ":src/static_ovmap/cvpr_compact/reports.py"], cwd=repo)
+    if hashlib.sha256(committed).hexdigest() != producer["sha256"]:
+        raise ValueError("report generator differs from its actual committed generation revision")
     analysis = _evidence(root / "reports/analysis.json", index)
     if analysis != analyze_results(spec, store, diagnosis, timing):
         raise ValueError("published analysis changed actual paired effects or unavailable comparisons")
-    for name, content in render_reports(binding, store, diagnosis, timing, reference, analysis, revision,
+    for name, content in render_reports(binding, store, diagnosis, timing, reference, analysis, report_revision,
                                          cost_data=costs, scene_diagnostics=diagnostics).items():
         path = Path(binding["repository_root"]) / "docs/paper/static_ovmap" / name
         index.identity(path)

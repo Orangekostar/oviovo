@@ -16,6 +16,8 @@ from .tables import _evidence
 
 
 CONDITIONS = ("CT_A0_NATIVE", "CT_A1_E", "CT_A2_R", "CT_A3_ER", "CT_A4_NATIVE_RECOVERY", "CT_A5_FC_ONLY")
+CONTRASTS = ("A3_vs_A0_pp", "A3_vs_A1_pp", "A3_vs_A4_pp", "A3_vs_A5_pp", "E_only_pp", "R_only_pp",
+             "E_given_R_pp", "R_given_E_pp", "interaction_pp")
 
 
 def _delta(first, second):
@@ -123,9 +125,8 @@ def render_reports(binding, store, diagnosis, timing, reference, analysis, freez
     metrics = _markdown(["Cohort", "Method", "APall (%)", "AP50 (%)", "AP25 (%)", "mIoU (%)", "mAcc (%)"],
         [[r["cohort"], r["method_id"], *[_number(r["metrics"][metric], percent=True) for metric in METRICS]]
          for r in store["pooled_metrics"]])
-    delta_rows = [[cohort, contrast, *[_number(values[metric], signed=True) for metric in METRICS]]
-        for cohort, result in analysis["cohorts"].items() for contrast, values in result.items()
-        if contrast.endswith("_pp")]
+    delta_rows = [[cohort, contrast, *[_number(result[contrast][metric], signed=True) for metric in METRICS]]
+        for cohort, result in analysis["cohorts"].items() for contrast in CONTRASTS]
     deltas = _markdown(["Cohort", "Contrast (pp)", *METRICS], delta_rows)
     coverage = _markdown(["Arm", "Source-available n/N", "Added TP50", "Added FP50", "Ambiguous TP/FP", "Seconds/scene"],
         [[arm, "--" if row["n"] is None else f'{row["n"]}/{row["N"]}',
@@ -308,6 +309,7 @@ def write_reports(binding):
         outputs.append(index.identity(path))
     result = {"status": analysis["status"], "artifact_generation_status": "COMPLETE",
         "analysis_identity": analysis["identity"], "primary_method": "CT_A3_ER",
+        "freeze_revision": freeze_revision, "producer": index.identity(__file__),
         "deployment": "N0_UNCHANGED", "implementation_status": "FROZEN", "scientific_status": store["status"],
         "main_scene_outputs": analysis["main_scene_outputs"], "internal_pools": analysis["internal_pools"],
         "cold_timing_leaves": analysis["cold_timing_leaves"],
