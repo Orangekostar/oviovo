@@ -97,9 +97,10 @@ Produces exactly24 synchronized resident-model, feature-cache-cold receipts.
 
 - [x] Implement one shared production callable, fresh cold views/cache-disabled sessions, exclusive nonreplayable reservations, exact labels/support plus declared FP32 parity, full-arm-name mapping, and all-eight-scene means; synthetic tests pass.
 - [x] Implement per-arm preflight for all24 fixed leaves, actual independent office1 U2 evidence, proved unmeasured G1/G3 blocks, and 22-call single-model/resumption regression checks; freeze amendment03 before physical measurement.
-- [ ] Isolate empty feature/view/result caches per scene/arm; forbid parent persistent feature reads, permit resident model/text and within-run frame sharing only.
-- [ ] Measure candidate creation, real view/archive work, decode, encode, pool, classify and output/rank export under one timer; record model load separately.
+- [x] Isolate empty feature/view/result caches per actual scene/arm call; forbid parent persistent feature reads, permit resident model/text and within-run frame sharing only. All22 valid calls verified; two proved office1 blocks have no reserved call.
+- [x] Measure candidate creation, real view/archive work, decode, encode, pool, classify and output/rank export under one timer; record model load separately. All22 valid observations completed on the bound A40, with one model load.
 - [ ] Verify scientific support/label and FP32 feature parity; average all8 scene costs per arm, including real no-op eligibility overhead.
+- [x] Independently verify all22 actual feature/support/label/rank parities and positive empty-U2 overhead; preserve all24 fixed positions, null blocked G1/G3 means and exact canonical resumption without replay.
 
 ## Task 6: Typed Tables And Claims
 
@@ -116,7 +117,7 @@ Files: `src/static_ovmap/cvpr_compact/tables.py`, four COMPACT_TABLES reports,
 
 ## Task 7: Acceptance And Publication
 
-- [x] Run the current-source focused production validation (63 tests after amendment02) and real scene0056_00 eight-condition end-to-end check with unchanged lock identity; no whole-repository test sweep.
+- [x] Run the current-source focused production validation (66 tests after amendment03) and real scene0056_00 eight-condition end-to-end check with unchanged lock identity; no whole-repository test sweep.
 - [ ] Execute the specified all --resume command and verify idempotent exact-input reuse.
 - [ ] Audit every package requirement against actual files, receipts and outputs; retain unresolved items and keep goal active until full completion.
 - [ ] Keep compact release below50MiB, large maps/weights on shared storage with truthful manifests.
