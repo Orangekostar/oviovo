@@ -54,13 +54,13 @@ Interfaces: `recover(inputs, arm, implementation, model_session, run_context)` a
 - [x] Load common geometry/NQF once; execute original preprocessing/pooling/head/classification/export. R3 defers already-computed vector transfer per frame and releases every live scene tensor without per-image allocator clearing.
 - [x] Add synchronized total wall timer, exclusive host stages, non-additive CUDA service events, actual counters and memory peaks. Keep every output write inside the common return boundary.
 - [x] Implement all requested phases and source-aware resumable ledger; check authoritative live process identity before retry.
-- [ ] Record one shape-only warm-up per model process and its independent GPU cost.
+- [x] Record one shape-only warm-up per model process and its independent GPU cost.
 
 ## Task 4: Execute Bounded Evidence
 
-- [ ] Run profile/pilot slots in fixed ascending/reverse order; compare every call against parent scientific evidence after the timer.
-- [ ] Select by two-scene/two-repeat mean and the 3% simplicity rule, including R0.
-- [ ] Verify all 26 candidate per-frame statistics, ordered Top-3 and mask bytes, using parent vectors only for non-timed CF18 export parity.
+- [x] Run profile/pilot slots in fixed ascending/reverse order; compare every call against parent scientific evidence after the timer.
+- [x] Select by two-scene/two-repeat mean and the 3% simplicity rule, including R0.
+- [x] Verify all 26 candidate per-frame statistics, ordered Top-3 and mask bytes, using parent vectors only for non-timed CF18 export parity.
 - [ ] Commit implementation freeze, hardware/settings, selected flags and exact final call order.
 - [ ] Run every required final Replica cold call, including contemporary U2; retain outliers and original failure costs.
 

@@ -1,0 +1,630 @@
+{
+  "all_task_sources": {
+    "configs/static_ovmap/runtime_parity_v1.json": "97732c39d2c6719cee0c296b50a02390c673a2b803fbdfa9619ee3732d408a9e",
+    "scripts/evaluation/run_ovimap_runtime_parity.py": "ef79e97d8defc7279efd542f04f4f482a1b28581638c6bab7aa2b8fc4469c11b",
+    "src/static_ovmap/runtime_parity/__init__.py": "89a7bbd318bf10f45b19c517145ebc22eb9e06f96f0634c1d73096eaa3d48415",
+    "src/static_ovmap/runtime_parity/binding.py": "26f00a294b9611b0bd6544d17a00a31de3a876608f391715d942d8c26b1775af",
+    "src/static_ovmap/runtime_parity/experiment.py": "691d35bf462ff554febad29c6326464837223b2980cd4e4498fe72658da7a012",
+    "src/static_ovmap/runtime_parity/instrumentation.py": "6b3e75636f1efdce88ad2a2d2a521de2f367fb49e360d92df477939db08abe8f",
+    "src/static_ovmap/runtime_parity/kernels.py": "9e13e75683cf18462debf8cc43b178b21e97f009122ed51a3bc0301b6a873c6d",
+    "src/static_ovmap/runtime_parity/parity.py": "662cae82f54e28ca4d84e2fb2ec0ebad3ea3e3ea6111d553186f22b15ba86223",
+    "src/static_ovmap/runtime_parity/reporting.py": "1045a7bf0776160aa3a9468674aedb915d7fb5feb0c57d94930c23609e44b9e6",
+    "src/static_ovmap/runtime_parity/runner.py": "140a32e0c2b403aa5ff0a964eae5f114b1443e289a7cdf6660580ad3e6418aab",
+    "src/static_ovmap/runtime_parity/session.py": "8803b2b4d15de42ddc42232fc210678410aa9979ec90812550cec620be0f4bd6",
+    "src/static_ovmap/runtime_parity/verification.py": "310b0473402429276006af14c3a169608bbeee45258d1a392aeaf74541eddf3d",
+    "src/static_ovmap/runtime_parity/views.py": "77d3e31a4d62f7dded1d63ef5d2e08a7aad6018543ea7263bb5e02c5b514bc0a",
+    "src/static_ovmap/runtime_parity/workflow.py": "e2b313c04056ac7ef3e97c1b885bdf922e2cae930a07bb40b6c1a484f6c8bb8b"
+  },
+  "calls": [
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "office0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "office0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office0"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office0"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "office1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "office1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office1"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office1"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "office2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "office2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office2"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office2"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "office3"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "office3"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office3"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office3"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "office4"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "office4"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office4"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "office4"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "room0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "room0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "room0"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "room0"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "room1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "room1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "room1"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "room1"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 1,
+      "scene": "room2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 1,
+      "scene": "room2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "room2"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 1,
+      "scene": "room2"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "room2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "room2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "room2"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "room2"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "room1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "room1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "room1"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "room1"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "room0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "room0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "room0"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "room0"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office4"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office4"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "office4"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "office4"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office3"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office3"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "office3"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "office3"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office2"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "office2"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "office2"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office1"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "office1"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "office1"
+    },
+    {
+      "arm": "G3",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G3_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R2_ROI_EXACT",
+      "label": "G1_SELECTED",
+      "phase": "final",
+      "round": 2,
+      "scene": "office0"
+    },
+    {
+      "arm": "G1",
+      "implementation": "R0_REFERENCE",
+      "label": "G1_REFERENCE",
+      "phase": "final",
+      "round": 2,
+      "scene": "office0"
+    },
+    {
+      "arm": "U2",
+      "implementation": "R0_REFERENCE",
+      "label": "U2_CONTROL",
+      "phase": "final",
+      "round": 2,
+      "scene": "office0"
+    }
+  ],
+  "hardware": {
+    "CPU": "Intel(R) Xeon(R) Silver 4314 CPU @ 2.40GHz",
+    "CUDA": "12.1",
+    "GPU": {
+      "compute_capability": "8.6",
+      "driver_version": "595.71.05",
+      "name": "NVIDIA A40",
+      "uuid": "GPU-41ba4cb6-edfe-ed30-c047-a19d9f23d0a8"
+    },
+    "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": false,
+    "deterministic_algorithms": false,
+    "encoder_batch_size": 1,
+    "numpy": "2.4.6",
+    "open3d": "0.19.0",
+    "open_clip": "3.3.0",
+    "operator_settings_changed": false,
+    "precision": "original_FP32",
+    "projector_threads": 4,
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "timm": "1.0.19",
+    "torch": "2.4.0",
+    "torch_cudnn_tf32": true,
+    "torch_matmul_tf32": false,
+    "torch_threads": 1
+  },
+  "identity": "1bb3c1c60a917a349dfb0804332d32feb1baa7acc4dde6446f3f20c0badf2f29",
+  "implementation_sources": {
+    "binding.py": "26f00a294b9611b0bd6544d17a00a31de3a876608f391715d942d8c26b1775af",
+    "instrumentation.py": "6b3e75636f1efdce88ad2a2d2a521de2f367fb49e360d92df477939db08abe8f",
+    "kernels.py": "9e13e75683cf18462debf8cc43b178b21e97f009122ed51a3bc0301b6a873c6d",
+    "parity.py": "662cae82f54e28ca4d84e2fb2ec0ebad3ea3e3ea6111d553186f22b15ba86223",
+    "runner.py": "140a32e0c2b403aa5ff0a964eae5f114b1443e289a7cdf6660580ad3e6418aab",
+    "session.py": "8803b2b4d15de42ddc42232fc210678410aa9979ec90812550cec620be0f4bd6",
+    "views.py": "77d3e31a4d62f7dded1d63ef5d2e08a7aad6018543ea7263bb5e02c5b514bc0a",
+    "workflow.py": "e2b313c04056ac7ef3e97c1b885bdf922e2cae930a07bb40b6c1a484f6c8bb8b"
+  },
+  "parent_metric_identity": "31350fff4cd8b31ee9e9f776a2348d56c643063290fc47b59449e2295620ca72",
+  "parity_identity": "508e960b9c7f857a34e9b44d530fd295a23a61e7791a7fc7e0bc26d6d7937acd",
+  "pre_freeze_head": "54f3c51cb430da0d4c75d0ff847bd48016727c47",
+  "reference_binding_identity": "aab44cdbe2fa6fb5aefcdf0296baa1daceb50491e122983de63069412c507f29",
+  "reference_commit": "7fad2c70eb5754417b1bc9a2e61f8d6782f19c35",
+  "selected": "R2_ROI_EXACT",
+  "selection_identity": "766ae66eff67ef199241a2a79135eb5d1e8fe5a59c8a068a978a45ecdfdce2d7",
+  "status": "FROZEN_BEFORE_FINAL",
+  "timer_definition": {
+    "arms_if_candidate": [
+      "U2_CONTROL",
+      "G1_REFERENCE",
+      "G1_SELECTED",
+      "G3_SELECTED"
+    ],
+    "arms_if_reference_retained": [
+      "U2_CONTROL",
+      "G1_REFERENCE",
+      "G3_REFERENCE"
+    ],
+    "cache_state": "model/common_anchor/incumbent_NQF_resident; no_recovery_features_views_BVH_or_results_from_previous_calls",
+    "calls_if_candidate": 64,
+    "calls_if_reference_retained": 48,
+    "cohort": "replica8",
+    "concurrent_timing_jobs": 1,
+    "exclude_common": [
+      "model_and_text_loading",
+      "common_anchor_and_existing_NQF_loading",
+      "mapping",
+      "benchmark_evaluation",
+      "post_call_parity_checks",
+      "preflight_and_publication"
+    ],
+    "include": [
+      "new_recovery_registry",
+      "BVH_and_ROI_preparation",
+      "visibility_and_topk",
+      "input_IO_preprocessing",
+      "FC_encoding_region_readout_classification",
+      "ranking_output_files",
+      "in_call_bookkeeping"
+    ],
+    "kernel_warmup": "one identical shape-only warmup per shared model process outside timer; zero scene data",
+    "ordering": "round1 listed scenes/listed arms; round2 reversed scenes/reversed arms",
+    "os_page_cache": "uncontrolled_disclosed; never drop_caches",
+    "precision": "unchanged_FP32_and_parent_TF32_determinism_settings",
+    "projector_threads": 4,
+    "repeats": 2,
+    "same_gpu": true,
+    "selection_frozen_before_final": true,
+    "speedup": "sum_G1_REFERENCE_seconds / sum_G1_SELECTED_seconds",
+    "summary": "per_scene_mean_of_two; cohort_mean_of_eight_scene_means",
+    "total": "CUDA_synchronized_perf_counter_walltime",
+    "within_call_reuse": true
+  }
+}

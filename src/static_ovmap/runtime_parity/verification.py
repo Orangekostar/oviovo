@@ -16,6 +16,7 @@ from static_ovmap.module_validation.contracts import atomic_write_json, canonica
 from static_ovmap.recovery_wave2.binding import ConsumptionIndex, read
 
 from .instrumentation import Stages
+from .binding import file_identity
 from .parity import VerificationContext, compare_prediction, compare_source_objects, compare_views
 from .runner import execution_config, load_common, write_exports
 from .views import build_views
@@ -67,7 +68,7 @@ def verify_scene(arguments):
     root = task_root/"verification"/variant/scene
     path = root/"receipt.json"
     identity = canonical_digest({"reference":reference["identity"],"scene":scene,"variant":variant,
-        "implementation":code_inventory()})
+        "implementation":code_inventory(),"verification_producer":file_identity(__file__)["sha256"]})
     if path.is_file():
         old = read(path)
         if old["input_identity"] != identity:
@@ -75,6 +76,9 @@ def verify_scene(arguments):
         if old["status"]=="PASS":
             _verified_identity(old)
             compare_views(VerificationContext(reference),scene,root/"views")
+            lock = read(Path(reference["v2_results_root"])/"predictions"/scene/"receipt.json")
+            for method in old["exports"]:
+                compare_prediction(lock["predictions"][method],root/"predictions"/method/"manifest.json")
             return old
         live = process_state(old["pid"])
         if live and live["live"] and live["start_ticks"]==old["start_ticks"]:

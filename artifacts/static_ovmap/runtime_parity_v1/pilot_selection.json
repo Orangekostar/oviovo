@@ -1,0 +1,32 @@
+{
+  "accuracy_used_for_selection": false,
+  "identity": "766ae66eff67ef199241a2a79135eb5d1e8fe5a59c8a068a978a45ecdfdce2d7",
+  "means": {
+    "R0_REFERENCE": 41.92893891496351,
+    "R1_IO_EXACT": 41.504037335456815,
+    "R2_ROI_EXACT": 14.692523436504416,
+    "R3_RUNTIME_EXACT": 15.071902239520568
+  },
+  "rejected": {},
+  "rule": "equal scene means of two repeats; lower index within 3% of fastest",
+  "scene_means": {
+    "R0_REFERENCE": {
+      "office1": 34.46583299792837,
+      "room0": 49.392044831998646
+    },
+    "R1_IO_EXACT": {
+      "office1": 36.625325691886246,
+      "room0": 46.38274897902738
+    },
+    "R2_ROI_EXACT": {
+      "office1": 7.84918837249279,
+      "room0": 21.535858500516042
+    },
+    "R3_RUNTIME_EXACT": {
+      "office1": 7.91192163748201,
+      "room0": 22.231882841559127
+    }
+  },
+  "selected": "R2_ROI_EXACT",
+  "status": "PILOT_SELECTED"
+}
