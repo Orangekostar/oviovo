@@ -1,0 +1,19 @@
+\documentclass[10pt]{article}
+\usepackage[letterpaper,margin=0.7in]{geometry}
+\usepackage{booktabs}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{caption}
+\usepackage{float}
+\renewenvironment{table*}[1][]{\begin{table}[H]}{\end{table}}
+\captionsetup{font=small,labelfont=bf}
+\pagestyle{empty}
+\renewcommand{\thetable}{S\arabic{table}}
+\setcounter{table}{6}
+\begin{document}
+\begin{center}\Large\bfseries Runtime and readout evidence: layout preview\end{center}
+\noindent These are templates, not measured results. The main paper keeps three tables;
+these two compact blocks are intended for the supplement. Accuracy is reused only
+with verified prediction parity. Runtime is measured in the new execution task.
+\input{../TABLE_TEMPLATES.tex}
+\end{document}

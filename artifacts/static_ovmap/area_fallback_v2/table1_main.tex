@@ -1,0 +1,25 @@
+% Generated from typed receipt-backed tables_main.json.
+\begin{table*}[!ht]
+\centering
+\caption{V2 diagnostic: empty projected FC masks use area-weighted fallback. Complete-system results. The upper block is attributed context from OVI-MAP Table 3, not rerun here; exact external prediction protocols are not independently verified. The lower block is our paired reproduction. AP denotes the loaded released APall definition. Undefined metrics are --; reasons are recorded in cell provenance. External rows use the CVF final PDF, Table 3, checked against the arXiv v1 PDF; the supplied HTML transcription differences are retained in the source audit. The authors' ScanNet sequence membership is not verified as CF18.}
+\label{tab:main}
+\fontsize{9}{10.5}\selectfont
+\setlength{\tabcolsep}{5pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{Replica-8} & \multicolumn{3}{c}{ScanNet-CF18} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Method & AP$\uparrow$ & AP50$\uparrow$ & mIoU$\uparrow$ & AP$\uparrow$ & AP50$\uparrow$ & mIoU$\uparrow$ \\
+\midrule
+\multicolumn{7}{l}{\emph{Reported in OVI-MAP (source values; not our measurements)}}\\
+Mask3D + OpenMask3D & 3.2 & 4.5 & 18.7 & 5.1 & 8.0 & 8.6 \\
+Segment3D + OpenMask3D & 9.0 & 15.2 & 17.3 & 2.3 & 3.9 & 4.5 \\
+OVO-SLAM & 9.1 & 17.5 & 24.9 & 5.5 & 12.6 & 14.6 \\
+\midrule
+\multicolumn{7}{l}{\emph{Paired evaluation under our fixed released-code protocol}}\\
+OVI-MAP (reproduced, A0) & 8.63 & 21.48 & 27.24 & 7.18 & 15.72 & 16.38 \\
+Ours: refinement only (A1) & 11.74 & 24.50 & 29.69 & 8.31 & 17.96 & 19.00 \\
+Ours: refinement + recovery (A3) & 12.39 & 26.06 & 30.27 & 8.23 & 17.83 & 19.02 \\
+\bottomrule
+\end{tabular*}
+\end{table*}

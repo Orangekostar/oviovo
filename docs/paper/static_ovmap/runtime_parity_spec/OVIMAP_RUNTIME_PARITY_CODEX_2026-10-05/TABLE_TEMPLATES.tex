@@ -1,0 +1,46 @@
+% Templates only. Fill from machine results; this file contains no measurements.
+% Requires booktabs. Table numbers are manuscript-relative, not forced to 7 or 8.
+\providecommand{\NA}{\textemdash}
+
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+& & \multicolumn{3}{c}{Replica-8} & \multicolumn{3}{c}{ScanNet-CF18}\\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Incumbent readout & Recovery & AP & AP50 & mIoU & AP & AP50 & mIoU\\
+\midrule
+Native (A2) & Shared G1 & \NA&\NA&\NA&\NA&\NA&\NA\\
+FC-only (A5) & Shared G1 & \NA&\NA&\NA&\NA&\NA&\NA\\
+Grouped (A3) & Shared G1 & \NA&\NA&\NA&\NA&\NA&\NA\\
+\bottomrule
+\end{tabular}
+\caption{Readout comparison with identical recovered instances. These rows reuse
+same-version Table~2 outputs. They are not a backbone-only ablation.}
+\label{tab:si_readout}
+\end{table*}
+
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lrrr}
+\toprule
+Incremental recovery stage (wall s/scene) & U2 control & G1 reference & G1 selected\\
+\midrule
+Registry and geometry preparation & \NA&\NA&\NA\\
+View construction (depth I/O, ray queries, selection) & \NA&\NA&\NA\\
+RGB and preprocessing & \NA&\NA&\NA\\
+Recognition (encoding, pooling, classification) & \NA&\NA&\NA\\
+Output and bookkeeping & \NA&\NA&\NA\\
+Other / final synchronization & \NA&\NA&\NA\\
+\midrule
+Complete incremental wall time & \NA&\NA&\NA\\
+\bottomrule
+\end{tabular}
+\caption{Same-device recovery latency over eight scenes and two repetitions.
+The model and common map/evidence are resident; recovery features, views, BVH and
+results are not reused across calls. GPU service diagnostics are reported separately
+and must not be added to wall time. No whole-mapper FPS is inferred.}
+\label{tab:si_runtime}
+\end{table*}

@@ -1,0 +1,54 @@
+{
+  "arms": [
+    "G1_FC",
+    "G3_FC"
+  ],
+  "binding_identity": "08eeeb0bfc0f77041cb2704d449fbd782243813ee3c0bd2280c43b43400f40f6",
+  "discrete_output_parity": "EXACT",
+  "exclude": [
+    "model_loading",
+    "geometry_mapping",
+    "benchmark_evaluation",
+    "dataset_download"
+  ],
+  "feature_tolerance": {
+    "atol": 1e-05,
+    "dtype": "float32",
+    "rtol": 1e-05
+  },
+  "identity": "6f7722ec823be2858e24c29558e4c221e9386f26c29b7e4121d74446368529cb",
+  "include": [
+    "candidate_registry",
+    "view_projection_or_archive_lookup",
+    "decode_preprocess",
+    "image_encoding",
+    "region_pool_projection",
+    "classification",
+    "output_and_rank_export"
+  ],
+  "planned_calls": 16,
+  "pooling_producer": {
+    "bytes": 2116,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/area_fallback.py",
+    "sha256": "329972e56d47875b27d5a09ad10bc134d50257fceb9176985a2a154d4788554f"
+  },
+  "producer": {
+    "bytes": 18557,
+    "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/src/static_ovmap/cvpr_compact/area_fallback_timing.py",
+    "sha256": "9f1d2e0c4b6b31b31ac4308bea9578353459f8ffbdb06725626787163acceee7"
+  },
+  "protocol": "PROJECTED_FC_EMPTY_AREA_FALLBACK_V2",
+  "repeats_per_scene_arm": 1,
+  "scene_order": [
+    "office0",
+    "office1",
+    "office2",
+    "office3",
+    "office4",
+    "room0",
+    "room1",
+    "room2"
+  ],
+  "scientific_experiment_identity": "639edf0708a14d7b3100826effacbf34a8369457b08313c220ff6a57fb0d7bdd",
+  "status": "PREFLIGHT_COMPLETE"
+}

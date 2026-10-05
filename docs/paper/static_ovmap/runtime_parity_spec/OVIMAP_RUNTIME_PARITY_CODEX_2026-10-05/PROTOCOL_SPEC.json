@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "task_id": "ovimap-runtime-parity-v1",
+  "date": "2026-10-05",
+  "repository": "Orangekostar/oviovo",
+  "inspected_commit": "77335848b776d99ffb4ca772e33fa391d9fd8e5e",
+  "branch": "research/ovimap-runtime-parity-v1",
+  "source_worktree_hint": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree",
+  "source_task_root": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1",
+  "output_root": "/mnt/shared/ww/ovimap-runtime-parity-v1/attempt_001",
+  "new_worktree": "/mnt/shared/ww/ovimap-runtime-parity-v1/worktree",
+  "source_policy": {
+    "require_actual_measured_v2": true,
+    "remote_contains_v2_at_authoring": false,
+    "v2_reference_commit": "BIND_FROM_ACTUAL_SOURCE_NOT_ASSUMED",
+    "v2_report_hint": "docs/paper/static_ovmap/AREA_FALLBACK_V2_RESULTS.md",
+    "v2_artifacts_hint": "artifacts/static_ovmap/area_fallback_v2",
+    "preserve_source_worktree": true,
+    "allow_reimplementing_missing_fallback": false,
+    "reference_resolution": "explicit_paths_then_same_root_receipt_lineage; never_choose_by_best_result_or_mtime"
+  },
+  "cohorts": {
+    "replica8": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet_cf18": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0168_00",
+      "scene0168_01",
+      "scene0168_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "pilot_scenes": [
+    "room0",
+    "office1"
+  ],
+  "science": {
+    "maps_fixed": true,
+    "new_maps": 0,
+    "new_fits": 0,
+    "new_backbones": 0,
+    "new_benchmarks": 0,
+    "new_native_crop_inference": 0,
+    "new_segmentation_inference": 0,
+    "new_text_encoding": 0,
+    "semantic_primary": "CT_A3_ER",
+    "unchanged_deployment": "N0_UNCHANGED",
+    "readout_reuse": [
+      "CT_A2_R",
+      "CT_A5_FC_ONLY",
+      "CT_A3_ER"
+    ],
+    "parent_scene_outputs": 172,
+    "parent_pools": 14,
+    "thresholds_and_fallback": "inherit_actual_measured_v2_exactly",
+    "geometry_source": "complete_predicted_mesh; no_GT_in_prediction",
+    "ranking": "released_current_class_area",
+    "ap_thresholds": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "g1_views": 1,
+    "g3_views": 3,
+    "g1_is_g3_prefix": true
+  },
+  "variants": [
+    {
+      "id": "R0_REFERENCE",
+      "description": "Actual measured v2 semantics and reference execution"
+    },
+    {
+      "id": "R1_IO_EXACT",
+      "description": "Call-local input reuse; camera constants; grouped counts; lazy top-k; preserve original neural arithmetic"
+    },
+    {
+      "id": "R2_ROI_EXACT",
+      "description": "R1 plus conservative candidate ROI ray culling; complete occlusion scene"
+    },
+    {
+      "id": "R3_RUNTIME_EXACT",
+      "description": "R2 plus allocator and transfers; no image/region arithmetic batching or precision changes"
+    }
+  ],
+  "pilot": {
+    "arm": "G1",
+    "repeats": 2,
+    "variants_max": 4,
+    "calls_max": 16,
+    "profile_calls_are_pilot_calls": true,
+    "choose_by": "lowest equal-scene mean wall time among all-parity-passing implementations, including R0",
+    "tie_relative_band": 0.03,
+    "tie_break": "lower variant index",
+    "no_accuracy_or_scene_selection": true
+  },
+  "verification": {
+    "all26_candidate_view_counts": true,
+    "all26_selected_view_masks_exact": true,
+    "cf18_cached_export_parity_only": true,
+    "replica_fc_live_parity": true,
+    "cpu_projection_passes_max_excluding_pilot_and_timing": 52,
+    "full_reference_raycast_passes_only_if_missing_diagnostics": true,
+    "float_feature_atol": 1e-05,
+    "float_feature_rtol": 1e-05,
+    "labels_masks_ranks_availability_exact": true,
+    "opaque_ids_may_change": true,
+    "compare_by_scientific_content_key": true
+  },
+  "timing": {
+    "cohort": "replica8",
+    "repeats": 2,
+    "arms_if_candidate": [
+      "U2_CONTROL",
+      "G1_REFERENCE",
+      "G1_SELECTED",
+      "G3_SELECTED"
+    ],
+    "arms_if_reference_retained": [
+      "U2_CONTROL",
+      "G1_REFERENCE",
+      "G3_REFERENCE"
+    ],
+    "calls_if_candidate": 64,
+    "calls_if_reference_retained": 48,
+    "ordering": "round1 listed scenes/listed arms; round2 reversed scenes/reversed arms",
+    "same_gpu": true,
+    "concurrent_timing_jobs": 1,
+    "projector_threads": 4,
+    "precision": "unchanged_FP32_and_parent_TF32_determinism_settings",
+    "cache_state": "model/common_anchor/incumbent_NQF_resident; no_recovery_features_views_BVH_or_results_from_previous_calls",
+    "within_call_reuse": true,
+    "os_page_cache": "uncontrolled_disclosed; never drop_caches",
+    "include": [
+      "new_recovery_registry",
+      "BVH_and_ROI_preparation",
+      "visibility_and_topk",
+      "input_IO_preprocessing",
+      "FC_encoding_region_readout_classification",
+      "ranking_output_files",
+      "in_call_bookkeeping"
+    ],
+    "exclude_common": [
+      "model_and_text_loading",
+      "common_anchor_and_existing_NQF_loading",
+      "mapping",
+      "benchmark_evaluation",
+      "post_call_parity_checks",
+      "preflight_and_publication"
+    ],
+    "total": "CUDA_synchronized_perf_counter_walltime",
+    "summary": "per_scene_mean_of_two; cohort_mean_of_eight_scene_means",
+    "speedup": "sum_G1_REFERENCE_seconds / sum_G1_SELECTED_seconds",
+    "selection_frozen_before_final": true,
+    "kernel_warmup": "one identical shape-only warmup per shared model process outside timer; zero scene data"
+  },
+  "limits": {
+    "max_cold_recovery_calls_normal": 80,
+    "max_extra_environment_failure_attempts_total": 4,
+    "max_automatic_retries_per_leaf": 1,
+    "normal_calls_exclude_failed_attempts": true,
+    "max_full_scene_pilot_calls": 16,
+    "max_new_map_scene_runs": 0,
+    "no_full_repo_tests": true,
+    "target_artifact_mib": 25,
+    "gpu_encoder_batch_size": 1,
+    "new_regional_or_image_model_batching": false
+  },
+  "reporting": {
+    "main_tables_remain": 3,
+    "supplementary_readout_table": "reuse A2/A5/A3; not a pure backbone ablation",
+    "supplementary_runtime_table": "same-scope stage walltime plus separate nonadditive GPU diagnostics",
+    "retained_runtime_rule": "all parity passes and final G1 mean time reduction >=5%; otherwise no demonstrated material speedup",
+    "faster_threshold_fraction": 0.05,
+    "timing_repetitions_not_new_scientific_methods": true,
+    "historical_times_not_formal_denominator": true,
+    "new_scientific_accuracy_claim": false,
+    "parameter_counts": "optional from actual unique loaded modules only; N/Q shared weights counted once"
+  }
+}

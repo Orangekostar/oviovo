@@ -1,0 +1,215 @@
+{
+  "status": "PASS",
+  "scope": "Execution specification consistency, reference examples and preview layout; not real v2 source, Open3D, CUDA, scene metrics or runtime validation.",
+  "check_count": 38,
+  "checks": [
+    {
+      "check": "required_files",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "actual_v2_required",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "missing_v2_not_reimplemented",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "remote_v2_not_claimed",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "same_inspected_commit",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "replica8_unique",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "cf18_unique",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "cf18_seven_families",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "pilots_are_predeclared_members",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "four_execution_variants",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "pilot_call_budget",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "candidate_final_call_budget",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "reference_final_call_budget",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "normal_total_budget",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "zero_maps_fits_models",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "no_new_neural_batching",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "parent_scientific_grid",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "three_main_tables",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "shared_readout_rows",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "g1_g3_prefix",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "prediction_parity_required",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "cf18_not_falsely_live_timed",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "new_publication_branch",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "immutable_reference_controls",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "cold_controls_remeasured",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "no_guaranteed_speedup",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "new_request_ids_not_forged",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "sparse_diagnostic_scope",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "full_scene_occlusion",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "near_plane_fallback",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "parent_model_not_320_resize",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "no_old_result_timing_reads",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "latency_never_minimum",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "precise_scope_of_template",
+      "passed": true,
+      "scope": "SPECIFICATION"
+    },
+    {
+      "check": "code_ast_parse",
+      "passed": true,
+      "scope": "REFERENCE_CODE_SYNTAX"
+    },
+    {
+      "check": "reference_examples_pass",
+      "passed": true,
+      "scope": "REFERENCE_ONLY_NOT_PRODUCTION"
+    },
+    {
+      "check": "table_preview_one_page",
+      "passed": true,
+      "scope": "PDF_LAYOUT"
+    },
+    {
+      "check": "table_preview_is_labeled_placeholder",
+      "passed": true,
+      "scope": "PDF_LAYOUT"
+    }
+  ],
+  "reference_test_count": 10,
+  "production_models_run": 0,
+  "server_experiments_run": 0,
+  "github_writes": 0,
+  "actual_v2_source_reviewed": false,
+  "visual_review": "Preview rendered with pdftoppm and visually inspected; title order corrected; no clipping seen.",
+  "manual_review_corrections": [
+    "Bind real v2 rather than silently use incomplete remote v1.",
+    "Compare scientific request content, not producer-bound opaque IDs.",
+    "Sparse full-scene query diagnostics scoped; no fabricated global totals.",
+    "Readout controls reused, not mislabeled as backbone-only ablation.",
+    "New source-aware timing ledger allows explicit repeats without mutating old reserved calls.",
+    "No neural arithmetic batching or lower-precision speed shortcuts.",
+    "Same new timing boundary and contemporary U2 control; historical times are context.",
+    "CF18 cache/export verification is not claimed as new live GPU timing.",
+    "Ground-truth labels excluded from prediction; inherited evaluation projection remains an export adapter.",
+    "Normal timing count 16+64=80, or reference-retained reduced scope; no whole-map rerun."
+  ]
+}

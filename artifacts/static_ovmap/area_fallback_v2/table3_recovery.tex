@@ -1,0 +1,18 @@
+% Generated from typed receipt-backed tables_main.json.
+\begin{table*}[!ht]
+\centering
+\caption{G1/G3 latency is remeasured on all eight scenes with the resident model and no feature/view/result cache; U2 is the unchanged control. V2 diagnostic: empty projected FC masks use area-weighted fallback. Recovery on Replica-8. $n/N$ is recovered owners over the same prelocked candidate pool, not true positives. TP/FP are added released-matcher score entries at IoU .50. Time is feature-cache-cold incremental recovery with the model resident, averaged over all eight scenes; model loading, mapping and evaluation are separate. Undefined metrics are --; reasons are recorded in cell provenance. $\dagger$ marks additional mixed old/new tied score entries with unresolved attribution; displayed TP/FP counts contain only definite added entries.}
+\label{tab:recovery}
+\fontsize{9}{10.5}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccrrrrr@{}}
+\toprule
+Entry & Max views & $n/N$ & TP50 & FP50 & AP & mIoU & Time (s) \\
+\midrule
+None (A1) & 0 & $0/53$ & 0 & 0 & 11.74 & 29.69 & 0 \\
+Archived U2 & 1 & $9/53$ & 3 & 2 & 12.39 & 30.17 & 6.61 \\
+Independent G1 (A3) & 1 & $42/53$ & 3 & 3 & 12.39 & 30.27 & 45.58 \\
+Independent G3 & 3 & $42/53$ & 3 & 4 & 12.10 & 30.18 & 45.63 \\
+\bottomrule
+\end{tabular*}
+\end{table*}
