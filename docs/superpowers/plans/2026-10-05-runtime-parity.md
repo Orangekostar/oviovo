@@ -74,7 +74,7 @@ Files: `runtime_parity/reporting.py`, four required `RUNTIME_PARITY_*.md` report
 - [x] Publish per-scene/repeat CSVs, stage/service times, counters, memory and source/parity maps; render and visually inspect PDFs.
 - [x] Audit every numbered requirement, contract and named deliverable against actual artifacts; report distinct source, implementation, parity, timing, metric-reuse, speed and publication statuses.
 - [x] Verify original source HEAD/index unchanged and compact artifact size below 25 MiB.
-- [ ] Commit deliverables, run ordinary push, compare local full SHA to remote branch, then write external `publication/final.json`.
+- [x] Commit deliverables, run ordinary push, compare local full SHA to remote branch, then write external `publication/final.json`.
 
 ## Acceptance Evidence
 
