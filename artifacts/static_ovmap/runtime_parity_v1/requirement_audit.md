@@ -1,51 +1,51 @@
 # Requirement Review
 
-This checklist follows CODEX_FINAL_EXECUTION_EN.md, IMPLEMENTATION_CONTRACTS.md and TIMING_AND_TABLES.md. A pending row is not completion evidence. The primary agent reviews actual source, files, commands, measurement receipts and rendered PDFs before publication.
+This checklist follows CODEX_FINAL_EXECUTION_EN.md, IMPLEMENTATION_CONTRACTS.md and TIMING_AND_TABLES.md. The primary agent reviewed actual source, files, commands, measurement receipts and all three rendered PDFs. Publication is a separate final gate: its exact HEAD receipt is external to the commit being verified.
 
 | Requirement | Current evidence | Status |
 | --- | --- | --- |
-| Mandate: actual execution, original CT_A3_ER science, deployment N0_UNCHANGED | Original operators remain separate; live pilot ledger; final series still required | IN_PROGRESS |
+| Mandate: actual execution, original CT_A3_ER science, deployment N0_UNCHANGED | Actual 16 pilot + 64 final calls all pass; 26 CPU parity checks pass; original science/deployment preserved | PASS |
 | Source resolution from actual measured v2, not rounded report numbers | reference_binding.json seals exact producers, v2 experiment, sixteen historical receipts, full 26 contexts and model/text identities | PASS |
 | Separate worktree/branch and immutable measured-source snapshot | Dedicated source commit 7fad2c70; source_snapshot.json preserves original HEAD, index and copied producer hashes | PASS |
-| Preserve source/index, old reservations/results and external jobs | Read-only source consumers; original index hash retained; final state check pending | PENDING_FINAL_CHECK |
+| Preserve source/index, old reservations/results and external jobs | Read-only consumers; source HEAD and original index SHA preserved; publication_audit rechecks them; no old result writes or job termination | PASS |
 | Resolve literal fallback and genuine U2 semantics | Pinned area_fallback.region_vector: empty hard-support only; area occupancy and original frozen head; archived U2 keeps original signed pooling | PASS |
 | Narrow source findings tied to changes | source_to_task.md maps actual functions, differences, invariants and evidence | PASS |
-| Required CLI/config and phases | run_ovimap_runtime_parity.py --help exposes bind/profile/screen/verify/freeze/benchmark/tables/publish/all, resume and optional arguments; real phase execution ongoing | IN_PROGRESS |
+| Required CLI/config and phases | CLI/config implement every phase and optional argument; actual binding, shared profile/screen pilot, verify, freeze, benchmark and tables executed; publish is the final external gate | PASS_IMPLEMENTATION_AND_EXECUTION |
 | New adapter/ledger, no old freeze monkeypatch or old measurement replay | runner.py ColdContext; workflow.py fresh phase/round/scene/variant identities, live PID/start-tick checks | PASS |
-| R0 actual reference, R1/R2/R3 cumulative flags | Original FullSceneProjector and original preprocessing/pooling/head/classification/export; explicit four variants | PASS_IMPLEMENTATION |
+| R0 actual reference, R1/R2/R3 cumulative flags | Original FullSceneProjector and pinned numerical operators; every variant ran four real pilot calls with exact discrete parity | PASS |
 | C1/C6: cold/verification separation and no parent recovery feature handles | ColdContext rejects reference vectors; VerificationContext alone accesses them; U2 inherited Native observation policy disclosed | PASS |
-| C2: honest producer IDs and scientific request-key bijections | views.scientific_key includes geometry, camera, RGB/depth, full mask, both bbox conventions, area/rank, model and ordered vocabulary | PASS_IMPLEMENTATION |
+| C2: honest producer IDs and scientific request-key bijections | All 26 projection receipts and every live projected call compare explicit ordered bijections, complete masks and both bbox conventions; actual producer IDs remain distinct | PASS |
 | C3: complete occlusion mesh, integer FP32 rays, four threads and 65536 cap | Production fixture tests cover exact ray bytes, noncandidate/mixed-owner occluders, image edges and depth boundaries | PASS_TESTS |
 | C3: conservative ROI, true inverse rotation, outward guard and uncertainty fallback | PreparedCamera.query_union; at least two-pixel guards and full-frame uncertainty/near-plane/camera-inside fallback | PASS_TESTS |
 | C4: grouped compact-owner stats and lazy exact Top-3/ties | Large sparse owner IDs and equal-leading-term hash tie tests | PASS_TESTS |
 | C5: within-call image reuse, unchanged full-image preprocessing | Regression catches legacy inclusive bbox; real room0 repeated-request read check verifies identical RGB/mask/bbox with one decode | PASS_TESTS |
-| C5: original FP32 arithmetic and no precision/batching/kernel tuning | Session invokes pinned original operators, batch one; tensor hash round trip retained; hardware flags recorded | PASS_IMPLEMENTATION |
-| C5: deferred computed-vector copies and no live scene tensor retention | R3 per-frame stack/transfer; finally releases dense/image/vector values; no per-image empty_cache | PASS_IMPLEMENTATION |
+| C5: original FP32 arithmetic and no precision/batching/kernel tuning | Eighty real cold calls use pinned operators, batch one, original tensor hash and frozen hardware flags; normal error 0, max fallback feature error 1.1920929e-7 | PASS |
+| C5: deferred computed-vector copies and no live scene tensor retention | R3 per-frame stack/transfer and tensor release reviewed; four real R3 pilot calls pass; final nominee is R2 | PASS |
 | Pilot: fixed two scenes, two repeats, four variants, at most sixteen calls | pilot/summary.json: 16/16 COMPLETE, every parity PASS | PASS |
-| Pilot: profiling inside R0 slots, exclusive host spans, no extra profiler calls | Same Stages instrumentation on every variant; first R0 calls are profile evidence | PASS_IMPLEMENTATION |
+| Pilot: profiling inside R0 slots, exclusive host spans, no extra profiler calls | Four measured R0 pilot slots include profile evidence; total pilot count 16, same exclusive spans on all variants | PASS |
 | Selection: equal scene means, two repeats, lower index within 3%, no accuracy selection | pilot_selection.json: R0 41.92894, R1 41.50404, R2 14.69252, R3 15.07190 seconds; selected R2_ROI_EXACT | PASS |
 | Verification: full 26 per-frame areas/bboxes/admissibility, ordered Top-3 and mask bytes | verification/summary.json: ALL_26_PASS, identity 508e960b9c7f857a34e9b44d530fd295a23a61e7791a7fc7e0bc26d6d7937acd; every scene receipt verifies all candidate statistics and selected mask bytes | PASS |
 | Verification: CF18 cached A2/A3/A5 exports, exact full owners/semantics/ranks, zero GPU | All 18 CF18 receipts regenerate A2/A3/A5 from parent vectors and original text; full prediction keys, owners, semantics and rank strings are exact; new CF18 image encodings 0 | PASS |
 | Verification: CPU passes at most 52; reference pass only for missing diagnostics | All original frame diagnostics exist; one selected pass per scene, 26 total, zero reference passes | PASS |
-| Freeze: commit candidate, binding, hardware, sources, order and timer before final | freeze_implementation; final worker requires exact committed JSON and source/hardware match | PENDING |
-| Final: exactly 64 candidate or 48 retained-reference calls, two reversed rounds | call_plan production test and frozen-plan gate; final series pending | PENDING |
-| Timing: model/common inputs resident, recovery views/BVH/RGB/features rebuilt per call | load_common outside timer; build_views and encoding/export inside recover; cache hits explicitly zero | PASS_IMPLEMENTATION |
-| Timing: one shape-only warm-up per model process and separate actual GPU costs | warmup receipts record zero scene pixels, one image/one pooling; final process pending | IN_PROGRESS |
-| Timing: synchronized total, six exclusive host stages, non-additive CUDA events | Instrumentation test passes; each actual record includes times and allocated/reserved peaks | PASS_IMPLEMENTATION |
-| Timing: every valid observation retained; no minimum, outlier removal or slow/parity retry | Complete two-repeat aggregation test rejects missing cells; ledger preserves reservations and failure costs | PASS_IMPLEMENTATION |
-| Cost: actual rays, views, packing, RGB, encoder/pooling/fallback, transfers, cache and bytes | Per-call counters and separate warm-up receipts; complete totals pending | IN_PROGRESS |
-| Parity: exact discrete outcomes/labels/source order and FP32 atol=rtol=1e-5 | Per-call supervisor; near-tie argmax flip test; first live R0-R3 room0 calls pass | IN_PROGRESS |
-| Accuracy: import 172 rows/14 pools once, original identities retained | imported_metrics.json and binding-input verifications | PASS_IMPORT; REUSE_PENDING_ALL_PARITY |
-| Speed: complete new G1 reference/selected ratio, >=5% engineering target, nominee unchanged | reporting.aggregate_times; final matched series pending; historical times never used as denominator | PENDING |
-| Tables 1/2 unchanged; Table3 contemporary U2/G1/G3 and None zero by definition | Typed parent cells and current final aggregate writer; actual render pending | PENDING |
-| S7: A2/A5/A3 both cohorts, shared recovered instances, not pure backbone ablation | reporting.py reuses Table2 cell objects; Native-painted A5 and unavailable-to-unknown behavior disclosed | PENDING_RENDER |
-| S8: full exclusive wall stages + total and separate non-additive GPU diagnostics | reporting.py builds receipt-linked three-column supplementary table | PENDING_RENDER |
-| Every numeric cell links to parent+parity or all sixteen final measurement IDs | cell_provenance builder; aggregate test checks sixteen constituents | PENDING_FINAL_ARTIFACT |
-| Per-scene/repetition means, round means, variation, counters and memory published | runtime_summary/per_call_timing/per_scene_timing/costs builders | PENDING_FINAL_ARTIFACT |
-| Three main tables, legible PDF with no clipping | LaTeX compile gate rejects overfull boxes; primary visual inspection pending | PENDING |
-| Four named reports, compact artifacts <=25 MiB, no weights/scans/large archive copies | Writers use compact summaries only; final bytes/deliverables audit pending | PENDING |
-| Final primary review checks prompt, scoped tests, source and scientific/runtime evidence | This checklist plus validation/completion_audit.json; focused tests already passed, final review pending | IN_PROGRESS |
-| Ordinary GitHub push, exact full SHA match, external PUSH_VERIFIED receipt | publish implementation; actual push pending | PENDING |
-| Final answer: four report links, SHA/binding, Table3/S8, speed/parity/calls/GPU costs, CF18 limits | Final measured artifacts and verified remote required | PENDING |
+| Freeze: commit candidate, binding, hardware, sources, order and timer before final | Commit 472b71d38b07532092d6b5b240ef477c4e82f1f7 precedes all final calls; freeze identity 1bb3c1c60a917a349dfb0804332d32feb1baa7acc4dde6446f3f20c0badf2f29 binds R2, hardware, all task sources and the 64-call order | PASS |
+| Final: exactly 64 candidate or 48 retained-reference calls, two reversed rounds | final_summary.json: 64/64 COMPLETE, four groups each 8 scenes x 2 repeats; entire row order equals the committed freeze | PASS |
+| Timing: model/common inputs resident, recovery views/BVH/RGB/features rebuilt per call | Source review and all per-call counters confirm fresh recovery; persistent feature/view/result hits all zero | PASS |
+| Timing: one shape-only warm-up per model process and separate actual GPU costs | costs.json contains exactly two distinct process receipts, each zero scene pixels and one image/one pool, outside recovery timers | PASS |
+| Timing: synchronized total, six exclusive host stages, non-additive CUDA events | Every final stage sum matches its measured total within 1e-7; event times and allocated/reserved peaks published separately | PASS |
+| Timing: every valid observation retained; no minimum, outlier removal or slow/parity retry | All 80 observations retained; every aggregate uses all 16 valid records; no failure or retry; round differences explicitly published | PASS |
+| Cost: actual rays, views, packing, RGB, encoder/pooling/fallback, transfers, cache and bytes | costs.json and per_call_timing.csv: 412 scene image encodings, 256 normal + 236 fallback heads, two separately counted shape warm-ups and all required counters | PASS |
+| Parity: exact discrete outcomes/labels/source order and FP32 atol=rtol=1e-5 | Every pilot/final supervisor passes; max normal feature error 0, fallback 1.1920929e-7, score 2.8560124e-8; whole output/rank equality | PASS |
+| Accuracy: import 172 rows/14 pools once, original identities retained | imported_metrics.json retains every original identity and now links ALL_26_PASS as PREDICTION_IDENTICAL_PARENT_METRIC | PASS |
+| Speed: complete new G1 reference/selected ratio, >=5% engineering target, nominee unchanged | New paired means 44.4482824/18.8532280 seconds, 2.3575953x and 57.5838999% reduction; R2 retained globally, not selected by accuracy | PASS_MATERIAL_REDUCTION |
+| Tables 1/2 unchanged; Table3 contemporary U2/G1/G3 and None zero by definition | Primary check compares all 96 non-timing scientific/count cells to v2; current Table3 times 0 by definition, 5.9620261, 18.8532280, 20.6485116 seconds | PASS |
+| S7: A2/A5/A3 both cohorts, shared recovered instances, not pure backbone ablation | Real supplementary_s7_readout.tex/PDF reuses Table2 cells; exact required title, Native-painted A5 and unknown readout disclosed | PASS |
+| S8: full exclusive wall stages + total and separate non-additive GPU diagnostics | Real supplementary_s8_runtime.tex/PDF includes all six host stages, total and labeled non-additive encoder/head rows in all three columns | PASS |
+| Every numeric cell links to parent+parity or all sixteen final measurement IDs | cell_provenance.json: science retains original source plus parity; all 30 runtime cells link 16 unique actual final measurements; external author context remains attributed | PASS |
+| Per-scene/repetition means, round means, variation, counters and memory published | per_call_timing.csv has all 80 calls; per_scene_timing.csv and runtime_summary.json contain means, rounds, variation, counters and memory peaks | PASS |
+| Three main tables, legible PDF with no clipping | Three real PDFs compile without overfull boxes, all words lie inside their pages, all rendered images visually inspected; render_qa.json | PASS |
+| Four named reports, compact artifacts <=25 MiB, no weights/scans/large archive copies | Four required RUNTIME_PARITY reports exist; compact evidence approximately 2.9 MiB; publication_audit checks exact bytes and required files | PASS |
+| Final primary review checks prompt, scoped tests, source and scientific/runtime evidence | Primary read full mandate/contracts/timing requirements, core source/diff and actual receipts; primary_review.json plus completion_audit.json; no full-CROVE suite or new model search | PASS |
+| Ordinary GitHub push, exact full SHA match, external PUSH_VERIFIED receipt | Implementation reviewed; actual full-SHA push verification and external receipt are the next final gate | PENDING_PUBLICATION |
+| Final answer: four report links, SHA/binding, Table3/S8, speed/parity/calls/GPU costs, CF18 limits | Exact measured values and all four reports ready; response is delivered after remote verification | FINAL_RESPONSE_GATE |
 
 Legacy U2 cached request receipts did not record original hard-support counts. This is explicit missing historical metadata, not an invented zero: U2 verifies its full target mask, effective input tensor, original signed-mask operator, success set, FP32 feature, argmax and full export/ranks. Projected v2 requests do contain hard-support counts and compare them exactly.

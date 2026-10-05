@@ -1,0 +1,23 @@
+\begin{table*}[!ht]
+\centering
+\caption{Recovery runtime with the same measured return boundary. Host stages are exclusive and sum to total wall time. GPU events are non-additive elapsed diagnostics, not extra wall time. U2 has an archived observation policy; G1 performs fresh visibility search.}
+\label{tab:runtime}
+\fontsize{9}{11}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrr@{}}
+\toprule
+Stage (s) & U2 control & G1 reference & G1 selected \\
+\midrule
+registry geometry & 0.677 & 2.426 & 2.060 \\
+view search & 0.498 & 34.922 & 9.780 \\
+rgb preprocess & 0.120 & 0.445 & 0.357 \\
+recognition & 0.153 & 0.560 & 0.561 \\
+export bookkeeping & 4.508 & 6.070 & 6.071 \\
+other sync & 0.007 & 0.024 & 0.024 \\
+complete incremental total & 5.962 & 44.448 & 18.853 \\
+\multicolumn{4}{l}{GPU event diagnostics (non-additive)} \\
+encoder & 0.132 & 0.476 & 0.476 \\
+region pool head & 0.005 & 0.022 & 0.022 \\
+\bottomrule
+\end{tabular*}
+\end{table*}

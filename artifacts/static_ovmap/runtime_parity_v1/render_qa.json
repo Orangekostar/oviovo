@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "reviewer": "primary_agent",
+  "inspection": "Rendered all three actual final PDFs with pdftoppm and inspected the images. Parsed pdftotext bbox XML for every word.",
+  "body_font_pt": 9,
+  "clipping_observed": false,
+  "text_overlap_observed": false,
+  "legible_tables": true,
+  "supplementary_identifiers": "S7/S8 are artifact and manuscript identifiers; standalone previews use local document table counters.",
+  "documents": [
+    {
+      "file": "table_layout_preview.pdf",
+      "sha256": "c383935779431f49f46802fa4d88906a2e6c70098da56f9f249d7975f0479b08",
+      "pages": 1,
+      "words": 427,
+      "all_words_inside_page": true
+    },
+    {
+      "file": "table3_preview.pdf",
+      "sha256": "fa83195f098d659bcf79000a006afb47dab170f232f19b936d1f75a4f8ff8c3d",
+      "pages": 1,
+      "words": 115,
+      "all_words_inside_page": true
+    },
+    {
+      "file": "supplementary_preview.pdf",
+      "sha256": "1039720c5e9de7db87b599d81c823ba934a10e651f4adf8fc40e70a6df465bec",
+      "pages": 1,
+      "words": 172,
+      "all_words_inside_page": true
+    }
+  ]
+}

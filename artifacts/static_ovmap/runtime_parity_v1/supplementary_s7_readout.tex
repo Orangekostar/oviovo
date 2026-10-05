@@ -1,0 +1,16 @@
+\begin{table*}[!ht]
+\centering
+\caption{Readout comparison with shared recovered instances. All rows share G1-FC recovery and differ in incumbent readout. A5 retains Native-painted geometry and emits unknown where incumbent FC is unavailable. This is not a pure backbone ablation.}
+\label{tab:readout-shared}
+\fontsize{9}{11}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+Readout + shared G1 & Replica AP & AP50 & mIoU & CF18 AP & AP50 & mIoU \\
+\midrule
+A2: Native & 9.44 & 23.69 & 27.96 & 7.11 & 15.61 & 16.44 \\
+A5: FC-only & 10.94 & 21.88 & 23.72 & 8.32 & 17.39 & 17.94 \\
+A3: D2 & 12.39 & 26.06 & 30.27 & 8.23 & 17.83 & 19.02 \\
+\bottomrule
+\end{tabular*}
+\end{table*}

@@ -1,0 +1,133 @@
+{
+  "cold_scene_counters": {
+    "BVH_builds": 64,
+    "FC_image_inputs": 412,
+    "RGB_decodes": 428,
+    "admissible_views": 10242,
+    "completed_frames": 12800,
+    "considered_candidate_views": 87600,
+    "encoder_batch_calls": 412,
+    "fallback_pool_head_calls": 236,
+    "feature_cache_hits": 0,
+    "frames_skipped_safe": 1988,
+    "full_image_pixels": 10444800000,
+    "identity_roundtrip_bytes": 5103157248,
+    "logical_requests": 496,
+    "materialized_masks": 5558,
+    "mesh_reopens": 20,
+    "normal_pool_head_calls": 256,
+    "output_bytes": 315580592,
+    "packed_masks": 5558,
+    "queried_rays": 4903165976,
+    "raw_candidates": 544,
+    "result_cache_hits": 0,
+    "scheduled_frames": 12800,
+    "vector_transfer_bytes": 1511424,
+    "vector_transfer_calls": 490,
+    "view_cache_hits": 0
+  },
+  "failed_attempts": [],
+  "identity": "4eb51ebec2099d3555ed84a08329f7527ebb870e34bc37ca1b38d97564129c05",
+  "new_CF18_GPU_inference": 0,
+  "normal_cold_calls": 80,
+  "warmup_image_encodings": 2,
+  "warmup_region_poolings": 2,
+  "warmups": [
+    {
+      "hardware": {
+        "CPU": "Intel(R) Xeon(R) Silver 4314 CPU @ 2.40GHz",
+        "CUDA": "12.1",
+        "GPU": {
+          "compute_capability": "8.6",
+          "driver_version": "595.71.05",
+          "name": "NVIDIA A40",
+          "uuid": "GPU-41ba4cb6-edfe-ed30-c047-a19d9f23d0a8"
+        },
+        "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false,
+        "encoder_batch_size": 1,
+        "numpy": "2.4.6",
+        "open3d": "0.19.0",
+        "open_clip": "3.3.0",
+        "operator_settings_changed": false,
+        "precision": "original_FP32",
+        "projector_threads": 4,
+        "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timm": "1.0.19",
+        "torch": "2.4.0",
+        "torch_cudnn_tf32": true,
+        "torch_matmul_tf32": false,
+        "torch_threads": 1
+      },
+      "identity": "f9575b31451a05abbcb27a2f074b4a57cba2e5c00ad849c59f7ab195d93a2a7c",
+      "kind": "SHAPE_ONLY_WARMUP",
+      "model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "outside_incremental_timer": true,
+      "physical_image_encodings": 1,
+      "physical_region_poolings": 1,
+      "pid": 2720458,
+      "scene_pixels_used": false,
+      "seconds": 0.3465525140054524,
+      "shape_hw": [
+        480,
+        640
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "hardware": {
+        "CPU": "Intel(R) Xeon(R) Silver 4314 CPU @ 2.40GHz",
+        "CUDA": "12.1",
+        "GPU": {
+          "compute_capability": "8.6",
+          "driver_version": "595.71.05",
+          "name": "NVIDIA A40",
+          "uuid": "GPU-41ba4cb6-edfe-ed30-c047-a19d9f23d0a8"
+        },
+        "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false,
+        "encoder_batch_size": 1,
+        "numpy": "2.4.6",
+        "open3d": "0.19.0",
+        "open_clip": "3.3.0",
+        "operator_settings_changed": false,
+        "precision": "original_FP32",
+        "projector_threads": 4,
+        "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+        "thread_environment": {
+          "MKL_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1"
+        },
+        "timm": "1.0.19",
+        "torch": "2.4.0",
+        "torch_cudnn_tf32": true,
+        "torch_matmul_tf32": false,
+        "torch_threads": 1
+      },
+      "identity": "f4a7e18ac3f45a43d3e60e42fc458840c1119fc4173ecc4a2cbebcf2c4725f26",
+      "kind": "SHAPE_ONLY_WARMUP",
+      "model_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+      "outside_incremental_timer": true,
+      "physical_image_encodings": 1,
+      "physical_region_poolings": 1,
+      "pid": 2732216,
+      "scene_pixels_used": false,
+      "seconds": 0.24471912696026266,
+      "shape_hw": [
+        480,
+        640
+      ],
+      "status": "COMPLETE"
+    }
+  ]
+}

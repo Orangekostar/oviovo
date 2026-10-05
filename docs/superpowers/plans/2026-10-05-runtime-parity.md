@@ -61,8 +61,8 @@ Interfaces: `recover(inputs, arm, implementation, model_session, run_context)` a
 - [x] Run profile/pilot slots in fixed ascending/reverse order; compare every call against parent scientific evidence after the timer.
 - [x] Select by two-scene/two-repeat mean and the 3% simplicity rule, including R0.
 - [x] Verify all 26 candidate per-frame statistics, ordered Top-3 and mask bytes, using parent vectors only for non-timed CF18 export parity.
-- [ ] Commit implementation freeze, hardware/settings, selected flags and exact final call order.
-- [ ] Run every required final Replica cold call, including contemporary U2; retain outliers and original failure costs.
+- [x] Commit implementation freeze, hardware/settings, selected flags and exact final call order.
+- [x] Run every required final Replica cold call, including contemporary U2; retain outliers and original failure costs.
 
 Execution command: `/home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evaluation/run_ovimap_runtime_parity.py --spec configs/static_ovmap/runtime_parity_v1.json --source-worktree /mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree --v2-results-root /home/ww/ovimap-area-fallback-v2/attempt_001 --phase all --resume`.
 
@@ -70,10 +70,10 @@ Execution command: `/home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evalu
 
 Files: `runtime_parity/reporting.py`, four required `RUNTIME_PARITY_*.md` reports and compact artifacts.
 
-- [ ] Preserve Table1/2 science; render Table3 and S7/S8 from machine data with per-cell source identities and all sixteen constituent final time IDs.
-- [ ] Publish per-scene/repeat CSVs, stage/service times, counters, memory and source/parity maps; render and visually inspect PDFs.
-- [ ] Audit every numbered requirement, contract and named deliverable against actual artifacts; report distinct source, implementation, parity, timing, metric-reuse, speed and publication statuses.
-- [ ] Verify original source HEAD/index unchanged and compact artifact size below 25 MiB.
+- [x] Preserve Table1/2 science; render Table3 and S7/S8 from machine data with per-cell source identities and all sixteen constituent final time IDs.
+- [x] Publish per-scene/repeat CSVs, stage/service times, counters, memory and source/parity maps; render and visually inspect PDFs.
+- [x] Audit every numbered requirement, contract and named deliverable against actual artifacts; report distinct source, implementation, parity, timing, metric-reuse, speed and publication statuses.
+- [x] Verify original source HEAD/index unchanged and compact artifact size below 25 MiB.
 - [ ] Commit deliverables, run ordinary push, compare local full SHA to remote branch, then write external `publication/final.json`.
 
 ## Acceptance Evidence

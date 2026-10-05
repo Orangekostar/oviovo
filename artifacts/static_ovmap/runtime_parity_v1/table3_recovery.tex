@@ -1,0 +1,18 @@
+% Generated from typed receipt-backed tables_main.json.
+\begin{table*}[!ht]
+\centering
+\caption{Recovery quality and incremental latency on Replica-8. n/N is candidate owners receiving semantics, not true-positive recall. TP/FP are definite added matcher entries at IoU 0.50; ambiguous ties retain the dagger. Every nonzero latency averages eight scenes and two cold repeats with resident model/common map; mapping/evaluation are excluded. U2 uses its archived observation policy; G1/G3 perform fresh full-sequence visibility search. Evaluated G1/G3 implementation: R2\_ROI\_EXACT.}
+\label{tab:recovery}
+\fontsize{9}{10.5}\selectfont
+\setlength{\tabcolsep}{4pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccrrrrr@{}}
+\toprule
+Entry & Max views & $n/N$ & TP50 & FP50 & AP & mIoU & Time (s) \\
+\midrule
+None (A1) & 0 & $0/53$ & 0 & 0 & 11.74 & 29.69 & 0 \\
+Archived U2 & 1 & $9/53$ & 3 & 2 & 12.39 & 30.17 & 5.96 \\
+Independent G1 (A3) & 1 & $42/53$ & 3 & 3 & 12.39 & 30.27 & 18.85 \\
+Independent G3 & 3 & $42/53$ & 3 & 4 & 12.10 & 30.18 & 20.65 \\
+\bottomrule
+\end{tabular*}
+\end{table*}
