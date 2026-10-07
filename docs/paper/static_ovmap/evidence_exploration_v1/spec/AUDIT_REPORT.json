@@ -1,0 +1,214 @@
+{
+  "status": "PASS",
+  "scope": "INSTRUCTION_PACKAGE_ONLY",
+  "date": "2026-10-07",
+  "checks": [
+    {
+      "check": "base revision is a complete SHA and occurs in main instruction",
+      "passed": true
+    },
+    {
+      "check": "AnyUp source pin occurs in main",
+      "passed": true
+    },
+    {
+      "check": "AnyUp release SHA256/length bound",
+      "passed": true
+    },
+    {
+      "check": "9 unique methods",
+      "passed": true
+    },
+    {
+      "check": "26 exact scene identities",
+      "passed": true
+    },
+    {
+      "check": "pilot scenes reuse required cohort",
+      "passed": true
+    },
+    {
+      "check": "234 complete matrix rows without duplicates",
+      "passed": true
+    },
+    {
+      "check": "52 inherited + 182 new rows",
+      "passed": true
+    },
+    {
+      "check": "18 complete scientific pools",
+      "passed": true
+    },
+    {
+      "check": "matrix roles and operators match JSON",
+      "passed": true
+    },
+    {
+      "check": "all methods appear in authoritative text",
+      "passed": true
+    },
+    {
+      "check": "no new maps/frontends/native inference/training/fits",
+      "passed": true
+    },
+    {
+      "check": "candidate/control bounds match geometry scope",
+      "passed": true
+    },
+    {
+      "check": "AnyUp uses original single-backbone non-NATTEN checkpoint",
+      "passed": true
+    },
+    {
+      "check": "fixed target-only low-support intervention",
+      "passed": true
+    },
+    {
+      "check": "explicit margin and soft contrast constants",
+      "passed": true
+    },
+    {
+      "check": "AnyUp original visual feature/head boundary documented",
+      "passed": true
+    },
+    {
+      "check": "full-scene occlusion, unknown-owner neutrality specified",
+      "passed": true
+    },
+    {
+      "check": "old-cache identity misuse prevented",
+      "passed": true
+    },
+    {
+      "check": "available distinct from accepted",
+      "passed": true
+    },
+    {
+      "check": "current-class official scoring not replaced",
+      "passed": true
+    },
+    {
+      "check": "all five Replica metrics protected",
+      "passed": true
+    },
+    {
+      "check": "all five CF metrics compared with complete G1",
+      "passed": true
+    },
+    {
+      "check": "D2 is separate CF AP hurdle",
+      "passed": true
+    },
+    {
+      "check": "no nominal scientific regression tolerance",
+      "passed": true
+    },
+    {
+      "check": "retrospective selection is not confirmation",
+      "passed": true
+    },
+    {
+      "check": "cold timing cap equals 4 x 8 x 2",
+      "passed": true
+    },
+    {
+      "check": "timing comparator map only uses actual methods",
+      "passed": true
+    },
+    {
+      "check": "no hidden per-dataset switching or rescue sweep",
+      "passed": true
+    },
+    {
+      "check": "no full test quota or fuzzing",
+      "passed": true
+    },
+    {
+      "check": "full push plus SHA verification specified",
+      "passed": true
+    },
+    {
+      "check": "reference tests actually ran",
+      "passed": true
+    },
+    {
+      "check": "all required deliverable names present",
+      "passed": true
+    },
+    {
+      "check": "all package entry files exist",
+      "passed": true
+    }
+  ],
+  "check_count": 34,
+  "synthetic_reference_tests": 8,
+  "server_experiments_executed": false,
+  "new_FC_or_AnyUp_inference_executed": false,
+  "upstream_weights_downloaded_or_run_in_this_environment": false,
+  "actual_server_assets_verified": false,
+  "remote_repository_written": false,
+  "review_corrections": [
+    "Bound original AnyUp checkpoint, not moving multi-backbone default.",
+    "Separated v2 pooling availability from new accept/defer semantics.",
+    "Included bilinear, ordinary AnyUp and margin controls.",
+    "Required full selected-frame owner rasters, not partial ROI negatives.",
+    "Specified post-averaged-attention reweighting and neutral-geometry test.",
+    "Separated FC normalization from AnyUp ImageNet guidance.",
+    "Prohibited use of fixed-v2 scientific_key for new operators.",
+    "Specified deterministic timing comparator map, including no-winner path.",
+    "A nonempty mask with zero area mass is an invariant error, not a hidden fallback.",
+    "No per-dataset routing, no promised gain, no independent-confirmation relabeling."
+  ],
+  "files": [
+    {
+      "path": "CODEX_FINAL_EXECUTION_EN.md",
+      "bytes": 39233,
+      "sha256": "434b83b7e49cafcd1492361d330bfc171af696ae215ff7e1ce67b78f6f209058"
+    },
+    {
+      "path": "CODE_REVIEW_AND_PLAN_ZH.md",
+      "bytes": 6766,
+      "sha256": "35b755f25611dc0631872efe6ab34b2257431b4767b9c7ac55c4b0c3bc55a494"
+    },
+    {
+      "path": "EXPERIMENT_MATRIX.csv",
+      "bytes": 15542,
+      "sha256": "c0b0b15013fb11f5fdd3d6719ea95f2dc0519b40ee1f9464e2227d299f85f444"
+    },
+    {
+      "path": "PROTOCOL_SPEC.json",
+      "bytes": 7793,
+      "sha256": "12d06f0ea4afe50aa648597b2323460a3e9cf9c9d4d166f2740243d45b418a78"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1313,
+      "sha256": "ae7399ae0e128174c7bd216237f16d1c8751339c1bf0a0346bad3a651bf4f808"
+    },
+    {
+      "path": "REFERENCE_TEST_LOG.txt",
+      "bytes": 1146,
+      "sha256": "1f86030206c1e4b4204f3f954e39a9b30233ad0cd04138fce0c4a680ee1336a8"
+    },
+    {
+      "path": "SOURCE_EVIDENCE.md",
+      "bytes": 9158,
+      "sha256": "45d87155c20a777f69db4c7a5296a7a8ffde96e2316efae50ba98313af82c68e"
+    },
+    {
+      "path": "audit_package.py",
+      "bytes": 7069,
+      "sha256": "5834ab8d8d16c1caa253a3c9382d483b9f5e2e8afecad6c8026178afc0ea9f3c"
+    },
+    {
+      "path": "reference_kernels.py",
+      "bytes": 6307,
+      "sha256": "6c0a22bd4bb356f0b8b819ce381dbc9227f4a1402f354b57dcc9b762e05003e2"
+    },
+    {
+      "path": "test_reference_kernels.py",
+      "bytes": 3747,
+      "sha256": "7f79e1e54c3731dc47baba21197a82f935dc933debf328a7a2b58cb2122991cd"
+    }
+  ]
+}
