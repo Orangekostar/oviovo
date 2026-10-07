@@ -1,0 +1,3984 @@
+{
+  "CPU": "x86_64",
+  "GPU": {
+    "cuda": "12.1",
+    "name": "NVIDIA A40"
+  },
+  "all_valid_repeats_included": true,
+  "binding_identity": "d491713b892504f56a28402e2488d6cb58774409355e44beb265cbd4a94d03f5",
+  "calls": [
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0002640793099999428,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 3,
+        "coarse_target_pools": 3,
+        "head_projections": 3
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.6642293301410973,
+        "additional_geometry": 6.2568578869104385e-06,
+        "output": 2.414996665902436,
+        "view_search": 12.15116263483651
+      },
+      "frame_details": {},
+      "identity": "4814454394f8e78447be297f8f52235d314d76b2084cca315ea394a3c1f3aa33",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.6639847676753998
+      },
+      "peak_cuda_allocated_bytes": 2036240896,
+      "peak_cuda_reserved_bytes": 2363490304,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "ad5464448daf2a63c1666d1650e4ca6590e925b39d92c8e6b12bada2e1eb4930",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office0",
+      "seconds_per_scene": 15.23065896704793,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003942446783185005,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 3,
+        "AnyUp_target_or_control_pools": 8,
+        "FC_image_inputs": 3,
+        "additional_full_scene_projection_calls": 3,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 8,
+        "head_projections": 11,
+        "original_attention_applications": 3,
+        "query_chunks": 3,
+        "query_locations": 406
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.2275749477557838,
+        "FC": 0.4622037885710597,
+        "additional_geometry": 1.589927694061771,
+        "output": 2.320039432030171,
+        "view_search": 12.361906226957217
+      },
+      "frame_details": {
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.07298804493620992,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "290": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0033085488248616457,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "720": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003939245129004121,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "9c9d58c1b0ed9543d2c8e1619d79e2e480e38fd21cf4708dbbeec090521d825e",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.227505126953125,
+        "FC": 0.4617468948364258
+      },
+      "peak_cuda_allocated_bytes": 4658625024,
+      "peak_cuda_reserved_bytes": 7138705408,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cf3dc7bf54bd5867d7592a4510c8b5cb729c1a5bb438ce9166ba131272553827",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office0",
+      "seconds_per_scene": 17.96204633405432,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0002855551429092884,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 3,
+        "additional_full_scene_projection_calls": 3,
+        "coarse_control_pools": 5,
+        "coarse_target_pools": 3,
+        "head_projections": 8
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.45600459282286465,
+        "additional_geometry": 1.5372156871017069,
+        "output": 2.387886866927147,
+        "view_search": 9.777689778944477
+      },
+      "frame_details": {},
+      "identity": "4aee35816cbb7c7d9d4421c8666a42b172b0e049613b6326065b4b97607d0172",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.45556252336502073
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "ad5464448daf2a63c1666d1650e4ca6590e925b39d92c8e6b12bada2e1eb4930",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office0",
+      "seconds_per_scene": 14.159082480939105,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003494112752377987,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 3,
+        "AnyUp_target_or_control_pools": 3,
+        "FC_image_inputs": 3,
+        "additional_full_scene_projection_calls": 3,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 3,
+        "head_projections": 6,
+        "original_attention_applications": 3,
+        "query_chunks": 3,
+        "query_locations": 135
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.0687214231584221,
+        "FC": 0.4789439272135496,
+        "additional_geometry": 1.8630227982066572,
+        "output": 2.7015780101064593,
+        "view_search": 10.837670562090352
+      },
+      "frame_details": {
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002459069015458226,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "290": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0025135460309684277,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "720": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002056581899523735,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "0c120bf74028b247c73abe0aca2d43ad62812d7a06e8f16ed081e860944a9fcf",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.0686443786621094,
+        "FC": 0.4784477216005325
+      },
+      "peak_cuda_allocated_bytes": 4649318912,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "ad5464448daf2a63c1666d1650e4ca6590e925b39d92c8e6b12bada2e1eb4930",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office0",
+      "seconds_per_scene": 16.950286132050678,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00019717379473149776,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 1,
+        "coarse_target_pools": 1,
+        "head_projections": 1
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.16333129513077438,
+        "additional_geometry": 2.352055162191391e-06,
+        "output": 1.661904162960127,
+        "view_search": 12.447092013200745
+      },
+      "frame_details": {},
+      "identity": "7538c09ed468b68ec1d33c2b9fd5664d49e6343b0fb98644799b27ee7989e211",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.16311401890777052
+      },
+      "peak_cuda_allocated_bytes": 2031783424,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office1",
+      "seconds_per_scene": 14.27252699714154,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0001939928624778986,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 1,
+        "AnyUp_target_or_control_pools": 3,
+        "FC_image_inputs": 1,
+        "additional_full_scene_projection_calls": 1,
+        "coarse_target_pools": 1,
+        "geometry_attention_applications": 3,
+        "head_projections": 4,
+        "original_attention_applications": 1,
+        "query_chunks": 1,
+        "query_locations": 108
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.35799469286575913,
+        "FC": 0.15440228884108365,
+        "additional_geometry": 0.8385409391485155,
+        "output": 1.313088761176914,
+        "view_search": 6.6427462820429355
+      },
+      "frame_details": {
+        "1950": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004321565153077245,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "d51c87d6d506263764cfac88c6113030f173c07f0bd3e1f1be16f892e51b61a5",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.3579744567871094,
+        "FC": 0.15420246076583863
+      },
+      "peak_cuda_allocated_bytes": 4658618880,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office1",
+      "seconds_per_scene": 9.306966956937686,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00016537331975996494,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 1,
+        "additional_full_scene_projection_calls": 1,
+        "coarse_control_pools": 2,
+        "coarse_target_pools": 1,
+        "head_projections": 3
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.15700638107955456,
+        "additional_geometry": 0.8373151167761534,
+        "output": 1.2911587487906218,
+        "view_search": 5.886564765125513
+      },
+      "frame_details": {},
+      "identity": "ef500bc6ea83e26a2bc7201f424e3d36382206e6dc70ca751d07bcb38aa1c82a",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.15681097984313966
+      },
+      "peak_cuda_allocated_bytes": 2031783424,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office1",
+      "seconds_per_scene": 8.172210385091603,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00017496291548013687,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 1,
+        "AnyUp_target_or_control_pools": 1,
+        "FC_image_inputs": 1,
+        "additional_full_scene_projection_calls": 1,
+        "coarse_target_pools": 1,
+        "geometry_attention_applications": 1,
+        "head_projections": 2,
+        "original_attention_applications": 1,
+        "query_chunks": 1,
+        "query_locations": 32
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.35068895504809916,
+        "FC": 0.14841670100577176,
+        "additional_geometry": 0.830938336905092,
+        "output": 1.277409828035161,
+        "view_search": 6.934321677079424
+      },
+      "frame_details": {
+        "1950": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0020467769354581833,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "7336b9078d21aa3193b23190dc7666879cd814b46d3147b7301e402c1158eda0",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.35066824340820313,
+        "FC": 0.14822547274827957
+      },
+      "peak_cuda_allocated_bytes": 4649116160,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office1",
+      "seconds_per_scene": 9.541950460989028,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0002596871927380562,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "coarse_target_pools": 7,
+        "head_projections": 7
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.763924548169598,
+        "additional_geometry": 5.289912223815918e-06,
+        "output": 4.046700319740921,
+        "view_search": 27.356831687968224
+      },
+      "frame_details": {},
+      "identity": "17b8809caa09f214a33e63be5ef39082d45eddd23e4a22d9acde5ed401642070",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7635504403226078
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "1c24ab06bd8b13afbef311163a9fa003e42762a0071cafec6757ca82e68c7ef9",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office2",
+      "seconds_per_scene": 32.167721532983705,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.000874766381457448,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 17,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 42,
+        "head_projections": 24,
+        "original_attention_applications": 17,
+        "query_chunks": 17,
+        "query_locations": 3645
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.8495577892754227,
+        "FC": 0.8380732021760195,
+        "additional_geometry": 3.1565273590385914,
+        "output": 4.82160637807101,
+        "view_search": 19.288708762964234
+      },
+      "frame_details": {
+        "1180": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.03935436112806201,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "270": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0036698279436677694,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "460": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0042931619100272655,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.006181485019624233,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "490": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.011563581880182028,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "d2432bbaf57c3964e4a5a911a3d977c455fee0e8e2dcf2ef64dfc59eb5476683",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.8494332885742188,
+        "FC": 0.8368292565345764
+      },
+      "peak_cuda_allocated_bytes": 4667931136,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "8458719896eadc78506f46158d64a332e48083131bc4fd682536c2847a8a5600",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office2",
+      "seconds_per_scene": 29.955348257906735,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005929081235080957,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_control_pools": 10,
+        "coarse_target_pools": 7,
+        "head_projections": 17
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7847746638581157,
+        "additional_geometry": 2.445322595303878,
+        "output": 3.5593872177414596,
+        "view_search": 18.912579810013995
+      },
+      "frame_details": {},
+      "identity": "bf526db52d23914cd88afc768056eb0408cd613f645797d645c310ddc5dea5e7",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7838572211265564
+      },
+      "peak_cuda_allocated_bytes": 2044698112,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "7555384aeb7e50747a8d694b538ea766e2b358a94d1103cb6370854d050930f7",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office2",
+      "seconds_per_scene": 25.702657195040956,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005838398355990648,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 7,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 8,
+        "head_projections": 14,
+        "original_attention_applications": 6,
+        "query_chunks": 6,
+        "query_locations": 706
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.7635461129248142,
+        "FC": 0.742250424111262,
+        "additional_geometry": 2.416515708202496,
+        "output": 3.715736293932423,
+        "view_search": 17.62752057099715
+      },
+      "frame_details": {
+        "1180": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00402076099999249,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "270": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0020109270699322224,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "460": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0019939919002354145,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002945602871477604,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "490": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0030010759364813566,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "f77e8193a80d3d21eef570f44415e00aabb79736352e79491f596b2cddef142f",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.7634437255859374,
+        "FC": 0.7415655437707901
+      },
+      "peak_cuda_allocated_bytes": 4653775360,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "91416be06b392bc541f01eaf8a30faa5d5859395581712684cae5b4a37fbdaa2",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office2",
+      "seconds_per_scene": 26.266152950003743,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0004955388139933348,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "coarse_target_pools": 8,
+        "head_projections": 8
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.1832186609972268,
+        "additional_geometry": 1.0092509910464287e-05,
+        "output": 6.405838644597679,
+        "view_search": 21.304961235029623
+      },
+      "frame_details": {},
+      "identity": "46adc4bac2278422198551ed55fee6871284dd0dbcaf406dd20400e654c6b787",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.182674109943211
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "42d8011f9fc53725a9b9f5fdeaa37e2e3b654b469e232d04cf28ab0c0b4a778f",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office3",
+      "seconds_per_scene": 28.894524171948433,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0009029507637023926,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 18,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 23,
+        "head_projections": 26,
+        "original_attention_applications": 9,
+        "query_chunks": 9,
+        "query_locations": 1573
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.5338472821749747,
+        "FC": 1.1483435318805277,
+        "additional_geometry": 4.434894494013861,
+        "output": 6.428391888039187,
+        "view_search": 17.996708555147052
+      },
+      "frame_details": {
+        "110": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004606711911037564,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0036606071516871452,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1260": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.007057212060317397,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "140": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0032429471611976624,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1970": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.008297082968056202,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1980": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002893403870984912,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0057015749625861645,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "efc4b57d412cd75b30600c8bf5482cab645566b613ea187a9eda7e9845e4b824",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.53367138671875,
+        "FC": 1.1471456084251404
+      },
+      "peak_cuda_allocated_bytes": 4662753792,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "84801b121450f198477572906ed656630444f058899bc63bf974d9d2198736da",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office3",
+      "seconds_per_scene": 32.543088702019304,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0006034050602465868,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_control_pools": 10,
+        "coarse_target_pools": 8,
+        "head_projections": 18
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.068804566981271,
+        "additional_geometry": 3.6152419371064752,
+        "output": 5.159942264901474,
+        "view_search": 16.804757117992267
+      },
+      "frame_details": {},
+      "identity": "f2f7b30858859f750ffcf87381324689cfa9b02103cb6048bdf39703815265d7",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.0678073978424072
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d2f44357774d7e30690d2f260fa9ab31888f53014db1ba8ae695bb78d3af3bcb",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office3",
+      "seconds_per_scene": 26.649349292041734,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0006658458150923252,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 8,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 8,
+        "head_projections": 16,
+        "original_attention_applications": 7,
+        "query_chunks": 7,
+        "query_locations": 436
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.4672966913785785,
+        "FC": 1.0359524802770466,
+        "additional_geometry": 3.452200304483995,
+        "output": 5.325905897188932,
+        "view_search": 14.788124480983242
+      },
+      "frame_details": {
+        "110": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0020174169912934303,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002218014094978571,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1260": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002071149880066514,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "140": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0020405701361596584,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1970": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0029668589122593403,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1980": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002064538188278675,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002074012067168951,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "7190fedb8e9334858c1c0d55109583c260eca03eda0a50b45194e5fbb3fe180b",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.4671377868652344,
+        "FC": 1.034908195734024
+      },
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d0d08dd1934382aff28a8562cbfbc5580abf04ee02984b3cc9f7628d50fbfc0f",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office3",
+      "seconds_per_scene": 27.070145700126886,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00036114989779889584,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 2,
+        "coarse_target_pools": 3,
+        "head_projections": 3
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.3409775572363287,
+        "additional_geometry": 3.7008430808782578e-06,
+        "output": 5.528000786202028,
+        "view_search": 16.402645110851154
+      },
+      "frame_details": {},
+      "identity": "092ef7af1567bbfe1a51f64a57ed6a153f192555725022ba9843cde30ea5ebc8",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.34065142601542175
+      },
+      "peak_cuda_allocated_bytes": 2036240896,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cb504f591fb1f8a750fb0a916480d3ac9e0035e54994241a5e824d81bd05127b",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office4",
+      "seconds_per_scene": 22.27198830503039,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00041694403626024723,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 2,
+        "AnyUp_target_or_control_pools": 6,
+        "FC_image_inputs": 2,
+        "additional_full_scene_projection_calls": 2,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 9,
+        "head_projections": 9,
+        "original_attention_applications": 3,
+        "query_chunks": 3,
+        "query_locations": 462
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.7338121770881116,
+        "FC": 0.3410556730814278,
+        "additional_geometry": 2.8613136850763112,
+        "output": 4.413042125990614,
+        "view_search": 12.546656228834763
+      },
+      "frame_details": {
+        "390": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00448479107581079,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "830": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.009757970925420523,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "7c94d1f5f753964a19db7b1d32c8ac41a5822895295751090a459ce9d4a157bb",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.733758544921875,
+        "FC": 0.3405848913192749
+      },
+      "peak_cuda_allocated_bytes": 4663081472,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "2ba886f5db62cb58a7917bf0325b9a617cf9bdf5a37b620ab410d3afd8318938",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office4",
+      "seconds_per_scene": 20.89629683410749,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.000299826730042696,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 2,
+        "additional_full_scene_projection_calls": 2,
+        "coarse_control_pools": 3,
+        "coarse_target_pools": 3,
+        "head_projections": 6
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.3440295001491904,
+        "additional_geometry": 2.9405329981818795,
+        "output": 4.346212578006089,
+        "view_search": 11.609661516966298
+      },
+      "frame_details": {},
+      "identity": "cdc561ba2634eede9534671f5146093d5acb52d88e74304e8f427578ca2c9e75",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.34356409358978274
+      },
+      "peak_cuda_allocated_bytes": 2040372736,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "67441de6877fc0194574d97002aba59df8f8e9e5b64b1682b0e71e4a6b9d78fd",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office4",
+      "seconds_per_scene": 19.2407364200335,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003166729584336281,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 2,
+        "AnyUp_target_or_control_pools": 3,
+        "FC_image_inputs": 2,
+        "additional_full_scene_projection_calls": 2,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 3,
+        "head_projections": 6,
+        "original_attention_applications": 2,
+        "query_chunks": 2,
+        "query_locations": 190
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.7072336408309639,
+        "FC": 0.3183252310846001,
+        "additional_geometry": 2.5609925279859453,
+        "output": 4.032710579922423,
+        "view_search": 11.756978247081861
+      },
+      "frame_details": {
+        "390": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002164093079045415,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "830": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002969547873362899,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "95300c666506756fc4421b795d41a7eafa103204731e01fbdacb767b45ce51b6",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.70719189453125,
+        "FC": 0.31790927827358245
+      },
+      "peak_cuda_allocated_bytes": 4653775360,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cb504f591fb1f8a750fb0a916480d3ac9e0035e54994241a5e824d81bd05127b",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "office4",
+      "seconds_per_scene": 19.376556899864227,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003760869149118662,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "coarse_target_pools": 8,
+        "head_projections": 8
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.1434896006248891,
+        "additional_geometry": 8.630333468317986e-06,
+        "output": 4.916465440997854,
+        "view_search": 22.860488162143156
+      },
+      "frame_details": {},
+      "identity": "beba8dba65effa6b0376716ea8d22ab144cd95f54356ad916857fc8922dc6d90",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.14293376567401
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "848c60275c63a18638732fd29de01f421dbfb05a66aa1bc9819e9c79be25f79e",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room0",
+      "seconds_per_scene": 28.92082792101428,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0008653984405100346,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 18,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 24,
+        "head_projections": 26,
+        "original_attention_applications": 9,
+        "query_chunks": 9,
+        "query_locations": 1274
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.563644155859947,
+        "FC": 1.1913250025827438,
+        "additional_geometry": 3.476462652673945,
+        "output": 5.110786708537489,
+        "view_search": 15.559602848021314
+      },
+      "frame_details": {
+        "1250": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.012851916020736098,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00525543512776494,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1870": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004257554188370705,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "670": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0030069260392338037,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "70": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0035416779574006796,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "730": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003701442154124379,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0035986958537250757,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "dd9fb34248bd7e8e8622d7eeed81a16d4875f0215ff248b28d4651c143bc81b9",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.563452392578125,
+        "FC": 1.190150488615036
+      },
+      "peak_cuda_allocated_bytes": 4667924992,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "9df125b08dd609adf8bd4874a7bc38601eff5ed68e45a50fdad72cc12d5d5d2f",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room0",
+      "seconds_per_scene": 27.90268676611595,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005517653189599514,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_control_pools": 10,
+        "coarse_target_pools": 8,
+        "head_projections": 18
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.1503064844291657,
+        "additional_geometry": 3.7601480167359114,
+        "output": 5.200450756587088,
+        "view_search": 19.601149095920846
+      },
+      "frame_details": {},
+      "identity": "cfe24c531ea24ebc6fa2be73fd90567df84865a38f72a929844961377a373392",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.14921231174469
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cc6dafb185af6066dec7b7feece708aa119f20a61e6e9619fc1b9a267c7574d2",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room0",
+      "seconds_per_scene": 29.71260611899197,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0006603684742003679,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 8,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 8,
+        "head_projections": 16,
+        "original_attention_applications": 7,
+        "query_chunks": 7,
+        "query_locations": 295
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.49554605782032,
+        "FC": 1.1023986879736185,
+        "additional_geometry": 3.85296376561746,
+        "output": 4.5037728569004685,
+        "view_search": 20.134672322077677
+      },
+      "frame_details": {
+        "1250": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004358440870419145,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0019826418720185757,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1870": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0021899892017245293,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "670": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0024530449882149696,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "70": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0024526009801775217,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "730": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0032768140081316233,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0021320111118257046,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "350bef2cafe042423cda8f94b64027b71ac53dc87e75756c7118dc3c23c392d5",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.4953670043945313,
+        "FC": 1.1012421743869782
+      },
+      "peak_cuda_allocated_bytes": 4653769216,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "389b01868b48d1e292f7a846c9427f24e1f95b3b626cc9a87fd06cc82ac66a49",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room0",
+      "seconds_per_scene": 32.090014058863744,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003116196021437645,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "coarse_target_pools": 5,
+        "head_projections": 5
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7972885156050324,
+        "additional_geometry": 6.53672032058239e-06,
+        "output": 3.122110507218167,
+        "view_search": 15.422948037972674
+      },
+      "frame_details": {},
+      "identity": "bb8edf9117082795b9636ea1317ceef55530bf8986ecf285f164f8d826a2ffb7",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7968968739956618
+      },
+      "peak_cuda_allocated_bytes": 2036240896,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "489646a09cc59ca75be585c651a2de28b1ed6803c9ec9f5e7d8bbcaf62f7d7ee",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room1",
+      "seconds_per_scene": 19.342665217118338,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005130756180733442,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 10,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 5,
+        "geometry_attention_applications": 11,
+        "head_projections": 15,
+        "original_attention_applications": 6,
+        "query_chunks": 6,
+        "query_locations": 864
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.7684100784827024,
+        "FC": 0.7435669794213027,
+        "additional_geometry": 2.0541260302998126,
+        "output": 2.927112650126219,
+        "view_search": 8.754473095061257
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0029206410981714725,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0029233579989522696,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004951428854838014,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1940": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0030223981011658907,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "480": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002896165009588003,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "44530ca057fd6ab321d49a7507fe65ba761339b4c3679f51616056934edef269",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.7683146362304687,
+        "FC": 0.7428420808315277
+      },
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7138705408,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "dc4f3c5e8865b312d7e67329a968d41ebd665fdd61edadc3e2a312abd69b091c",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room1",
+      "seconds_per_scene": 16.248201909009367,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005546906031668186,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_control_pools": 5,
+        "coarse_target_pools": 5,
+        "head_projections": 10
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.8040839969180524,
+        "additional_geometry": 2.6894747028127313,
+        "output": 3.701602424727753,
+        "view_search": 9.925668532028794
+      },
+      "frame_details": {},
+      "identity": "2056b43a490434addfb0da188317a8eb4d4599cbab7ec3f93ca2ae050ffa5dc8",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.8031535749435424
+      },
+      "peak_cuda_allocated_bytes": 2040372736,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "175a767041c52ede7c948966564e9a0adbb60961a7af52b6a1959823962811fa",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room1",
+      "seconds_per_scene": 17.121384347090498,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0007249023765325546,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 5,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 5,
+        "geometry_attention_applications": 5,
+        "head_projections": 10,
+        "original_attention_applications": 5,
+        "query_chunks": 5,
+        "query_locations": 247
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.8273967739660293,
+        "FC": 0.8348939488641918,
+        "additional_geometry": 2.760325383860618,
+        "output": 3.99644468491897,
+        "view_search": 12.130080147879198
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.006720284000039101,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002638349076732993,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0026864218525588512,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1940": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0024466288741678,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "480": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0036076379474252462,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "d043799c944310d58882580c4a51b02b70ccd7cf4a46020997107803f1103077",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.8272597351074218,
+        "FC": 0.8338548899292946
+      },
+      "peak_cuda_allocated_bytes": 4649318912,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "2fcef19a0b806cd169559cef831318dbcd61b0e411d0f3ee944e9cf81c48f6b1",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room1",
+      "seconds_per_scene": 21.54986584186554,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005798281636089087,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 6,
+        "coarse_target_pools": 7,
+        "head_projections": 7
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.9857770707458258,
+        "additional_geometry": 1.0073184967041016e-05,
+        "output": 4.25573950400576,
+        "view_search": 38.942180583951995
+      },
+      "frame_details": {},
+      "identity": "27f1fb104d592b3d184ad5cba5670d38d8b27fb49dd2f5b9edbf1a06df520f81",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.9851444411575794
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d41fe9da29a9d77057a080d725842e061ed57e4691f4fd1297f7ab96896ef244",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room2",
+      "seconds_per_scene": 44.18428706005216,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0007556043565273285,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 14,
+        "FC_image_inputs": 6,
+        "additional_full_scene_projection_calls": 6,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 20,
+        "head_projections": 21,
+        "original_attention_applications": 8,
+        "query_chunks": 8,
+        "query_locations": 1432
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.8044981728307903,
+        "FC": 0.911852490156889,
+        "additional_geometry": 2.393255015835166,
+        "output": 3.658784204861149,
+        "view_search": 24.97280425601639
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0029497030191123486,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.010635115206241608,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1770": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.008640727959573269,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "200": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003015690017491579,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "850": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.005723817041143775,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "84f099bc72690ca9c760ab96f7a1af1c03d888509f71d1b35ed8d73133fa6748",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.8043960876464844,
+        "FC": 0.9108796682059764
+      },
+      "peak_cuda_allocated_bytes": 4662884864,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "3f4733b0fc4e9f288a174ebcb8e12a3615eb9169ad60944848af4a44737f4fc5",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room2",
+      "seconds_per_scene": 33.74194974405691,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.000821185763925314,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 6,
+        "additional_full_scene_projection_calls": 6,
+        "coarse_control_pools": 8,
+        "coarse_target_pools": 7,
+        "head_projections": 15
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.0027388683520257,
+        "additional_geometry": 3.1035719178617,
+        "output": 4.049973977031186,
+        "view_search": 28.613841685000807
+      },
+      "frame_details": {},
+      "identity": "893a5d114e6591b637b8ba2e5caa2b4b9d23c288199019a3a348814ede559df1",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.0009916409682482
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cddf96d2d2e0069794a879392f3397996103925f8bfb55ff8343e40914a37c3b",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room2",
+      "seconds_per_scene": 36.770947634009644,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0008250994142144918,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 6,
+        "FC_image_inputs": 6,
+        "additional_full_scene_projection_calls": 6,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 6,
+        "head_projections": 13,
+        "original_attention_applications": 5,
+        "query_chunks": 5,
+        "query_locations": 410
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.7882889602333307,
+        "FC": 0.9556782320141792,
+        "additional_geometry": 3.218414693372324,
+        "output": 3.603518407093361,
+        "view_search": 31.528697049012408
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002549052005633712,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002355915028601885,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1770": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003973590210080147,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "200": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002170808147639036,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "850": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003420758992433548,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "d6b41b51d38dd017e327defe2fe1ddd4a4eeb32d791b7dbcf2e69c674206f5bb",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.7881702575683593,
+        "FC": 0.9543536562714726
+      },
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "64e94fddd2f2ea2452f45d248a672ec8321bc4f98d41bdecc6b3609c6cb79fe4",
+      "recovery_views_features_results_cold": true,
+      "repeat": 1,
+      "scene": "room2",
+      "seconds_per_scene": 41.09542244113982,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0009003058075904846,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 6,
+        "FC_image_inputs": 6,
+        "additional_full_scene_projection_calls": 6,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 6,
+        "head_projections": 13,
+        "original_attention_applications": 5,
+        "query_chunks": 5,
+        "query_locations": 410
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.7987233228050172,
+        "FC": 0.962489103898406,
+        "additional_geometry": 3.1641507553867996,
+        "output": 3.616830716142431,
+        "view_search": 28.661442109150812
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0022968321572989225,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002600338077172637,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1770": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004163413075730205,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "200": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00227144593372941,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "850": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0029670370277017355,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "84d3e2a21570fcba19548ac38258d453e18341020904bfc41fa89a9949fc6140",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.7985921020507813,
+        "FC": 0.9613603104017675
+      },
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "64e94fddd2f2ea2452f45d248a672ec8321bc4f98d41bdecc6b3609c6cb79fe4",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room2",
+      "seconds_per_scene": 38.204536313191056,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0006168661639094353,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 6,
+        "additional_full_scene_projection_calls": 6,
+        "coarse_control_pools": 8,
+        "coarse_target_pools": 7,
+        "head_projections": 15
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.0073087788186967,
+        "additional_geometry": 2.637517230352387,
+        "output": 3.2578060189262033,
+        "view_search": 29.450879376847297
+      },
+      "frame_details": {},
+      "identity": "8f714657e73bb10a363c93fcfc7d47f1e62fc83186a8814efe218f4d2b13e69d",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.0061551339551806
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cddf96d2d2e0069794a879392f3397996103925f8bfb55ff8343e40914a37c3b",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room2",
+      "seconds_per_scene": 36.35412827110849,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0007473700679838657,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 14,
+        "FC_image_inputs": 6,
+        "additional_full_scene_projection_calls": 6,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 20,
+        "head_projections": 21,
+        "original_attention_applications": 8,
+        "query_chunks": 8,
+        "query_locations": 1432
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.812673012027517,
+        "FC": 0.9536842659581453,
+        "additional_geometry": 3.051460759714246,
+        "output": 3.4645281021948904,
+        "view_search": 30.062775574158877
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0034811049699783325,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.009269745787605643,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1770": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.010226652026176453,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "200": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003580787917599082,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "850": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.006508643971756101,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "493416bd79222dfd9b83c3fdf29a5cf7966e4e16186a02129067fd8e3be0431e",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.8125545349121093,
+        "FC": 0.9526036808248609
+      },
+      "peak_cuda_allocated_bytes": 4662884864,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "3f4733b0fc4e9f288a174ebcb8e12a3615eb9169ad60944848af4a44737f4fc5",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room2",
+      "seconds_per_scene": 39.34586908412166,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0006793821230530739,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 6,
+        "coarse_target_pools": 7,
+        "head_projections": 7
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.987462381599471,
+        "additional_geometry": 7.997732609510422e-06,
+        "output": 3.3646650426089764,
+        "view_search": 29.241747440071777
+      },
+      "frame_details": {},
+      "identity": "5787f3c16769fcfb002380e0b4c7375ee45edcc9f3792b557fc5f05180b411ba",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.986609419837594
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d41fe9da29a9d77057a080d725842e061ed57e4691f4fd1297f7ab96896ef244",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room2",
+      "seconds_per_scene": 33.594562244135886,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0008627225179225206,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 5,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 5,
+        "geometry_attention_applications": 5,
+        "head_projections": 10,
+        "original_attention_applications": 5,
+        "query_chunks": 5,
+        "query_locations": 247
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.807417311007157,
+        "FC": 0.8136233480181545,
+        "additional_geometry": 2.7504416634328663,
+        "output": 3.274757604813203,
+        "view_search": 12.716950920177624
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0025025270879268646,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002773527055978775,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002807151060551405,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1940": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002484292956069112,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "480": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0025873940903693438,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "0bc72aa227b7816533959b949b71d6ed2c4d2deb862a60c15efedd73ab9b7a5f",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.8072739868164063,
+        "FC": 0.8123859574198723
+      },
+      "peak_cuda_allocated_bytes": 4649318912,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "2fcef19a0b806cd169559cef831318dbcd61b0e411d0f3ee944e9cf81c48f6b1",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room1",
+      "seconds_per_scene": 21.364053569966927,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005499119870364666,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_control_pools": 5,
+        "coarse_target_pools": 5,
+        "head_projections": 10
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.812640467658639,
+        "additional_geometry": 2.7176743072923273,
+        "output": 3.921903797890991,
+        "view_search": 11.879718142095953
+      },
+      "frame_details": {},
+      "identity": "68504e35483e9d4a9ea21807987cb020b2c6ecbcbd5afb4c0a451cbb61a66201",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.8116312012672424
+      },
+      "peak_cuda_allocated_bytes": 2040372736,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "175a767041c52ede7c948966564e9a0adbb60961a7af52b6a1959823962811fa",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room1",
+      "seconds_per_scene": 19.332486626924947,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0007119588553905487,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 10,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 5,
+        "geometry_attention_applications": 11,
+        "head_projections": 15,
+        "original_attention_applications": 6,
+        "query_chunks": 6,
+        "query_locations": 864
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.8470903388224542,
+        "FC": 0.8405990467872471,
+        "additional_geometry": 2.8224537691567093,
+        "output": 4.101578499190509,
+        "view_search": 12.005263710161671
+      },
+      "frame_details": {
+        "100": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004180388990789652,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004487971076741815,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.006924275076016784,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1940": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004018652951344848,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "480": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003910707077011466,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "c5268c390f5bb877cd2ac191cbeebe11431f4a535c0a359347ce6382a8d394e7",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.8469120178222656,
+        "FC": 0.8394450240135193
+      },
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7138705408,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "dc4f3c5e8865b312d7e67329a968d41ebd665fdd61edadc3e2a312abd69b091c",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room1",
+      "seconds_per_scene": 21.61769732297398,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003526494838297367,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "coarse_target_pools": 5,
+        "head_projections": 5
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7358626234345138,
+        "additional_geometry": 5.71785494685173e-06,
+        "output": 3.136414669221267,
+        "view_search": 11.733145299833268
+      },
+      "frame_details": {},
+      "identity": "6806056c73b0851108bc46af30005fbaf211a170bc6060afd64f7fde4659ea4e",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7355102201718837
+      },
+      "peak_cuda_allocated_bytes": 2036240896,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "489646a09cc59ca75be585c651a2de28b1ed6803c9ec9f5e7d8bbcaf62f7d7ee",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room1",
+      "seconds_per_scene": 15.605780959827825,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0009473911486566067,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 8,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 8,
+        "head_projections": 16,
+        "original_attention_applications": 7,
+        "query_chunks": 7,
+        "query_locations": 295
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.539069816004485,
+        "FC": 1.1693949550390244,
+        "additional_geometry": 4.089757801964879,
+        "output": 6.104776720749214,
+        "view_search": 20.305615965044126
+      },
+      "frame_details": {
+        "1250": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0051908730529248714,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00245576910674572,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1870": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002634265925735235,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "670": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0025988707784563303,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "70": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002611581003293395,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "730": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002715150825679302,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0025881631299853325,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "07ffe0b6f7ed56f342312c111ee09d147db3420f4837925b9b600b1dc57c084f",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.538885498046875,
+        "FC": 1.168061699450016
+      },
+      "peak_cuda_allocated_bytes": 4653769216,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "389b01868b48d1e292f7a846c9427f24e1f95b3b626cc9a87fd06cc82ac66a49",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room0",
+      "seconds_per_scene": 34.209562649950385,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0007482352666556835,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_control_pools": 10,
+        "coarse_target_pools": 8,
+        "head_projections": 18
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.108869006857276,
+        "additional_geometry": 3.439449298894033,
+        "output": 5.67090077418834,
+        "view_search": 17.89011199795641
+      },
+      "frame_details": {},
+      "identity": "709f625c17a2e755071ff04766b9463cd1961d183f02fd6c1f2a02774ac36f49",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.1076663222312928
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cc6dafb185af6066dec7b7feece708aa119f20a61e6e9619fc1b9a267c7574d2",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room0",
+      "seconds_per_scene": 28.110079313162714,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0008861483074724674,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 18,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 24,
+        "head_projections": 26,
+        "original_attention_applications": 9,
+        "query_chunks": 9,
+        "query_locations": 1274
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.5547328831162304,
+        "FC": 1.1819277326576412,
+        "additional_geometry": 4.156153279123828,
+        "output": 5.789001441793516,
+        "view_search": 20.113735052989796
+      },
+      "frame_details": {
+        "1250": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.017641676822677255,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004699111916124821,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1870": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0039013370405882597,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "670": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004015306942164898,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "70": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004077170044183731,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "730": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003278807969763875,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "740": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003216593060642481,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "dc30f04684562d39f6fa05b9d4ccb0def9647a37dfcf27f946d6a81f62a39c78",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.5545387268066406,
+        "FC": 1.1805944237709045
+      },
+      "peak_cuda_allocated_bytes": 4667924992,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "9df125b08dd609adf8bd4874a7bc38601eff5ed68e45a50fdad72cc12d5d5d2f",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room0",
+      "seconds_per_scene": 33.796436537988484,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.000388692831620574,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "coarse_target_pools": 8,
+        "head_projections": 8
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.1626881663687527,
+        "additional_geometry": 8.637551218271255e-06,
+        "output": 5.63776132510975,
+        "view_search": 19.917578370077536
+      },
+      "frame_details": {},
+      "identity": "dfbf41227ebe3d46c2644f3b121c59ca0aa31647e4af26496b47499e1d91b7a7",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.1621582139208912
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "848c60275c63a18638732fd29de01f421dbfb05a66aa1bc9819e9c79be25f79e",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "room0",
+      "seconds_per_scene": 26.718425191938877,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00048821279779076576,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 2,
+        "AnyUp_target_or_control_pools": 3,
+        "FC_image_inputs": 2,
+        "additional_full_scene_projection_calls": 2,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 3,
+        "head_projections": 6,
+        "original_attention_applications": 2,
+        "query_chunks": 2,
+        "query_locations": 190
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.7196073697414249,
+        "FC": 0.33870445587672293,
+        "additional_geometry": 2.320754552958533,
+        "output": 4.891175183933228,
+        "view_search": 12.942749306792393
+      },
+      "frame_details": {
+        "390": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.007918421877548099,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "830": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003397703869268298,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "926f10e40b171ac9d3b7a1ffbf86ba98d37585a63fd83d53dbdfad96283c5782",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.7195573425292969,
+        "FC": 0.3381385380625725
+      },
+      "peak_cuda_allocated_bytes": 4653775360,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cb504f591fb1f8a750fb0a916480d3ac9e0035e54994241a5e824d81bd05127b",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office4",
+      "seconds_per_scene": 21.213479082100093,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003390673082321882,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 2,
+        "additional_full_scene_projection_calls": 2,
+        "coarse_control_pools": 3,
+        "coarse_target_pools": 3,
+        "head_projections": 6
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.31344785587862134,
+        "additional_geometry": 2.2927809739485383,
+        "output": 4.671608215896413,
+        "view_search": 10.0056327348575
+      },
+      "frame_details": {},
+      "identity": "68b2a3c055413f7a28dfe24558520b61b1d5df49cc46602cba48d86649fa0ab8",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.31300438499450683
+      },
+      "peak_cuda_allocated_bytes": 2040372736,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "67441de6877fc0194574d97002aba59df8f8e9e5b64b1682b0e71e4a6b9d78fd",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office4",
+      "seconds_per_scene": 17.283808847889304,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00031268130987882614,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 2,
+        "AnyUp_target_or_control_pools": 6,
+        "FC_image_inputs": 2,
+        "additional_full_scene_projection_calls": 2,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 9,
+        "head_projections": 9,
+        "original_attention_applications": 3,
+        "query_chunks": 3,
+        "query_locations": 462
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.7198793548159301,
+        "FC": 0.309001169167459,
+        "additional_geometry": 2.3126557709183544,
+        "output": 4.590214049909264,
+        "view_search": 9.92514644889161
+      },
+      "frame_details": {
+        "390": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00326656480319798,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "830": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.009387854021042585,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "1f4727b37ed555bd8d0139cc251c85e2cd6d68514f59451e7478f7b01463ee1e",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.7198328552246094,
+        "FC": 0.30862653493881226
+      },
+      "peak_cuda_allocated_bytes": 4663081472,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "2ba886f5db62cb58a7917bf0325b9a617cf9bdf5a37b620ab410d3afd8318938",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office4",
+      "seconds_per_scene": 17.857209475012496,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00020518898963928223,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 2,
+        "coarse_target_pools": 3,
+        "head_projections": 3
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.30117201968096197,
+        "additional_geometry": 2.4333130568265915e-06,
+        "output": 4.2404105151072145,
+        "view_search": 9.887983671855181
+      },
+      "frame_details": {},
+      "identity": "a6020b1017889219ee66440b3b46c66345c94acfb0499fc19b81a9e10ec2898b",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.30098629793245346
+      },
+      "peak_cuda_allocated_bytes": 2036240896,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cb504f591fb1f8a750fb0a916480d3ac9e0035e54994241a5e824d81bd05127b",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office4",
+      "seconds_per_scene": 14.429773828946054,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0006651224102824926,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 8,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 8,
+        "head_projections": 16,
+        "original_attention_applications": 7,
+        "query_chunks": 7,
+        "query_locations": 436
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.4900178860407323,
+        "FC": 1.087820905726403,
+        "additional_geometry": 4.7099404549226165,
+        "output": 6.538907662732527,
+        "view_search": 20.580626734066755
+      },
+      "frame_details": {
+        "110": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002447315026074648,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0022877370938658714,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1260": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002675335854291916,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "140": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0022072840947657824,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1970": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0032205739989876747,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1980": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002231349004432559,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002284084912389517,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "316f829b68711da1dd1331b6c6a4214ece43714167d251c3b1ba13bba0544698",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.489858581542969,
+        "FC": 1.0867082087993623
+      },
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d0d08dd1934382aff28a8562cbfbc5580abf04ee02984b3cc9f7628d50fbfc0f",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office3",
+      "seconds_per_scene": 35.407978765899315,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.000548758776858449,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_control_pools": 10,
+        "coarse_target_pools": 8,
+        "head_projections": 18
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.074560055276379,
+        "additional_geometry": 3.7433375150430948,
+        "output": 6.20568043878302,
+        "view_search": 17.69611485511996
+      },
+      "frame_details": {},
+      "identity": "07c23ab95b336a831cf6a772f04d9c181fb0735d4db75abe66aa81f60a19f8df",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.0735241260528565
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d2f44357774d7e30690d2f260fa9ab31888f53014db1ba8ae695bb78d3af3bcb",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office3",
+      "seconds_per_scene": 28.72024162299931,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.000702710123732686,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 7,
+        "AnyUp_target_or_control_pools": 18,
+        "FC_image_inputs": 7,
+        "additional_full_scene_projection_calls": 7,
+        "coarse_target_pools": 8,
+        "geometry_attention_applications": 23,
+        "head_projections": 26,
+        "original_attention_applications": 9,
+        "query_chunks": 9,
+        "query_locations": 1573
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 2.509212387027219,
+        "FC": 1.082327930489555,
+        "additional_geometry": 3.8151213456876576,
+        "output": 6.40306605072692,
+        "view_search": 16.478110956959426
+      },
+      "frame_details": {
+        "110": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004281532950699329,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "120": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0031663388945162296,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1260": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.005974631989374757,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "140": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003251423127949238,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1970": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.008983321022242308,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "1980": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003186953952535987,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004642820917069912,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "da2dfec3a0ad6ce71887c02c28b7d30e2d2a5728fc703c0be50363544c2ffc69",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 2.5090557861328127,
+        "FC": 1.081247121810913
+      },
+      "peak_cuda_allocated_bytes": 4662753792,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "84801b121450f198477572906ed656630444f058899bc63bf974d9d2198736da",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office3",
+      "seconds_per_scene": 30.28854138101451,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0004493265878409147,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 7,
+        "coarse_target_pools": 8,
+        "head_projections": 8
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.036591328913346,
+        "additional_geometry": 7.3320697993040085e-06,
+        "output": 6.256639843806624,
+        "view_search": 16.386130093829706
+      },
+      "frame_details": {},
+      "identity": "7691247df743894fc2d183c08fcaf0fac0bc82f8c9dfc4d7c114c94f5f60ca4a",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 1.0361488214991987
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "42d8011f9fc53725a9b9f5fdeaa37e2e3b654b469e232d04cf28ab0c0b4a778f",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office3",
+      "seconds_per_scene": 23.679817925207317,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0006554138381034136,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 7,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 8,
+        "head_projections": 14,
+        "original_attention_applications": 6,
+        "query_chunks": 6,
+        "query_locations": 706
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.7866538823582232,
+        "FC": 0.7769124980550259,
+        "additional_geometry": 3.0210552068892866,
+        "output": 4.606631540926173,
+        "view_search": 21.75850706594065
+      },
+      "frame_details": {
+        "1180": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00471493904478848,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "270": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002927090972661972,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "460": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003415475133806467,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0033414559438824654,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "490": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0033146508503705263,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "5e72ff305492f8068cf4f71fd066ab1c5c18c73e5b9d98d976430a8d474ac196",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.786540557861328,
+        "FC": 0.7759324538111687
+      },
+      "peak_cuda_allocated_bytes": 4653775360,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "91416be06b392bc541f01eaf8a30faa5d5859395581712684cae5b4a37fbdaa2",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office2",
+      "seconds_per_scene": 31.95041560800746,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00048670568503439426,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_control_pools": 10,
+        "coarse_target_pools": 7,
+        "head_projections": 17
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.790221729548648,
+        "additional_geometry": 2.6512234748806804,
+        "output": 4.086644055088982,
+        "view_search": 22.00482326396741
+      },
+      "frame_details": {},
+      "identity": "d9dfb01ae74501fbba533b332b6aaaadd70945298d0225cbebdf9d331b37e45f",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.789444787979126
+      },
+      "peak_cuda_allocated_bytes": 2044698112,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "7555384aeb7e50747a8d694b538ea766e2b358a94d1103cb6370854d050930f7",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office2",
+      "seconds_per_scene": 29.533399229170755,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0005974799860268831,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 5,
+        "AnyUp_target_or_control_pools": 17,
+        "FC_image_inputs": 5,
+        "additional_full_scene_projection_calls": 5,
+        "coarse_target_pools": 7,
+        "geometry_attention_applications": 42,
+        "head_projections": 24,
+        "original_attention_applications": 17,
+        "query_chunks": 17,
+        "query_locations": 3645
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.824193191016093,
+        "FC": 0.7804150420706719,
+        "additional_geometry": 2.583581630140543,
+        "output": 4.02247170987539,
+        "view_search": 18.66015140991658
+      },
+      "frame_details": {
+        "1180": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0327202370390296,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "270": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.003149125026538968,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "460": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004480530042201281,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "470": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.006239986978471279,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "490": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.00963816698640585,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "64f139f98ca40b525ce0ed8e5149de33b92772a5bfc15fa0cf2b09194a67d741",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.824074249267578,
+        "FC": 0.7796138844490051
+      },
+      "peak_cuda_allocated_bytes": 4667931136,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "8458719896eadc78506f46158d64a332e48083131bc4fd682536c2847a8a5600",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office2",
+      "seconds_per_scene": 27.871410463005304,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00030208355747163296,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 5,
+        "coarse_target_pools": 7,
+        "head_projections": 7
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7511333813890815,
+        "additional_geometry": 5.383975803852081e-06,
+        "output": 3.981943274149671,
+        "view_search": 18.589974869973958
+      },
+      "frame_details": {},
+      "identity": "5b9e598ec8f19c550a2e73a98964972faa7ff6b3488ee8e926153d88ccf671c3",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7508315569059923
+      },
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "1c24ab06bd8b13afbef311163a9fa003e42762a0071cafec6757ca82e68c7ef9",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office2",
+      "seconds_per_scene": 23.323358993045986,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00026825512759387493,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 1,
+        "AnyUp_target_or_control_pools": 1,
+        "FC_image_inputs": 1,
+        "additional_full_scene_projection_calls": 1,
+        "coarse_target_pools": 1,
+        "geometry_attention_applications": 1,
+        "head_projections": 2,
+        "original_attention_applications": 1,
+        "query_chunks": 1,
+        "query_locations": 32
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.3606466541532427,
+        "FC": 0.16575280902907252,
+        "additional_geometry": 1.14520715479739,
+        "output": 1.6877782680094242,
+        "view_search": 8.518173357006162
+      },
+      "frame_details": {
+        "1950": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002628721995279193,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "1d638cb810f3bc26684991476680c03f001b8050fbd37801602b6fb8dfec6d13",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.360619140625,
+        "FC": 0.16538533973693847
+      },
+      "peak_cuda_allocated_bytes": 4649116160,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office1",
+      "seconds_per_scene": 11.877826498122886,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.000209844671189785,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 1,
+        "additional_full_scene_projection_calls": 1,
+        "coarse_control_pools": 2,
+        "coarse_target_pools": 1,
+        "head_projections": 3
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.17415504530072212,
+        "additional_geometry": 1.1605681227520108,
+        "output": 1.7051815090235323,
+        "view_search": 7.600690869148821
+      },
+      "frame_details": {},
+      "identity": "c06bc2fdca96f1d1ed18b0603599bf23ced5696d0df65b4c2fb46890c78d201f",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.17389754295349122
+      },
+      "peak_cuda_allocated_bytes": 2031783424,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office1",
+      "seconds_per_scene": 10.640805390896276,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0002079878468066454,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 1,
+        "AnyUp_target_or_control_pools": 3,
+        "FC_image_inputs": 1,
+        "additional_full_scene_projection_calls": 1,
+        "coarse_target_pools": 1,
+        "geometry_attention_applications": 3,
+        "head_projections": 4,
+        "original_attention_applications": 1,
+        "query_chunks": 1,
+        "query_locations": 108
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.36106826714240015,
+        "FC": 0.18053398514166474,
+        "additional_geometry": 1.2283846950158477,
+        "output": 1.436781533062458,
+        "view_search": 8.190337167819962
+      },
+      "frame_details": {
+        "1950": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004116327967494726,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "20f84b12b9a97f3b08ec1cfcc37007173282e20721e91244a1b9aed53d46abe5",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.3610401306152344,
+        "FC": 0.1803003215789795
+      },
+      "peak_cuda_allocated_bytes": 4658618880,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office1",
+      "seconds_per_scene": 11.39731363602914,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00014832336455583572,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 1,
+        "coarse_target_pools": 1,
+        "head_projections": 1
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.15303500089794397,
+        "additional_geometry": 1.8007121980190277e-06,
+        "output": 1.4006000831723213,
+        "view_search": 7.071091244928539
+      },
+      "frame_details": {},
+      "identity": "e4648d4d759a3dca6a1b45648738373ac84cf20f7058c3cfa8b4a275893e7866",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.1528979554772377
+      },
+      "peak_cuda_allocated_bytes": 2031783424,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "d963d9b7b1234a4c877e66a66d51a10440542c87562abe2ec524d0f5d7c043dc",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office1",
+      "seconds_per_scene": 8.624876453075558,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0004894803278148174,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 3,
+        "AnyUp_target_or_control_pools": 3,
+        "FC_image_inputs": 3,
+        "additional_full_scene_projection_calls": 3,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 3,
+        "head_projections": 6,
+        "original_attention_applications": 3,
+        "query_chunks": 3,
+        "query_locations": 135
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.0908905528485775,
+        "FC": 0.49927108082920313,
+        "additional_geometry": 1.8947253141086549,
+        "output": 2.96954930620268,
+        "view_search": 13.159511994803324
+      },
+      "frame_details": {
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0026843890082091093,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "290": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0030038380064070225,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "720": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.002562478883191943,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "effa46195379b69706aaa3d48629cff4451f412ca2e8975283f5d384d35b9bd6",
+      "method": "EV06_OWNER_ANYUP",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.0908030700683593,
+        "FC": 0.4986066347360611
+      },
+      "peak_cuda_allocated_bytes": 4649318912,
+      "peak_cuda_reserved_bytes": 7136608256,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "ad5464448daf2a63c1666d1650e4ca6590e925b39d92c8e6b12bada2e1eb4930",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office0",
+      "seconds_per_scene": 19.614437729120255,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.0003049243241548538,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 3,
+        "additional_full_scene_projection_calls": 3,
+        "coarse_control_pools": 5,
+        "coarse_target_pools": 3,
+        "head_projections": 8
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.4625688965898007,
+        "additional_geometry": 1.4373587041627616,
+        "output": 2.4130981978960335,
+        "view_search": 11.145218890160322
+      },
+      "frame_details": {},
+      "identity": "3ae2358cfd2f36e07a3a8f23b16babf61aac8db72d64ba3b2ebbe886fbb005ff",
+      "method": "EV03_CONTRAST",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.4620318121910095
+      },
+      "peak_cuda_allocated_bytes": 2044501504,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "ad5464448daf2a63c1666d1650e4ca6590e925b39d92c8e6b12bada2e1eb4930",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office0",
+      "seconds_per_scene": 15.458549613133073,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00039037736132740974,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "AnyUp_QK_computations": 3,
+        "AnyUp_target_or_control_pools": 8,
+        "FC_image_inputs": 3,
+        "additional_full_scene_projection_calls": 3,
+        "coarse_target_pools": 3,
+        "geometry_attention_applications": 8,
+        "head_projections": 11,
+        "original_attention_applications": 3,
+        "query_chunks": 3,
+        "query_locations": 406
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 1.0656517439056188,
+        "FC": 0.45473589980974793,
+        "additional_geometry": 1.442348584998399,
+        "output": 2.3784817098639905,
+        "view_search": 11.04920992301777
+      },
+      "frame_details": {
+        "1930": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004485746845602989,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "290": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.0032004481181502342,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        },
+        "720": {
+          "chunk_attempts": [
+            {
+              "chunk": 256,
+              "seconds": 0.004081621067598462,
+              "status": "COMPLETE"
+            }
+          ],
+          "variant": "owner_depth"
+        }
+      },
+      "identity": "cb30b7eefdcff7018a35d75fd55be43287dcf251153e0bfd6d79b358231bf81a",
+      "method": "EV07_COMBINATION",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 1.0655866088867187,
+        "FC": 0.454170250415802
+      },
+      "peak_cuda_allocated_bytes": 4658625024,
+      "peak_cuda_reserved_bytes": 7138705408,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "cf3dc7bf54bd5867d7592a4510c8b5cb729c1a5bb438ce9166ba131272553827",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office0",
+      "seconds_per_scene": 16.390818238956854,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+      "boundary_sync_and_overhead_seconds": 0.00019917404279112816,
+      "correctness_checked_after_timer": true,
+      "counts": {
+        "FC_image_inputs": 3,
+        "coarse_target_pools": 3,
+        "head_projections": 3
+      },
+      "exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.4387894959654659,
+        "additional_geometry": 3.4170225262641907e-06,
+        "output": 2.2837796728126705,
+        "view_search": 9.423777602147311
+      },
+      "frame_details": {},
+      "identity": "e460d0fc8daef187cebba52dde4f5d1dbd9bafec831bb143e161996ea0626845",
+      "method": "EV01_G1_V2",
+      "models_common_geometry_NQF_resident": true,
+      "nonadditive_cuda_event_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.4385861453358084
+      },
+      "peak_cuda_allocated_bytes": 2036240896,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "persistent_feature_view_result_cache_hits": 0,
+      "prediction_content_identity": "ad5464448daf2a63c1666d1650e4ca6590e925b39d92c8e6b12bada2e1eb4930",
+      "recovery_views_features_results_cold": true,
+      "repeat": 2,
+      "scene": "office0",
+      "seconds_per_scene": 12.146549361990765,
+      "status": "COLD_CALL_PARITY_VERIFIED"
+    }
+  ],
+  "identity": "270de88c69fb4a42bd83f393300ca1245eb3cbdac01188cdc8f8b9000742b19b",
+  "model_load_seconds": {
+    "AnyUp": 0.05788285983726382,
+    "FC": 7.635986891807988
+  },
+  "online_30FPS_validated": false,
+  "status": "PAIRED_COLD_TIMING_COMPLETE",
+  "summary": [
+    {
+      "calls": 16,
+      "counts": {
+        "FC_image_inputs": 72,
+        "coarse_target_pools": 84,
+        "head_projections": 84
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7255606860562693,
+        "additional_geometry": 5.978290573693812e-06,
+        "output": 3.9158731536008418,
+        "view_search": 18.07123362866696
+      },
+      "mean_seconds_per_scene": 22.713021570656565,
+      "median_seconds_per_scene": 22.797673649038188,
+      "method": "EV01_G1_V2",
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "AnyUp_QK_computations": 70,
+        "AnyUp_target_or_control_pools": 188,
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_target_pools": 84,
+        "geometry_attention_applications": 280,
+        "head_projections": 272,
+        "original_attention_applications": 112,
+        "query_chunks": 112,
+        "query_locations": 19528
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 1.5958650296379346,
+        "FC": 0.7233780017995741,
+        "additional_geometry": 2.6385754815564724,
+        "output": 3.9486859528406058,
+        "view_search": 15.288021031185053
+      },
+      "mean_seconds_per_scene": 24.195117602706887,
+      "median_seconds_per_scene": 24.744553892989643,
+      "method": "EV07_COMBINATION",
+      "peak_cuda_allocated_bytes": 4667931136,
+      "peak_cuda_reserved_bytes": 7142899712
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_control_pools": 106,
+        "coarse_target_pools": 84,
+        "head_projections": 190
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7194700556574389,
+        "additional_geometry": 2.563045787450392,
+        "output": 3.851839865150396,
+        "view_search": 15.550318902009167
+      },
+      "mean_seconds_per_scene": 22.685154549282743,
+      "median_seconds_per_scene": 22.51757191098295,
+      "method": "EV03_CONTRAST",
+      "peak_cuda_allocated_bytes": 2044698112,
+      "peak_cuda_reserved_bytes": 2376073216
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "AnyUp_QK_computations": 70,
+        "AnyUp_target_or_control_pools": 82,
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_target_pools": 84,
+        "geometry_attention_applications": 84,
+        "head_projections": 166,
+        "original_attention_applications": 72,
+        "query_chunks": 72,
+        "query_locations": 4902
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 1.5663590881449636,
+        "FC": 0.7144267993135145,
+        "additional_geometry": 2.753212901443476,
+        "output": 3.9279677226004424,
+        "view_search": 16.523852656886447
+      },
+      "mean_seconds_per_scene": 25.486417793828878,
+      "median_seconds_per_scene": 23.90800939593464,
+      "method": "EV06_OWNER_ANYUP",
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7140802560
+    }
+  ],
+  "threads": {
+    "raycasting": 4,
+    "torch": 4
+  }
+}

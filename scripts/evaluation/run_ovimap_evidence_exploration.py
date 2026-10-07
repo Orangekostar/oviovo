@@ -4,11 +4,16 @@
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 
 # Set before importing NumPy/PyTorch/scorer modules, including forked CPU workers.
 for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
     os.environ[name] = str(min(4, max(1, int(os.environ.get(name, "4")))))
+repository = Path(__file__).resolve().parents[2]
+for path in (repository, repository/"src"):
+    sys.path.insert(0, str(path))
+os.environ["PYTHONPATH"] = os.pathsep.join([str(repository/"src"), str(repository), os.environ.get("PYTHONPATH", "")])
 
 from static_ovmap.evidence_exploration.binding import bind, load_binding
 

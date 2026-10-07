@@ -88,3 +88,13 @@ def test_geometry_unknown_depth_is_neutral_and_window_zeros_stay_zero():
     torch.testing.assert_close(a.reweight_attention(attention, torch.ones_like(attention)), attention)
     with pytest.raises(ValueError, match="all-masked"):
         a.reweight_attention(torch.zeros(1, 2), torch.ones(1, 2))
+
+
+def test_paired_score_diagnosis_preserves_released_duplicate_entry_multiplicity():
+    d = module("diagnostic_details")
+    row = {"kind": "FP_DUPLICATE", "owner": 2, "gt_id": 1001,
+           "class_label": "chair", "distance_index": 0, "ambiguous_tie": False}
+    result = d.compare_entries([row], [row, row])
+    assert result["removed_definite_FP_score_entries50"] == 1
+    assert len(result["removed_score_entries50"]) == 1
+    assert result["lost_unique_GT_matches50"] == 0

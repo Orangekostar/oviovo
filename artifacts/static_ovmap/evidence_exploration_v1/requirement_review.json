@@ -1,0 +1,187 @@
+{
+  "artifact_bytes": 19731613,
+  "assets": "ASSETS_AVAILABLE_STRICT_LOAD_VERIFIED",
+  "checks": [
+    {
+      "evidence": [
+        "source_binding.json.gz",
+        "configs/static_ovmap/evidence_exploration_v1.json"
+      ],
+      "requirement": "0: isolated task/base/branch; fixed slate and unchanged deployment",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "source_binding.json.gz",
+        "SOURCE_BINDING.md"
+      ],
+      "requirement": "1: actual 172/14 parent lineage and 52 baseline scene imports",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "baseline_diagnostics.json.gz"
+      ],
+      "requirement": "2: all cache-only diagnoses; exactly two diagnostic pools; actual ignore ledger",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "large_artifact_dependencies.json.gz",
+        "preparation.py"
+      ],
+      "requirement": "3: registry/mask equality, geometric trigger, at most two controls on original G1",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "upstream_weight_identity.json",
+        "study_result_store.json.gz",
+        "anyup_adapter.py"
+      ],
+      "requirement": "4: pinned AnyUp checkpoint/source; original FP32 FC; aligned grids; real neutrality",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "anyup_adapter.py",
+        "large_artifact_dependencies.json.gz"
+      ],
+      "requirement": "5: shared original averaged attention, explicit owner/depth and no-depth arms",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "candidate_decisions.json.gz",
+        "verifier.py"
+      ],
+      "requirement": "6: feature availability separate from deferral; no hidden threshold/contrast sweep",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "candidate_decisions.json.gz",
+        "large_artifact_dependencies.json.gz"
+      ],
+      "requirement": "6a: actual trigger-off availability/classes/scores/acceptance/vector hashes equal B1",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "scene_and_pooled_all_metrics_classes.json.gz"
+      ],
+      "requirement": "7: all 234 scene/method outcomes and 18 ordered official pools",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "outputs.py",
+        "evaluation.py",
+        "paired_diagnostics.json.gz"
+      ],
+      "requirement": "8: immutable D2 incumbents, accepted expanded registry reaches scorer, rank/GT scoring unchanged",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "implementation_freeze.json",
+        "selection.json"
+      ],
+      "requirement": "9: committed freeze; all-five-metric unrounded gate and one exposed-cohort recommendation",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "focused_tests.log",
+        "study_result_store.json.gz"
+      ],
+      "requirement": "10: focused production checks and both real pilots; no new Native/NQ/frontend/training/map inference",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "timing_records.json",
+        "timing.py"
+      ],
+      "requirement": "11: paired cold boundaries, all repeats, reverse order, post-timer parity and memory/costs",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "timing_records.json"
+      ],
+      "requirement": "11a: actual ordered repeats, equal work counts, exclusive stages and observed memory",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "artifacts/static_ovmap/evidence_exploration_v1/table1_main.md",
+        "artifacts/static_ovmap/evidence_exploration_v1/table1_main.csv",
+        "artifacts/static_ovmap/evidence_exploration_v1/table1_main.json",
+        "artifacts/static_ovmap/evidence_exploration_v1/table2_mechanisms.md",
+        "artifacts/static_ovmap/evidence_exploration_v1/table2_mechanisms.csv",
+        "artifacts/static_ovmap/evidence_exploration_v1/table2_mechanisms.json",
+        "artifacts/static_ovmap/evidence_exploration_v1/table3_timing.md",
+        "artifacts/static_ovmap/evidence_exploration_v1/table3_timing.csv",
+        "artifacts/static_ovmap/evidence_exploration_v1/table3_timing.json",
+        "docs/paper/static_ovmap/EVIDENCE_EXPLORATION_RESULTS.md",
+        "docs/paper/static_ovmap/EVIDENCE_EXPLORATION_HANDOFF.md",
+        "docs/paper/static_ovmap/EVIDENCE_EXPLORATION_SELECTION.md",
+        "docs/paper/static_ovmap/EVIDENCE_EXPLORATION_CLAIMS.md"
+      ],
+      "requirement": "12: three tables MD/CSV/JSON, four reports, one store/cell provenance and compact licensed-data-free artifacts",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "table1_main.csv",
+        "cell_provenance.json"
+      ],
+      "requirement": "12a: exact displayed numeric cells and units",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "artifacts/static_ovmap/evidence_exploration_v1/table1_main.md",
+        "artifacts/static_ovmap/evidence_exploration_v1/table1_main.csv",
+        "artifacts/static_ovmap/evidence_exploration_v1/table1_main.json",
+        "artifacts/static_ovmap/evidence_exploration_v1/table2_mechanisms.md",
+        "artifacts/static_ovmap/evidence_exploration_v1/table2_mechanisms.csv",
+        "artifacts/static_ovmap/evidence_exploration_v1/table2_mechanisms.json",
+        "artifacts/static_ovmap/evidence_exploration_v1/table3_timing.md",
+        "artifacts/static_ovmap/evidence_exploration_v1/table3_timing.csv",
+        "artifacts/static_ovmap/evidence_exploration_v1/table3_timing.json"
+      ],
+      "requirement": "12c: all three MD/CSV/JSON representations agree",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "table2_mechanisms.json",
+        "table3_timing.json",
+        "study_result_store.json.gz"
+      ],
+      "requirement": "12d: mechanism and timing displayed values derive from the single store",
+      "verified": true
+    },
+    {
+      "evidence": [
+        "scripts/evaluation/run_ovimap_evidence_exploration.py"
+      ],
+      "requirement": "12b: executable controller exact command and all specified flags",
+      "verified": true
+    }
+  ],
+  "deployment": "N0_UNCHANGED",
+  "identity": "e5e0cc496c83f0369eabc0a59e8639b1880d8071e0c904b6eb721f19f9fc6afb",
+  "implementation": "IMPLEMENTED_AND_EXECUTED",
+  "performance_target": false,
+  "primary_agent_retains_review_and_integration_ownership": true,
+  "publication": "PENDING_FULL_SHA_RECEIPT_OUTSIDE_COMMIT",
+  "required_execution_verified": true,
+  "research_selection": "EV01_G1_V2",
+  "scientific_coverage": "234_SCENE_ROWS_18_FULL_POOLS",
+  "single_result_store_identity": "23206dac743a1b667b0643ba1ac7627d202e779cedacc5c8b933d94308210084",
+  "status": "REQUIREMENT_REVIEW_VERIFIED",
+  "timing": "PAIRED_COLD_TIMING_COMPLETE"
+}

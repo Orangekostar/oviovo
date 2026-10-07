@@ -1,0 +1,488 @@
+{
+  "OVIMAP_hardware": "RTX3090 + Intel Core i7-12700K",
+  "OVIMAP_peak_GPU_memory": null,
+  "before_after_rows": {
+    "G1_REFERENCE": {
+      "mean_seconds": 44.44828242516087,
+      "peak_cuda_allocated_bytes_max": 2028009984,
+      "peak_cuda_reserved_bytes_max": 2369781760
+    },
+    "G1_SELECTED": {
+      "mean_seconds": 18.85322796656692,
+      "peak_cuda_allocated_bytes_max": 2028009984,
+      "peak_cuda_reserved_bytes_max": 2369781760
+    }
+  },
+  "matched_G1_G3_rows": [
+    {
+      "Allocated_GiB": 1.8887314796447754,
+      "Calls": 16,
+      "FC_images_scene": 4.5,
+      "Method": "G1_SELECTED",
+      "Reserved_GiB": 2.455078125,
+      "Seconds_scene": 19.885861151924473
+    },
+    {
+      "Allocated_GiB": 1.8887314796447754,
+      "Calls": 16,
+      "FC_images_scene": 11.5,
+      "Method": "G3_SELECTED",
+      "Reserved_GiB": 2.20703125,
+      "Seconds_scene": 20.94206223425863
+    }
+  ],
+  "matched_before_after_G1": {
+    "reduction_fraction": 0.5758389989914512,
+    "speedup": 2.357595341444051
+  },
+  "module_boundaries": {
+    "2D--3D association": "original native depth/panoptic fusion + depthTo3d + bounding boxes + insertion + integrateFrame + global instance raycast; diagnostic exports excluded",
+    "Depth segmentation": "original threaded depthSegment + map/mask retrieval + original uint8 raster composition; PNG I/O excluded",
+    "RGB segmentation": "original CropFormer transform/inference + CUDA sync + CPU mask transfer + ID raster composition; image decoding excluded"
+  },
+  "module_comparison_rows": [
+    {
+      "G1_ms": 1474.1985446385997,
+      "G3_ms": 1474.1985446385997,
+      "Module": "RGB segmentation",
+      "OVIMAP_ms": 964.8,
+      "n": 30
+    },
+    {
+      "G1_ms": 1488.411755188118,
+      "G3_ms": 1488.411755188118,
+      "Module": "Depth segmentation",
+      "OVIMAP_ms": 88.4,
+      "n": 30
+    },
+    {
+      "G1_ms": 3676.873069263494,
+      "G3_ms": 3676.873069263494,
+      "Module": "2D--3D association",
+      "OVIMAP_ms": 76.3,
+      "n": 30
+    },
+    {
+      "G1_ms": 52.22018920132541,
+      "G3_ms": 52.030881595565006,
+      "Module": "View selection",
+      "OVIMAP_ms": 140.8,
+      "n": 10
+    },
+    {
+      "G1_ms": 219.72176852028093,
+      "G3_ms": 194.47612906325324,
+      "Module": "Semantic extraction",
+      "OVIMAP_ms": 131.3,
+      "n": 10
+    }
+  ],
+  "module_rows": {
+    "actual_fixed_temporal_decimation_in_source_runs": false,
+    "assumed_encoded_images_per_semantic_keyframe": 1,
+    "combined_three_executor_overlap_measured": false,
+    "decimation_scope": "no additional dropping of the 200 cached recovery records; their original physical frame cadence is 10",
+    "excluded_scene_stages": [
+      "registry_geometry",
+      "export_bookkeeping"
+    ],
+    "inherited_capture_physical_interval_n": 10,
+    "new_online_accuracy_measurements": 0,
+    "our_rows": [
+      {
+        "amortized_ms_per_processed_unit": 1474.1985446385997,
+        "budget_ms_per_call": 1000.0,
+        "component": "RGB segmentation",
+        "method": "G1",
+        "processed_unit": "directly timed physical keyframe",
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "source_kind": "fresh synchronized frontend wall; executed physical n=30 offline replay",
+        "thread_id": 1
+      },
+      {
+        "amortized_ms_per_processed_unit": 1488.411755188118,
+        "budget_ms_per_call": 1000.0,
+        "component": "Depth segmentation",
+        "method": "G1",
+        "processed_unit": "directly timed physical keyframe",
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "source_kind": "fresh synchronized frontend wall; executed physical n=30 offline replay",
+        "thread_id": 2
+      },
+      {
+        "amortized_ms_per_processed_unit": 3676.873069263494,
+        "budget_ms_per_call": 1000.0,
+        "component": "2D--3D association",
+        "method": "G1",
+        "processed_unit": "directly timed physical keyframe",
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "source_kind": "fresh synchronized frontend wall; executed physical n=30 offline replay",
+        "thread_id": 2
+      },
+      {
+        "amortized_ms_per_processed_unit": 52.22018920132541,
+        "budget_ms_per_call": 333.3333333333333,
+        "component": "View selection",
+        "method": "G1",
+        "processed_unit": "checked input frame",
+        "scheduled_hz": 3.0,
+        "skipped_frames_n": 10,
+        "source_kind": "measured stage wall / observed work; proposed interval",
+        "thread_id": 3
+      },
+      {
+        "amortized_ms_per_processed_unit": 219.72176852028093,
+        "budget_ms_per_call": 333.3333333333333,
+        "component": "Semantic extraction",
+        "method": "G1",
+        "processed_unit": "encoded image with associated regions",
+        "scheduled_hz": 3.0,
+        "skipped_frames_n": 10,
+        "source_kind": "measured stage wall / observed work; proposed interval",
+        "thread_id": 3
+      },
+      {
+        "amortized_ms_per_processed_unit": 1474.1985446385997,
+        "budget_ms_per_call": 1000.0,
+        "component": "RGB segmentation",
+        "method": "G3",
+        "processed_unit": "directly timed physical keyframe",
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "source_kind": "fresh synchronized frontend wall; executed physical n=30 offline replay",
+        "thread_id": 1
+      },
+      {
+        "amortized_ms_per_processed_unit": 1488.411755188118,
+        "budget_ms_per_call": 1000.0,
+        "component": "Depth segmentation",
+        "method": "G3",
+        "processed_unit": "directly timed physical keyframe",
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "source_kind": "fresh synchronized frontend wall; executed physical n=30 offline replay",
+        "thread_id": 2
+      },
+      {
+        "amortized_ms_per_processed_unit": 3676.873069263494,
+        "budget_ms_per_call": 1000.0,
+        "component": "2D--3D association",
+        "method": "G3",
+        "processed_unit": "directly timed physical keyframe",
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "source_kind": "fresh synchronized frontend wall; executed physical n=30 offline replay",
+        "thread_id": 2
+      },
+      {
+        "amortized_ms_per_processed_unit": 52.030881595565006,
+        "budget_ms_per_call": 333.3333333333333,
+        "component": "View selection",
+        "method": "G3",
+        "processed_unit": "checked input frame",
+        "scheduled_hz": 3.0,
+        "skipped_frames_n": 10,
+        "source_kind": "measured stage wall / observed work; proposed interval",
+        "thread_id": 3
+      },
+      {
+        "amortized_ms_per_processed_unit": 194.47612906325324,
+        "budget_ms_per_call": 333.3333333333333,
+        "component": "Semantic extraction",
+        "method": "G3",
+        "processed_unit": "encoded image with associated regions",
+        "scheduled_hz": 3.0,
+        "skipped_frames_n": 10,
+        "source_kind": "measured stage wall / observed work; proposed interval",
+        "thread_id": 3
+      }
+    ],
+    "our_thread_budgets": [
+      {
+        "busy_fraction": 1.4741985446386,
+        "fits_mean_budget": false,
+        "mean_ms_per_input_at_proposed_interval": 49.139951487953326,
+        "method": "G1",
+        "minimum_interval_from_mean": 45,
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "thread_id": 1
+      },
+      {
+        "busy_fraction": 5.165284824451612,
+        "fits_mean_budget": false,
+        "mean_ms_per_input_at_proposed_interval": 172.17616081505372,
+        "method": "G1",
+        "minimum_interval_from_mean": 155,
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "thread_id": 2
+      },
+      {
+        "busy_fraction": 0.815825873164819,
+        "fits_mean_budget": true,
+        "mean_ms_per_input_at_proposed_interval": 27.194195772160633,
+        "method": "G1",
+        "minimum_interval_from_mean": 9,
+        "scheduled_hz": 3.0,
+        "skipped_frames_n": 10,
+        "thread_id": 3
+      },
+      {
+        "busy_fraction": 1.4741985446386,
+        "fits_mean_budget": false,
+        "mean_ms_per_input_at_proposed_interval": 49.139951487953326,
+        "method": "G3",
+        "minimum_interval_from_mean": 45,
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "thread_id": 1
+      },
+      {
+        "busy_fraction": 5.165284824451612,
+        "fits_mean_budget": false,
+        "mean_ms_per_input_at_proposed_interval": 172.17616081505372,
+        "method": "G3",
+        "minimum_interval_from_mean": 155,
+        "scheduled_hz": 1.0,
+        "skipped_frames_n": 30,
+        "thread_id": 2
+      },
+      {
+        "busy_fraction": 0.7395210319764547,
+        "fits_mean_budget": true,
+        "mean_ms_per_input_at_proposed_interval": 24.650701065881826,
+        "method": "G3",
+        "minimum_interval_from_mean": 8,
+        "scheduled_hz": 3.0,
+        "skipped_frames_n": 10,
+        "thread_id": 3
+      }
+    ],
+    "proposed_interval": 10,
+    "proposed_semantic_uniform_update_interval_n": 10,
+    "semantic_chain_stages": [
+      "rgb_preprocess",
+      "recognition",
+      "other_sync"
+    ],
+    "shared_frontend_measured": true,
+    "status": "MEAN_BUDGET_ONLY_NOT_ONLINE_MEASUREMENT",
+    "target_input_fps": 30,
+    "thread_ids_are_separately_profiled_executor_roles": true,
+    "whole_pipeline_30fps_measured": false
+  },
+  "new_inference_for_historical_comparison": 0,
+  "no_cross_hardware_speedup_claim": true,
+  "our_hardware": {
+    "CPU": "Intel(R) Xeon(R) Silver 4314 CPU @ 2.40GHz",
+    "CUDA": "12.1",
+    "GPU": {
+      "compute_capability": "8.6",
+      "driver_version": "595.71.05",
+      "name": "NVIDIA A40",
+      "uuid": "GPU-41ba4cb6-edfe-ed30-c047-a19d9f23d0a8"
+    },
+    "OS_page_cache": "UNCONTROLLED_NOT_CLEARED",
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": false,
+    "deterministic_algorithms": false,
+    "encoder_batch_size": 1,
+    "numpy": "2.4.6",
+    "open3d": "0.19.0",
+    "open_clip": "3.3.0",
+    "operator_settings_changed": false,
+    "precision": "original_FP32",
+    "projector_threads": 4,
+    "python": "3.11.15 | packaged by conda-forge | (main, Jun 11 2026, 03:34:02) [GCC 14.3.0]",
+    "thread_environment": {
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1"
+    },
+    "timm": "1.0.19",
+    "torch": "2.4.0",
+    "torch_cudnn_tf32": true,
+    "torch_matmul_tf32": false,
+    "torch_threads": 1
+  },
+  "parameter_count_is_not_peak_memory": true,
+  "single_result_store_identity": "23206dac743a1b667b0643ba1ac7627d202e779cedacc5c8b933d94308210084",
+  "source": "https://arxiv.org/html/2603.26541v1",
+  "source_kind": "OVI-MAP author report, not same-machine rerun",
+  "source_records": [
+    {
+      "bytes": 17634,
+      "path": "/mnt/shared/ww/ovimap-runtime-parity-v1/attempt_001/tables/runtime_summary.json",
+      "sha256": "f85ffa24f6a571479cbad0c3203c4b2690cc9a716365805543cf6094d7400419"
+    },
+    {
+      "bytes": 34328,
+      "path": "/mnt/shared/ww/ovimap-runtime-parity-v1/worktree/artifacts/static_ovmap/table78_reproduction_v1/table_data.json",
+      "sha256": "e8c294cac1e8b275e7ac6fb808ccdc031ad36a7d0f302759b1125561895ea018"
+    },
+    {
+      "bytes": 12969,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office0/G1_SELECTED/measurement.json",
+      "sha256": "4c7f892a68395393c83a4188593b5bcefd22f6ce294cfe66cebf013ce6bd719e"
+    },
+    {
+      "bytes": 18377,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office0/G3_SELECTED/measurement.json",
+      "sha256": "b229e0268b928a6c5d6dc022ddd40cb9373b88f325c8c3548a7cdeafcf5dca76"
+    },
+    {
+      "bytes": 8471,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office1/G1_SELECTED/measurement.json",
+      "sha256": "d4d8ed4428123337ae350bc575b53262e14a8f32a3780526f61e30e79ca279c1"
+    },
+    {
+      "bytes": 10335,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office1/G3_SELECTED/measurement.json",
+      "sha256": "9082185b8f2411d2f5e7b8478930fd3c6c22d52d478dc2e775e8084a34a5351a"
+    },
+    {
+      "bytes": 21827,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office2/G1_SELECTED/measurement.json",
+      "sha256": "2d95ba4e6c8b3fb76f3c112142f2b726654b54821a3ca3e120b1a44bfe967ece"
+    },
+    {
+      "bytes": 34215,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office2/G3_SELECTED/measurement.json",
+      "sha256": "3b304c9741473ff70f4496f773b1f0334db1034897ed1c852d12e28fd1dd217c"
+    },
+    {
+      "bytes": 24218,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office3/G1_SELECTED/measurement.json",
+      "sha256": "21024574147f3e25a6f52368d67b893aa2e47b645528a99522d2308e61f29894"
+    },
+    {
+      "bytes": 38490,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office3/G3_SELECTED/measurement.json",
+      "sha256": "1e32b132104d0e6a93c4396989501904c6a9fc553d3e94634d55b87a206ccd7b"
+    },
+    {
+      "bytes": 12742,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office4/G1_SELECTED/measurement.json",
+      "sha256": "5bc5ddb5aee1bcd5c4f9fccac409e22d1800620c8195b49ba5cac3d942c615a5"
+    },
+    {
+      "bytes": 17853,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/office4/G3_SELECTED/measurement.json",
+      "sha256": "9b74932479d136b0f908a9da1ff6adac0ddddf630501e64bc085ead1fefff251"
+    },
+    {
+      "bytes": 21505,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/room0/G1_SELECTED/measurement.json",
+      "sha256": "5fb64b32f6c8a61676906cd588502a59d864cd92d82abfd82cf4b7a9bbef7dc1"
+    },
+    {
+      "bytes": 30354,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/room0/G3_SELECTED/measurement.json",
+      "sha256": "b62d41bdda5cc234690a280f678474a76fbc5f8c236d7c732ae4da49fb719e7a"
+    },
+    {
+      "bytes": 16438,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/room1/G1_SELECTED/measurement.json",
+      "sha256": "9194be16cdaa90baac4e2f55acdeb1405407fdb7a44081b4bfc37f7108a40432"
+    },
+    {
+      "bytes": 23520,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/room1/G3_SELECTED/measurement.json",
+      "sha256": "463ec004fd59f2ee7d8e2950302f0e84e84c0f683db4270cfc61f7c761d6f3e7"
+    },
+    {
+      "bytes": 21271,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/room2/G1_SELECTED/measurement.json",
+      "sha256": "d300ef15cdbb3c9dde8e1349d1876df54517683b54372094938d17b26d2c0ce3"
+    },
+    {
+      "bytes": 32313,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_1/room2/G3_SELECTED/measurement.json",
+      "sha256": "7a930cc218b006a55e6c880e38d82bf16db22345fdb84f83b5e1b6fd58f82ee2"
+    },
+    {
+      "bytes": 12966,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office0/G1_SELECTED/measurement.json",
+      "sha256": "86edc9db048137c0c7e55bb28ea032c8e088c1617cc5de63db74c3a0d87522fa"
+    },
+    {
+      "bytes": 18376,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office0/G3_SELECTED/measurement.json",
+      "sha256": "cc4c7fc6489193277c9ef680564c7454a2646c8010ce1c23daea0dbbf3edddc5"
+    },
+    {
+      "bytes": 8468,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office1/G1_SELECTED/measurement.json",
+      "sha256": "9372da7dc5edb1070ad72ac5899f1ffcd1487cec364d51f6adf7bada226013f1"
+    },
+    {
+      "bytes": 10333,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office1/G3_SELECTED/measurement.json",
+      "sha256": "4c5347a1739d37d9bedeb4202a5eb67bcae4d8aefab72bea90e7685dc4989002"
+    },
+    {
+      "bytes": 21828,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office2/G1_SELECTED/measurement.json",
+      "sha256": "fb6b7a069009b54a42176c812214e6d6b53757521fc6b9cdda34a016aa9c0b58"
+    },
+    {
+      "bytes": 34219,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office2/G3_SELECTED/measurement.json",
+      "sha256": "6bf3ba7499e876bbff6bb7a3525a409b6f6d05c4e3808b61346d9636d2392b98"
+    },
+    {
+      "bytes": 24222,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office3/G1_SELECTED/measurement.json",
+      "sha256": "470579ce1bfa278d78dd02dd1670df2118ccd09edb3247d820612d84af37ce53"
+    },
+    {
+      "bytes": 38489,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office3/G3_SELECTED/measurement.json",
+      "sha256": "656a817317a064db293291c577ee24be16d32f297456ff0863dd37df73923457"
+    },
+    {
+      "bytes": 12741,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office4/G1_SELECTED/measurement.json",
+      "sha256": "7d9248d19e2cf0efcd89c5a385089ce98112fdce907b8a307f8e896258930afc"
+    },
+    {
+      "bytes": 17859,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/office4/G3_SELECTED/measurement.json",
+      "sha256": "a5414faa4a889e90b012f64ae487a7911b3fae742fc8701560076cfeca4a3b63"
+    },
+    {
+      "bytes": 21501,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/room0/G1_SELECTED/measurement.json",
+      "sha256": "35214df535e3334ff9a05ce2f632ce2d35e42a5113545cee54707258a577d8d0"
+    },
+    {
+      "bytes": 30355,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/room0/G3_SELECTED/measurement.json",
+      "sha256": "8803719bfb588cb8b8c8af34827ea6ffe58a29750388360957df1e7222135fcc"
+    },
+    {
+      "bytes": 16434,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/room1/G1_SELECTED/measurement.json",
+      "sha256": "ece1e4e7abe63f0e3e85e0baa10ae4ca1cabd25d0cd63dec4d14c5caea2d2ce8"
+    },
+    {
+      "bytes": 23522,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/room1/G3_SELECTED/measurement.json",
+      "sha256": "1c3ec5151c45b166ff6ece69520bf59ea2e76713ca260f7f8394397dafbf9412"
+    },
+    {
+      "bytes": 21271,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/room2/G1_SELECTED/measurement.json",
+      "sha256": "5795a07b538eaeff7436acfb99fb28beefc7ab8f670d9672be6c625fc89cf125"
+    },
+    {
+      "bytes": 32311,
+      "path": "/mnt/shared/ww/ovimap-table78-reproduction-v1/attempt_002/table78/round_2/room2/G3_SELECTED/measurement.json",
+      "sha256": "e3e6944862908a03faa50cc9b4cc75f8219cd0b80c858807a5ee4cfd2cd98f78"
+    }
+  ]
+}

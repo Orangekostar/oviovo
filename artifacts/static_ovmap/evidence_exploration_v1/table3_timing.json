@@ -1,0 +1,54 @@
+{
+  "columns": [
+    "Method",
+    "Calls",
+    "Seconds_scene",
+    "Allocated_GiB",
+    "Reserved_GiB",
+    "FC_inputs_total",
+    "AnyUp_QK_total",
+    "Added_projection_total"
+  ],
+  "rows": [
+    {
+      "Added_projection_total": 0,
+      "Allocated_GiB": 1.9002423286437988,
+      "AnyUp_QK_total": 0,
+      "Calls": 16,
+      "FC_inputs_total": 72,
+      "Method": "EV01_G1_V2",
+      "Reserved_GiB": 2.212890625,
+      "Seconds_scene": 22.713021570656565
+    },
+    {
+      "Added_projection_total": 72,
+      "Allocated_GiB": 4.347349643707275,
+      "AnyUp_QK_total": 70,
+      "Calls": 16,
+      "FC_inputs_total": 72,
+      "Method": "EV07_COMBINATION",
+      "Reserved_GiB": 6.65234375,
+      "Seconds_scene": 24.195117602706887
+    },
+    {
+      "Added_projection_total": 72,
+      "Allocated_GiB": 1.904273509979248,
+      "AnyUp_QK_total": 0,
+      "Calls": 16,
+      "FC_inputs_total": 72,
+      "Method": "EV03_CONTRAST",
+      "Reserved_GiB": 2.212890625,
+      "Seconds_scene": 22.685154549282743
+    },
+    {
+      "Added_projection_total": 72,
+      "Allocated_GiB": 4.334349155426025,
+      "AnyUp_QK_total": 70,
+      "Calls": 16,
+      "FC_inputs_total": 72,
+      "Method": "EV06_OWNER_ANYUP",
+      "Reserved_GiB": 6.650390625,
+      "Seconds_scene": 25.486417793828878
+    }
+  ]
+}

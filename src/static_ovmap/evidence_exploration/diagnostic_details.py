@@ -10,7 +10,7 @@ from pathlib import Path
 from static_ovmap.cvpr_compact.area_fallback_experiment import seal
 from static_ovmap.cvpr_compact.projected_views import _verified_identity
 from static_ovmap.module_validation.contracts import atomic_write_json
-from static_ovmap.recovery_wave2.binding import read
+from static_ovmap.recovery_wave2.binding import ConsumptionIndex, read
 
 from .analysis import zipped, owner_from_file, trace_entries
 
@@ -40,8 +40,17 @@ def entry_signature(row):
 
 
 def compare_entries(candidate, reference):
-    a, b = {entry_signature(x): x for x in candidate}, {entry_signature(x): x for x in reference}
-    added, removed = [a[k] for k in a.keys()-b.keys()], [b[k] for k in b.keys()-a.keys()]
+    # The released duplicate rule may emit multiple score entries for an owner;
+    # preserve multiplicity instead of treating entries as a set of predictions.
+    a, b = {}, {}
+    for group, rows in ((a, candidate), (b, reference)):
+        for row in rows:
+            group.setdefault((*entry_signature(row), row["ambiguous_tie"]), []).append(row)
+    added, removed = [], []
+    for key in sorted(a.keys() | b.keys(), key=repr):
+        aa, bb = a.get(key, []), b.get(key, [])
+        added.extend(aa[len(bb):])
+        removed.extend(bb[len(aa):])
     def number(rows, prefix, ambiguous):
         return sum(x["kind"].startswith(prefix) and x["ambiguous_tie"] == ambiguous for x in rows)
     gta = {(x["class_label"], x["gt_id"]) for x in candidate if x["kind"] == "TP"}
@@ -106,7 +115,7 @@ def paired_analysis(binding, root):
     diagnostics, presence = supplement_baselines(binding, root)
     rows = {(x["scene"], x["method"]): x for x in store["scene_metrics"]}
     pools = {(x["cohort"], x["method"]): x for x in store["pooled_metrics"]}
-    details, owner_ledgers = [], []
+    details, baseline_details, owner_ledgers = [], [], []
     traces = {}
     for scene in binding["scenes"]:
         for method in binding["specification"]["methods"]:
@@ -140,6 +149,14 @@ def paired_analysis(binding, root):
             a, b = (scored50(traces[str(Path(score["manifest"]).with_name("trace.json.gz"))]) for score in (sa, sb))
             details.append({"scene": scene, "cohort": binding["scenes"][scene]["cohort"], "candidate": candidate, "reference": reference,
                 **compare_entries(a, b)})
+        baseline_score = read(rows[scene, "EV01_G1_V2"]["evaluation_receipt"])
+        baseline_entries = scored50(traces[str(Path(baseline_score["manifest"]).with_name("trace.json.gz"))])
+        for method in binding["specification"]["methods"]:
+            name = method["id"]
+            score = read(rows[scene, name]["evaluation_receipt"])
+            entries = scored50(traces[str(Path(score["manifest"]).with_name("trace.json.gz"))])
+            baseline_details.append({"scene": scene, "cohort": binding["scenes"][scene]["cohort"],
+                "candidate": name, "reference": "EV01_G1_V2", **compare_entries(entries, baseline_entries)})
         traces.clear()
     comparisons = []
     for cohort, names in binding["cohorts"].items():
@@ -166,8 +183,20 @@ def paired_analysis(binding, root):
                 "corrected_baseline_category_errors50": sum(x["corrected_baseline_category_error50"] for x in owner_rows),
                 "accepted_geometry_insufficient50": sum(x["decision"]["accepted"] and x["geometry_insufficient_at50"] for x in owner_rows),
                 "absent_class_cross_capture_FP50_entries": sum(x["absent_class_cross_capture_FP50_entries"] for x in owner_rows)})
+    baseline_comparisons = []
+    for cohort in binding["cohorts"]:
+        for method in binding["specification"]["methods"]:
+            name = method["id"]
+            counts = Counter()
+            for item in baseline_details:
+                if item["cohort"] == cohort and item["candidate"] == name:
+                    counts.update({key: value for key, value in item.items() if isinstance(value, int)})
+            baseline_comparisons.append({"cohort": cohort, "candidate": name, "reference": "EV01_G1_V2",
+                "paired_score_and_GT_counts": dict(counts)})
     result = seal({"status": "PAIRED_DIAGNOSTICS_COMPLETE", "result_store_identity": store["identity"],
+        "producer_source": ConsumptionIndex().identity(__file__),
         "comparisons": comparisons, "paired_scene_details": details, "candidate_method_ledger": owner_ledgers,
+        "baseline_comparisons": baseline_comparisons, "baseline_scene_details": baseline_details,
         "counts_are_nonexclusive": True, "TP_FP_score_entries_are_not_unique_GT_recall": True})
     atomic_write_json(root/"diagnostics/paired.json", result)
     return result

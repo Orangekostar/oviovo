@@ -1,0 +1,399 @@
+{
+  "GT_scores_used_to_choose_constants": false,
+  "assets": [
+    {
+      "bytes": 2095,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/attempt_001/assets.json",
+      "sha256": "004ad62235d7875947e6a9d94614527ce8e3a17f30d7ca08de46675739e35897"
+    },
+    {
+      "bytes": 3540612,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup_paper.pth",
+      "sha256": "9d035c0f27114a6f32bdd3d8ed93b6cd39dad4b8f8bf94e69fddbfbf022901b2"
+    },
+    {
+      "bytes": 18658,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/LICENSE",
+      "sha256": "f5b745ef98087f531e719ee8ca6a96809444573ecc7173c6fa68eaad39b3cc3f"
+    },
+    {
+      "bytes": 2204,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/anyup/layers/attention/attention_masking.py",
+      "sha256": "8cab50713617adfc637e19337ec8b55b961ba5bbacf0733435bc2c7a3f095b1d"
+    },
+    {
+      "bytes": 5059,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/anyup/layers/attention/chunked_attention.py",
+      "sha256": "3aaaf194c7c9b90c3a68510d4f99903912415e2a7ea3ceaf32c8ef98fea96465"
+    },
+    {
+      "bytes": 3789,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/anyup/model.py",
+      "sha256": "103b12b65c6603a841f31314f1c0b7a4e0460efec51130cfc8fc83b4a1d3baec"
+    },
+    {
+      "bytes": 2169,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/hubconf.py",
+      "sha256": "03303e1bac7f0b6d43c528d8a38e25a99d00ced1878635b87a37173208a21327"
+    }
+  ],
+  "binding_identity": "7783f1e4326e1891a2811f5fa7525cfdd6bcc52eca4d0bf1ef546d896eaf20ea",
+  "commit": "c012c552b10946e5754b7852650450f6a06766ad",
+  "constant_specification": {
+    "anyup": {
+      "base_features": "FC clip_vis_dense before visual_prediction_forward_convnext",
+      "checkpoint_bytes": 3540612,
+      "checkpoint_sha256": "9d035c0f27114a6f32bdd3d8ed93b6cd39dad4b8f8bf94e69fddbfbf022901b2",
+      "checkpoint_url": "https://github.com/wimmerth/anyup/releases/download/checkpoint/anyup_paper.pth",
+      "commit": "351807a9c4287368732cc247f26c7c81c9139af4",
+      "entrypoint": "anyup",
+      "guidance_mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "guidance_std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "license": "CC-BY-4.0 (repository LICENSE; preserve attribution)",
+      "new_training": false,
+      "output_size": "(FC_padded_height//4,FC_padded_width//4)",
+      "precision": "float32",
+      "repository": "wimmerth/anyup",
+      "use_natten": false
+    },
+    "base_commit": "30a6e07eb2b2fe6f69dc9bfa8405df171ff17f9f",
+    "branch": "research/ovimap-evidence-exploration-v1",
+    "cohorts": {
+      "replica8": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "scannet_cf18": [
+        "scene0011_00",
+        "scene0011_01",
+        "scene0050_00",
+        "scene0050_01",
+        "scene0050_02",
+        "scene0084_00",
+        "scene0084_01",
+        "scene0084_02",
+        "scene0168_00",
+        "scene0168_01",
+        "scene0168_02",
+        "scene0231_00",
+        "scene0231_01",
+        "scene0231_02",
+        "scene0378_00",
+        "scene0378_01",
+        "scene0378_02",
+        "scene0518_00"
+      ]
+    },
+    "constants": {
+      "anyup_query_chunk": 256,
+      "contrast_lambda": 0.25,
+      "control_margin_fraction": 0.1,
+      "control_margin_min_px": 8,
+      "epsilon": 1e-08,
+      "geometry_depth_abs_m": 0.02,
+      "geometry_depth_penalty_clip": 3.0,
+      "geometry_depth_rel": 0.02,
+      "geometry_floor": 0.05,
+      "margin_threshold_cosine": 0.01,
+      "max_context_owners": 2,
+      "min_control_pixels": 100,
+      "neutral_attention_atol": 1e-05,
+      "neutral_attention_rtol": 1e-05,
+      "new_view_selection": false,
+      "numeric_comparison_tolerance_fraction": 1e-10,
+      "oom_query_chunk_sequence": [
+        256,
+        128,
+        64
+      ],
+      "recognition_views": 1,
+      "trigger_hard_support_lt": 4,
+      "trigger_purity_lt": 0.5,
+      "upsample_stride": 4
+    },
+    "date": "2026-10-07",
+    "evaluation": {
+      "filter_GT_by_predictions": false,
+      "metrics": [
+        "apall",
+        "ap50",
+        "ap25",
+        "miou",
+        "macc"
+      ],
+      "minimum_instance_target_points": 100,
+      "overlap_additional": 0.25,
+      "overlaps_mathematical": [
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9
+      ],
+      "pooled_not_scene_mean": true,
+      "rank": "OFFICIAL_CURRENT_CLASS",
+      "units_difference": "percentage points",
+      "units_display": "percent",
+      "units_machine": "fraction"
+    },
+    "fallback_v2_results_root": "/home/ww/ovimap-area-fallback-v2/attempt_001",
+    "methods": [
+      {
+        "decision": "none",
+        "geometry_conditioning": "none",
+        "id": "EV00_D2",
+        "representation": "none",
+        "role": "inherited"
+      },
+      {
+        "decision": "none",
+        "geometry_conditioning": "none",
+        "id": "EV01_G1_V2",
+        "representation": "v2",
+        "role": "inherited"
+      },
+      {
+        "decision": "margin",
+        "geometry_conditioning": "none",
+        "id": "EV02_MARGIN",
+        "representation": "v2",
+        "role": "control"
+      },
+      {
+        "decision": "contrast_margin",
+        "geometry_conditioning": "none",
+        "id": "EV03_CONTRAST",
+        "representation": "v2",
+        "role": "proposed"
+      },
+      {
+        "decision": "none",
+        "geometry_conditioning": "none",
+        "id": "EV04_BILINEAR",
+        "representation": "bilinear",
+        "role": "control"
+      },
+      {
+        "decision": "none",
+        "geometry_conditioning": "none",
+        "id": "EV05_ANYUP",
+        "representation": "anyup",
+        "role": "control"
+      },
+      {
+        "decision": "none",
+        "geometry_conditioning": "owner_depth",
+        "id": "EV06_OWNER_ANYUP",
+        "representation": "anyup",
+        "role": "proposed"
+      },
+      {
+        "decision": "contrast_margin",
+        "geometry_conditioning": "owner_depth",
+        "id": "EV07_COMBINATION",
+        "representation": "anyup",
+        "role": "proposed"
+      },
+      {
+        "decision": "none",
+        "geometry_conditioning": "owner_only",
+        "id": "EV08_NO_DEPTH",
+        "representation": "anyup",
+        "role": "ablation"
+      }
+    ],
+    "output_root": "/mnt/shared/ww/ovimap-evidence-exploration-v1/attempt_001",
+    "parent_reference_file": "reference_binding.json",
+    "parent_runtime_root": "/mnt/shared/ww/ovimap-runtime-parity-v1/attempt_001",
+    "pilot_purpose": "interface and numerical correctness only; no hyperparameter selection",
+    "pilot_scenes": [
+      "office1",
+      "scene0011_00"
+    ],
+    "projection_execution": "R2_ROI_EXACT",
+    "publication": {
+      "artifact_root": "artifacts/static_ovmap/evidence_exploration_v1",
+      "normal_push": true,
+      "reports": [
+        "EVIDENCE_EXPLORATION_RESULTS.md",
+        "EVIDENCE_EXPLORATION_HANDOFF.md",
+        "EVIDENCE_EXPLORATION_SELECTION.md",
+        "EVIDENCE_EXPLORATION_CLAIMS.md"
+      ],
+      "require_full_SHA_match": true,
+      "target_max_git_mib": 50
+    },
+    "repository": "Orangekostar/oviovo",
+    "schema": "ovimap-evidence-exploration-v1",
+    "scope": {
+      "actual_neural_budget": "one FC encoding and one AnyUp Q/K computation per required unique bound G1 frame; chunking is not another view",
+      "cold_methods_max": 4,
+      "cold_repeats": 2,
+      "cold_scene_calls_max": 64,
+      "diagnostic_counterfactual_pools_max": 2,
+      "fixed_G1_frame_union_upper_bound": 3328,
+      "inference_timing_units": "seconds/scene; model and common geometry/NQF resident, recovery features/views/results cold",
+      "inherited_baseline_records": 52,
+      "max_candidates_per_scene": 128,
+      "max_context_region_records": 6656,
+      "new_frontends": 0,
+      "new_maps": 0,
+      "new_native_NQ_inference": 0,
+      "new_parameter_fits": 0,
+      "new_scene_method_records": 182,
+      "new_timed_baseline": "EV01_G1_V2",
+      "new_training": 0,
+      "physical_candidate_upper_bound": 3328,
+      "pooled_records": 18,
+      "retry_limit_per_failed_leaf": 2,
+      "scene_method_records": 234,
+      "scientific_methods": 9
+    },
+    "selection": {
+      "cf_AP50_at_least_D2": true,
+      "cf_APall_strictly_above_D2": true,
+      "cf_nondecrease_vs_G1_metrics": [
+        "apall",
+        "ap50",
+        "ap25",
+        "miou",
+        "macc"
+      ],
+      "deployment": "N0_UNCHANGED",
+      "fallback": "EV01_G1_V2",
+      "material_CF_APall_gain_above_D2_pp": 0.1,
+      "reference_CF_AP": "EV00_D2",
+      "reference_no_regression": "EV01_G1_V2",
+      "replica_nondecrease_metrics": [
+        "apall",
+        "ap50",
+        "ap25",
+        "miou",
+        "macc"
+      ],
+      "simplicity_order": [
+        "EV00_D2",
+        "EV01_G1_V2",
+        "EV02_MARGIN",
+        "EV03_CONTRAST",
+        "EV04_BILINEAR",
+        "EV05_ANYUP",
+        "EV06_OWNER_ANYUP",
+        "EV07_COMBINATION",
+        "EV08_NO_DEPTH"
+      ],
+      "tie_break": [
+        "cf.apall",
+        "cf.ap50",
+        "replica.apall",
+        "cf.miou",
+        "fixed_simplicity_order"
+      ],
+      "type": "retrospective research selection on exposed cohorts; not independent confirmation"
+    },
+    "timing_comparators": {
+      "EV02_MARGIN": [
+        "EV01_G1_V2"
+      ],
+      "EV03_CONTRAST": [
+        "EV02_MARGIN"
+      ],
+      "EV04_BILINEAR": [
+        "EV01_G1_V2"
+      ],
+      "EV05_ANYUP": [
+        "EV04_BILINEAR"
+      ],
+      "EV06_OWNER_ANYUP": [
+        "EV05_ANYUP",
+        "EV08_NO_DEPTH"
+      ],
+      "EV07_COMBINATION": [
+        "EV03_CONTRAST",
+        "EV06_OWNER_ANYUP"
+      ],
+      "EV08_NO_DEPTH": [
+        "EV05_ANYUP",
+        "EV06_OWNER_ANYUP"
+      ]
+    },
+    "timing_no_pass_priority": [
+      "EV07_COMBINATION",
+      "EV03_CONTRAST",
+      "EV02_MARGIN"
+    ]
+  },
+  "identity": "c607dc960b2f437bbf83b08b27a599b13392a103ae2f59296a88f5a212be76c6",
+  "new_full_cohort_scoring_started": false,
+  "operator_sources": [
+    {
+      "bytes": 8757,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/binding.py",
+      "sha256": "a03b2c047dc71745c21c9f53bc3fe5a05af4f76ec1fdbccde484ca92dad82919"
+    },
+    {
+      "bytes": 10676,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/preparation.py",
+      "sha256": "7382c912030604674a52cf737fd44644ece38c7dd1387668bd3436f5a4a4e56f"
+    },
+    {
+      "bytes": 1653,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/evidence.py",
+      "sha256": "b2fa232b58e56478febd39ef778b00af8b64a06e31c76de6b0f3bc1e37c57ee3"
+    },
+    {
+      "bytes": 8924,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/anyup_adapter.py",
+      "sha256": "c0e745d0777fece6a657b9206c90d414058f1114037a8ccd015428c4c0c7ea11"
+    },
+    {
+      "bytes": 14591,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/acquisition.py",
+      "sha256": "c4bc7292e363b18220f1ffafc5768816ff3b4a21ed03922aab70959a178df00e"
+    },
+    {
+      "bytes": 10530,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/outputs.py",
+      "sha256": "7480b13db48c5caec2598ee1b1e76a9196b6eb5f1f57b822467cea4e95f83fd6"
+    },
+    {
+      "bytes": 4226,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/verifier.py",
+      "sha256": "2f1ccf6b1c6cf5a38fd55ea3e3ceb81218015d425743ce4a28899b4a4c5e752a"
+    },
+    {
+      "bytes": 10209,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/evaluation.py",
+      "sha256": "a9a7f3ae323c4490386975a667bb9c71a79911c360b41a59e03e6fcf6614dc1d"
+    },
+    {
+      "bytes": 2482,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/src/static_ovmap/evidence_exploration/selection.py",
+      "sha256": "50abd3243eeab7b5f5be3179fff46ca2e68b7ef09e50ddb7b93ef61a86c6e8a2"
+    },
+    {
+      "bytes": 7793,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/worktree/configs/static_ovmap/evidence_exploration_v1.json",
+      "sha256": "12d06f0ea4afe50aa648597b2323460a3e9cf9c9d4d166f2740243d45b418a78"
+    }
+  ],
+  "status": "IMPLEMENTATION_CONSTANTS_ASSETS_FROZEN_COMMITTED"
+}
