@@ -1,0 +1,49 @@
+{
+  "best_simple_control": "SV01_SAM2_GEOM",
+  "candidates": [
+    "SV01_SAM2_GEOM",
+    "SV03_OLDMASK_FC"
+  ],
+  "control_is_not_a_proposed_method": true,
+  "fixed_lexicographic_order": [
+    "cf_probe2.apall",
+    "cf_probe2.ap50",
+    "replica_probe2.apall",
+    "cf_probe2.miou"
+  ],
+  "identity": "b08a42dc5417647e3c6551840e9aa40cefd987247afdbc44ffb3c9a8a2b4af1d",
+  "metrics": {
+    "cf_probe2": {
+      "SV01_SAM2_GEOM": {
+        "ap25": 0.3178791475712297,
+        "ap50": 0.3091466614193887,
+        "apall": 0.13106911643079774,
+        "macc": 0.3390242507959294,
+        "miou": 0.2626234551876408
+      },
+      "SV03_OLDMASK_FC": {
+        "ap25": 0.3496891834135236,
+        "ap50": 0.3091466614193887,
+        "apall": 0.13106911643079774,
+        "macc": 0.3680510074014599,
+        "miou": 0.2758370359549624
+      }
+    },
+    "replica_probe2": {
+      "SV01_SAM2_GEOM": {
+        "ap25": 0.34617604617604614,
+        "ap50": 0.32765752765752765,
+        "apall": 0.1462969643525199,
+        "macc": 0.33523834008407805,
+        "miou": 0.26396073940040826
+      },
+      "SV03_OLDMASK_FC": {
+        "ap25": 0.331024531024531,
+        "ap50": 0.31250601250601245,
+        "apall": 0.1378794559350115,
+        "macc": 0.3269067001734908,
+        "miou": 0.2543799559702459
+      }
+    }
+  }
+}

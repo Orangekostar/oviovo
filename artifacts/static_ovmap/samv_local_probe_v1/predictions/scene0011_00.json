@@ -1,0 +1,320 @@
+{
+  "GT_used": false,
+  "SV05_class_map_exactly_SV04": true,
+  "SV05_owners_exactly_SV02": true,
+  "elapsed_seconds": 20.498652789974585,
+  "equality_flags": {
+    "SV00_G1=SV01_SAM2_GEOM": false,
+    "SV00_G1=SV02_SAMV_GEOM": false,
+    "SV00_G1=SV03_OLDMASK_FC": false,
+    "SV00_G1=SV04_SAMV_FC": false,
+    "SV00_G1=SV05_COMBINED": false,
+    "SV01_SAM2_GEOM=SV02_SAMV_GEOM": false,
+    "SV01_SAM2_GEOM=SV03_OLDMASK_FC": false,
+    "SV01_SAM2_GEOM=SV04_SAMV_FC": false,
+    "SV01_SAM2_GEOM=SV05_COMBINED": false,
+    "SV02_SAMV_GEOM=SV03_OLDMASK_FC": false,
+    "SV02_SAMV_GEOM=SV04_SAMV_FC": false,
+    "SV02_SAMV_GEOM=SV05_COMBINED": false,
+    "SV03_OLDMASK_FC=SV04_SAMV_FC": true,
+    "SV03_OLDMASK_FC=SV05_COMBINED": false,
+    "SV04_SAMV_FC=SV05_COMBINED": false
+  },
+  "exact_combination_target_class_map": {
+    "14": 29,
+    "54": 141,
+    "56": 141,
+    "60": 161,
+    "72": 161,
+    "73": 161,
+    "74": 161,
+    "81": 2
+  },
+  "identity": "be88233f9c19802bae5258691b43aa31073120b7662a8fe089a479db432d9162",
+  "input_identity": "2067367b3190d50884889dd7db22f6c6fea50665f44423565bfacf865f988acb",
+  "methods": {
+    "REF_D2": {
+      "audit": null,
+      "manifest": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/predictions/scene0011_00/CT_A1_E/manifest.json",
+      "owner_partition_digest": "54b15a84378c10630db595864cba294cb5e38518ca81e5e5782dd5312d6554e0",
+      "prediction_key": "291f89db1502d615448f051139aa1994b93b8f5cbf5553bc0f62058f9ac13028",
+      "rank_digest": "90607fcd2933adaa1917c0975a80ad6cfdeaf910ff67674bda992867515193f8",
+      "record_key": "71adf32bbdfd10966727a1d9038fb250a10a3c423c8871ed3584ac9647ad2476",
+      "semantic_digest": "22f8cb2a2abbd1dc9c7558a00d0f54733bbdc9d99ac4ab4c8c52473a04a71e7b",
+      "source_kind": "EXACT_PUBLISHED_PARENT_BASELINE",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV00_G1": {
+      "audit": null,
+      "manifest": "/home/ww/ovimap-area-fallback-v2/attempt_001/predictions/scene0011_00/CT_A3_ER/manifest.json",
+      "owner_partition_digest": "3c0fc538ce0ae168d1947a3a61abc818666aa0c23ef8f4be6fcd89fdb3501b6f",
+      "prediction_key": "d55ef5aba334c8b7ee235c59770718c2b826bc71295f48f65d7d9909d88fa8e6",
+      "rank_digest": "b3aa72b460d1991af90fc4e83edb072d6b497e5e927477a4d2084b29d4c151fc",
+      "record_key": "5f6b6ffe06322600381422c1e8b00bd45cb2cbfc400c7d0d1511844313d66c54",
+      "semantic_digest": "6034208c3c77c49e7a85b2f6b33f92396d5f12b6c2b78dbb61295532dac34cd5",
+      "source_kind": "EXACT_PUBLISHED_PARENT_BASELINE",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV01_SAM2_GEOM": {
+      "audit": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 729,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.173702,
+            "before": 0.173234,
+            "owner": 19
+          },
+          {
+            "after": 0.141754,
+            "before": 0.141842,
+            "owner": 56
+          },
+          {
+            "after": 0.149843,
+            "before": 0.14944,
+            "owner": 58
+          },
+          {
+            "after": 0.253698,
+            "before": 0.253445,
+            "owner": 72
+          },
+          {
+            "after": 0.033143,
+            "before": 0.0323,
+            "owner": 73
+          },
+          {
+            "after": 0.161754,
+            "before": 0.162368,
+            "owner": 74
+          }
+        ],
+        "semantic_row_edits": 729
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/scene0011_00/SV01_SAM2_GEOM/manifest.json",
+      "owner_partition_digest": "2f111a5ae7b34aea02433e9a54db8634a132f1289ffdce0909295adbbcff8e0f",
+      "prediction_key": "c3cf6d7fe10876b453a9e4bdf64581bc223b96bd77594bc7afacfca3fe08487b",
+      "rank_digest": "4ecfdf322fdca7dedd646fc4a4cb65b1d60941e58ea136442a39fbee91394ca7",
+      "record_key": "4c77b6e51132beec748ae5f4555eb88e3051db714db53a99f7b09b0fbc51fef8",
+      "semantic_digest": "1e33e63f5291ae92cec9f41d5d5715926f16790c8dfd43870a1753581831650e",
+      "source_kind": "ACTUAL_LOCAL_PARTITION_OR_PAIRED_LABELS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV02_SAMV_GEOM": {
+      "audit": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 798,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.173477,
+            "before": 0.173234,
+            "owner": 19
+          },
+          {
+            "after": 0.141754,
+            "before": 0.141842,
+            "owner": 56
+          },
+          {
+            "after": 0.14965,
+            "before": 0.14944,
+            "owner": 58
+          },
+          {
+            "after": 0.253801,
+            "before": 0.253445,
+            "owner": 72
+          },
+          {
+            "after": 0.032884,
+            "before": 0.0323,
+            "owner": 73
+          },
+          {
+            "after": 0.16193,
+            "before": 0.162368,
+            "owner": 74
+          }
+        ],
+        "semantic_row_edits": 798
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/scene0011_00/SV02_SAMV_GEOM/manifest.json",
+      "owner_partition_digest": "bef5b82a707c8ea33d93596071efcd735c730cd3ab84e4efc0d9962821e39fd6",
+      "prediction_key": "20292eefbda93481dd6d0a24b94600eabe5a6591de3efb8f569ec0821c60d9f4",
+      "rank_digest": "7455137c91bb83fce26439b94bf095c643e2141b90de578599ce7abfb1004277",
+      "record_key": "d79d70c794a6182cc3e46ed59adb4acbb9f9d0e01b5ce8b0cd814929ddc78b23",
+      "semantic_digest": "e284cdcd43daa1ae29996123e9d54fd58cdf4e4c6b3a474265ac569381dec740",
+      "source_kind": "ACTUAL_LOCAL_PARTITION_OR_PAIRED_LABELS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV03_OLDMASK_FC": {
+      "audit": {
+        "class_updates": {
+          "14": 29,
+          "54": 141,
+          "56": 141,
+          "60": 161,
+          "72": 161,
+          "73": 161,
+          "74": 161,
+          "81": 2
+        },
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 0,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.094938,
+            "before": 1.0,
+            "owner": 25
+          },
+          {
+            "after": 0.199289,
+            "before": 0.162368,
+            "owner": 74
+          }
+        ],
+        "semantic_row_edits": 394947
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/scene0011_00/SV03_OLDMASK_FC/manifest.json",
+      "owner_partition_digest": "3c0fc538ce0ae168d1947a3a61abc818666aa0c23ef8f4be6fcd89fdb3501b6f",
+      "prediction_key": "a6206a5f09b4a5a10a044c03a16584a683e15dad931b77bd6026a2ce6bea6331",
+      "rank_digest": "9068e338f8fa517805c0955d7dcae7fc1ee39d038818c9733df2f9a412a9868d",
+      "record_key": "20bb04e920e629d9203c2fe4c68b8cd961f2b77ebd7e5b2707db5f45619ff6b4",
+      "semantic_digest": "ddd633f0dd71a0082dae79c42bc6326302fa2c0cfcf611023c79e8aa0c44732e",
+      "source_kind": "ACTUAL_LOCAL_PARTITION_OR_PAIRED_LABELS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV04_SAMV_FC": {
+      "alias_proof": {
+        "owners": "3c0fc538ce0ae168d1947a3a61abc818666aa0c23ef8f4be6fcd89fdb3501b6f",
+        "ranks": "9068e338f8fa517805c0955d7dcae7fc1ee39d038818c9733df2f9a412a9868d",
+        "semantics": "ddd633f0dd71a0082dae79c42bc6326302fa2c0cfcf611023c79e8aa0c44732e"
+      },
+      "audit": {
+        "class_updates": {
+          "14": 29,
+          "54": 141,
+          "56": 141,
+          "60": 161,
+          "72": 161,
+          "73": 161,
+          "74": 161,
+          "81": 2
+        },
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 0,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.094938,
+            "before": 1.0,
+            "owner": 25
+          },
+          {
+            "after": 0.199289,
+            "before": 0.162368,
+            "owner": 74
+          }
+        ],
+        "semantic_row_edits": 394947
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/scene0011_00/SV03_OLDMASK_FC/manifest.json",
+      "owner_partition_digest": "3c0fc538ce0ae168d1947a3a61abc818666aa0c23ef8f4be6fcd89fdb3501b6f",
+      "prediction_key": "a6206a5f09b4a5a10a044c03a16584a683e15dad931b77bd6026a2ce6bea6331",
+      "rank_digest": "9068e338f8fa517805c0955d7dcae7fc1ee39d038818c9733df2f9a412a9868d",
+      "record_key": "20bb04e920e629d9203c2fe4c68b8cd961f2b77ebd7e5b2707db5f45619ff6b4",
+      "semantic_digest": "ddd633f0dd71a0082dae79c42bc6326302fa2c0cfcf611023c79e8aa0c44732e",
+      "source_kind": "EXACT_LOCAL_ARRAYS_CLASSES_RANKS_ALIAS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV05_COMBINED": {
+      "audit": {
+        "class_updates": {
+          "14": 29,
+          "54": 141,
+          "56": 141,
+          "60": 161,
+          "72": 161,
+          "73": 161,
+          "74": 161,
+          "81": 2
+        },
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 798,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.173477,
+            "before": 0.173234,
+            "owner": 19
+          },
+          {
+            "after": 0.094938,
+            "before": 1.0,
+            "owner": 25
+          },
+          {
+            "after": 0.141754,
+            "before": 0.141842,
+            "owner": 56
+          },
+          {
+            "after": 0.14965,
+            "before": 0.14944,
+            "owner": 58
+          },
+          {
+            "after": 0.253801,
+            "before": 0.253445,
+            "owner": 72
+          },
+          {
+            "after": 0.032884,
+            "before": 0.0323,
+            "owner": 73
+          },
+          {
+            "after": 0.19903,
+            "before": 0.162368,
+            "owner": 74
+          }
+        ],
+        "semantic_row_edits": 395648
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/scene0011_00/SV05_COMBINED/manifest.json",
+      "owner_partition_digest": "bef5b82a707c8ea33d93596071efcd735c730cd3ab84e4efc0d9962821e39fd6",
+      "prediction_key": "80ae17d6df97a5af3b40d94167219a369d9db6d3b3a7468e0d0e6cf8d9412e04",
+      "rank_digest": "d2adcd3af8dec0d725d03686f4ba93854a589a867dec4c8be6790f685ae92ca2",
+      "record_key": "1d068f4b7da71f456eb99659ebade1c8ed23127c470e45ad9ee205e6c7495b55",
+      "semantic_digest": "a3a8c013d38941bb5bbf94a63910a985dcf03ff956cd423820ce1c7994726497",
+      "source_kind": "ACTUAL_LOCAL_PARTITION_OR_PAIRED_LABELS",
+      "status": "PREDICTION_LOCKED"
+    }
+  },
+  "new_owner_ids": 0,
+  "one_exclusive_partition_for_AP_and_mIoU": true,
+  "scene": "scene0011_00",
+  "status": "PREDICTIONS_LOCKED"
+}

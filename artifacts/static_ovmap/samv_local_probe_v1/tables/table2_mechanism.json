@@ -1,0 +1,76 @@
+{
+  "columns": [
+    "cohort",
+    "model",
+    "targets",
+    "anchor_success",
+    "raw_positive_rows",
+    "admitted_positive_rows",
+    "suppressed_rows",
+    "GT50",
+    "GT75",
+    "mean_best_iou",
+    "mean_fixed_iou"
+  ],
+  "identity": "4ce2da845ce6964724d8b78d65e9afa0d058bc4ab87d2614f51dfb3b1c03fa92",
+  "rows": [
+    {
+      "GT50": 30,
+      "GT75": 11,
+      "admitted_positive_rows": 1538,
+      "anchor_success": 15,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "cf_probe2",
+      "mean_best_iou": 0.17248741769696585,
+      "mean_fixed_iou": 0.18332981519104496,
+      "model": "SAM2",
+      "raw_positive_rows": 8838,
+      "suppressed_rows": 7300,
+      "targets": 16
+    },
+    {
+      "GT50": 30,
+      "GT75": 11,
+      "admitted_positive_rows": 2714,
+      "anchor_success": 15,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "cf_probe2",
+      "mean_best_iou": 0.17230162180395803,
+      "mean_fixed_iou": 0.18313163290516996,
+      "model": "SAMV",
+      "raw_positive_rows": 3432,
+      "suppressed_rows": 718,
+      "targets": 16
+    },
+    {
+      "GT50": 45,
+      "GT75": 21,
+      "admitted_positive_rows": 45606,
+      "anchor_success": 13,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "replica_probe2",
+      "mean_best_iou": 0.21900741404151908,
+      "mean_fixed_iou": 0.3185562386058459,
+      "model": "SAM2",
+      "raw_positive_rows": 82269,
+      "suppressed_rows": 36663,
+      "targets": 16
+    },
+    {
+      "GT50": 45,
+      "GT75": 21,
+      "admitted_positive_rows": 30701,
+      "anchor_success": 10,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "replica_probe2",
+      "mean_best_iou": 0.2164581628321175,
+      "mean_fixed_iou": 0.31484823684671637,
+      "model": "SAMV",
+      "raw_positive_rows": 61378,
+      "suppressed_rows": 30677,
+      "targets": 16
+    }
+  ],
+  "source_unit": "EXPLICIT_PER_COLUMN",
+  "undefined_cells_are_null": true
+}

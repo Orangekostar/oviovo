@@ -1,0 +1,4 @@
+| Cohort | Joint eligible | Wrong to right | Right to wrong | No fixed GT | APall delta (pp) | AP50 delta (pp) | AP25 delta (pp) | mIoU delta (pp) | mAcc delta (pp) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| cf_probe2 | 8 | 1 | 0 | 1 | 0.355 | 0.574 | 0.605 | 0.365 | 0.029 |
+| replica_probe2 | 10 | 0 | 0 | 5 | 0.000 | 0.000 | 0.000 | -0.001 | 0.000 |

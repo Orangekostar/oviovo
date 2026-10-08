@@ -1,0 +1,163 @@
+{
+  "checks": [
+    {
+      "actual_output_invariants": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 668,
+        "prompt_rows_retained": 3,
+        "rank_changes": [
+          {
+            "after": 0.012285,
+            "before": 0.012218,
+            "owner": 64
+          }
+        ],
+        "semantic_row_edits": 668
+      },
+      "arbitration": {
+        "added_unowned_rows": 0,
+        "conflicting_rows": 0,
+        "deleted_rows": 668,
+        "forced_prompt_rows": 3,
+        "moved_rows": 668,
+        "out_of_domain_owner_parity": true,
+        "reassigned_rows": 0,
+        "tie_rows": 0
+      },
+      "model": "SAM2",
+      "new_AP_scored": false,
+      "owner": 8,
+      "prediction_key": "4d3878da80be05460b4fd50cb42769d7f3df0080a075ca89ee326006df9052c2",
+      "real_array_lifter_validated": true,
+      "scene": "office1",
+      "segmentation_identity": "870460a321f02e61db8a87adc609191029e540bcf02cdfcf795c36ebdfea6d15"
+    },
+    {
+      "actual_output_invariants": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 777,
+        "prompt_rows_retained": 3,
+        "rank_changes": [
+          {
+            "after": 0.265416,
+            "before": 0.315013,
+            "owner": 24
+          },
+          {
+            "after": 0.01222,
+            "before": 0.012218,
+            "owner": 64
+          }
+        ],
+        "semantic_row_edits": 777
+      },
+      "arbitration": {
+        "added_unowned_rows": 0,
+        "conflicting_rows": 0,
+        "deleted_rows": 344,
+        "forced_prompt_rows": 3,
+        "moved_rows": 777,
+        "out_of_domain_owner_parity": true,
+        "reassigned_rows": 433,
+        "tie_rows": 0
+      },
+      "model": "SAMV",
+      "new_AP_scored": false,
+      "owner": 8,
+      "prediction_key": "5a3a20073e5252c0703a7be492f3fbddf9d9fa309993b66632f2cdc0beb4db7f",
+      "real_array_lifter_validated": true,
+      "scene": "office1",
+      "segmentation_identity": "35a3d1083d5094c6eb30434960ca65a0da8c052fd510ebb807b251a99604aade"
+    },
+    {
+      "actual_output_invariants": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 0,
+        "prompt_rows_retained": 3,
+        "rank_changes": [],
+        "semantic_row_edits": 0
+      },
+      "arbitration": {
+        "added_unowned_rows": 0,
+        "conflicting_rows": 0,
+        "deleted_rows": 0,
+        "forced_prompt_rows": 3,
+        "moved_rows": 0,
+        "out_of_domain_owner_parity": true,
+        "reassigned_rows": 0,
+        "tie_rows": 0
+      },
+      "model": "SAM2",
+      "new_AP_scored": false,
+      "owner": 14,
+      "prediction_key": "d55ef5aba334c8b7ee235c59770718c2b826bc71295f48f65d7d9909d88fa8e6",
+      "real_array_lifter_validated": true,
+      "scene": "scene0011_00",
+      "segmentation_identity": "ca9fa7a156e40d782db74cbcccfdc44c0fba1193f368d510c6bd3ff7406d91b2"
+    },
+    {
+      "actual_output_invariants": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 0,
+        "prompt_rows_retained": 3,
+        "rank_changes": [],
+        "semantic_row_edits": 0
+      },
+      "arbitration": {
+        "added_unowned_rows": 0,
+        "conflicting_rows": 0,
+        "deleted_rows": 0,
+        "forced_prompt_rows": 3,
+        "moved_rows": 0,
+        "out_of_domain_owner_parity": true,
+        "reassigned_rows": 0,
+        "tie_rows": 0
+      },
+      "model": "SAMV",
+      "new_AP_scored": false,
+      "owner": 14,
+      "prediction_key": "d55ef5aba334c8b7ee235c59770718c2b826bc71295f48f65d7d9909d88fa8e6",
+      "real_array_lifter_validated": true,
+      "scene": "scene0011_00",
+      "segmentation_identity": "1455e6a8e97a3e2a53c73972751f157f7e9f7e79b6ec49441197ba8687e66d8f"
+    }
+  ],
+  "cohorts_without_query": [],
+  "identity": "2ef5384e57f5e6e6d51be961e0708a3bdbd645cb782320c873ddd6c2a600c7b8",
+  "new_AP_scored": false,
+  "pilot_queries": [
+    {
+      "identity": "08c28ca5fa7da0d88ca92bda924a8d6ec2e9a71761c6329461e7919aa9423fc1",
+      "owner": 8,
+      "scene": "office1"
+    },
+    {
+      "identity": "9aea3d2986b1cdd3150d7d08cac69c690e0421e289ba16a5b1d283c2b3d5e5cb",
+      "owner": 14,
+      "scene": "scene0011_00"
+    }
+  ],
+  "profile": {
+    "OOM_fallback_used": false,
+    "identity": "d24663cad5a36548c30b2f227607cead1351758b233ad7815887287b69acb3b6",
+    "window_length": 6
+  },
+  "raw_masks_and_shared_JPEGs_actual": true,
+  "status": "REAL_ENGINEERING_PILOTS_VERIFIED"
+}

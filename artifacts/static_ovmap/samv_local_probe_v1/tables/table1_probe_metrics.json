@@ -1,0 +1,79 @@
+{
+  "columns": [
+    "method",
+    "replica_probe2_apall_percent",
+    "replica_probe2_ap50_percent",
+    "replica_probe2_miou_percent",
+    "cf_probe2_apall_percent",
+    "cf_probe2_ap50_percent",
+    "cf_probe2_miou_percent"
+  ],
+  "identity": "4c5643a583e8776b9d5549bcaa0a878ccccecf2dfce826f071132a18d9523f66",
+  "rows": [
+    {
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_miou_percent": 26.225536552064334,
+      "method": "D2 reference",
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_miou_percent": 26.405241762239847
+    },
+    {
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_miou_percent": 26.26213880406502,
+      "method": "G1",
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_miou_percent": 26.39454922167529
+    },
+    {
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_miou_percent": 26.26234551876408,
+      "method": "SAM2 geometry",
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_miou_percent": 26.396073940040825
+    },
+    {
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_miou_percent": 26.26244088385651,
+      "method": "SAM-V geometry",
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_miou_percent": 26.397822792404686
+    },
+    {
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_miou_percent": 27.58370359549624,
+      "method": "OLD-mask FC",
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_miou_percent": 25.43799559702459
+    },
+    {
+      "cf_probe2_ap50_percent": 31.488788175005183,
+      "cf_probe2_apall_percent": 13.462342434727578,
+      "cf_probe2_miou_percent": 27.948974949261498,
+      "method": "SAM-V-mask FC",
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_miou_percent": 25.437152311631355
+    },
+    {
+      "cf_probe2_ap50_percent": 31.488788175005183,
+      "cf_probe2_apall_percent": 13.462342434727578,
+      "cf_probe2_miou_percent": 27.9489781863706,
+      "method": "SAM-V + fixed FC",
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_miou_percent": 25.444278412811983
+    }
+  ],
+  "source_unit": "EXPLICIT_PER_COLUMN",
+  "undefined_cells_are_null": true
+}

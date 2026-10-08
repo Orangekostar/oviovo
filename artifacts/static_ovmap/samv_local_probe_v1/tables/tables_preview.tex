@@ -1,0 +1,69 @@
+\documentclass{article}
+\usepackage[landscape,a4paper,margin=12mm]{geometry}
+\usepackage{booktabs,graphicx}
+\begin{document}
+\section*{table1\_probe\_metrics}
+\noindent Values from actual locked receipts. Metrics in percent; timing in seconds/window.\par\bigskip
+\noindent\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllllll}
+\toprule
+Method & Replica APall & Replica AP50 & Replica mIoU & CF APall & CF AP50 & CF mIoU \\
+\midrule
+D2 reference & 14.630 & 32.766 & 26.405 & 13.107 & 30.915 & 26.226 \\
+G1 & 14.630 & 32.766 & 26.395 & 13.107 & 30.915 & 26.262 \\
+SAM2 geometry & 14.630 & 32.766 & 26.396 & 13.107 & 30.915 & 26.262 \\
+SAM-V geometry & 14.630 & 32.766 & 26.398 & 13.107 & 30.915 & 26.262 \\
+OLD-mask FC & 13.788 & 31.251 & 25.438 & 13.107 & 30.915 & 27.584 \\
+SAM-V-mask FC & 13.788 & 31.251 & 25.437 & 13.462 & 31.489 & 27.949 \\
+SAM-V + fixed FC & 13.788 & 31.251 & 25.444 & 13.462 & 31.489 & 27.949 \\
+\bottomrule
+\end{tabular}
+
+}
+\clearpage
+\section*{table2\_mechanism}
+\noindent Values from actual locked receipts. Metrics in percent; timing in seconds/window.\par\bigskip
+\noindent\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllllllllll}
+\toprule
+Cohort & Model & Targets & Anchor OK & Raw rows & Admitted rows & Blocked rows & GT50 & GT75 & Best IoU & Fixed-GT IoU \\
+\midrule
+cf\_probe2 & SAM2 & 16 & 15 & 8838 & 1538 & 7300 & 30 & 11 & 0.172 & 0.183 \\
+cf\_probe2 & SAMV & 16 & 15 & 3432 & 2714 & 718 & 30 & 11 & 0.172 & 0.183 \\
+replica\_probe2 & SAM2 & 16 & 13 & 82269 & 45606 & 36663 & 45 & 21 & 0.219 & 0.319 \\
+replica\_probe2 & SAMV & 16 & 10 & 61378 & 30701 & 30677 & 45 & 21 & 0.216 & 0.315 \\
+\bottomrule
+\end{tabular}
+
+}
+\clearpage
+\section*{table2\_semantic}
+\noindent Values from actual locked receipts. Metrics in percent; timing in seconds/window.\par\bigskip
+\noindent\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllllllll}
+\toprule
+Cohort & Joint eligible & Wrong to right & Right to wrong & No fixed GT & APall delta (pp) & AP50 delta (pp) & AP25 delta (pp) & mIoU delta (pp) & mAcc delta (pp) \\
+\midrule
+cf\_probe2 & 8 & 1 & 0 & 1 & 0.355 & 0.574 & 0.605 & 0.365 & 0.029 \\
+replica\_probe2 & 10 & 0 & 0 & 5 & 0.000 & 0.000 & 0.000 & -0.001 & 0.000 \\
+\bottomrule
+\end{tabular}
+
+}
+\clearpage
+\section*{table3\_window\_timing}
+\noindent Values from actual locked receipts. Metrics in percent; timing in seconds/window.\par\bigskip
+\noindent\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllllllll}
+\toprule
+Scene & Owner & Model & Calls & Frames & Dtype & Mean (s) & Median (s) & Allocated (GiB) & Reserved (GiB) \\
+\midrule
+office1 & 8 & SAM2 & 2 & 6 & BF16 & 0.796 & 0.796 & 1.822 & 2.102 \\
+scene0011\_00 & 14 & SAM2 & 2 & 6 & BF16 & 0.721 & 0.721 & 1.822 & 2.102 \\
+office1 & 8 & SAMV & 2 & 6 & BF16 & 3.407 & 3.407 & 12.575 & 13.498 \\
+scene0011\_00 & 14 & SAMV & 2 & 6 & BF16 & 3.220 & 3.220 & 12.575 & 13.498 \\
+\bottomrule
+\end{tabular}
+
+}
+\end{document}

@@ -1,0 +1,1120 @@
+{
+  "OS_page_cache": "UNCONTROLLED",
+  "absent_cohorts": [],
+  "actual_extra_calls": 8,
+  "cross_query_feature_cache": false,
+  "elapsed_wall_seconds": 69.3455592179671,
+  "end_to_end_latency": "NOT_MEASURED_THIS_PROBE",
+  "expected_available_calls": 8,
+  "identity": "d737bec0fe0dca7a7aca89bbb6e0264974aa89cff5f5c6f8cf0d934007ada739",
+  "resident_models": true,
+  "result_cache": false,
+  "rows": [
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM2_encoded_images": 7,
+        "SAM2_encoder_calls": 7,
+        "mask_decoder_calls": 6,
+        "propagated_frame_outputs": 7,
+        "propagation_passes": 2,
+        "scientific_or_timing_tracks": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "43cb4101a1651f914bd074788366ead99612044830fd03a318f765fc2dd9c006",
+        "777d3abc192fc57151b80583dc870272dd61e2da2c6fcfe771adcc6e2939622e",
+        "6aa4c6f95b8ce67af3fdaf4706f89db83149fd06facffe86d23621c6f3d8fc8b",
+        "1be9a63f539e8732110d0d8d1cc423c8572c3c8ea3852f3d2f54ebbbafda01b6",
+        "80b43f8f88d44453dd63d2c06a46a6ceee1a52f0c38fa26d5bde3ca5d415920a",
+        "e876f539924a48a261160d8ac8d05a7e460f9729c5f2e8d4e3ab277b22b07d39"
+      ],
+      "elapsed_seconds": 1.0255905389785767,
+      "hardware": {
+        "CUDA": "12.4",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.5.1+cu124"
+      },
+      "identity": "4b051cf2c8b734957381c6a728dd79cc48996eba5005baa45c8175b57ee24c01",
+      "input_identity": "2298582fdcc4cc3dbc7e3ad2744afd546a701d6200f993be50b36ff425ce663a",
+      "kind": "EXTRA_TIMING",
+      "model": "SAM2",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        30,
+        430,
+        850,
+        1470,
+        1920,
+        1990
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "directional_coverage": {
+          "forward": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "reverse": [
+            1,
+            0
+          ]
+        },
+        "empty_raw_frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_state_per_target": true,
+        "original_mask_pixels": [
+          39999,
+          70391,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive_prompt_pixels": [
+          [
+            666,
+            947
+          ],
+          [
+            433,
+            672
+          ],
+          [
+            750,
+            610
+          ]
+        ],
+        "same_anchor_both_directions": true
+      },
+      "owner": 8,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "870460a321f02e61db8a87adc609191029e540bcf02cdfcf795c36ebdfea6d15"
+      },
+      "peak_cuda_allocated_bytes": 1956780032,
+      "peak_cuda_reserved_bytes": 2256535552,
+      "query_identity": "08c28ca5fa7da0d88ca92bda924a8d6ec2e9a71761c6329461e7919aa9423fc1",
+      "raw_arrays": {
+        "bytes": 4790066,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAM2/round_1/office1/8/raw_masks.npz",
+        "sha256": "990e4251579b673e4974071309ac03ac2533494cd2545b4e88484cddb217f7a9"
+      },
+      "result_cache": false,
+      "round": 1,
+      "scene": "office1",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM2_encoded_images": 7,
+        "SAM2_encoder_calls": 7,
+        "mask_decoder_calls": 6,
+        "propagated_frame_outputs": 7,
+        "propagation_passes": 2,
+        "scientific_or_timing_tracks": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "3eae8a9871f1666bba0af7cc47938468de8ac7222000c883e3e910b7df49c51d",
+        "a6881b0bc66d2ca37f742860039148c3c751a8e82a10853fb3dd2d9c6560cdd8",
+        "2fa5b960b16b9c5b0382e834ad76196b09168d30b1fee03fbdbdb56e5f2ecce0",
+        "0f3adc1301d88274b32ee7339d48e9383466d18f633023ccf675b701c4667ee2",
+        "12eb4e39f504506eb343ffb604fb0885318fea1eb1413557ee29c9ba98da84e8",
+        "4212216b08fb750a8f1ca30922ce76898d0c08f114791a59284cc58f84779fd1"
+      ],
+      "elapsed_seconds": 0.5658775339834392,
+      "hardware": {
+        "CUDA": "12.4",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.5.1+cu124"
+      },
+      "identity": "e55b96d780ed523372c311fbcf8a24ed7e18183c1934d2f3f323157470864d18",
+      "input_identity": "384367ac775bc4bb9f9aead90a9838db98ac89066a4a53977b75ed6613b3a232",
+      "kind": "EXTRA_TIMING",
+      "model": "SAM2",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        66,
+        1320,
+        1540,
+        1705,
+        1793,
+        2079
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "directional_coverage": {
+          "forward": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "reverse": [
+            1,
+            0
+          ]
+        },
+        "empty_raw_frames": [
+          0,
+          2,
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_state_per_target": true,
+        "original_mask_pixels": [
+          0,
+          135763,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive_prompt_pixels": [
+          [
+            178,
+            275
+          ],
+          [
+            730,
+            38
+          ],
+          [
+            46,
+            1013
+          ]
+        ],
+        "same_anchor_both_directions": true
+      },
+      "owner": 14,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "ca9fa7a156e40d782db74cbcccfdc44c0fba1193f368d510c6bd3ff7406d91b2"
+      },
+      "peak_cuda_allocated_bytes": 1956132864,
+      "peak_cuda_reserved_bytes": 2256535552,
+      "query_identity": "9aea3d2986b1cdd3150d7d08cac69c690e0421e289ba16a5b1d283c2b3d5e5cb",
+      "raw_arrays": {
+        "bytes": 2781997,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAM2/round_1/scene0011_00/14/raw_masks.npz",
+        "sha256": "8d9f8d4645d293c589a846e1ba96e80b9cae53acbe8d1a12b4e15a1ce6278d86"
+      },
+      "result_cache": false,
+      "round": 1,
+      "scene": "scene0011_00",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM_encoded_images": 6,
+        "SAM_encoder_calls": 6,
+        "VGGT_frame_slots": 6,
+        "VGGT_joint_groups": 1,
+        "mask_decoder_calls": 1,
+        "scientific_or_timing_joint_calls": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "43cb4101a1651f914bd074788366ead99612044830fd03a318f765fc2dd9c006",
+        "777d3abc192fc57151b80583dc870272dd61e2da2c6fcfe771adcc6e2939622e",
+        "6aa4c6f95b8ce67af3fdaf4706f89db83149fd06facffe86d23621c6f3d8fc8b",
+        "1be9a63f539e8732110d0d8d1cc423c8572c3c8ea3852f3d2f54ebbbafda01b6",
+        "80b43f8f88d44453dd63d2c06a46a6ceee1a52f0c38fa26d5bde3ca5d415920a",
+        "e876f539924a48a261160d8ac8d05a7e460f9729c5f2e8d4e3ab277b22b07d39"
+      ],
+      "elapsed_seconds": 3.5743870560545474,
+      "hardware": {
+        "CUDA": "12.1",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.3.1+cu121"
+      },
+      "identity": "07f93e65c2b3f5a8d7f07090af3da3419c20c791fd785e0ce5a070ec66c1e1b3",
+      "input_identity": "416047c04a2675f68d3353036c976cf530dce4f6eff20d4f9db5b72013526d89",
+      "kind": "EXTRA_TIMING",
+      "model": "SAMV",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        30,
+        430,
+        850,
+        1470,
+        1920,
+        1990
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "empty_raw_frames": [
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "low_res_shape": [
+          1,
+          1,
+          256,
+          1536
+        ],
+        "multimask_output": false,
+        "original_mask_pixels": [
+          43344,
+          104277,
+          22520,
+          0,
+          0,
+          0
+        ],
+        "panorama_split_before_interpolation": true,
+        "positive_prompt_pixels": [
+          [
+            666,
+            947
+          ],
+          [
+            433,
+            672
+          ],
+          [
+            750,
+            610
+          ]
+        ],
+        "visualize": false
+      },
+      "owner": 8,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "35a3d1083d5094c6eb30434960ca65a0da8c052fd510ebb807b251a99604aade"
+      },
+      "peak_cuda_allocated_bytes": 13502090240,
+      "peak_cuda_reserved_bytes": 14493417472,
+      "query_identity": "08c28ca5fa7da0d88ca92bda924a8d6ec2e9a71761c6329461e7919aa9423fc1",
+      "raw_arrays": {
+        "bytes": 524193,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAMV/round_1/office1/8/raw_masks.npz",
+        "sha256": "a10bff198a28b6b6066ecf98c59a04dd110af87bc6f3b66f4cc73b158284e794"
+      },
+      "result_cache": false,
+      "round": 1,
+      "scene": "office1",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM_encoded_images": 6,
+        "SAM_encoder_calls": 6,
+        "VGGT_frame_slots": 6,
+        "VGGT_joint_groups": 1,
+        "mask_decoder_calls": 1,
+        "scientific_or_timing_joint_calls": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "3eae8a9871f1666bba0af7cc47938468de8ac7222000c883e3e910b7df49c51d",
+        "a6881b0bc66d2ca37f742860039148c3c751a8e82a10853fb3dd2d9c6560cdd8",
+        "2fa5b960b16b9c5b0382e834ad76196b09168d30b1fee03fbdbdb56e5f2ecce0",
+        "0f3adc1301d88274b32ee7339d48e9383466d18f633023ccf675b701c4667ee2",
+        "12eb4e39f504506eb343ffb604fb0885318fea1eb1413557ee29c9ba98da84e8",
+        "4212216b08fb750a8f1ca30922ce76898d0c08f114791a59284cc58f84779fd1"
+      ],
+      "elapsed_seconds": 3.215551142115146,
+      "hardware": {
+        "CUDA": "12.1",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.3.1+cu121"
+      },
+      "identity": "619a29b732a55da104518ca16e216c771e883244717da1c1d5e3d85fd695d29f",
+      "input_identity": "2aff03e53798901327899c7c433f593b6ba6f9e0e27ae91a9ba1c0b69f22d393",
+      "kind": "EXTRA_TIMING",
+      "model": "SAMV",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        66,
+        1320,
+        1540,
+        1705,
+        1793,
+        2079
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "empty_raw_frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "low_res_shape": [
+          1,
+          1,
+          256,
+          1536
+        ],
+        "multimask_output": false,
+        "original_mask_pixels": [
+          980,
+          157472,
+          0,
+          0,
+          0,
+          0
+        ],
+        "panorama_split_before_interpolation": true,
+        "positive_prompt_pixels": [
+          [
+            178,
+            275
+          ],
+          [
+            730,
+            38
+          ],
+          [
+            46,
+            1013
+          ]
+        ],
+        "visualize": false
+      },
+      "owner": 14,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "1455e6a8e97a3e2a53c73972751f157f7e9f7e79b6ec49441197ba8687e66d8f"
+      },
+      "peak_cuda_allocated_bytes": 13502090240,
+      "peak_cuda_reserved_bytes": 14493417472,
+      "query_identity": "9aea3d2986b1cdd3150d7d08cac69c690e0421e289ba16a5b1d283c2b3d5e5cb",
+      "raw_arrays": {
+        "bytes": 613422,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAMV/round_1/scene0011_00/14/raw_masks.npz",
+        "sha256": "fcbbd4ac995b051150ed5986ae70ea82c28d96affca6b225ee6747bb6fc3ca58"
+      },
+      "result_cache": false,
+      "round": 1,
+      "scene": "scene0011_00",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM_encoded_images": 6,
+        "SAM_encoder_calls": 6,
+        "VGGT_frame_slots": 6,
+        "VGGT_joint_groups": 1,
+        "mask_decoder_calls": 1,
+        "scientific_or_timing_joint_calls": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "3eae8a9871f1666bba0af7cc47938468de8ac7222000c883e3e910b7df49c51d",
+        "a6881b0bc66d2ca37f742860039148c3c751a8e82a10853fb3dd2d9c6560cdd8",
+        "2fa5b960b16b9c5b0382e834ad76196b09168d30b1fee03fbdbdb56e5f2ecce0",
+        "0f3adc1301d88274b32ee7339d48e9383466d18f633023ccf675b701c4667ee2",
+        "12eb4e39f504506eb343ffb604fb0885318fea1eb1413557ee29c9ba98da84e8",
+        "4212216b08fb750a8f1ca30922ce76898d0c08f114791a59284cc58f84779fd1"
+      ],
+      "elapsed_seconds": 3.2236751371528953,
+      "hardware": {
+        "CUDA": "12.1",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.3.1+cu121"
+      },
+      "identity": "9f9187aabccaf5df71d8de1ed63841a421565bc14bd9ba3208d3456565f2c474",
+      "input_identity": "2aff03e53798901327899c7c433f593b6ba6f9e0e27ae91a9ba1c0b69f22d393",
+      "kind": "EXTRA_TIMING",
+      "model": "SAMV",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        66,
+        1320,
+        1540,
+        1705,
+        1793,
+        2079
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "empty_raw_frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "low_res_shape": [
+          1,
+          1,
+          256,
+          1536
+        ],
+        "multimask_output": false,
+        "original_mask_pixels": [
+          980,
+          157472,
+          0,
+          0,
+          0,
+          0
+        ],
+        "panorama_split_before_interpolation": true,
+        "positive_prompt_pixels": [
+          [
+            178,
+            275
+          ],
+          [
+            730,
+            38
+          ],
+          [
+            46,
+            1013
+          ]
+        ],
+        "visualize": false
+      },
+      "owner": 14,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "1455e6a8e97a3e2a53c73972751f157f7e9f7e79b6ec49441197ba8687e66d8f"
+      },
+      "peak_cuda_allocated_bytes": 13502090240,
+      "peak_cuda_reserved_bytes": 14493417472,
+      "query_identity": "9aea3d2986b1cdd3150d7d08cac69c690e0421e289ba16a5b1d283c2b3d5e5cb",
+      "raw_arrays": {
+        "bytes": 613422,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAMV/round_2/scene0011_00/14/raw_masks.npz",
+        "sha256": "fcbbd4ac995b051150ed5986ae70ea82c28d96affca6b225ee6747bb6fc3ca58"
+      },
+      "result_cache": false,
+      "round": 2,
+      "scene": "scene0011_00",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM_encoded_images": 6,
+        "SAM_encoder_calls": 6,
+        "VGGT_frame_slots": 6,
+        "VGGT_joint_groups": 1,
+        "mask_decoder_calls": 1,
+        "scientific_or_timing_joint_calls": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "43cb4101a1651f914bd074788366ead99612044830fd03a318f765fc2dd9c006",
+        "777d3abc192fc57151b80583dc870272dd61e2da2c6fcfe771adcc6e2939622e",
+        "6aa4c6f95b8ce67af3fdaf4706f89db83149fd06facffe86d23621c6f3d8fc8b",
+        "1be9a63f539e8732110d0d8d1cc423c8572c3c8ea3852f3d2f54ebbbafda01b6",
+        "80b43f8f88d44453dd63d2c06a46a6ceee1a52f0c38fa26d5bde3ca5d415920a",
+        "e876f539924a48a261160d8ac8d05a7e460f9729c5f2e8d4e3ab277b22b07d39"
+      ],
+      "elapsed_seconds": 3.2388756000436842,
+      "hardware": {
+        "CUDA": "12.1",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.3.1+cu121"
+      },
+      "identity": "300064e9969c7843bf86344a9e9a9848fbe1b91a5da3bd0dd3533eeb923ae998",
+      "input_identity": "416047c04a2675f68d3353036c976cf530dce4f6eff20d4f9db5b72013526d89",
+      "kind": "EXTRA_TIMING",
+      "model": "SAMV",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        30,
+        430,
+        850,
+        1470,
+        1920,
+        1990
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "empty_raw_frames": [
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "low_res_shape": [
+          1,
+          1,
+          256,
+          1536
+        ],
+        "multimask_output": false,
+        "original_mask_pixels": [
+          43344,
+          104277,
+          22520,
+          0,
+          0,
+          0
+        ],
+        "panorama_split_before_interpolation": true,
+        "positive_prompt_pixels": [
+          [
+            666,
+            947
+          ],
+          [
+            433,
+            672
+          ],
+          [
+            750,
+            610
+          ]
+        ],
+        "visualize": false
+      },
+      "owner": 8,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "35a3d1083d5094c6eb30434960ca65a0da8c052fd510ebb807b251a99604aade"
+      },
+      "peak_cuda_allocated_bytes": 13502090240,
+      "peak_cuda_reserved_bytes": 14493417472,
+      "query_identity": "08c28ca5fa7da0d88ca92bda924a8d6ec2e9a71761c6329461e7919aa9423fc1",
+      "raw_arrays": {
+        "bytes": 524193,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAMV/round_2/office1/8/raw_masks.npz",
+        "sha256": "a10bff198a28b6b6066ecf98c59a04dd110af87bc6f3b66f4cc73b158284e794"
+      },
+      "result_cache": false,
+      "round": 2,
+      "scene": "office1",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM2_encoded_images": 7,
+        "SAM2_encoder_calls": 7,
+        "mask_decoder_calls": 6,
+        "propagated_frame_outputs": 7,
+        "propagation_passes": 2,
+        "scientific_or_timing_tracks": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "3eae8a9871f1666bba0af7cc47938468de8ac7222000c883e3e910b7df49c51d",
+        "a6881b0bc66d2ca37f742860039148c3c751a8e82a10853fb3dd2d9c6560cdd8",
+        "2fa5b960b16b9c5b0382e834ad76196b09168d30b1fee03fbdbdb56e5f2ecce0",
+        "0f3adc1301d88274b32ee7339d48e9383466d18f633023ccf675b701c4667ee2",
+        "12eb4e39f504506eb343ffb604fb0885318fea1eb1413557ee29c9ba98da84e8",
+        "4212216b08fb750a8f1ca30922ce76898d0c08f114791a59284cc58f84779fd1"
+      ],
+      "elapsed_seconds": 0.8753018998540938,
+      "hardware": {
+        "CUDA": "12.4",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.5.1+cu124"
+      },
+      "identity": "858fe61d5572cd198cc78ec6c435971e57003401b7a83472d8287f7aa02ec7a7",
+      "input_identity": "384367ac775bc4bb9f9aead90a9838db98ac89066a4a53977b75ed6613b3a232",
+      "kind": "EXTRA_TIMING",
+      "model": "SAM2",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        66,
+        1320,
+        1540,
+        1705,
+        1793,
+        2079
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "directional_coverage": {
+          "forward": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "reverse": [
+            1,
+            0
+          ]
+        },
+        "empty_raw_frames": [
+          0,
+          2,
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_state_per_target": true,
+        "original_mask_pixels": [
+          0,
+          135763,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive_prompt_pixels": [
+          [
+            178,
+            275
+          ],
+          [
+            730,
+            38
+          ],
+          [
+            46,
+            1013
+          ]
+        ],
+        "same_anchor_both_directions": true
+      },
+      "owner": 14,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "ca9fa7a156e40d782db74cbcccfdc44c0fba1193f368d510c6bd3ff7406d91b2"
+      },
+      "peak_cuda_allocated_bytes": 1956780032,
+      "peak_cuda_reserved_bytes": 2256535552,
+      "query_identity": "9aea3d2986b1cdd3150d7d08cac69c690e0421e289ba16a5b1d283c2b3d5e5cb",
+      "raw_arrays": {
+        "bytes": 2781997,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAM2/round_2/scene0011_00/14/raw_masks.npz",
+        "sha256": "8d9f8d4645d293c589a846e1ba96e80b9cae53acbe8d1a12b4e15a1ce6278d86"
+      },
+      "result_cache": false,
+      "round": 2,
+      "scene": "scene0011_00",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    },
+    {
+      "OS_page_cache": "UNCONTROLLED",
+      "actual_counts": {
+        "SAM2_encoded_images": 7,
+        "SAM2_encoder_calls": 7,
+        "mask_decoder_calls": 6,
+        "propagated_frame_outputs": 7,
+        "propagation_passes": 2,
+        "scientific_or_timing_tracks": 1
+      },
+      "cross_query_feature_cache": false,
+      "decoded_rgb_sha256": [
+        "43cb4101a1651f914bd074788366ead99612044830fd03a318f765fc2dd9c006",
+        "777d3abc192fc57151b80583dc870272dd61e2da2c6fcfe771adcc6e2939622e",
+        "6aa4c6f95b8ce67af3fdaf4706f89db83149fd06facffe86d23621c6f3d8fc8b",
+        "1be9a63f539e8732110d0d8d1cc423c8572c3c8ea3852f3d2f54ebbbafda01b6",
+        "80b43f8f88d44453dd63d2c06a46a6ceee1a52f0c38fa26d5bde3ca5d415920a",
+        "e876f539924a48a261160d8ac8d05a7e460f9729c5f2e8d4e3ab277b22b07d39"
+      ],
+      "elapsed_seconds": 0.5664043999277055,
+      "hardware": {
+        "CUDA": "12.4",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.5.1+cu124"
+      },
+      "identity": "c5135eecd9ef8a028f01388ca3daabab0a9a2a00d56f98d8304998de134b4315",
+      "input_identity": "2298582fdcc4cc3dbc7e3ad2744afd546a701d6200f993be50b36ff425ce663a",
+      "kind": "EXTRA_TIMING",
+      "model": "SAM2",
+      "model_load_in_timer": false,
+      "ordered_frame_ids": [
+        30,
+        430,
+        850,
+        1470,
+        1920,
+        1990
+      ],
+      "outcome": {
+        "anchor_adherent": true,
+        "directional_coverage": {
+          "forward": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "reverse": [
+            1,
+            0
+          ]
+        },
+        "empty_raw_frames": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "frame_coverage": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "independent_state_per_target": true,
+        "original_mask_pixels": [
+          39999,
+          70391,
+          0,
+          0,
+          0,
+          0
+        ],
+        "positive_prompt_pixels": [
+          [
+            666,
+            947
+          ],
+          [
+            433,
+            672
+          ],
+          [
+            750,
+            610
+          ]
+        ],
+        "same_anchor_both_directions": true
+      },
+      "owner": 8,
+      "parity": {
+        "mask_arrays_compared": [
+          "canonical_mask_0",
+          "canonical_mask_1",
+          "canonical_mask_2",
+          "canonical_mask_3",
+          "canonical_mask_4",
+          "canonical_mask_5",
+          "mask_0",
+          "mask_1",
+          "mask_2",
+          "mask_3",
+          "mask_4",
+          "mask_5"
+        ],
+        "outside_timing_boundary": true,
+        "raw_binary_masks_exact": true,
+        "scientific_identity": "870460a321f02e61db8a87adc609191029e540bcf02cdfcf795c36ebdfea6d15"
+      },
+      "peak_cuda_allocated_bytes": 1956132864,
+      "peak_cuda_reserved_bytes": 2256535552,
+      "query_identity": "08c28ca5fa7da0d88ca92bda924a8d6ec2e9a71761c6329461e7919aa9423fc1",
+      "raw_arrays": {
+        "bytes": 4790066,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/timings/SAM2/round_2/office1/8/raw_masks.npz",
+        "sha256": "990e4251579b673e4974071309ac03ac2533494cd2545b4e88484cddb217f7a9"
+      },
+      "result_cache": false,
+      "round": 2,
+      "scene": "office1",
+      "status": "COMPLETE",
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+    }
+  ],
+  "same_locked_windows": true,
+  "schedule": [
+    {
+      "model": "SAM2",
+      "round": 1,
+      "scenes": [
+        "office1",
+        "scene0011_00"
+      ]
+    },
+    {
+      "model": "SAMV",
+      "round": 1,
+      "scenes": [
+        "office1",
+        "scene0011_00"
+      ]
+    },
+    {
+      "model": "SAMV",
+      "round": 2,
+      "scenes": [
+        "scene0011_00",
+        "office1"
+      ]
+    },
+    {
+      "model": "SAM2",
+      "round": 2,
+      "scenes": [
+        "scene0011_00",
+        "office1"
+      ]
+    }
+  ],
+  "status": "FIXED_TIMING_COMPLETE",
+  "summaries": [
+    {
+      "calls": 2,
+      "dtype": "BF16",
+      "mean_seconds": 0.7959974694531411,
+      "median_seconds": 0.7959974694531411,
+      "model": "SAM2",
+      "owner": 8,
+      "peak_allocated_GiB": 1.8223934173583984,
+      "peak_reserved_GiB": 2.1015625,
+      "raw_mask_parity": true,
+      "scene": "office1",
+      "window_frames": 6
+    },
+    {
+      "calls": 2,
+      "dtype": "BF16",
+      "mean_seconds": 0.7205897169187665,
+      "median_seconds": 0.7205897169187665,
+      "model": "SAM2",
+      "owner": 14,
+      "peak_allocated_GiB": 1.8223934173583984,
+      "peak_reserved_GiB": 2.1015625,
+      "raw_mask_parity": true,
+      "scene": "scene0011_00",
+      "window_frames": 6
+    },
+    {
+      "calls": 2,
+      "dtype": "BF16",
+      "mean_seconds": 3.406631328049116,
+      "median_seconds": 3.406631328049116,
+      "model": "SAMV",
+      "owner": 8,
+      "peak_allocated_GiB": 12.574801445007324,
+      "peak_reserved_GiB": 13.498046875,
+      "raw_mask_parity": true,
+      "scene": "office1",
+      "window_frames": 6
+    },
+    {
+      "calls": 2,
+      "dtype": "BF16",
+      "mean_seconds": 3.2196131396340206,
+      "median_seconds": 3.2196131396340206,
+      "model": "SAMV",
+      "owner": 14,
+      "peak_allocated_GiB": 12.574801445007324,
+      "peak_reserved_GiB": 13.498046875,
+      "raw_mask_parity": true,
+      "scene": "scene0011_00",
+      "window_frames": 6
+    }
+  ]
+}

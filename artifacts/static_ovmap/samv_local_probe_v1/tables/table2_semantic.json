@@ -1,0 +1,53 @@
+{
+  "columns": [
+    "cohort",
+    "joint_eligible",
+    "wrong_to_right",
+    "right_to_wrong",
+    "undefined_fixed_reference",
+    "apall_delta_pp",
+    "ap50_delta_pp",
+    "ap25_delta_pp",
+    "miou_delta_pp",
+    "macc_delta_pp"
+  ],
+  "identity": "5cad046183c298c15ebdfb9b7b2d674ee84a429d21ce965938415def9f857cba",
+  "rows": [
+    {
+      "ap25_delta_pp": 0.6045583611565986,
+      "ap50_delta_pp": 0.5741220330663155,
+      "apall_delta_pp": 0.3554307916478039,
+      "cohort": "cf_probe2",
+      "diagnostic_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "joint_eligible": 8,
+      "macc_delta_pp": 0.029144135268366345,
+      "metric_sources": {
+        "SV03_OLDMASK_FC": "c6bcdeee83751d879ded31ce26902e3e5cf4f8ade0738887a6dd61145591264d",
+        "SV04_SAMV_FC": "8ba7f902433fee00621138a1235eaa8462fa26b7ccd1196b5f8d607b527abf6c"
+      },
+      "miou_delta_pp": 0.3652713537652563,
+      "right_to_wrong": 0,
+      "undefined_fixed_reference": 1,
+      "wrong_to_right": 1
+    },
+    {
+      "ap25_delta_pp": 0.0,
+      "ap50_delta_pp": 0.0,
+      "apall_delta_pp": 0.0,
+      "cohort": "replica_probe2",
+      "diagnostic_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "joint_eligible": 10,
+      "macc_delta_pp": 0.0,
+      "metric_sources": {
+        "SV03_OLDMASK_FC": "f107fe4f5f6e0fe3df3cf73b1322ccd913ecdce09cd75d6dc45ac90d2e3cc515",
+        "SV04_SAMV_FC": "075dacaf8289c179f0dedba9b1e4032d504cc8c031407c483c9808f45b6f57f4"
+      },
+      "miou_delta_pp": -0.0008432853932316409,
+      "right_to_wrong": 0,
+      "undefined_fixed_reference": 5,
+      "wrong_to_right": 0
+    }
+  ],
+  "source_unit": "EXPLICIT_PER_COLUMN",
+  "undefined_cells_are_null": true
+}

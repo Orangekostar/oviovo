@@ -1,0 +1,38 @@
+{
+  "all_five_metrics_preserved": true,
+  "artifacts": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/artifacts/static_ovmap/samv_local_probe_v1",
+  "compact": {
+    "MiB": 17.853751182556152,
+    "bytes": 18721015,
+    "case_pair": {
+      "failure": {
+        "anchor": true,
+        "delta": -0.002714601561530472,
+        "owner": 8,
+        "scene": "office1"
+      },
+      "selection_rule": "FIRST_IN_FIXED_SCENE_OWNER_ORDER_WITH_FINAL_3D_BEST_IOU_GAIN_OR_LOSS/ANCHOR_FAILURE",
+      "status": "LOCAL_SUPPORT_GAIN_AND_FAILURE_PAIR",
+      "success": {
+        "anchor": true,
+        "delta": 0.0004127115146512622,
+        "owner": 138,
+        "scene": "room0"
+      },
+      "success_is_local_support_gain_not_pilot_promotion": true
+    }
+  },
+  "four_reports": [
+    "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/docs/paper/static_ovmap/SAMV_PROBE_RESULTS.md",
+    "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/docs/paper/static_ovmap/SAMV_PROBE_HANDOFF.md",
+    "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/docs/paper/static_ovmap/SAMV_PROBE_SELECTION.md",
+    "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/docs/paper/static_ovmap/SAMV_PROBE_CLAIMS.md"
+  ],
+  "identity": "771c6c63ca959fa952c518d8fe5c7c5548698a6032b931a31ff6bfcc5e201f4e",
+  "requirement_audit_identity": "855f14fdc07d4b7b791c49bceeeccef2769ad60e1b567d9348cce55c81d06415",
+  "result_store_identity": "93a63a051f5f70a28cc9356db68800ffad4b5fba063e3dd1bb5eb1894bef61fa",
+  "source_cell_identities_preserved": true,
+  "status": "REPORT_COMPLETE",
+  "tables": 3,
+  "visual_render_inspection_pending": true
+}

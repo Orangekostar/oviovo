@@ -1,0 +1,87 @@
+{
+  "GT_ids_qualified_by_scene": true,
+  "class_agnostic_counts_are_not_AP": true,
+  "cohorts": {
+    "cf_probe2": {
+      "SAM2": {
+        "admitted_positive_rows": 1538,
+        "anchor_success": 15,
+        "class_agnostic_counts": {
+          "0.5": 30,
+          "0.75": 11
+        },
+        "mean_best_iou": 0.17248741769696585,
+        "mean_fixed_reference_iou": 0.18332981519104496,
+        "raw_positive_rows": 8838,
+        "suppressed_positive_rows": 7300,
+        "targets": 16
+      },
+      "SAMV": {
+        "admitted_positive_rows": 2714,
+        "anchor_success": 15,
+        "class_agnostic_counts": {
+          "0.5": 30,
+          "0.75": 11
+        },
+        "mean_best_iou": 0.17230162180395803,
+        "mean_fixed_reference_iou": 0.18313163290516996,
+        "raw_positive_rows": 3432,
+        "suppressed_positive_rows": 718,
+        "targets": 16
+      },
+      "semantic": {
+        "joint_eligible": 8,
+        "right_to_wrong": 0,
+        "undefined_fixed_reference": 1,
+        "wrong_to_right": 1
+      }
+    },
+    "replica_probe2": {
+      "SAM2": {
+        "admitted_positive_rows": 45606,
+        "anchor_success": 13,
+        "class_agnostic_counts": {
+          "0.5": 45,
+          "0.75": 21
+        },
+        "mean_best_iou": 0.21900741404151908,
+        "mean_fixed_reference_iou": 0.3185562386058459,
+        "raw_positive_rows": 82269,
+        "suppressed_positive_rows": 36663,
+        "targets": 16
+      },
+      "SAMV": {
+        "admitted_positive_rows": 30701,
+        "anchor_success": 10,
+        "class_agnostic_counts": {
+          "0.5": 45,
+          "0.75": 21
+        },
+        "mean_best_iou": 0.2164581628321175,
+        "mean_fixed_reference_iou": 0.31484823684671637,
+        "raw_positive_rows": 61378,
+        "suppressed_positive_rows": 30677,
+        "targets": 16
+      },
+      "semantic": {
+        "joint_eligible": 10,
+        "right_to_wrong": 0,
+        "undefined_fixed_reference": 5,
+        "wrong_to_right": 0
+      }
+    }
+  },
+  "identity": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+  "mechanism_flags": {
+    "COMBINATION_EQUALS_COMPONENT": false,
+    "SEGMENTOR_SUPPORT_SIGNAL": false,
+    "SEMANTIC_MASK_SIGNAL": false
+  },
+  "scene_receipts": {
+    "office1": "7564d9a96c4926f38bf18ce1f28d62de05fbcd1a4f8c3c5baf915da469464f46",
+    "room0": "5bfa3a38fe77aee667a33af3b7a8101fc5f58aea3c1942747cc9cc9229645a7a",
+    "scene0011_00": "f3ec1fd4f1b6457568875412e106fcc3cc1116d4e442bb243d234bbc1a124568",
+    "scene0050_00": "0602705bbee9135ac4adb26341e3c6cf4fe5e014e2b2354c087b0a2ce85558f9"
+  },
+  "status": "DIAGNOSTICS_COMPLETE"
+}

@@ -1,0 +1,268 @@
+{
+  "identity": "b86219087d943e1b7693541e68aaaa2b0332bdb7dbf5cb0360e13ce173687432",
+  "table1": [
+    {
+      "cell_sources": {
+        "cf_probe2": "d45266aec6a58e95209969ed74b3972bada198cd244fa012f17dc16a1f499b06",
+        "replica_probe2": "8b58c55871dec8c633dc281c37a0e26df7c0e4961f2e95f63f2829f106be96b9"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.861527980451235,
+      "cf_probe2_miou_percent": 26.225536552064334,
+      "label": "D2 reference",
+      "method": "REF_D2",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.52337259534975,
+      "replica_probe2_miou_percent": 26.405241762239847
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "b48faee9a29b0282131e980728b5f823568556758390afbf0a46ae77d524ff4f",
+        "replica_probe2": "4730385857ef2bdd0568153ca165faa19ae233a65647f4ba2084e867ea203a70"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.90242507959294,
+      "cf_probe2_miou_percent": 26.26213880406502,
+      "label": "G1",
+      "method": "SV00_G1",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.5238340084078,
+      "replica_probe2_miou_percent": 26.39454922167529
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "9a0819debc5b5e333347ecc8d324b7da8effa48f1017d38ccca00b6fac12d07c",
+        "replica_probe2": "4581d5f8a055a953529ecd6229a96a420814a76474c3d37ee5f9c21b8f50edf8"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.90242507959294,
+      "cf_probe2_miou_percent": 26.26234551876408,
+      "label": "SAM2 geometry",
+      "method": "SV01_SAM2_GEOM",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.5238340084078,
+      "replica_probe2_miou_percent": 26.396073940040825
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "4e9b4710598dda3ea2396483df25bce955254beabe9491a24bba5cfbbbc212d1",
+        "replica_probe2": "d2cb613c3192f39fe639e3991d2bdffee25b681bf9b0db184b3c7d8aff52b3c5"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.90242507959294,
+      "cf_probe2_miou_percent": 26.26244088385651,
+      "label": "SAM-V geometry",
+      "method": "SV02_SAMV_GEOM",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.52013926787096,
+      "replica_probe2_miou_percent": 26.397822792404686
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "c6bcdeee83751d879ded31ce26902e3e5cf4f8ade0738887a6dd61145591264d",
+        "replica_probe2": "f107fe4f5f6e0fe3df3cf73b1322ccd913ecdce09cd75d6dc45ac90d2e3cc515"
+      },
+      "cf_probe2_ap25_percent": 34.968918341352364,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 36.80510074014599,
+      "cf_probe2_miou_percent": 27.58370359549624,
+      "label": "OLD-mask FC",
+      "method": "SV03_OLDMASK_FC",
+      "replica_probe2_ap25_percent": 33.1024531024531,
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_macc_percent": 32.690670017349085,
+      "replica_probe2_miou_percent": 25.43799559702459
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "8ba7f902433fee00621138a1235eaa8462fa26b7ccd1196b5f8d607b527abf6c",
+        "replica_probe2": "075dacaf8289c179f0dedba9b1e4032d504cc8c031407c483c9808f45b6f57f4"
+      },
+      "cf_probe2_ap25_percent": 35.57347670250896,
+      "cf_probe2_ap50_percent": 31.488788175005183,
+      "cf_probe2_apall_percent": 13.462342434727578,
+      "cf_probe2_macc_percent": 36.834244875414356,
+      "cf_probe2_miou_percent": 27.948974949261498,
+      "label": "SAM-V-mask FC",
+      "method": "SV04_SAMV_FC",
+      "replica_probe2_ap25_percent": 33.1024531024531,
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_macc_percent": 32.690670017349085,
+      "replica_probe2_miou_percent": 25.437152311631355
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "daa2b51da057870927f67b3abada9c6536f17c4224adb3c0e8dbae0fa0fe21f3",
+        "replica_probe2": "a18e8949307b8f9ac2467dac1e02377aedbcf2f43077cf1343224927d4e18cce"
+      },
+      "cf_probe2_ap25_percent": 35.57347670250896,
+      "cf_probe2_ap50_percent": 31.488788175005183,
+      "cf_probe2_apall_percent": 13.462342434727578,
+      "cf_probe2_macc_percent": 36.83416243090157,
+      "cf_probe2_miou_percent": 27.9489781863706,
+      "label": "SAM-V + fixed FC",
+      "method": "SV05_COMBINED",
+      "replica_probe2_ap25_percent": 33.1024531024531,
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_macc_percent": 32.690670017349085,
+      "replica_probe2_miou_percent": 25.444278412811983
+    }
+  ],
+  "table2_semantic": [
+    {
+      "ap25_delta_pp": 0.6045583611565986,
+      "ap50_delta_pp": 0.5741220330663155,
+      "apall_delta_pp": 0.3554307916478039,
+      "cohort": "cf_probe2",
+      "diagnostic_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "joint_eligible": 8,
+      "macc_delta_pp": 0.029144135268366345,
+      "metric_sources": {
+        "SV03_OLDMASK_FC": "c6bcdeee83751d879ded31ce26902e3e5cf4f8ade0738887a6dd61145591264d",
+        "SV04_SAMV_FC": "8ba7f902433fee00621138a1235eaa8462fa26b7ccd1196b5f8d607b527abf6c"
+      },
+      "miou_delta_pp": 0.3652713537652563,
+      "right_to_wrong": 0,
+      "undefined_fixed_reference": 1,
+      "wrong_to_right": 1
+    },
+    {
+      "ap25_delta_pp": 0.0,
+      "ap50_delta_pp": 0.0,
+      "apall_delta_pp": 0.0,
+      "cohort": "replica_probe2",
+      "diagnostic_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "joint_eligible": 10,
+      "macc_delta_pp": 0.0,
+      "metric_sources": {
+        "SV03_OLDMASK_FC": "f107fe4f5f6e0fe3df3cf73b1322ccd913ecdce09cd75d6dc45ac90d2e3cc515",
+        "SV04_SAMV_FC": "075dacaf8289c179f0dedba9b1e4032d504cc8c031407c483c9808f45b6f57f4"
+      },
+      "miou_delta_pp": -0.0008432853932316409,
+      "right_to_wrong": 0,
+      "undefined_fixed_reference": 5,
+      "wrong_to_right": 0
+    }
+  ],
+  "table2_structure": [
+    {
+      "GT50": 30,
+      "GT75": 11,
+      "admitted_positive_rows": 1538,
+      "anchor_success": 15,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "cf_probe2",
+      "mean_best_iou": 0.17248741769696585,
+      "mean_fixed_iou": 0.18332981519104496,
+      "model": "SAM2",
+      "raw_positive_rows": 8838,
+      "suppressed_rows": 7300,
+      "targets": 16
+    },
+    {
+      "GT50": 30,
+      "GT75": 11,
+      "admitted_positive_rows": 2714,
+      "anchor_success": 15,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "cf_probe2",
+      "mean_best_iou": 0.17230162180395803,
+      "mean_fixed_iou": 0.18313163290516996,
+      "model": "SAMV",
+      "raw_positive_rows": 3432,
+      "suppressed_rows": 718,
+      "targets": 16
+    },
+    {
+      "GT50": 45,
+      "GT75": 21,
+      "admitted_positive_rows": 45606,
+      "anchor_success": 13,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "replica_probe2",
+      "mean_best_iou": 0.21900741404151908,
+      "mean_fixed_iou": 0.3185562386058459,
+      "model": "SAM2",
+      "raw_positive_rows": 82269,
+      "suppressed_rows": 36663,
+      "targets": 16
+    },
+    {
+      "GT50": 45,
+      "GT75": 21,
+      "admitted_positive_rows": 30701,
+      "anchor_success": 10,
+      "cell_source": "0c3b1fd999f8f742f998638dc94fc1a9e47770fa52b94e75a35c2f7cdd59a220",
+      "cohort": "replica_probe2",
+      "mean_best_iou": 0.2164581628321175,
+      "mean_fixed_iou": 0.31484823684671637,
+      "model": "SAMV",
+      "raw_positive_rows": 61378,
+      "suppressed_rows": 30677,
+      "targets": 16
+    }
+  ],
+  "table3_stages": "7a003e64c25a05c9d044fbb9677d3ae1034554b0fc79455893db78edc5ee85db",
+  "table3_window": [
+    {
+      "aggregate_source": "d737bec0fe0dca7a7aca89bbb6e0264974aa89cff5f5c6f8cf0d934007ada739",
+      "measurement_sources": [
+        "4b051cf2c8b734957381c6a728dd79cc48996eba5005baa45c8175b57ee24c01",
+        "c5135eecd9ef8a028f01388ca3daabab0a9a2a00d56f98d8304998de134b4315"
+      ],
+      "model": "SAM2",
+      "owner": 8,
+      "scene": "office1"
+    },
+    {
+      "aggregate_source": "d737bec0fe0dca7a7aca89bbb6e0264974aa89cff5f5c6f8cf0d934007ada739",
+      "measurement_sources": [
+        "e55b96d780ed523372c311fbcf8a24ed7e18183c1934d2f3f323157470864d18",
+        "858fe61d5572cd198cc78ec6c435971e57003401b7a83472d8287f7aa02ec7a7"
+      ],
+      "model": "SAM2",
+      "owner": 14,
+      "scene": "scene0011_00"
+    },
+    {
+      "aggregate_source": "d737bec0fe0dca7a7aca89bbb6e0264974aa89cff5f5c6f8cf0d934007ada739",
+      "measurement_sources": [
+        "07f93e65c2b3f5a8d7f07090af3da3419c20c791fd785e0ce5a070ec66c1e1b3",
+        "300064e9969c7843bf86344a9e9a9848fbe1b91a5da3bd0dd3533eeb923ae998"
+      ],
+      "model": "SAMV",
+      "owner": 8,
+      "scene": "office1"
+    },
+    {
+      "aggregate_source": "d737bec0fe0dca7a7aca89bbb6e0264974aa89cff5f5c6f8cf0d934007ada739",
+      "measurement_sources": [
+        "619a29b732a55da104518ca16e216c771e883244717da1c1d5e3d85fd695d29f",
+        "9f9187aabccaf5df71d8de1ed63841a421565bc14bd9ba3208d3456565f2c474"
+      ],
+      "model": "SAMV",
+      "owner": 14,
+      "scene": "scene0011_00"
+    }
+  ]
+}

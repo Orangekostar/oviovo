@@ -1,0 +1,102 @@
+{
+  "actual_counts": {
+    "SAM_encoded_images": 6,
+    "SAM_encoder_calls": 6,
+    "VGGT_frame_slots": 6,
+    "VGGT_joint_groups": 1,
+    "mask_decoder_calls": 1,
+    "scientific_or_timing_joint_calls": 1
+  },
+  "cross_query_feature_cache": false,
+  "decoded_rgb_sha256": [
+    "3eae8a9871f1666bba0af7cc47938468de8ac7222000c883e3e910b7df49c51d",
+    "a32d4f0d1a6e58e49195391cf10d5bc124f4267bc94b9ce7d679f13ac7dc8bfe",
+    "f5ed260461011676343c6cc0d96569c5689e18a18316cbbf49d2801ca2dc10c4",
+    "2fa5b960b16b9c5b0382e834ad76196b09168d30b1fee03fbdbdb56e5f2ecce0",
+    "12eb4e39f504506eb343ffb604fb0885318fea1eb1413557ee29c9ba98da84e8",
+    "6c1338391c257928509c7de424e116538cd3fe9880ef0dad2c5df50e7e61b0c9"
+  ],
+  "elapsed_seconds": 3.285554368980229,
+  "hardware": {
+    "CUDA": "12.1",
+    "CUDA_VISIBLE_DEVICES": "2",
+    "GPU": "NVIDIA A40",
+    "inference_dtype": "bfloat16_autocast",
+    "model_weights_dtype": "float32",
+    "python": "3.10.22",
+    "torch": "2.3.1+cu121"
+  },
+  "identity": "b36fb4baadd4562bcabc9efcaed2a93f6ccd9b6e8e7f89e182b60dec60e84e75",
+  "input_identity": "e198dec12f7055d484c8cafd20c5863cafdba9d13cdc87996bda7b89f806026b",
+  "kind": "SCIENCE",
+  "model": "SAMV",
+  "model_load_in_timer": false,
+  "ordered_frame_ids": [
+    66,
+    1276,
+    1408,
+    1540,
+    1793,
+    2189
+  ],
+  "outcome": {
+    "anchor_adherent": true,
+    "empty_raw_frames": [
+      0,
+      3,
+      4
+    ],
+    "frame_coverage": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "low_res_shape": [
+      1,
+      1,
+      256,
+      1536
+    ],
+    "multimask_output": false,
+    "original_mask_pixels": [
+      0,
+      8037,
+      12403,
+      0,
+      0,
+      696
+    ],
+    "panorama_split_before_interpolation": true,
+    "positive_prompt_pixels": [
+      [
+        573,
+        521
+      ],
+      [
+        576,
+        533
+      ],
+      [
+        573,
+        525
+      ]
+    ],
+    "visualize": false
+  },
+  "owner": 54,
+  "peak_cuda_allocated_bytes": 13502090240,
+  "peak_cuda_reserved_bytes": 14493417472,
+  "query_identity": "fa05fb7875d8a48cec309455f1a576be7667647fd4c0a26278ce4f5bb6a4685f",
+  "raw_arrays": {
+    "bytes": 493896,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/segmentation/scene0011_00/SAMV/54/raw_masks.npz",
+    "sha256": "fca28192162e0c44aa90503751a0ef9967e5f2abad2585d703e87ccad3cb07fa"
+  },
+  "result_cache": false,
+  "scene": "scene0011_00",
+  "status": "COMPLETE",
+  "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks"
+}

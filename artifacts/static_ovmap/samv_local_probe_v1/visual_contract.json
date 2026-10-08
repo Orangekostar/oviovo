@@ -1,0 +1,15 @@
+{
+  "artifact": "MASK_ONLY_FIXED_TARGET_CONTACT_SHEETS",
+  "evidence_layer": "QUALITATIVE_AND_LIMITATION",
+  "formats": [
+    "PNG",
+    "PDF"
+  ],
+  "identity": "24439888e7aa7bbdabe596224b028dcd8acadcbd6ce6dfb7121e0fef5990e754",
+  "palette": "gray binary masks; Okabe-Ito orange positive point markers",
+  "panel_map": "fixed owner rows; G1/SAM2/SAMV anchor columns; all targets included",
+  "question": "What masks did both actual models return for every locked target?",
+  "source": "locked segmentation receipts and measured old projected masks",
+  "statistics": "No uncertainty or quantitative2D claim; final3D best-IoU deltas are post-lock diagnostics",
+  "traceability": "visuals/mask_sources.json; query/segmentation identities"
+}

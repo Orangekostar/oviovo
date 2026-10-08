@@ -1,0 +1,346 @@
+{
+  "UTC": "2026-10-08T14:02:05.889866+00:00",
+  "checks": [
+    {
+      "evidence": [
+        "source_binding.json",
+        "initial_state.json"
+      ],
+      "observed": "ce9596167a255c184d3f5defac542e0c2f4eba53ab6586654b4a8b16e673dfb7",
+      "passed": true,
+      "requirement": "Exact branch/base/four scenes and actual parent lineage"
+    },
+    {
+      "evidence": [
+        "spec_copy_verification.json",
+        "configs/static_ovmap/samv_local_probe_v1.json"
+      ],
+      "observed": "a3d1d3c9e60b5bd48adeaf402cef8aa433ce7fe1514e43081a49e1c6c4241727",
+      "passed": true,
+      "requirement": "All 15 authored package files and protocol remain verbatim"
+    },
+    {
+      "evidence": [
+        "freeze_initial.json",
+        "freeze.json",
+        "freeze_amendments/"
+      ],
+      "observed": {
+        "report_review_commit": "6d3280531150afc0ce0b2c9d87dcb2f55abc6b82",
+        "scientific_commit": "1d9eca0a5ac600270bdfb812dd1c15aceb0eba95"
+      },
+      "passed": true,
+      "requirement": "Scientific freeze before acquisition; explicit later report-only amendment"
+    },
+    {
+      "evidence": [
+        "query_plan/<scene>/receipt.json",
+        "geometry.select_targets/interior_points/choose_window"
+      ],
+      "observed": {
+        "office1": [
+          8,
+          16,
+          23,
+          24,
+          79,
+          83,
+          86,
+          88
+        ],
+        "room0": [
+          14,
+          18,
+          21,
+          30,
+          79,
+          138,
+          147,
+          158
+        ],
+        "scene0011_00": [
+          14,
+          54,
+          56,
+          60,
+          72,
+          73,
+          74,
+          81
+        ],
+        "scene0050_00": [
+          21,
+          24,
+          26,
+          32,
+          42,
+          93,
+          153,
+          196
+        ]
+      },
+      "passed": true,
+      "requirement": "Locked target selection is GT-free and globally six-frame"
+    },
+    {
+      "evidence": [
+        "observations/<scene>/receipt.json",
+        "query_plan.observations"
+      ],
+      "observed": {
+        "new_frames": 0,
+        "new_rays": 0,
+        "reused_frames": 128
+      },
+      "passed": true,
+      "requirement": "All 128 source-row observations reused with operator/mesh/camera/depth proofs"
+    },
+    {
+      "evidence": [
+        "segmentation/<scene>/<model>/<owner>/receipt.json",
+        "samv_worker.infer",
+        "sam2_worker.infer"
+      ],
+      "observed": {
+        "SAM2": 32,
+        "SAMV": 32,
+        "model_failures_substituted_by_zero_masks": false
+      },
+      "passed": true,
+      "requirement": "Real 32 SAM2 and 32 SAM-V queries; same decoded images and chronological frames"
+    },
+    {
+      "evidence": [
+        "segmentation/invocations/*/receipt.json",
+        "samv_worker.load_model"
+      ],
+      "observed": {
+        "SAM_VIT_H_tensors": 594,
+        "VGGT_tensors": 1797,
+        "stage2_tensors": 142
+      },
+      "passed": true,
+      "requirement": "Actual strict pretrained base coverage and exact 142 stage-2 trainable tensors"
+    },
+    {
+      "evidence": [
+        "../env_setup/receipt.json",
+        "model_assets.json"
+      ],
+      "observed": {
+        "assets_sam2_head": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+        "assets_samv_head": "33fab24c1d0d21ac56f4e471abf30c6de3e7018b",
+        "sam2_import": "pass",
+        "sam2_pip_check": "pass",
+        "sam2_python": "3.10.22",
+        "samv_import": "pass",
+        "samv_pip_check": "pass",
+        "samv_python": "3.10.22"
+      },
+      "passed": true,
+      "requirement": "Separate pinned SAM-V/SAM2 environments with real import and pip checks"
+    },
+    {
+      "evidence": [
+        "pilots/summary.json",
+        "focused_tests.json",
+        "tests_before_freeze.log"
+      ],
+      "observed": {
+        "OOM_fallback": false,
+        "pilot_windows": 2,
+        "tests_passed": 12
+      },
+      "passed": true,
+      "requirement": "Two real pre-AP engineering windows and only twelve focused test cases"
+    },
+    {
+      "evidence": [
+        "lifted/<scene>/<model>/receipt.json",
+        "lifting.count_view_votes/arbitrate"
+      ],
+      "observed": {
+        "office1:SAM2": 1413,
+        "office1:SAMV": 2336,
+        "room0:SAM2": 40,
+        "room0:SAMV": 87,
+        "scene0011_00:SAM2": 729,
+        "scene0011_00:SAMV": 798,
+        "scene0050_00:SAM2": 1167,
+        "scene0050_00:SAMV": 492
+      },
+      "passed": true,
+      "requirement": "Eight actual simultaneous partitions retain domain/core/prompts and no new IDs"
+    },
+    {
+      "evidence": [
+        "predictions/summary.json",
+        "predictions/<scene>/receipt.json",
+        "outputs.build/predict"
+      ],
+      "observed": "56198220926eaa463c139f696404b2e98fc648faf8b82cb7f79e9432cbae8e38",
+      "passed": true,
+      "requirement": "Global prediction lock, single partition metrics and exact SV05 factorization"
+    },
+    {
+      "evidence": [
+        "no_evidence_builder_check.json",
+        "evaluation/baseline_parity.json"
+      ],
+      "observed": {
+        "builder_scenes": 4,
+        "fresh_scorer_scenes": [
+          "office1",
+          "scene0011_00"
+        ]
+      },
+      "passed": true,
+      "requirement": "Real four-map no-evidence builder parity and two fresh cohort baseline scorer parities"
+    },
+    {
+      "evidence": [
+        "result_store.json",
+        "pools/<cohort>/<method>.json",
+        "evaluation.ordered_rows/evaluate"
+      ],
+      "observed": {
+        "logical_rows": 28,
+        "new_scene_scorer_calls": 18,
+        "subset_pools": 14
+      },
+      "passed": true,
+      "requirement": "28 complete scene rows; 14 exact ordered two-scene released pools, all five metrics"
+    },
+    {
+      "evidence": [
+        "diagnostics/<scene>/receipt.json",
+        "diagnostics.diagnose_scene/analyze"
+      ],
+      "observed": {
+        "genuine_2D_GT_metrics": null,
+        "indexed_mesh_topology_not_welded": true
+      },
+      "passed": true,
+      "requirement": "Actual raw/admitted/final, fixed-GT, whole-map matching, tied traces and topology limitations"
+    },
+    {
+      "evidence": [
+        "selection.json",
+        "selection.select",
+        "best_simple_control.json"
+      ],
+      "observed": {
+        "material_met": false,
+        "selected": "SV00_G1",
+        "target_met": false
+      },
+      "passed": true,
+      "requirement": "Original unrounded fixed gates, uniform G1 choice, negative result and deployment unchanged"
+    },
+    {
+      "evidence": [
+        "costs.json",
+        "readout/<scene>/receipt.json",
+        "segmentation/invocations/*/process.json"
+      ],
+      "observed": {
+        "failed_model_attempts": 2,
+        "new_FC_frames": 15,
+        "parent_dense_hits": 31,
+        "region_pools": 121
+      },
+      "passed": true,
+      "requirement": "Measured FC/segmentation budgets, two honest failures and no unauthorized new work"
+    },
+    {
+      "evidence": [
+        "timings/summary.json",
+        "costs.measure/_timing_parity",
+        "worker_io.run_worker"
+      ],
+      "observed": {
+        "OS_page_cache": "UNCONTROLLED",
+        "calls": 8,
+        "end_to_end_latency": "NOT_MEASURED_THIS_PROBE"
+      },
+      "passed": true,
+      "requirement": "Exactly eight resident cache-off timings with outside-timer exact raw-mask parity"
+    },
+    {
+      "evidence": [
+        "tables/table1_all_five_metrics.json",
+        "tables/cell_sources.json",
+        "result_store.json"
+      ],
+      "observed": 70,
+      "passed": true,
+      "requirement": "All 70 accuracy cells and pool identities match canonical unrounded data"
+    },
+    {
+      "evidence": [
+        "tables/",
+        "masks/",
+        "edits/",
+        "visuals/"
+      ],
+      "observed": {
+        "edit_arrays": 8,
+        "families": 3,
+        "masks": 64,
+        "scene_sheets": 4
+      },
+      "passed": true,
+      "requirement": "Three table families in four formats; real 64 masks/eight edits/four scene sheets"
+    },
+    {
+      "evidence": [
+        "traces/index.json",
+        "scoring/<scene>/<method>.json"
+      ],
+      "observed": {
+        "logical_trace_references": 28
+      },
+      "passed": true,
+      "requirement": "All 28 scorer trace references include actual published trace bytes"
+    },
+    {
+      "evidence": [
+        "execution/all_terminal.json",
+        "full_run_001.log",
+        "full_run_002.log"
+      ],
+      "observed": {
+        "UTC": "2026-10-08T13:46:19.824017+00:00",
+        "segmentation_process_invocations_after_resume": 9,
+        "terminal_identity": "b6e9cb2cd3681430929d1900459f026565f0f2d8c80efc0a5888a53e0843493a"
+      },
+      "passed": true,
+      "requirement": "Exact all --resume CLI actually terminated zero with every phase complete"
+    },
+    {
+      "evidence": [
+        "receipts/visual_qa.json",
+        "tables/tables_preview.pdf",
+        "visuals/"
+      ],
+      "observed": {
+        "MiB_before_review_file": 17.954379081726074
+      },
+      "passed": true,
+      "requirement": "Actual compact published content under 30 MiB; final renders visually inspected"
+    }
+  ],
+  "complete_task_requires_external_publication_receipt": true,
+  "final_publication_gate": {
+    "performed_after_this_commit": true,
+    "receipt": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/publication/final.json",
+    "requires": "normal push exit0 and exact local/remote full SHA equality"
+  },
+  "identity": "e0e3bd86c7009fc9b097c33ee6e29216546f0bf0f593071dab48efac5039217d",
+  "no_new_inference_or_AP_by_this_review": true,
+  "result_store_identity": "93a63a051f5f70a28cc9356db68800ffad4b5fba063e3dd1bb5eb1894bef61fa",
+  "reviewer_role": "PRIMARY_AGENT",
+  "scientific_outcome": "COMPLETE_NO_PILOT_GAIN",
+  "source_freeze_identity": "7d720607341fb8dc3d283d3634de031a5a6609ba02bc912fa25b65f47f16f12c",
+  "status": "PRIMARY_SCIENCE_AND_DELIVERY_REVIEW_PASSED"
+}

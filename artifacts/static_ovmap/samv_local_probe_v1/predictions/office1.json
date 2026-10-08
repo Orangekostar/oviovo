@@ -1,0 +1,258 @@
+{
+  "GT_used": false,
+  "SV05_class_map_exactly_SV04": true,
+  "SV05_owners_exactly_SV02": true,
+  "elapsed_seconds": 10.37341468501836,
+  "equality_flags": {
+    "SV00_G1=SV01_SAM2_GEOM": false,
+    "SV00_G1=SV02_SAMV_GEOM": false,
+    "SV00_G1=SV03_OLDMASK_FC": true,
+    "SV00_G1=SV04_SAMV_FC": true,
+    "SV00_G1=SV05_COMBINED": false,
+    "SV01_SAM2_GEOM=SV02_SAMV_GEOM": false,
+    "SV01_SAM2_GEOM=SV03_OLDMASK_FC": false,
+    "SV01_SAM2_GEOM=SV04_SAMV_FC": false,
+    "SV01_SAM2_GEOM=SV05_COMBINED": false,
+    "SV02_SAMV_GEOM=SV03_OLDMASK_FC": false,
+    "SV02_SAMV_GEOM=SV04_SAMV_FC": false,
+    "SV02_SAMV_GEOM=SV05_COMBINED": true,
+    "SV03_OLDMASK_FC=SV04_SAMV_FC": true,
+    "SV03_OLDMASK_FC=SV05_COMBINED": false,
+    "SV04_SAMV_FC=SV05_COMBINED": false
+  },
+  "exact_combination_target_class_map": {
+    "16": 47,
+    "23": 35,
+    "24": 39,
+    "79": 50,
+    "8": 28,
+    "83": 50,
+    "86": 20,
+    "88": 10
+  },
+  "identity": "a64592ae16f75fad0dc1b461f7374c9af463dd07e19859aeaf27959fbc27a1e1",
+  "input_identity": "a38ee2a26b00ff4ef85ad66f1cb0f01c15deec45375e8f539240352d7471f47a",
+  "methods": {
+    "REF_D2": {
+      "audit": null,
+      "manifest": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/predictions/office1/CT_A1_E/manifest.json",
+      "owner_partition_digest": "48294ea345abf0cef0ee3eb29cb33a1db57f908d46544599184a1a9c7a9f0a97",
+      "prediction_key": "272292ef9b0cc864aea5d38fdaaa0612797bcd6f2cbfb9bbbd2298030d0ae345",
+      "rank_digest": "3ab614ba0ccfc94a96a2ebe5a96f293a04d4652e4850c7e7e06df8caf870e444",
+      "record_key": "82d665e0a76d7484e6f8cc4be132957ef5f3adca9ecd720264bb5c2cd1350472",
+      "semantic_digest": "4877b9eb4dd81a09eb62fbf6ac22a1437e65f1088bd5ed97ec40cf988fd742ad",
+      "source_kind": "EXACT_PUBLISHED_PARENT_BASELINE",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV00_G1": {
+      "audit": null,
+      "manifest": "/home/ww/ovimap-area-fallback-v2/attempt_001/predictions/office1/CT_A3_ER/manifest.json",
+      "owner_partition_digest": "55566d88346e52f3b27ef2a9d5b54409117d3e9045ac7cf9bec782e08d0ba077",
+      "prediction_key": "888f1415224290410915ef7865eaeb3526005ce0157143c0877eb3503fde5f46",
+      "rank_digest": "7341fad602d9b72d11f3d67d869dad1e858f39ca21319f67182d22728f4bc750",
+      "record_key": "3ce1e94920633027c4a2a3fa0ac18e6019df2d1d4bd0902cdd23e6ffae07599f",
+      "semantic_digest": "9a1f065d25ef9ce59fff11508cadb95d8a11577e4968940abd374f3ee415be4b",
+      "source_kind": "EXACT_PUBLISHED_PARENT_BASELINE",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV01_SAM2_GEOM": {
+      "audit": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 1413,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.30429,
+            "before": 0.315013,
+            "owner": 24
+          },
+          {
+            "after": 0.012285,
+            "before": 0.012218,
+            "owner": 64
+          },
+          {
+            "after": 0.148888,
+            "before": 0.151861,
+            "owner": 79
+          }
+        ],
+        "semantic_row_edits": 1413
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/office1/SV01_SAM2_GEOM/manifest.json",
+      "owner_partition_digest": "79422b889009a1a681a513c59e7d5b8fac2bb630db61426693b08bb00e1eb4c1",
+      "prediction_key": "38999616e987ed0dc927cbd1c11627a46f4af2a114cf674d7e90a8f7d876fcaf",
+      "rank_digest": "ec607736b44483947c2c7f94b7f5308863bb0e9ffbdcb4663da8fc2ad3f0f97d",
+      "record_key": "d85cbdfde60bef84354498935acfb3835bb1fdec26769ae61dbc23ddcc9ce23c",
+      "semantic_digest": "1a13a23b0dcee95ef43d9ff8f24bdf86717ea25c486f628d719e1bc5ada85afd",
+      "source_kind": "ACTUAL_LOCAL_PARTITION_OR_PAIRED_LABELS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV02_SAMV_GEOM": {
+      "audit": {
+        "class_updates": {},
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 2336,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.265416,
+            "before": 0.315013,
+            "owner": 24
+          },
+          {
+            "after": 0.01222,
+            "before": 0.012218,
+            "owner": 64
+          },
+          {
+            "after": 0.144905,
+            "before": 0.151861,
+            "owner": 79
+          }
+        ],
+        "semantic_row_edits": 2336
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/office1/SV02_SAMV_GEOM/manifest.json",
+      "owner_partition_digest": "1bc789085f8470e8176d4443c75900a9b51fd9543131283365e20684b9c6c957",
+      "prediction_key": "e264ff6ab3a5eb5822bd0e741fd969edcd48951a88e6b174080b4b7c87ec80f0",
+      "rank_digest": "108d54f32d1919824d12db5b6446b319c60f4e4e61914a4f54fa2992b5be472c",
+      "record_key": "8a3efb7d8a48e378f5ce8fbe08eab2a9bf3ad5f45d9a619001ecd4cabac2089a",
+      "semantic_digest": "1cb60f0ab100513de643d0f1766657714db0dc501e0da8ec4840b4cf48a9b12a",
+      "source_kind": "ACTUAL_LOCAL_PARTITION_OR_PAIRED_LABELS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV03_OLDMASK_FC": {
+      "alias_proof": {
+        "owners": "55566d88346e52f3b27ef2a9d5b54409117d3e9045ac7cf9bec782e08d0ba077",
+        "ranks": "7341fad602d9b72d11f3d67d869dad1e858f39ca21319f67182d22728f4bc750",
+        "semantics": "9a1f065d25ef9ce59fff11508cadb95d8a11577e4968940abd374f3ee415be4b"
+      },
+      "audit": {
+        "class_updates": {
+          "16": 47,
+          "23": 35,
+          "24": 39,
+          "79": 50,
+          "8": 28,
+          "83": 50,
+          "86": 20,
+          "88": 10
+        },
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 0,
+        "prompt_rows_retained": 24,
+        "rank_changes": [],
+        "semantic_row_edits": 0
+      },
+      "manifest": "/home/ww/ovimap-area-fallback-v2/attempt_001/predictions/office1/CT_A3_ER/manifest.json",
+      "owner_partition_digest": "55566d88346e52f3b27ef2a9d5b54409117d3e9045ac7cf9bec782e08d0ba077",
+      "prediction_key": "888f1415224290410915ef7865eaeb3526005ce0157143c0877eb3503fde5f46",
+      "rank_digest": "7341fad602d9b72d11f3d67d869dad1e858f39ca21319f67182d22728f4bc750",
+      "record_key": "3ce1e94920633027c4a2a3fa0ac18e6019df2d1d4bd0902cdd23e6ffae07599f",
+      "semantic_digest": "9a1f065d25ef9ce59fff11508cadb95d8a11577e4968940abd374f3ee415be4b",
+      "source_kind": "EXACT_LOCAL_ARRAYS_CLASSES_RANKS_ALIAS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV04_SAMV_FC": {
+      "alias_proof": {
+        "owners": "55566d88346e52f3b27ef2a9d5b54409117d3e9045ac7cf9bec782e08d0ba077",
+        "ranks": "7341fad602d9b72d11f3d67d869dad1e858f39ca21319f67182d22728f4bc750",
+        "semantics": "9a1f065d25ef9ce59fff11508cadb95d8a11577e4968940abd374f3ee415be4b"
+      },
+      "audit": {
+        "class_updates": {
+          "16": 47,
+          "23": 35,
+          "24": 39,
+          "79": 50,
+          "8": 28,
+          "83": 50,
+          "86": 20,
+          "88": 10
+        },
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 0,
+        "prompt_rows_retained": 24,
+        "rank_changes": [],
+        "semantic_row_edits": 0
+      },
+      "manifest": "/home/ww/ovimap-area-fallback-v2/attempt_001/predictions/office1/CT_A3_ER/manifest.json",
+      "owner_partition_digest": "55566d88346e52f3b27ef2a9d5b54409117d3e9045ac7cf9bec782e08d0ba077",
+      "prediction_key": "888f1415224290410915ef7865eaeb3526005ce0157143c0877eb3503fde5f46",
+      "rank_digest": "7341fad602d9b72d11f3d67d869dad1e858f39ca21319f67182d22728f4bc750",
+      "record_key": "3ce1e94920633027c4a2a3fa0ac18e6019df2d1d4bd0902cdd23e6ffae07599f",
+      "semantic_digest": "9a1f065d25ef9ce59fff11508cadb95d8a11577e4968940abd374f3ee415be4b",
+      "source_kind": "EXACT_LOCAL_ARRAYS_CLASSES_RANKS_ALIAS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "SV05_COMBINED": {
+      "alias_proof": {
+        "owners": "1bc789085f8470e8176d4443c75900a9b51fd9543131283365e20684b9c6c957",
+        "ranks": "108d54f32d1919824d12db5b6446b319c60f4e4e61914a4f54fa2992b5be472c",
+        "semantics": "1cb60f0ab100513de643d0f1766657714db0dc501e0da8ec4840b4cf48a9b12a"
+      },
+      "audit": {
+        "class_updates": {
+          "16": 47,
+          "23": 35,
+          "24": 39,
+          "79": 50,
+          "8": 28,
+          "83": 50,
+          "86": 20,
+          "88": 10
+        },
+        "disappeared_owner_ids": [],
+        "geometry_identity_unchanged": true,
+        "old_raw_zero_ownership_edits": 0,
+        "old_raw_zero_semantic_edits": 0,
+        "ownership_edits": 2336,
+        "prompt_rows_retained": 24,
+        "rank_changes": [
+          {
+            "after": 0.265416,
+            "before": 0.315013,
+            "owner": 24
+          },
+          {
+            "after": 0.01222,
+            "before": 0.012218,
+            "owner": 64
+          },
+          {
+            "after": 0.144905,
+            "before": 0.151861,
+            "owner": 79
+          }
+        ],
+        "semantic_row_edits": 2336
+      },
+      "manifest": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/predictions/office1/SV02_SAMV_GEOM/manifest.json",
+      "owner_partition_digest": "1bc789085f8470e8176d4443c75900a9b51fd9543131283365e20684b9c6c957",
+      "prediction_key": "e264ff6ab3a5eb5822bd0e741fd969edcd48951a88e6b174080b4b7c87ec80f0",
+      "rank_digest": "108d54f32d1919824d12db5b6446b319c60f4e4e61914a4f54fa2992b5be472c",
+      "record_key": "8a3efb7d8a48e378f5ce8fbe08eab2a9bf3ad5f45d9a619001ecd4cabac2089a",
+      "semantic_digest": "1cb60f0ab100513de643d0f1766657714db0dc501e0da8ec4840b4cf48a9b12a",
+      "source_kind": "EXACT_LOCAL_ARRAYS_CLASSES_RANKS_ALIAS",
+      "status": "PREDICTION_LOCKED"
+    }
+  },
+  "new_owner_ids": 0,
+  "one_exclusive_partition_for_AP_and_mIoU": true,
+  "scene": "office1",
+  "status": "PREDICTIONS_LOCKED"
+}

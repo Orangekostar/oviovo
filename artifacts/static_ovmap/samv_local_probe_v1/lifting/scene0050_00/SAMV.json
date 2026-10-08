@@ -1,0 +1,322 @@
+{
+  "GT_used": false,
+  "audit": {
+    "added_unowned_rows": 0,
+    "conflicting_rows": 0,
+    "deleted_rows": 423,
+    "forced_prompt_rows": 24,
+    "moved_rows": 492,
+    "out_of_domain_owner_parity": true,
+    "reassigned_rows": 69,
+    "tie_rows": 0
+  },
+  "donors": {
+    "153": {
+      "lost_rows": 1,
+      "remaining_rows": 4427,
+      "selected_target": true
+    },
+    "21": {
+      "lost_rows": 382,
+      "remaining_rows": 5003,
+      "selected_target": true
+    },
+    "24": {
+      "lost_rows": 76,
+      "remaining_rows": 159911,
+      "selected_target": true
+    },
+    "93": {
+      "lost_rows": 33,
+      "remaining_rows": 36312,
+      "selected_target": true
+    }
+  },
+  "elapsed_seconds": 7.878202378982678,
+  "identity": "037257cb38cde719febcf536056686f39dcd6f5ffd4884ee525666ef1592e476",
+  "input_identity": "47c1bbd517035170984674fdaf7ccb331d206258e5d73d52dab8e6e9f6856b5e",
+  "model": "SAMV",
+  "new_owner_ids": 0,
+  "old_raw_zero_ownership_edits": 0,
+  "owner_partition_digest": "66acd4259aa1a11dce05124bc12c4d4a923d58f00fda8989f8f8f2b0053499af",
+  "partition": {
+    "bytes": 212421,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/partition.npz",
+    "sha256": "92c18dab2285bc40597c2592d420799a03ce76f2aeb00131cb25803ce27c69e8"
+  },
+  "prompt_owners_retained": {
+    "1054460": 21,
+    "1177104": 196,
+    "1180892": 196,
+    "1453523": 42,
+    "1579788": 42,
+    "1992219": 196,
+    "20331": 93,
+    "2189306": 26,
+    "2375979": 153,
+    "2482752": 26,
+    "2598821": 26,
+    "2606833": 21,
+    "2693788": 24,
+    "2798684": 32,
+    "3161582": 42,
+    "3648704": 24,
+    "3697501": 153,
+    "3810128": 32,
+    "4012947": 93,
+    "4513011": 24,
+    "4790524": 32,
+    "5132822": 21,
+    "709302": 153,
+    "982563": 93
+  },
+  "protected_core_preserved": true,
+  "scene": "scene0050_00",
+  "status": "LIFTED_PARTITION_LOCKED",
+  "targets": {
+    "153": {
+      "active": true,
+      "added_rows": 0,
+      "admitted_positive_rows": 0,
+      "anchor_adherent": true,
+      "empty_raw_frames": [
+        0,
+        1,
+        3
+      ],
+      "evidence_arrays": {
+        "bytes": 872327,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/153.npz",
+        "sha256": "dc0f4859636834ffec6850aab4f21f68eb3a32c2ad0bcc250286ee85a3e370ac"
+      },
+      "final_support_rows": 4427,
+      "lost_rows": 1,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 1755,
+      "raw_foreground_rows": 1769,
+      "raw_qualified_negative_rows": 1,
+      "raw_qualified_positive_rows": 0,
+      "segmentation_identity": "67f8b0b26253025a1201df2697448eff698b0a33b6eb1fb7c05b57a1aa010f6a",
+      "suppressed_positive_rows": 0,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 0
+      },
+      "visible_source_rows": 609767
+    },
+    "196": {
+      "active": true,
+      "added_rows": 0,
+      "admitted_positive_rows": 123,
+      "anchor_adherent": true,
+      "empty_raw_frames": [
+        1,
+        2,
+        4
+      ],
+      "evidence_arrays": {
+        "bytes": 847447,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/196.npz",
+        "sha256": "aa9b5c28b8690238c55a8140ca84640114f833656ba850dcad0db8ee619154a5"
+      },
+      "final_support_rows": 1818,
+      "lost_rows": 0,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 3148,
+      "raw_foreground_rows": 4982,
+      "raw_qualified_negative_rows": 0,
+      "raw_qualified_positive_rows": 462,
+      "segmentation_identity": "369310f812d2073f1fb0ca8c5d51a4ef597085dc457004bf63869f47e0c587ce",
+      "suppressed_positive_rows": 339,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 339
+      },
+      "visible_source_rows": 584974
+    },
+    "21": {
+      "active": true,
+      "added_rows": 69,
+      "admitted_positive_rows": 70,
+      "anchor_adherent": true,
+      "empty_raw_frames": [
+        1,
+        2,
+        4
+      ],
+      "evidence_arrays": {
+        "bytes": 841180,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/21.npz",
+        "sha256": "d0bf935720ebddf4b1c922792846d078d093f9cf41ce9346c91f9b793c1c1671"
+      },
+      "final_support_rows": 5003,
+      "lost_rows": 382,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 2261,
+      "raw_foreground_rows": 2523,
+      "raw_qualified_negative_rows": 382,
+      "raw_qualified_positive_rows": 70,
+      "segmentation_identity": "13ece003cbe388cf9264159098fc45727b83d9a576093ff3e6159b0c342d1e1f",
+      "suppressed_positive_rows": 0,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 0
+      },
+      "visible_source_rows": 583652
+    },
+    "24": {
+      "active": true,
+      "added_rows": 0,
+      "admitted_positive_rows": 0,
+      "anchor_adherent": true,
+      "empty_raw_frames": [],
+      "evidence_arrays": {
+        "bytes": 934393,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/24.npz",
+        "sha256": "25af9afa2680970d92a5bfc4008b3a9286f60bbf4f4ae62684c91f865b941bbb"
+      },
+      "final_support_rows": 159911,
+      "lost_rows": 76,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 62842,
+      "raw_foreground_rows": 62842,
+      "raw_qualified_negative_rows": 7,
+      "raw_qualified_positive_rows": 0,
+      "segmentation_identity": "7bd12c670702a7d71bfcda041ae3b946285dc8cb6946d0d7a8ec36218d3da0c9",
+      "suppressed_positive_rows": 0,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 0
+      },
+      "visible_source_rows": 593796
+    },
+    "26": {
+      "active": true,
+      "added_rows": 0,
+      "admitted_positive_rows": 0,
+      "anchor_adherent": true,
+      "empty_raw_frames": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "evidence_arrays": {
+        "bytes": 958705,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/26.npz",
+        "sha256": "d6ce9a214ddd5a7f6136624ac110bf053e399a320bb6d15a7b69ec94ed8a4448"
+      },
+      "final_support_rows": 1119,
+      "lost_rows": 0,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 2675,
+      "raw_foreground_rows": 2677,
+      "raw_qualified_negative_rows": 0,
+      "raw_qualified_positive_rows": 0,
+      "segmentation_identity": "f30456430a5ca87c84110afa1f28b4862de275f152e89353c3b72757624b6ece",
+      "suppressed_positive_rows": 0,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 0
+      },
+      "visible_source_rows": 669853
+    },
+    "32": {
+      "active": true,
+      "added_rows": 0,
+      "admitted_positive_rows": 0,
+      "anchor_adherent": true,
+      "empty_raw_frames": [
+        1,
+        4
+      ],
+      "evidence_arrays": {
+        "bytes": 892188,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/32.npz",
+        "sha256": "fe0fa3563dcc7a3529b794e8d0a9a0b88c28315c47d78dbb4938a9656372917e"
+      },
+      "final_support_rows": 82194,
+      "lost_rows": 0,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 32476,
+      "raw_foreground_rows": 32476,
+      "raw_qualified_negative_rows": 0,
+      "raw_qualified_positive_rows": 0,
+      "segmentation_identity": "ef1717b87e0081aae864c03316793ae1af2f9dd4393d8c303e9183eab7bced1f",
+      "suppressed_positive_rows": 0,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 0
+      },
+      "visible_source_rows": 593796
+    },
+    "42": {
+      "active": true,
+      "added_rows": 0,
+      "admitted_positive_rows": 0,
+      "anchor_adherent": true,
+      "empty_raw_frames": [
+        1,
+        2,
+        4
+      ],
+      "evidence_arrays": {
+        "bytes": 846496,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/42.npz",
+        "sha256": "6b24d9000616f0a9618d07e93e15711cdf07c4a5cf8cb81ef362589b044d1b90"
+      },
+      "final_support_rows": 5091,
+      "lost_rows": 0,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 5213,
+      "raw_foreground_rows": 5983,
+      "raw_qualified_negative_rows": 0,
+      "raw_qualified_positive_rows": 0,
+      "segmentation_identity": "b5bfd927b9f175b46d5407b3a5f27a4f0d7fce4ea45eb195d714fecc9d15994e",
+      "suppressed_positive_rows": 0,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 0
+      },
+      "visible_source_rows": 584974
+    },
+    "93": {
+      "active": true,
+      "added_rows": 0,
+      "admitted_positive_rows": 0,
+      "anchor_adherent": true,
+      "empty_raw_frames": [
+        0,
+        3,
+        5
+      ],
+      "evidence_arrays": {
+        "bytes": 836807,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/lifted/scene0050_00/SAMV/targets/93.npz",
+        "sha256": "a5566be1e576ae5449af13a821544ed649f337a95739746827ebf0d078bc72f2"
+      },
+      "final_support_rows": 36312,
+      "lost_rows": 33,
+      "other_active_query_transfer_from_inactive_old_target": 0,
+      "positive_but_n_below_2_rows": 27689,
+      "raw_foreground_rows": 27845,
+      "raw_qualified_negative_rows": 33,
+      "raw_qualified_positive_rows": 0,
+      "segmentation_identity": "f54bd5c3008044f85b0f8ca218e3c7a37e101106e2df965aa3ec01c773b953b2",
+      "suppressed_positive_rows": 0,
+      "suppression_reasons": {
+        "anchor_failed": 0,
+        "outside_own_AABB": 0,
+        "protected_unselected_interior": 0
+      },
+      "visible_source_rows": 562187
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "columns": [
+    "method",
+    "replica_probe2_apall_percent",
+    "replica_probe2_ap50_percent",
+    "replica_probe2_ap25_percent",
+    "replica_probe2_miou_percent",
+    "replica_probe2_macc_percent",
+    "cf_probe2_apall_percent",
+    "cf_probe2_ap50_percent",
+    "cf_probe2_ap25_percent",
+    "cf_probe2_miou_percent",
+    "cf_probe2_macc_percent"
+  ],
+  "identity": "d7c6cbb41f5fe05c8e01349a2219f3d4b866f14d87ae532e75022de4a85af398",
+  "rows": [
+    {
+      "cell_sources": {
+        "cf_probe2": "d45266aec6a58e95209969ed74b3972bada198cd244fa012f17dc16a1f499b06",
+        "replica_probe2": "8b58c55871dec8c633dc281c37a0e26df7c0e4961f2e95f63f2829f106be96b9"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.861527980451235,
+      "cf_probe2_miou_percent": 26.225536552064334,
+      "label": "D2 reference",
+      "method": "REF_D2",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.52337259534975,
+      "replica_probe2_miou_percent": 26.405241762239847
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "b48faee9a29b0282131e980728b5f823568556758390afbf0a46ae77d524ff4f",
+        "replica_probe2": "4730385857ef2bdd0568153ca165faa19ae233a65647f4ba2084e867ea203a70"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.90242507959294,
+      "cf_probe2_miou_percent": 26.26213880406502,
+      "label": "G1",
+      "method": "SV00_G1",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.5238340084078,
+      "replica_probe2_miou_percent": 26.39454922167529
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "9a0819debc5b5e333347ecc8d324b7da8effa48f1017d38ccca00b6fac12d07c",
+        "replica_probe2": "4581d5f8a055a953529ecd6229a96a420814a76474c3d37ee5f9c21b8f50edf8"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.90242507959294,
+      "cf_probe2_miou_percent": 26.26234551876408,
+      "label": "SAM2 geometry",
+      "method": "SV01_SAM2_GEOM",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.5238340084078,
+      "replica_probe2_miou_percent": 26.396073940040825
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "4e9b4710598dda3ea2396483df25bce955254beabe9491a24bba5cfbbbc212d1",
+        "replica_probe2": "d2cb613c3192f39fe639e3991d2bdffee25b681bf9b0db184b3c7d8aff52b3c5"
+      },
+      "cf_probe2_ap25_percent": 31.78791475712297,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 33.90242507959294,
+      "cf_probe2_miou_percent": 26.26244088385651,
+      "label": "SAM-V geometry",
+      "method": "SV02_SAMV_GEOM",
+      "replica_probe2_ap25_percent": 34.61760461760461,
+      "replica_probe2_ap50_percent": 32.765752765752765,
+      "replica_probe2_apall_percent": 14.62969643525199,
+      "replica_probe2_macc_percent": 33.52013926787096,
+      "replica_probe2_miou_percent": 26.397822792404686
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "c6bcdeee83751d879ded31ce26902e3e5cf4f8ade0738887a6dd61145591264d",
+        "replica_probe2": "f107fe4f5f6e0fe3df3cf73b1322ccd913ecdce09cd75d6dc45ac90d2e3cc515"
+      },
+      "cf_probe2_ap25_percent": 34.968918341352364,
+      "cf_probe2_ap50_percent": 30.914666141938866,
+      "cf_probe2_apall_percent": 13.106911643079775,
+      "cf_probe2_macc_percent": 36.80510074014599,
+      "cf_probe2_miou_percent": 27.58370359549624,
+      "label": "OLD-mask FC",
+      "method": "SV03_OLDMASK_FC",
+      "replica_probe2_ap25_percent": 33.1024531024531,
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_macc_percent": 32.690670017349085,
+      "replica_probe2_miou_percent": 25.43799559702459
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "8ba7f902433fee00621138a1235eaa8462fa26b7ccd1196b5f8d607b527abf6c",
+        "replica_probe2": "075dacaf8289c179f0dedba9b1e4032d504cc8c031407c483c9808f45b6f57f4"
+      },
+      "cf_probe2_ap25_percent": 35.57347670250896,
+      "cf_probe2_ap50_percent": 31.488788175005183,
+      "cf_probe2_apall_percent": 13.462342434727578,
+      "cf_probe2_macc_percent": 36.834244875414356,
+      "cf_probe2_miou_percent": 27.948974949261498,
+      "label": "SAM-V-mask FC",
+      "method": "SV04_SAMV_FC",
+      "replica_probe2_ap25_percent": 33.1024531024531,
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_macc_percent": 32.690670017349085,
+      "replica_probe2_miou_percent": 25.437152311631355
+    },
+    {
+      "cell_sources": {
+        "cf_probe2": "daa2b51da057870927f67b3abada9c6536f17c4224adb3c0e8dbae0fa0fe21f3",
+        "replica_probe2": "a18e8949307b8f9ac2467dac1e02377aedbcf2f43077cf1343224927d4e18cce"
+      },
+      "cf_probe2_ap25_percent": 35.57347670250896,
+      "cf_probe2_ap50_percent": 31.488788175005183,
+      "cf_probe2_apall_percent": 13.462342434727578,
+      "cf_probe2_macc_percent": 36.83416243090157,
+      "cf_probe2_miou_percent": 27.9489781863706,
+      "label": "SAM-V + fixed FC",
+      "method": "SV05_COMBINED",
+      "replica_probe2_ap25_percent": 33.1024531024531,
+      "replica_probe2_ap50_percent": 31.250601250601246,
+      "replica_probe2_apall_percent": 13.78794559350115,
+      "replica_probe2_macc_percent": 32.690670017349085,
+      "replica_probe2_miou_percent": 25.444278412811983
+    }
+  ],
+  "source_unit": "EXPLICIT_PER_COLUMN",
+  "undefined_cells_are_null": true
+}
