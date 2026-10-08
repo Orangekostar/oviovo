@@ -8,6 +8,11 @@ def _observe(job):
     return observe(*job)
 
 
+def _predict(job):
+    from .reconcile import prediction
+    return prediction(*job)
+
+
 def run_phase(binding, phase, *, resume):
     if phase == 'observe':
         workers = binding['specification']['resources']['CPU_observation_workers_max']
@@ -26,8 +31,11 @@ def run_phase(binding, phase, *, resume):
         from .recognition import freeze
         return freeze(binding)
     if phase == 'predict':
-        from .outputs import predict_study
-        return predict_study(binding)
+        from .recognition import require_freeze
+        require_freeze(binding)
+        jobs = [(binding,s) for names in binding['cohorts'].values() for s in names]
+        with ProcessPoolExecutor(max_workers=binding['specification']['resources']['CPU_evaluation_workers']) as executor:
+            return list(executor.map(_predict,jobs))
     if phase == 'evaluate':
         from .evaluation import evaluate_study
         return evaluate_study(binding)

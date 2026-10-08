@@ -79,3 +79,24 @@ def recognition_frame(binding, plan, fid, session, assets):
     if read(path)['input_identity']!=key:
         leaf = [str(path.relative_to(root)),str(Path(read(path)['vectors']['path']).relative_to(root))]
         invalidate_descendants(binding,plan['scene'],'recognition_frame','changed selected frame content',leaf=leaf)
+
+
+def prediction(binding, scene):
+    from .outputs import predict_study
+    from static_ovmap.module_validation.scannet_study import load_prediction
+    root = Path(binding['output_root'])
+    target = root/'predictions'/scene/'receipt.json'
+    if target.exists():
+        lock = read(target)
+        structure = read(root/'proposals'/scene/'receipt.json')
+        semantic = read(root/'recognition'/scene/'decisions.json')
+        if (lock['status']=='PREDICTIONS_LOCKED' and lock['structural_identity']==structure['identity']
+                and lock['semantic_identity']==semantic['identity']):
+            for item in lock['methods'].values():
+                if item['status']=='PREDICTION_LOCKED':
+                    payload = load_prediction(item['manifest'])
+                    if payload.prediction_key!=item['prediction_key']:
+                        raise ValueError('completed scientific output content changed')
+            return lock
+        invalidate_descendants(binding,scene,'predict','changed locked predictor input identities')
+    return predict_study(binding,scenes=[scene])[0]
