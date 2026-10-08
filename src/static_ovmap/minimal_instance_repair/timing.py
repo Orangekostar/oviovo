@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import subprocess
 
+from static_ovmap.cvpr_compact.projected_views import _verified_identity
 from static_ovmap.module_validation.contracts import atomic_write_json
 from static_ovmap.recovery_wave2.binding import read
 
@@ -48,6 +49,28 @@ def time_study(binding):
     if path.exists() and read(path)!=plan:
         raise ValueError('completed timing selection changed; preserve affected calls and invalidate descendants')
     atomic_write_json(path,plan)
+    summary_path = root/'timing/summary.json'
+    if summary_path.exists() and read(summary_path).get('status')=='COLD_TIMING_COMPLETE':
+        summary = read(summary_path)
+        _verified_identity(summary)
+        if (summary['binding_identity']!=plan['identity'] or summary['call_count']!=plan['call_count']
+                or len(summary['calls'])!=len(plan['calls'])):
+            raise ValueError('completed cold series differs from the fixed plan')
+        locks = {}
+        for call,record in zip(plan['calls'],summary['calls'],strict=True):
+            leaf = root/'timing/calls'/(str(call['repeat'])+'_'+call['scene']+'_'+call['method'])/'receipt.json'
+            if not leaf.exists():
+                raise ValueError('completed cold call receipt is missing: '+str(leaf))
+            receipt = read(leaf)
+            _verified_identity(receipt)
+            if call['scene'] not in locks:
+                locks[call['scene']] = read(root/'predictions'/call['scene']/'receipt.json')
+            expected = locks[call['scene']]['methods'][call['method']]['prediction_key']
+            if (any(record[k]!=v or receipt[k]!=v for k,v in call.items())
+                    or receipt['status']!='COLD_CALL_PARITY_VERIFIED'
+                    or receipt['identity']!=record['identity'] or receipt['prediction_key']!=expected):
+                raise ValueError('completed cold call identity or scientific output changed: '+str(leaf))
+        return summary
     env = dict(os.environ,CUDA_VISIBLE_DEVICES=str(binding['gpu']),OMP_NUM_THREADS='4',
                MKL_NUM_THREADS='4',OPENBLAS_NUM_THREADS='4')
     with (root/'timing_execution.log').open('a') as stream:

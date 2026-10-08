@@ -318,6 +318,43 @@ def test_new_timing_series_has_four_unique_arms_and_reverses_both_orders():
     assert timing.make_plan(spec,'IR01_G1')['methods']==['IR01_G1','IR08_COMBINATION','IR05_VERIFIED_REPAIR','IR07_BOUNDARY_STABLE']
 
 
+def test_completed_cold_series_resumes_without_reloading_models_and_rejects_changed_call(tmp_path,monkeypatch):
+    timing,recognition = module('timing'),module('recognition')
+    from static_ovmap.module_validation.contracts import atomic_write_json
+    from static_ovmap.recovery_wave2.binding import read
+    from static_ovmap.minimal_instance_repair.binding import seal
+    import json
+    spec = json.loads((Path(__file__).resolve().parents[2]/'configs/static_ovmap/minimal_instance_repair_v1.json').read_text())
+    binding = {'output_root':str(tmp_path),'specification':spec,'identity':'bound-inputs',
+               'gpu':2,'FC_python':'frozen-worker-python'}
+    selection = seal({'selected':'IR01_G1','result_store_identity':'science'})
+    atomic_write_json(tmp_path/'selection.json',selection)
+    atomic_write_json(tmp_path/'result_store.json',{'status':'SCIENCE_COMPLETE','identity':'science'})
+    plan = seal({**timing.make_plan(spec,'IR01_G1'),'selection_identity':selection['identity'],
+                 'science_identity':'science','binding_identity':binding['identity']})
+    calls = []
+    for c in plan['calls']:
+        prediction_key = c['scene']+c['method']
+        lock = {'methods':{m:{'prediction_key':c['scene']+m} for m in plan['methods']}}
+        atomic_write_json(tmp_path/'predictions'/c['scene']/'receipt.json',lock)
+        receipt = seal({**c,'status':'COLD_CALL_PARITY_VERIFIED','prediction_key':prediction_key})
+        path = tmp_path/'timing/calls'/(str(c['repeat'])+'_'+c['scene']+'_'+c['method'])/'receipt.json'
+        atomic_write_json(path,receipt)
+        calls.append({**c,'identity':receipt['identity']})
+    summary = seal({'status':'COLD_TIMING_COMPLETE','binding_identity':plan['identity'],
+                    'call_count':64,'calls':calls,'original_model_load_seconds':123.})
+    atomic_write_json(tmp_path/'timing/summary.json',summary)
+    monkeypatch.setattr(recognition,'require_freeze',lambda _:None)
+    def forbidden(*args,**kwargs):
+        raise AssertionError('completed timing must not reload models or replace measured load receipts')
+    monkeypatch.setattr(timing.subprocess,'run',forbidden)
+    assert timing.time_study(binding)==summary
+    receipt = read(path)
+    atomic_write_json(path,seal({**receipt,'prediction_key':'changed-scientific-output'}))
+    with pytest.raises(ValueError,match='completed cold'):
+        timing.time_study(binding)
+
+
 def test_postlock_partition_iou_counts_all_support_points_and_original_projection():
     diag = module('output_diagnostics')
     from types import SimpleNamespace

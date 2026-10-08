@@ -88,8 +88,11 @@ def table_data(store):
             'FC_inputs_per_call':None,'AnyUp_QK_per_call':None,'AnyUp_regions_per_call':None,'observer_frames_per_call':None}
         if method in timed:
             t = timed[method]
+            baseline = timed['IR01_G1']
             row.update(seconds_per_scene=t['mean_seconds_per_scene'],allocated_GiB=t['peak_cuda_allocated_bytes']/2**30,
                 reserved_GiB=t['peak_cuda_reserved_bytes']/2**30,call_count=t['calls'],
+                time_ratio_vs_IR01=t['mean_seconds_per_scene']/baseline['mean_seconds_per_scene'],
+                allocated_ratio_vs_IR01=t['peak_cuda_allocated_bytes']/baseline['peak_cuda_allocated_bytes'],
                 incremental_allocated_GiB=t['incremental_peak_cuda_allocated_bytes']/2**30,
                 incremental_reserved_GiB=t['incremental_peak_cuda_reserved_bytes']/2**30,
                 exclusive_host_seconds=t['mean_exclusive_host_seconds'])
@@ -105,27 +108,28 @@ def displayed_tables(tables):
     number = lambda x:'—' if x is None else f'{x:.2f}'
     t1,t2,t3 = tables
     head1 = ['Method','R APall','R AP50','R mIoU','CF APall','CF AP50','CF mIoU','CF ΔAP G1','CF ΔAP D2']
-    rows1 = [[r['name'],*[pct(r[c]['metrics'][m]) for c in ('replica8','scannet_cf18') for m in ('apall','ap50','miou')],
+    rows1 = [[r['method'][:4]+' '+r['name'],*[pct(r[c]['metrics'][m]) for c in ('replica8','scannet_cf18') for m in ('apall','ap50','miou')],
               pct(r['scannet_cf18']['delta_IR01_fraction']['apall']),pct(r['scannet_cf18']['delta_D2_fraction']['apall'])] for r in t1]
-    head2 = ['Pair','Cohort','ΔAPall','ΔAP50','ΔmIoU','Ops A/B','Labels A/B','GT50 +/−','GT75 +/−','W→R','R→W']
+    head2 = ['Pair','Cohort','ΔAPall','ΔAP50','ΔmIoU','Ops A/B','Geom50 +/−','Geom75 +/−','GT50 +/−','GT75 +/−','W→R','R→W']
     rows2 = []
     for r in t2:
         matched = lambda t:next(x for x in r['thresholds'] if abs(x['threshold']-t)<1e-12)['released_class_aware']['counts']
+        geometry = lambda t:next(x for x in r['thresholds'] if abs(x['threshold']-t)<1e-12)['class_agnostic']['counts']
         pair = r['candidate'][:4]+'−'+r['reference'][:4]
         op,s = r['operations'],r['original_P_semantic_changes']
         rows2.append([pair,'Replica' if r['cohort']=='replica8' else 'CF18',
             *[pct(r['metric_deltas_fraction'][m]) for m in ('apall','ap50','miou')],
             str(op['candidate_applied_operations'])+'/'+str(op['reference_applied_operations']),
-            str(op['candidate_class_changes'])+'/'+str(op['reference_class_changes']),
+            *[str(geometry(t).get('new_unique_GT_matches',0))+'/'+str(geometry(t).get('lost_unique_GT_matches',0)) for t in (.5,.75)],
             *[str(matched(t).get('new_unique_GT_matches',0))+'/'+str(matched(t).get('lost_unique_GT_matches',0)) for t in (.5,.75)],
             str(s.get('matchable_wrong_to_right',0)),str(s.get('matchable_right_to_wrong',0))])
     head3 = ['Method','R APall','R mIoU','CF APall','CF mIoU','s/scene','Alloc GiB','Reserv GiB','FC/call','QK/call','Regions/call','Obs/call']
-    rows3 = [[r['name'],*[pct(r[c][m]) for c in ('replica8','scannet_cf18') for m in ('apall','miou')],
+    rows3 = [[r['method'][:4]+' '+r['name'],*[pct(r[c][m]) for c in ('replica8','scannet_cf18') for m in ('apall','miou')],
         *[number(r[k]) for k in ('seconds_per_scene','allocated_GiB','reserved_GiB','FC_inputs_per_call',
                                  'AnyUp_QK_per_call','AnyUp_regions_per_call','observer_frames_per_call')]] for r in t3]
     notes = [
         'Official dataset pools (%), fixed surface, one exclusive partition. Deltas are percentage points; all five metrics in source data.',
-        'Prespecified pairs; GT counts use released class-aware matching. W/R counts refer to geometrically matchable original P supports. Full thresholds in supplement.',
+        'Prespecified pairs. Geom: class-agnostic matching; GT: released class-aware matching. W/R: geometrically matchable original P supports. Full thresholds and label changes in supplement.',
         'Fresh paired cold calls, 8 Replica scenes × 2 rounds per measured arm. Required models resident; peaks are maxima, time is the mean. Unmeasured: —.']
     return [(head1,rows1,notes[0]),(head2,rows2,notes[1]),(head3,rows3,notes[2])]
 
@@ -189,12 +193,18 @@ def render_preview(destination, displays):
 
 def compact_sources(binding, store, destination):
     root = Path(binding['output_root'])
-    for source in ('source_binding.json','storage.json','implementation_freeze.json','selection.json','assets.json',
+    for source in ('source_binding.json','storage_manifest.json','implementation_freeze.json','selection.json','assets.json',
+                   'pool_cache_restoration.json',
                    'observation_storage_preflight.json','diagnostics/summary.json','diagnostics/output_summary.json',
                    'timing/binding.json','timing/summary.json','pilots/summary.json','pilots/ordinary_anyup_parity.json'):
         path = root/source
         if path.is_file():
             dest = destination/'provenance'/source
+            dest.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copy2(path,dest)
+    for folder in ('history/freeze','tests'):
+        for path in (root/folder).glob('*.json'):
+            dest = destination/'provenance'/folder/path.name
             dest.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(path,dest)
     for scene in binding['scenes']:
@@ -232,12 +242,20 @@ def reports(binding, store, destination):
     for i in range(1,4):
         lines.append('## Table '+str(i)+'\n\n'+(destination/('table_'+str(i)+'.md')).read_text())
     lines.append('\nHardware and model load: see [timing provenance](../../../'+str(ARTIFACT)+'/provenance/timing/summary.json). '
-        'Reported OviMAP timings belong to a different hardware/pipeline boundary; no external speedup ratio or online 30 FPS claim is made. Historical tables are preserved.\n')
+        '[OviMAP Table 8](https://arxiv.org/html/2603.26541v1#S8) reports ms per processed keyframe on RTX3090 + i7-12700K; this experiment measures seconds per scene on A40 + Xeon Silver 4314. '
+        'Tables 7/8 do not report peak VRAM. Different hardware and pipeline boundaries prevent an external speedup ratio. Scene latency cannot be relabeled as per-frame skipped frames or validated online 30 FPS. '
+        'The earlier module comparison remains available in [RESOURCE_COMPARISON.md](RESOURCE_COMPARISON.md).\n')
+    timed = {r['method']:r for r in store['timing']['summary']}
+    baseline = timed['IR01_G1']
+    lines.append('\nWithin this new series (16 calls per arm), '+ '; '.join(
+        SHORT[m]+f": wall time {r['mean_seconds_per_scene']/baseline['mean_seconds_per_scene']:.3f}× G1, allocated peak {r['peak_cuda_allocated_bytes']/baseline['peak_cuda_allocated_bytes']:.3f}× G1"
+        for m,r in timed.items() if m!='IR01_G1')+'. Reserved peaks describe allocator reservations, not model-only memory. Common Native/SigLIP/segmentation construction is outside this scene-repair boundary.\n')
     (docs/REPORTS[0]).write_text('\n'.join(lines))
     command = '/home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evaluation/run_ovimap_minimal_instance_repair.py --spec configs/static_ovmap/minimal_instance_repair_v1.json --parent-root /mnt/shared/ww/ovimap-evidence-exploration-v1/attempt_001 --output-root /mnt/shared/ww/ovimap-minimal-instance-repair-v1/attempt_001 --phase all --resume'
     (docs/REPORTS[1]).write_text('# Reproduction handoff\n\n'+f"Freeze commit: `{store['freeze']['commit']}`. Binding: `{binding['identity']}`. Canonical store: `{store['identity']}`.\n\n"+
         '```bash\n'+command+'\n```\n\n'+f"Logical output: `{binding['logical_root']}`; physical storage: `{binding['output_root']}`. Large raster/mask tensors, licensed scans and model weights remain outside Git; manifests bind their hashes. No old runs were deleted.\n\n"+
         f"Scientific costs: `{json.dumps(costs['science_counts'],sort_keys=True)}`; observer rasters={costs['successful_observer_rasterizations']}; extra pilot AnyUp QK={costs['extra_pilot_AnyUp_QK']}. Cold calls={costs['cold_actual_call_count']}, counted separately. Recorded failures are preserved; unrecorded durations are null.\n\n"+
+        'The initial complete implementation freeze preceded main acquisition. Corrective freezes subsequently record diagnostic tuple handling, scoped resume orchestration, protected-raw-zero class-change abstention, exact ordered pool aliasing and completed-timing resume. Their receipts are retained in the provenance directory; the supplied numerical protocol was unchanged. A uniform incumbent relabel that would change an original raw-zero row keeps the original class, including on an enlarged host support.\n\n'+
         'Evaluation uses the original controller environment; FC/AnyUp uses the inherited FC environment. This avoids invoking the released NumPy evaluator in NumPy 2.4. No environment upgrades or GT input to prediction were used.\n')
     (docs/REPORTS[2]).write_text('# Exact exposed-cohort selection\n\n'+f"Selected `{selected['selected']}`; TARGET_MET={selected['TARGET_MET']}; MATERIAL_TARGET_MET={selected['MATERIAL_TARGET_MET']}.\n\n"+
         'All five metrics must not decrease versus G1 in both cohorts; CF18 APall must strictly exceed D2 and CF18 AP50 must be at least D2. Epsilon=1e-10; the separate material flag is 0.10 percentage points. No gates were relaxed.\n\n'+
@@ -268,6 +286,11 @@ def tables(binding):
     science = store.get('science_identity',store['identity'])
     store = seal({**store,'science_identity':science,'selection':selection,'timing':timing,
         'output_diagnostics':analysis,'costs':cost_accounting(binding),'freeze':freeze,
+        'resource_comparison_provenance':{'own_boundary':binding['specification']['timing']['boundary'],
+            'own_unit':'SECONDS_PER_SCENE','external_reference':'https://arxiv.org/html/2603.26541v1#S8',
+            'external_unit':'MS_PER_PROCESSED_KEYFRAME','external_hardware':'RTX3090 + i7-12700K',
+            'external_peak_VRAM_in_tables_7_8':'NOT_REPORTED','cross_hardware_speedup_ratio_valid':False,
+            'skipped_frames_from_scene_latency_valid':False},
         'source_binding':binding['identity'],'all_three_tables_from_one_store':True})
     atomic_write_json(root/'result_store.json',store)
     destination = REPO/ARTIFACT
@@ -293,6 +316,16 @@ def publish(binding):
     size = sum(p.stat().st_size for p in destination.rglob('*') if p.is_file())
     if size>=binding['specification']['resources']['publish_target_MiB']*2**20:
         raise ValueError('compact Git artifact budget exceeded')
+    locks = [read(root/'predictions'/s/'receipt.json') for s in binding['scenes']]
+    roles = [read(root/'observations'/s/'pose_roles.json') for s in binding['scenes']]
+    bank_integrity = all(len(r['selected'])<=32 and
+        not ({x['pose_bin'] for x in r['selected'] if x['bank']=='proposal'} &
+             {x['pose_bin'] for x in r['selected'] if x['bank']=='verification'}) and
+        all(x['bank']==('proposal' if i%2==0 else 'verification') for i,x in enumerate(r['selected'])) for r in roles)
+    manifests = [read(r['manifest']) for lock in locks for r in lock['methods'].values()]
+    pilot = read(root/'pilots/summary.json')
+    validation = read(root/'tests/final_validation.json')
+    diagnostics = [read(root/'diagnostics'/s/'output_comparisons.json') for s in binding['scenes']]
     checks = {'coverage_234':store['scene_method_coverage']==234,'pools_18':store['full_cohort_pool_coverage']==18,
         'frozen_spec':freeze['spec_identity']==binding['spec'],'cold_64':store['timing']['call_count']==64,
         'postlock_26':store['output_diagnostics']['scene_count']==26,'observer_cap':store['costs']['successful_observer_rasterizations']<=832,
@@ -302,11 +335,30 @@ def publish(binding):
         'all_five_gate':store['selection']['all_five_gate_unchanged'],'deployment_unchanged':store['deployment']=='N0_UNCHANGED',
         'compact_budget':size<50*2**20,'render_inspected':qa['status']=='RENDER_INSPECTED',
         'zero_maps_and_segmentation':store['new_maps']==store['new_segmentation_inference']==0,
+        'zero_NQ_inference':store['costs']['new_NQ_inference']==0,
+        'extra_pilot_caps':store['costs']['extra_pilot_FC_inputs']<=2 and store['costs']['extra_pilot_AnyUp_QK']<=3,
+        'both_real_pilots_18':pilot['status']=='INTEGRATED_PILOTS_VERIFIED' and pilot['real_partitions_scored']==18,
+        'production_boundary_tests':validation['returncode']==0,
+        'all_234_predictions_locked_GT_free':len(manifests)==234 and all(m['locked'] and m['GT_input'] is False for m in manifests),
+        'pose_banks_disjoint_and_capped':bank_integrity,
+        'edits_capped_no_incumbent_transfer':all(len(r.get('audit',{}).get('applied',[]))<=8 and
+            r.get('audit',{}).get('moved_incumbent_rows',0)==0 for lock in locks for r in lock['methods'].values()),
+        'all_loaded_threshold_diagnostics':all(len(d['thresholds'])==10 and d['labels_used_after_all_predictions_locked'] and
+            d['duplicate_score_multiplicity_preserved'] for d in diagnostics),
+        'model_environment_unchanged':read(root/'assets.json')['environment_modified'] is False,
         'preserved_other_research':not subprocess.check_output(['git','diff',binding['specification']['base_commit'],'--',
             'src/static_ovmap/cvpr_compact','src/static_ovmap/evidence_exploration','src/static_ovmap/runtime_parity'],cwd=REPO)}
     review = seal({'status':'REQUIREMENTS_VERIFIED' if all(checks.values()) else 'REQUIREMENTS_INCOMPLETE',
         'checks':checks,'artifact_bytes':size,'canonical_result_store_identity':store['identity'],
         'freeze_commit':freeze['commit'],'review_count':1,'visual_QA':qa,
+        'evidence':{'implementation':'src/static_ovmap/minimal_instance_repair',
+            'numeric_protocol':'configs/static_ovmap/minimal_instance_repair_v1.json',
+            'predictions':'scenes/*/prediction_lock.json','pose_roles':'scenes/*/pose_roles.json',
+            'postlock_diagnostics':'scenes/*/output_comparisons.json.gz',
+            'actual_ordinary_AnyUp_parity':'provenance/pilots/ordinary_anyup_parity.json',
+            'final_boundary_validation':'provenance/tests/final_validation.json',
+            'initial_and_corrective_freezes':'provenance/history/freeze',
+            'cold_call_parity_and_memory':'timing_calls.json','complete_metrics_and_costs':'result_store.json'},
         'specification_files':sorted(p.name for p in (REPO/'docs/paper/static_ovmap/minimal_instance_repair_v1/spec').iterdir())})
     atomic_write_json(destination/'requirement_review.json',review)
     if not all(checks.values()):
