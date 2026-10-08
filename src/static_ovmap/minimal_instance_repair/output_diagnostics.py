@@ -99,7 +99,7 @@ def output_scene(job):
         path = str(Path(score['manifest']).with_name('trace.json.gz'))
         if path not in traces:
             traces[path] = trace_entries(zipped(path))
-        labels[method] = {'classes':labels[method],'entries':traces[path],'ranks':payload.instance_ranks}
+        labels[method] = {'classes':labels[method],'entries':traces[path],'ranks':dict(payload.instance_ranks)}
     details = []
     for candidate,reference in comparisons:
         a,b = geometry[candidate],geometry[reference]
