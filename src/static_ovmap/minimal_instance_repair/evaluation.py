@@ -169,9 +169,12 @@ def evaluate_study(binding):
             else:
                 alias = None
                 ordered = [next(r for r in method_rows if r['scene']==s)['evaluation_identity'] for s in names]
-                for baseline,parent in binding['baseline_pools'][cohort].items():
+                for baseline,parent in pools[cohort].items():
                     if ordered==parent['ordered_inputs']:
-                        alias = {**parent,'method':method,'reuse_kind':'EXACT_ORDERED_PARENT_SCORING_ALIAS'}
+                        alias = {**parent,'method':method,
+                            'reuse_kind':'EXACT_ORDERED_PARENT_SCORING_ALIAS' if baseline in ('IR00_D2','IR01_G1')
+                                else 'EXACT_ORDERED_LOCAL_SCORING_ALIAS',
+                            'alias_source_method':baseline}
                         break
                 if alias is not None:
                     pooled = alias
