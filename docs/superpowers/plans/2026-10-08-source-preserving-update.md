@@ -24,7 +24,7 @@
 
 Files: `source_preserving_update/{binding,evidence,decisions,outputs,selection}.py`, `tests/evaluation/test_source_preserving_update.py`.
 
-- [ ] Write ten tests before implementation; run the focused file and retain its red result.
+- [x] Write ten tests before implementation; run the focused file and retain its red result.
 - [x] Implement `binding.bind(spec_path,parent_root,output_root,storage_root=None,gpu=None,path_map=None)` and `load_scene(binding,scene)` without the old structural controller.
 - [x] `evidence.prepare_scene(binding,scene)` reconstructs the original D2 probabilities and unrestricted IR06/07 outputs, verifies actual arrays/ranks, locks every successful FULL observation and records potential-domain exclusions.
 - [x] `decisions.source_components` and `update_probability` implement the fixed equations; `decide_scene` applies seven conditions on a common domain. `selection.select` uses all unrounded gates and deterministic ties.
@@ -48,17 +48,17 @@ Files: `source_preserving_update/{evaluation,analysis}.py`.
 - [x] Implement complete actual-G1 registry, whole semantic confusion, official rank assertions and exact context/content aliases.
 - [x] Implement exact ordered pools and all five metrics. Keep partial methods incomplete.
 - [x] Implement all seven-versus-G1 and six fixed contrasts, geometric50/75 outcome ledgers, unique released matches, tied entry multiplicity, rank/per-class deltas and historical-to-matched changes.
-- [ ] Freeze every implementation/config identity, then predict/evaluate/diagnose all 26 scenes.
-- [ ] Select using unrounded gates and write measured next-stage assessment without new experiments.
+- [x] Freeze every implementation/config identity, then predict/evaluate/diagnose all 26 scenes.
+- [x] Select using unrounded gates and write measured next-stage assessment without new experiments.
 
 ## Task 4: Costs and publication
 
 Files: `source_preserving_update/{costs,reporting,orchestration}.py`, four `SOURCE_UPDATE_*.md` reports, `artifacts/static_ovmap/source_preserving_update_v1/`.
 
 - [x] Time resident CPU decisions only: Replica8, two reverse-order rounds, warmup once, 50 applications/sample, 16 samples/method. Separate actual acquisition costs.
-- [ ] Generate exactly three tables in MD/CSV/JSON/booktabs from one result store, compact precise score/decision/diagnostic evidence and an explicit external dependency manifest.
+- [x] Generate exactly three tables in MD/CSV/JSON/booktabs from one result store, compact precise score/decision/diagnostic evidence and an explicit external dependency manifest.
 - [x] Implement `all --resume` so unaffected leaves/reporting/publication continue on partial failures; zero exit only for complete science and verified ordinary push.
-- [ ] Run the exact command below, commit code/real compact results, ordinary push, verify full local/remote SHA and write the external final receipt.
+- [x] Run the exact command below, commit code/real compact results, ordinary push, verify full local/remote SHA and write the external final receipt.
 
 ```bash
 /home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evaluation/run_ovimap_source_preserving_update.py --spec configs/static_ovmap/source_preserving_update_v1.json --parent-root /mnt/shared/ww/ovimap-minimal-instance-repair-v1/attempt_001 --output-root /mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001 --phase all --resume
@@ -67,3 +67,7 @@ Files: `source_preserving_update/{costs,reporting,orchestration}.py`, four `SOUR
 Completion evidence: exact CLI exit 0; 234/18 coverage; strict source/history/output parity; real C execution; all ten relevant tests and two pilots; every diagnostic/selection/cost/report requirement; compact dependency-bearing artifacts; full verified publication SHA. A scientific negative result is complete only with this evidence.
 
 Execution evidence before full-outcome freeze: 26/26 content-bound prepares; D2 and unrestricted historical IR06/07 actual payload parity; 584/584 successful same-view C pools with 378 direct dense hits, zero new image encodings; common domain 320/416; both pilots 9/9; ten tests passed plus affected selection test passed. The first red invocation failed on an import-path setup issue and is not claimed as behavioral-red proof. Full timing, pooled evaluation, diagnostics and publication remain subject to actual execution.
+
+Final execution: all 12 mandatory phases completed; the exact all --resume command reached observed exit 0. All 234 scene-method rows and 18 ordered pools are complete. Selection COMPLETE_NO_TARGET_GAIN, no passing candidate, retained SU01_G1; deployment N0_UNCHANGED. The final single requirement audit passed 1,547 checks. Lossless disk roundtrip verified all 234 decisions; ten main tests, the affected selection test, and the compact regression passed; both real pilots scored nine conditions.
+
+The 44.82 MiB package failure was repaired through exact float64 vector deduplication and gzip source binding. packaging_correction.json and original_pre_outcome_freeze.json explicitly preserve post-outcome correction lineage. Only reporting and observed invocation bookkeeping changed; all scientific producers, predictions, scores and all 144 CPU samples stayed exact. No extra inference, scoring or CPU timing was run for that correction. Invocation bookkeeping includes 85.93630635295995 seconds of actual worker wall, including resume verification; the 14.332648084964603-second model load is included, not additive.

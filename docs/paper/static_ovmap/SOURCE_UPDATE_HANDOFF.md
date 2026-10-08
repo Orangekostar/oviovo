@@ -21,3 +21,5 @@ Historical unrestricted IR06/IR07 replay and their original-to-matched metric/co
 Publication proof is external publication/final.json; it records the full local/remote commit hashes and observed full-command exit. No commit contains its own commit hash.
 
 Replica8 and CF18 were previously exposed. CF18 comprises 18 captures from seven physical families; this is neither untouched confirmation nor full ScanNet200 validation. No significance or monotone-accuracy claim is supported. Deployment: N0_UNCHANGED.
+
+Completion verification: exact full CLI terminal exit 0; 12/12 mandatory phases; 234/18 logical coverage. completion_audit.json.gz records 1,547 passed requirement checks at the initial verified publication; compact_roundtrip.json verifies all 234 restored decisions against their original sealed identities. The final documentation/audit amendment is pushed normally and its newest full SHA is recorded outside the commit in publication/final.json. No source or scientific result changes are included in that amendment.
