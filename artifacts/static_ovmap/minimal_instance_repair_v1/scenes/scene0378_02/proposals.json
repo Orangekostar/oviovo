@@ -1,0 +1,206 @@
+{
+  "blocked": [],
+  "candidate_edges": 4,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "d0982e6e1c51ded0fae00b1f288402e5cbaf2219332110226cb8edd177b157bc",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:193",
+            "I:178"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "20210703b2ffacfffee014f0593efaa74ad535bc818eb4ef3128185f590d091c",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:64",
+            "I:58"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 2,
+      "selected": [
+        {
+          "digest": "d0982e6e1c51ded0fae00b1f288402e5cbaf2219332110226cb8edd177b157bc",
+          "distance": 0.0,
+          "edit_cost": 0.02936713077256339,
+          "fresh_owner": null,
+          "host": 178,
+          "output_owner": 178,
+          "proposal_score": null,
+          "seed": "C:193",
+          "units": [
+            "C:193",
+            "I:178"
+          ]
+        },
+        {
+          "digest": "20210703b2ffacfffee014f0593efaa74ad535bc818eb4ef3128185f590d091c",
+          "distance": 0.05148549261658079,
+          "edit_cost": 0.17616759828158937,
+          "fresh_owner": null,
+          "host": 58,
+          "output_owner": 58,
+          "proposal_score": null,
+          "seed": "C:64",
+          "units": [
+            "C:64",
+            "I:58"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:193": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.046031746031746035,
+        "unit": "I:178"
+      },
+      {
+        "distance": 0.07253922539322273,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:169"
+      }
+    ],
+    "C:64": [
+      {
+        "distance": 0.05148549261658079,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:58"
+      },
+      {
+        "distance": 0.054974522083045055,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:61"
+      }
+    ]
+  },
+  "elapsed_seconds": 1.393667221069336,
+  "identity": "f76c84b80ea351c3567f15d770d0942374438dc088f15acb6a81e5482d536bac",
+  "input_identity": "686054021dea9562be9afdddd5172459ca34c3ccb9f7bda2a8a8457b84f2a219",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "bbfa7cf9057fa5e0b282dbb54db09b8027ac0a59d92e24212dbde9f75f617a7e",
+  "pairs": [
+    {
+      "distance": 0.07253922539322273,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:193",
+        "I:169"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:193",
+        "I:178"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 0.5
+      }
+    },
+    {
+      "distance": 0.05148549261658079,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:64",
+        "I:58"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.5,
+        "separate": 0.5
+      }
+    },
+    {
+      "distance": 0.054974522083045055,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:64",
+        "I:61"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 1,
+  "scene": "scene0378_02",
+  "seed_count": 2,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "6350f3fbd8fd69d0206861c568c974f2074bfa1d07f07bad1f91bba199f4c6f8",
+  "undirected_neighbors": {
+    "C:193": [
+      {
+        "distance": 0.0,
+        "unit": "I:178"
+      },
+      {
+        "distance": 0.07253922539322273,
+        "unit": "I:169"
+      }
+    ],
+    "C:64": [
+      {
+        "distance": 0.05148549261658079,
+        "unit": "I:58"
+      },
+      {
+        "distance": 0.054974522083045055,
+        "unit": "I:61"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 1
+}

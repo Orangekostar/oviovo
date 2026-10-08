@@ -1,0 +1,13 @@
+| Method | R APall | R mIoU | CF APall | CF mIoU | s/scene | Alloc GiB | Reserv GiB | FC/call | QK/call | Regions/call | Obs/call |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| IR00 D2 | 11.74 | 29.69 | 8.31 | 19.00 | — | — | — | — | — | — | — |
+| IR01 G1 | 12.39 | 30.27 | 8.23 | 19.02 | 16.23 | 1.89 | 2.21 | 4.50 | 0.00 | 0.00 | 0.00 |
+| IR02 Nearest attach | 12.20 | 30.23 | 8.23 | 19.02 | — | — | — | — | — | — | — |
+| IR03 Evidence attach | 12.39 | 30.27 | 8.23 | 19.02 | — | — | — | — | — | — | — |
+| IR04 Direct group | 12.39 | 30.27 | 8.23 | 19.02 | — | — | — | — | — | — | — |
+| IR05 Verified repair | 12.39 | 30.27 | 8.23 | 19.02 | 85.57 | 1.89 | 2.21 | 4.50 | 0.00 | 0.00 | 32.00 |
+| IR06 AnyUp reread | 9.94 | 27.44 | 8.62 | 20.92 | — | — | — | — | — | — | — |
+| IR07 Boundary stable | 10.63 | 28.28 | 8.53 | 20.48 | 81.10 | 4.40 | 6.65 | 20.12 | 16.75 | 80.50 | 32.00 |
+| IR08 Combination | 10.63 | 28.28 | 8.53 | 20.48 | 106.15 | 4.40 | 6.65 | 20.12 | 16.75 | 80.50 | 32.00 |
+
+Fresh paired cold calls, 8 Replica scenes × 2 rounds per measured arm. Required models resident; peaks are maxima, time is the mean. Unmeasured: —.

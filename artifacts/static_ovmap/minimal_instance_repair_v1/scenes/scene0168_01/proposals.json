@@ -1,0 +1,1013 @@
+{
+  "blocked": [],
+  "candidate_edges": 19,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "0caa786410cb01904db099a183cdd7e4acefb86871f39a75236d1987f1eb4947",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:148",
+            "I:140"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "9c89d909c080494c6a427ed551ee1e32b09f81d5cccb73df12e6ab3773fa99c7",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:227",
+            "I:131"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "3156708a5fa92a6b9eb90edb191db40722f3d803d9a42fd776d249f19ce21e4f",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:246",
+            "I:56"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "ee297802b958304cb4a99e9029af45c8819d7ec0cabd088b439491bd7e1b437f",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:257",
+            "I:211"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "3b764b897948869f1fd4b9fe5a3bff86cae03c5e9518ecf104134b06749b30a6",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:258",
+            "I:59"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "cb535b80d46876f22e3c252f5534a115370a9a6cc4b97a7799dd533efc5adcc8",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:42",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "c545e9420bc4b3ba82d31f0d399661064dea213bca38f24cd02f0493a9747a6d",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:52",
+            "I:7"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "c60264a7d856b1b7e07520d78bb4001bfa48a3dc49ee05b7db631845b84d91d5",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:70",
+            "I:35"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "e41176ab2c284b0e20fc4df29325d9c170ee7839bc7bbdf2975bab65150920da",
+          "status": "KEEP_OPERATION_CAP",
+          "units": [
+            "C:82",
+            "I:81"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 9,
+      "selected": [
+        {
+          "digest": "0caa786410cb01904db099a183cdd7e4acefb86871f39a75236d1987f1eb4947",
+          "distance": 0.0,
+          "edit_cost": 0.002095575693033247,
+          "fresh_owner": null,
+          "host": 140,
+          "output_owner": 140,
+          "proposal_score": null,
+          "seed": "C:148",
+          "units": [
+            "C:148",
+            "I:140"
+          ]
+        },
+        {
+          "digest": "9c89d909c080494c6a427ed551ee1e32b09f81d5cccb73df12e6ab3773fa99c7",
+          "distance": 0.0,
+          "edit_cost": 0.0018264033426622756,
+          "fresh_owner": null,
+          "host": 131,
+          "output_owner": 131,
+          "proposal_score": null,
+          "seed": "C:227",
+          "units": [
+            "C:227",
+            "I:131"
+          ]
+        },
+        {
+          "digest": "3156708a5fa92a6b9eb90edb191db40722f3d803d9a42fd776d249f19ce21e4f",
+          "distance": 0.0,
+          "edit_cost": 0.010064932706480676,
+          "fresh_owner": null,
+          "host": 56,
+          "output_owner": 56,
+          "proposal_score": null,
+          "seed": "C:246",
+          "units": [
+            "C:246",
+            "I:56"
+          ]
+        },
+        {
+          "digest": "ee297802b958304cb4a99e9029af45c8819d7ec0cabd088b439491bd7e1b437f",
+          "distance": 0.0,
+          "edit_cost": 0.10396956875484914,
+          "fresh_owner": null,
+          "host": 211,
+          "output_owner": 211,
+          "proposal_score": null,
+          "seed": "C:257",
+          "units": [
+            "C:257",
+            "I:211"
+          ]
+        },
+        {
+          "digest": "3b764b897948869f1fd4b9fe5a3bff86cae03c5e9518ecf104134b06749b30a6",
+          "distance": 0.0,
+          "edit_cost": 0.10647657268942018,
+          "fresh_owner": null,
+          "host": 59,
+          "output_owner": 59,
+          "proposal_score": null,
+          "seed": "C:258",
+          "units": [
+            "C:258",
+            "I:59"
+          ]
+        },
+        {
+          "digest": "cb535b80d46876f22e3c252f5534a115370a9a6cc4b97a7799dd533efc5adcc8",
+          "distance": 0.0,
+          "edit_cost": 0.007550728248382929,
+          "fresh_owner": null,
+          "host": 1,
+          "output_owner": 1,
+          "proposal_score": null,
+          "seed": "C:42",
+          "units": [
+            "C:42",
+            "I:1"
+          ]
+        },
+        {
+          "digest": "c545e9420bc4b3ba82d31f0d399661064dea213bca38f24cd02f0493a9747a6d",
+          "distance": 0.0,
+          "edit_cost": 0.002957417927394653,
+          "fresh_owner": null,
+          "host": 7,
+          "output_owner": 7,
+          "proposal_score": null,
+          "seed": "C:52",
+          "units": [
+            "C:52",
+            "I:7"
+          ]
+        },
+        {
+          "digest": "c60264a7d856b1b7e07520d78bb4001bfa48a3dc49ee05b7db631845b84d91d5",
+          "distance": 0.0,
+          "edit_cost": 9.651978977052361e-05,
+          "fresh_owner": null,
+          "host": 35,
+          "output_owner": 35,
+          "proposal_score": null,
+          "seed": "C:70",
+          "units": [
+            "C:70",
+            "I:35"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [
+        {
+          "digest": "6146bed1f964688b5b7bfa15a9a0e14fce22931ead817ac71fb2329946e803a2",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:257",
+            "I:80"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "01cabf16fa0a30a2a4f5e4baa4e9a8ce4404ab342364fd140f5467c6e6cb5253",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:227",
+            "I:225"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 2,
+      "selected": [
+        {
+          "digest": "6146bed1f964688b5b7bfa15a9a0e14fce22931ead817ac71fb2329946e803a2",
+          "distance": 0.05762276121229546,
+          "edit_cost": 0.03881739465599011,
+          "fresh_owner": null,
+          "host": 80,
+          "output_owner": 80,
+          "physical_area": 0.10596474049627407,
+          "proposal_min_views": 3,
+          "proposal_same": 1.0,
+          "proposal_score": 0.996118260534401,
+          "proposal_separate": 0.0,
+          "seed": "C:257",
+          "support_hash": "3309b065adc7c24463d200a9957cd7a3ddc4e5bf528906dc315ced6f1a5324aa",
+          "units": [
+            "C:257",
+            "I:80"
+          ]
+        },
+        {
+          "digest": "01cabf16fa0a30a2a4f5e4baa4e9a8ce4404ab342364fd140f5467c6e6cb5253",
+          "distance": 0.0,
+          "edit_cost": 0.22054870981872016,
+          "fresh_owner": null,
+          "host": 225,
+          "output_owner": 225,
+          "physical_area": 0.05232738546223048,
+          "proposal_min_views": 2,
+          "proposal_same": 1.0,
+          "proposal_score": 0.977945129018128,
+          "proposal_separate": 0.0,
+          "seed": "C:227",
+          "support_hash": "1e6e522773b6d3a38638d86003d3a3dd461ad40765c0e3a7b3868ac7451f8d2c",
+          "units": [
+            "C:227",
+            "I:225"
+          ]
+        }
+      ]
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [
+        {
+          "digest": "6146bed1f964688b5b7bfa15a9a0e14fce22931ead817ac71fb2329946e803a2",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:257",
+            "I:80"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "ee297802b958304cb4a99e9029af45c8819d7ec0cabd088b439491bd7e1b437f",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:257",
+            "I:211"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "01cabf16fa0a30a2a4f5e4baa4e9a8ce4404ab342364fd140f5467c6e6cb5253",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:227",
+            "I:225"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 3,
+      "selected": [
+        {
+          "digest": "6146bed1f964688b5b7bfa15a9a0e14fce22931ead817ac71fb2329946e803a2",
+          "edit_cost": 0.03881739465599011,
+          "fresh_owner": null,
+          "host": 80,
+          "library_lex_index": 1,
+          "output_owner": 80,
+          "physical_area": 0.10596474049627407,
+          "proposal_min_views": 3,
+          "proposal_same": 1.0,
+          "proposal_score": 0.996118260534401,
+          "proposal_separate": 0.0,
+          "support_hash": "3309b065adc7c24463d200a9957cd7a3ddc4e5bf528906dc315ced6f1a5324aa",
+          "units": [
+            "C:257",
+            "I:80"
+          ]
+        },
+        {
+          "digest": "01cabf16fa0a30a2a4f5e4baa4e9a8ce4404ab342364fd140f5467c6e6cb5253",
+          "edit_cost": 0.22054870981872016,
+          "fresh_owner": null,
+          "host": 225,
+          "library_lex_index": 0,
+          "output_owner": 225,
+          "physical_area": 0.05232738546223048,
+          "proposal_min_views": 2,
+          "proposal_same": 1.0,
+          "proposal_score": 0.977945129018128,
+          "proposal_separate": 0.0,
+          "support_hash": "1e6e522773b6d3a38638d86003d3a3dd461ad40765c0e3a7b3868ac7451f8d2c",
+          "units": [
+            "C:227",
+            "I:225"
+          ]
+        }
+      ]
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [
+        {
+          "digest": "6146bed1f964688b5b7bfa15a9a0e14fce22931ead817ac71fb2329946e803a2",
+          "status": "KEEP_VERIFICATION_REJECTED",
+          "units": [
+            "C:257",
+            "I:80"
+          ],
+          "verification": {
+            "minimum_views": 5,
+            "same": 0.6,
+            "score": -0.20388173946559907,
+            "separate": 0.4,
+            "status": "KEEP_VERIFICATION_REJECTED"
+          }
+        },
+        {
+          "digest": "ee297802b958304cb4a99e9029af45c8819d7ec0cabd088b439491bd7e1b437f",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:257",
+            "I:211"
+          ],
+          "verification": {
+            "minimum_views": 5,
+            "same": 1.0,
+            "score": 0.9896030431245151,
+            "separate": 0.0,
+            "status": "VERIFICATION_ACCEPTED"
+          }
+        },
+        {
+          "digest": "01cabf16fa0a30a2a4f5e4baa4e9a8ce4404ab342364fd140f5467c6e6cb5253",
+          "status": "KEEP_INSUFFICIENT_VERIFICATION",
+          "units": [
+            "C:227",
+            "I:225"
+          ],
+          "verification": {
+            "minimum_views": 1,
+            "status": "KEEP_INSUFFICIENT_VERIFICATION"
+          }
+        }
+      ],
+      "proposal_count": 3,
+      "selected": [
+        {
+          "digest": "ee297802b958304cb4a99e9029af45c8819d7ec0cabd088b439491bd7e1b437f",
+          "edit_cost": 0.10396956875484914,
+          "fresh_owner": null,
+          "host": 211,
+          "library_lex_index": 2,
+          "output_owner": 211,
+          "physical_area": 0.03956229886037307,
+          "proposal_min_views": 2,
+          "proposal_same": 1.0,
+          "proposal_score": 0.9896030431245151,
+          "proposal_separate": 0.0,
+          "support_hash": "9564a052e35a9b3f46360bef9082ff2722e809481ae2b7172427dd944b240ed6",
+          "units": [
+            "C:257",
+            "I:211"
+          ]
+        }
+      ]
+    }
+  },
+  "directed_neighbors": {
+    "C:148": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.2236024844720497,
+        "unit": "I:140"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.11801242236024845,
+        "unit": "I:36"
+      }
+    ],
+    "C:227": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.003563791874554526,
+        "unit": "I:131"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.08267997148966501,
+        "unit": "I:224"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.08695652173913043,
+        "unit": "I:225"
+      }
+    ],
+    "C:246": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1484375,
+        "unit": "I:56"
+      },
+      {
+        "distance": 0.023435807574270093,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:48"
+      },
+      {
+        "distance": 0.04206412183998467,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:210"
+      }
+    ],
+    "C:257": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.06982543640897755,
+        "unit": "I:211"
+      },
+      {
+        "distance": 0.05762276121229546,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:80"
+      }
+    ],
+    "C:258": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.043034281546316555,
+        "unit": "I:59"
+      }
+    ],
+    "C:42": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.13747228381374724,
+        "unit": "I:1"
+      }
+    ],
+    "C:52": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.29441624365482233,
+        "unit": "I:7"
+      },
+      {
+        "distance": 0.02711673655394456,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:33"
+      },
+      {
+        "distance": 0.044229477171005574,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:35"
+      }
+    ],
+    "C:70": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.3032258064516129,
+        "unit": "I:35"
+      }
+    ],
+    "C:82": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1323943661971831,
+        "unit": "I:81"
+      },
+      {
+        "distance": 0.059498592735798855,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:84"
+      },
+      {
+        "distance": 0.06836664550327497,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:93"
+      }
+    ],
+    "C:83": []
+  },
+  "elapsed_seconds": 7.486301632132381,
+  "identity": "1c65628cf9a85fe62ae144e21dcfb808a5ba004cb82b9f5edfab29f783e87f88",
+  "input_identity": "680d6647f5ddb06792d54a5743570980ca9bb30c5bc6b5b87f6aa2fe4130a834",
+  "library": [
+    {
+      "digest": "6146bed1f964688b5b7bfa15a9a0e14fce22931ead817ac71fb2329946e803a2",
+      "edit_cost": 0.03881739465599011,
+      "fresh_owner": null,
+      "host": 80,
+      "library_lex_index": 1,
+      "output_owner": 80,
+      "physical_area": 0.10596474049627407,
+      "proposal_min_views": 3,
+      "proposal_same": 1.0,
+      "proposal_score": 0.996118260534401,
+      "proposal_separate": 0.0,
+      "support_hash": "3309b065adc7c24463d200a9957cd7a3ddc4e5bf528906dc315ced6f1a5324aa",
+      "units": [
+        "C:257",
+        "I:80"
+      ]
+    },
+    {
+      "digest": "ee297802b958304cb4a99e9029af45c8819d7ec0cabd088b439491bd7e1b437f",
+      "edit_cost": 0.10396956875484914,
+      "fresh_owner": null,
+      "host": 211,
+      "library_lex_index": 2,
+      "output_owner": 211,
+      "physical_area": 0.03956229886037307,
+      "proposal_min_views": 2,
+      "proposal_same": 1.0,
+      "proposal_score": 0.9896030431245151,
+      "proposal_separate": 0.0,
+      "support_hash": "9564a052e35a9b3f46360bef9082ff2722e809481ae2b7172427dd944b240ed6",
+      "units": [
+        "C:257",
+        "I:211"
+      ]
+    },
+    {
+      "digest": "01cabf16fa0a30a2a4f5e4baa4e9a8ce4404ab342364fd140f5467c6e6cb5253",
+      "edit_cost": 0.22054870981872016,
+      "fresh_owner": null,
+      "host": 225,
+      "library_lex_index": 0,
+      "output_owner": 225,
+      "physical_area": 0.05232738546223048,
+      "proposal_min_views": 2,
+      "proposal_same": 1.0,
+      "proposal_score": 0.977945129018128,
+      "proposal_separate": 0.0,
+      "support_hash": "1e6e522773b6d3a38638d86003d3a3dd461ad40765c0e3a7b3868ac7451f8d2c",
+      "units": [
+        "C:227",
+        "I:225"
+      ]
+    }
+  ],
+  "new_neural_inference": 0,
+  "observation_identity": "1b4de705fe9b4a4817ed6d33775702dd5e4c4d85537da9243d48c03ce2cedb6b",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:148",
+        "I:140"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:148",
+        "I:36"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:227",
+        "I:131"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:227",
+        "I:224"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:227",
+        "I:225"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.04206412183998467,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:246",
+        "I:210"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.023435807574270093,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:246",
+        "I:48"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:246",
+        "I:56"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:257",
+        "I:211"
+      ],
+      "verification": {
+        "n": 5,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.05762276121229546,
+      "proposal": {
+        "n": 3,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:257",
+        "I:80"
+      ],
+      "verification": {
+        "n": 5,
+        "same": 0.6,
+        "separate": 0.4
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:258",
+        "I:59"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:42",
+        "I:1"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.02711673655394456,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:52",
+        "I:33"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.044229477171005574,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:52",
+        "I:35"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:52",
+        "I:7"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:70",
+        "I:35"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:82",
+        "I:81"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.059498592735798855,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:82",
+        "I:84"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.06836664550327497,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:82",
+        "I:93"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    }
+  ],
+  "positive_edges": 3,
+  "proposal_unknown_pairs": 12,
+  "scene": "scene0168_01",
+  "seed_count": 10,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "b4e91deee081c67f00b9d2b64a610d68edfd78b6f12eafcd0d4425b45592309b",
+  "undirected_neighbors": {
+    "C:148": [
+      {
+        "distance": 0.0,
+        "unit": "I:140"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:36"
+      }
+    ],
+    "C:227": [
+      {
+        "distance": 0.0,
+        "unit": "I:131"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:224"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:225"
+      }
+    ],
+    "C:246": [
+      {
+        "distance": 0.0,
+        "unit": "I:56"
+      },
+      {
+        "distance": 0.023435807574270093,
+        "unit": "I:48"
+      },
+      {
+        "distance": 0.04206412183998467,
+        "unit": "I:210"
+      }
+    ],
+    "C:257": [
+      {
+        "distance": 0.0,
+        "unit": "I:211"
+      },
+      {
+        "distance": 0.05762276121229546,
+        "unit": "I:80"
+      }
+    ],
+    "C:258": [
+      {
+        "distance": 0.0,
+        "unit": "I:59"
+      }
+    ],
+    "C:42": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:52": [
+      {
+        "distance": 0.0,
+        "unit": "I:7"
+      },
+      {
+        "distance": 0.02711673655394456,
+        "unit": "I:33"
+      },
+      {
+        "distance": 0.044229477171005574,
+        "unit": "I:35"
+      }
+    ],
+    "C:70": [
+      {
+        "distance": 0.0,
+        "unit": "I:35"
+      }
+    ],
+    "C:82": [
+      {
+        "distance": 0.0,
+        "unit": "I:81"
+      },
+      {
+        "distance": 0.059498592735798855,
+        "unit": "I:84"
+      },
+      {
+        "distance": 0.06836664550327497,
+        "unit": "I:93"
+      }
+    ],
+    "C:83": []
+  },
+  "verification_unknown_pairs": 14
+}

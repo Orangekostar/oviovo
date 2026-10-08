@@ -1,0 +1,288 @@
+{
+  "caption": "Fresh paired cold calls, 8 Replica scenes \u00d7 2 rounds per measured arm. Required models resident; peaks are maxima, time is the mean. Unmeasured: \u2014.",
+  "identity": "67bb23a069ed16abbd43a369c2ec9004598edfabf32b808ad5493410320b65ba",
+  "metric_unit": "FRACTION",
+  "printed_metrics_unit": "PERCENT",
+  "rows": [
+    {
+      "AnyUp_QK_per_call": null,
+      "AnyUp_regions_per_call": null,
+      "FC_inputs_per_call": null,
+      "allocated_GiB": null,
+      "call_count": 0,
+      "method": "IR00_D2",
+      "name": "D2",
+      "observer_frames_per_call": null,
+      "replica8": {
+        "ap25": 0.3797458622016501,
+        "ap50": 0.24495210428669076,
+        "apall": 0.11741338226305202,
+        "macc": 0.37427869483346954,
+        "miou": 0.296910848924658
+      },
+      "reserved_GiB": null,
+      "scannet_cf18": {
+        "ap25": 0.24982823631951953,
+        "ap50": 0.1796135985259656,
+        "apall": 0.08309185182632056,
+        "macc": 0.28377972027446596,
+        "miou": 0.18997179844670278
+      },
+      "seconds_per_scene": null
+    },
+    {
+      "AnyUp_QK_per_call": 0.0,
+      "AnyUp_regions_per_call": 0.0,
+      "FC_inputs_per_call": 4.5,
+      "allocated_GiB": 1.888852596282959,
+      "allocated_ratio_vs_IR01": 1.0,
+      "call_count": 16,
+      "exclusive_host_seconds": {
+        "additional_FC_AnyUp": 0.0,
+        "additional_observer_proposals": 0.0,
+        "base_G1_recovery": 14.800137460697442,
+        "final_payload": 1.4037203821499133,
+        "repair_verification": 6.883637979626656e-06
+      },
+      "incremental_allocated_GiB": 0.5775146484375,
+      "incremental_reserved_GiB": 0.78125,
+      "method": "IR01_G1",
+      "name": "G1",
+      "observer_frames_per_call": 0.0,
+      "replica8": {
+        "ap25": 0.3975255000984755,
+        "ap50": 0.26057090388986537,
+        "apall": 0.12386368952716137,
+        "macc": 0.3840359451527324,
+        "miou": 0.30272532343176334
+      },
+      "reserved_GiB": 2.2109375,
+      "scannet_cf18": {
+        "ap25": 0.2475575520536056,
+        "ap50": 0.17833990417630438,
+        "apall": 0.08232194837949772,
+        "macc": 0.28492871974333267,
+        "miou": 0.19021902419388004
+      },
+      "seconds_per_scene": 16.22664538247045,
+      "time_ratio_vs_IR01": 1.0
+    },
+    {
+      "AnyUp_QK_per_call": null,
+      "AnyUp_regions_per_call": null,
+      "FC_inputs_per_call": null,
+      "allocated_GiB": null,
+      "call_count": 0,
+      "method": "IR02_NEAREST_ATTACH",
+      "name": "Nearest attach",
+      "observer_frames_per_call": null,
+      "replica8": {
+        "ap25": 0.39884308442387234,
+        "ap50": 0.2544945150009765,
+        "apall": 0.12197670209329894,
+        "macc": 0.38217719713537585,
+        "miou": 0.3022659625232685
+      },
+      "reserved_GiB": null,
+      "scannet_cf18": {
+        "ap25": 0.2474206732972526,
+        "ap50": 0.1784418437653883,
+        "apall": 0.08234347662417572,
+        "macc": 0.28452716300078823,
+        "miou": 0.1902272037908042
+      },
+      "seconds_per_scene": null
+    },
+    {
+      "AnyUp_QK_per_call": null,
+      "AnyUp_regions_per_call": null,
+      "FC_inputs_per_call": null,
+      "allocated_GiB": null,
+      "call_count": 0,
+      "method": "IR03_EVIDENCE_ATTACH",
+      "name": "Evidence attach",
+      "observer_frames_per_call": null,
+      "replica8": {
+        "ap25": 0.3975255000984755,
+        "ap50": 0.26057090388986537,
+        "apall": 0.12386368952716137,
+        "macc": 0.3840359451527324,
+        "miou": 0.30272532343176334
+      },
+      "reserved_GiB": null,
+      "scannet_cf18": {
+        "ap25": 0.2475575520536056,
+        "ap50": 0.17833990417630438,
+        "apall": 0.08232194837949772,
+        "macc": 0.28492891055605246,
+        "miou": 0.1902191507925546
+      },
+      "seconds_per_scene": null
+    },
+    {
+      "AnyUp_QK_per_call": null,
+      "AnyUp_regions_per_call": null,
+      "FC_inputs_per_call": null,
+      "allocated_GiB": null,
+      "call_count": 0,
+      "method": "IR04_DIRECT_GROUP",
+      "name": "Direct group",
+      "observer_frames_per_call": null,
+      "replica8": {
+        "ap25": 0.3975255000984755,
+        "ap50": 0.26057090388986537,
+        "apall": 0.12386368952716137,
+        "macc": 0.3840359451527324,
+        "miou": 0.30272532343176334
+      },
+      "reserved_GiB": null,
+      "scannet_cf18": {
+        "ap25": 0.2475575520536056,
+        "ap50": 0.17833990417630438,
+        "apall": 0.08232194837949772,
+        "macc": 0.28492891055605246,
+        "miou": 0.1902191507925546
+      },
+      "seconds_per_scene": null
+    },
+    {
+      "AnyUp_QK_per_call": 0.0,
+      "AnyUp_regions_per_call": 0.0,
+      "FC_inputs_per_call": 4.5,
+      "allocated_GiB": 1.888852596282959,
+      "allocated_ratio_vs_IR01": 1.0,
+      "call_count": 16,
+      "exclusive_host_seconds": {
+        "additional_FC_AnyUp": 0.0004623712447937578,
+        "additional_observer_proposals": 67.3335776689928,
+        "base_G1_recovery": 14.678039872655063,
+        "final_payload": 3.5120840284071164,
+        "repair_verification": 0.015070253662997857
+      },
+      "incremental_allocated_GiB": 0.569580078125,
+      "incremental_reserved_GiB": 0.78125,
+      "method": "IR05_VERIFIED_REPAIR",
+      "name": "Verified repair",
+      "observer_frames_per_call": 32.0,
+      "replica8": {
+        "ap25": 0.3975255000984755,
+        "ap50": 0.26057090388986537,
+        "apall": 0.12386368952716137,
+        "macc": 0.3840359451527324,
+        "miou": 0.30272532343176334
+      },
+      "reserved_GiB": 2.2109375,
+      "scannet_cf18": {
+        "ap25": 0.2475575520536056,
+        "ap50": 0.17833990417630438,
+        "apall": 0.08232194837949772,
+        "macc": 0.28492871974333267,
+        "miou": 0.19021902419388004
+      },
+      "seconds_per_scene": 85.56513266834372,
+      "time_ratio_vs_IR01": 5.273125199419174
+    },
+    {
+      "AnyUp_QK_per_call": null,
+      "AnyUp_regions_per_call": null,
+      "FC_inputs_per_call": null,
+      "allocated_GiB": null,
+      "call_count": 0,
+      "method": "IR06_ANYUP_REREAD",
+      "name": "AnyUp reread",
+      "observer_frames_per_call": null,
+      "replica8": {
+        "ap25": 0.36173276849913755,
+        "ap50": 0.21917180316741391,
+        "apall": 0.09944765598294494,
+        "macc": 0.35886843694638326,
+        "miou": 0.27444367020219845
+      },
+      "reserved_GiB": null,
+      "scannet_cf18": {
+        "ap25": 0.26641949878299837,
+        "ap50": 0.19018498059358485,
+        "apall": 0.08620495318020073,
+        "macc": 0.2946413256688433,
+        "miou": 0.20917313619913222
+      },
+      "seconds_per_scene": null
+    },
+    {
+      "AnyUp_QK_per_call": 16.75,
+      "AnyUp_regions_per_call": 80.5,
+      "FC_inputs_per_call": 20.125,
+      "allocated_GiB": 4.399932384490967,
+      "allocated_ratio_vs_IR01": 2.3294207251267354,
+      "call_count": 16,
+      "exclusive_host_seconds": {
+        "additional_FC_AnyUp": 8.914288364656386,
+        "additional_observer_proposals": 41.48166099812079,
+        "base_G1_recovery": 14.693628028675448,
+        "final_payload": 3.6336390293872682,
+        "repair_verification": 12.299547914342838
+      },
+      "incremental_allocated_GiB": 3.0772666931152344,
+      "incremental_reserved_GiB": 5.22265625,
+      "method": "IR07_BOUNDARY_STABLE",
+      "name": "Boundary stable",
+      "observer_frames_per_call": 32.0,
+      "replica8": {
+        "ap25": 0.3707649318665531,
+        "ap50": 0.23288770283166427,
+        "apall": 0.10634367678955602,
+        "macc": 0.36312118976224234,
+        "miou": 0.28280607161024324
+      },
+      "reserved_GiB": 6.654296875,
+      "scannet_cf18": {
+        "ap25": 0.2653790782607916,
+        "ap50": 0.1871636617500069,
+        "apall": 0.0853085014791394,
+        "macc": 0.2953626959425752,
+        "miou": 0.20476666992906498
+      },
+      "seconds_per_scene": 81.09654433935066,
+      "time_ratio_vs_IR01": 4.9977393618867625
+    },
+    {
+      "AnyUp_QK_per_call": 16.75,
+      "AnyUp_regions_per_call": 80.5,
+      "FC_inputs_per_call": 20.125,
+      "allocated_GiB": 4.399932384490967,
+      "allocated_ratio_vs_IR01": 2.3294207251267354,
+      "call_count": 16,
+      "exclusive_host_seconds": {
+        "additional_FC_AnyUp": 8.91839186292782,
+        "additional_observer_proposals": 67.23778216644132,
+        "base_G1_recovery": 14.01644354077871,
+        "final_payload": 3.681535516414442,
+        "repair_verification": 12.24221477592073
+      },
+      "incremental_allocated_GiB": 3.0772666931152344,
+      "incremental_reserved_GiB": 5.22265625,
+      "method": "IR08_COMBINATION",
+      "name": "Combination",
+      "observer_frames_per_call": 32.0,
+      "replica8": {
+        "ap25": 0.3707649318665531,
+        "ap50": 0.23288770283166427,
+        "apall": 0.10634367678955602,
+        "macc": 0.36312118976224234,
+        "miou": 0.28280607161024324
+      },
+      "reserved_GiB": 6.654296875,
+      "scannet_cf18": {
+        "ap25": 0.2653790782607916,
+        "ap50": 0.1871636617500069,
+        "apall": 0.0853085014791394,
+        "macc": 0.2953626959425752,
+        "miou": 0.20476666992906498
+      },
+      "seconds_per_scene": 106.14704483759124,
+      "time_ratio_vs_IR01": 6.541527366602912
+    }
+  ],
+  "source_result_store_identity": "9b4fec25adb59776fee4ad322e917e00c8c5087d0ba6d778c6b42d85417b815d",
+  "table": 3
+}

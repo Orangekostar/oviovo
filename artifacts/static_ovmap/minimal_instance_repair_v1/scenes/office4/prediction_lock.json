@@ -1,0 +1,279 @@
+{
+  "identity": "6b6c40aadc8f158c2338c7ad14d7602359a6de58ce24d057204ec46624ce22dc",
+  "methods": {
+    "IR00_D2": {
+      "manifest": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/predictions/office4/CT_A1_E/manifest.json",
+      "prediction_key": "b905af2ba3885b8881284b6e2905b75a753a374c2ea955c77ad02828f4a07ceb",
+      "source_kind": "EXACT_PARENT_ALIAS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR01_G1": {
+      "manifest": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/predictions/office4/CT_A3_ER/manifest.json",
+      "prediction_key": "35519c3199c5eb789983cab42c7fbdf8619a16793cc640a369eb1ecf8e301508",
+      "source_kind": "EXACT_PARENT_ALIAS",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR02_NEAREST_ATTACH": {
+      "audit": {
+        "applied": [
+          {
+            "class": 11,
+            "digest": "8477682c2197569db8ccac0aa09df70e8b3901cb8dc410b085fb2aebd073dc5a",
+            "host": 5,
+            "output_owner": 5,
+            "physical_area": 0.008914013702736659,
+            "source_rows": 699,
+            "units": [
+              "C:17",
+              "I:5"
+            ]
+          },
+          {
+            "class": 1,
+            "digest": "e7766a089994d72aa551410902e4d328e9f17cfee6b4dea0eab1a82cba97a2b3",
+            "host": 3,
+            "output_owner": 3,
+            "physical_area": 0.008469169758195911,
+            "source_rows": 632,
+            "units": [
+              "C:29",
+              "I:3"
+            ]
+          }
+        ],
+        "canceled": [],
+        "class_transitions": [],
+        "disappeared_owner_ids": [
+          17,
+          29
+        ],
+        "host_growth": [
+          {
+            "added_area": 0.008914013702736659,
+            "added_rows": 699,
+            "host": 5
+          },
+          {
+            "added_area": 0.008469169758195911,
+            "added_rows": 632,
+            "host": 3
+          }
+        ],
+        "moved_incumbent_rows": 0,
+        "moved_residual_area": 0.01738318346093257,
+        "moved_residual_rows": 1331
+      },
+      "manifest": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001/predictions/office4/IR02_NEAREST_ATTACH/manifest.json",
+      "owner_partition_digest": "dd2aa9a5e2f93af09089820ad44c0316a19e87b43ca9ab1f4e42bcbcd822b1b7",
+      "prediction_key": "a14f90239bcfe54fad473bafd47fadb60ef30a410843ed7b853bc12d70d25e50",
+      "record_key": "8442bc20a6256db29db8cbc0b9aab3e267045127e2fa783c385453ceed4af222",
+      "source_kind": "MEASURED_NEW_PARTITION",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "audit": {
+        "applied": [],
+        "canceled": [],
+        "class_transitions": [],
+        "disappeared_owner_ids": [],
+        "host_growth": [],
+        "moved_incumbent_rows": 0,
+        "moved_residual_area": 0.0,
+        "moved_residual_rows": 0
+      },
+      "manifest": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001/predictions/office4/IR03_EVIDENCE_ATTACH/manifest.json",
+      "owner_partition_digest": "0f0e0272c5f85a083c48250d6da2578c4aa6f8c5f7575f1d34e4233b6511e17d",
+      "prediction_key": "35519c3199c5eb789983cab42c7fbdf8619a16793cc640a369eb1ecf8e301508",
+      "record_key": "aa63b8882123e14ca94c968bad944b9b9c5fdb0ce5a83e8300f36f42f54b8877",
+      "source_kind": "MEASURED_KEEP",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR04_DIRECT_GROUP": {
+      "audit": {
+        "applied": [],
+        "canceled": [],
+        "class_transitions": [],
+        "disappeared_owner_ids": [],
+        "host_growth": [],
+        "moved_incumbent_rows": 0,
+        "moved_residual_area": 0.0,
+        "moved_residual_rows": 0
+      },
+      "manifest": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001/predictions/office4/IR04_DIRECT_GROUP/manifest.json",
+      "owner_partition_digest": "0f0e0272c5f85a083c48250d6da2578c4aa6f8c5f7575f1d34e4233b6511e17d",
+      "prediction_key": "35519c3199c5eb789983cab42c7fbdf8619a16793cc640a369eb1ecf8e301508",
+      "record_key": "465e7d033d01f30dce97c96d3168d09562bb064baf2e5972bba862624c1ff84e",
+      "source_kind": "MEASURED_KEEP",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "audit": {
+        "applied": [],
+        "canceled": [],
+        "class_transitions": [],
+        "disappeared_owner_ids": [],
+        "host_growth": [],
+        "moved_incumbent_rows": 0,
+        "moved_residual_area": 0.0,
+        "moved_residual_rows": 0
+      },
+      "manifest": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001/predictions/office4/IR05_VERIFIED_REPAIR/manifest.json",
+      "owner_partition_digest": "0f0e0272c5f85a083c48250d6da2578c4aa6f8c5f7575f1d34e4233b6511e17d",
+      "prediction_key": "35519c3199c5eb789983cab42c7fbdf8619a16793cc640a369eb1ecf8e301508",
+      "record_key": "49ca89d2558e496b76cb8296473f1256d3b16248ae28ea5345763d365738fcb4",
+      "source_kind": "MEASURED_KEEP",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR06_ANYUP_REREAD": {
+      "audit": {
+        "applied": [],
+        "canceled": [],
+        "class_transitions": [
+          {
+            "class": 5,
+            "evidence_anchor": "b0a5fae1878c6939e42a4132d75389d8c8a3ff6e0a6f7119ff4a16a69fe985e1",
+            "old_class": 11,
+            "owner": 5
+          },
+          {
+            "class": 13,
+            "evidence_anchor": "ad00cc29c7f2d34d7d6c1672f6e4cd98572a7d7674b7dae6dbcd56a725c3585c",
+            "old_class": 50,
+            "owner": 7
+          },
+          {
+            "class": 4,
+            "evidence_anchor": "e6ee1fbedd5166fd52dbf6a7efd2e1e351c113d782af9937689cf07318f38ccc",
+            "old_class": 50,
+            "owner": 12
+          },
+          {
+            "class": 5,
+            "evidence_anchor": "6d19dc4ec1a9764549c9836896c671aa89fd1e2874390904fc6491b5b5c6214f",
+            "old_class": 43,
+            "owner": 14
+          },
+          {
+            "class": 13,
+            "evidence_anchor": "f1c27beb15b4b48b43d75223e83fa6c1127f231947482e73a863d8a667d5170d",
+            "old_class": 4,
+            "owner": 19
+          },
+          {
+            "class": 51,
+            "evidence_anchor": "cbc7cdc62d7dd6fb957e75a63acdf9660ad838729c95b5241b614fe7b6560d9a",
+            "old_class": 12,
+            "owner": 26
+          },
+          {
+            "class": 21,
+            "evidence_anchor": "d98972837c74b928ce45f3dedc6e511b0d2eaf089fc4a748b81b3619ee305c69",
+            "old_class": 50,
+            "owner": 51
+          },
+          {
+            "class": 34,
+            "evidence_anchor": "901d41f2c1a3bf6a80f5870577226c358040a3d9fa0d73da48f34d414638530b",
+            "old_class": 50,
+            "owner": 52
+          },
+          {
+            "class": 51,
+            "evidence_anchor": "0ccff1f5313adc24732d36a7188038331893673e132db012430711e60cb84cfd",
+            "old_class": 50,
+            "owner": 55
+          }
+        ],
+        "disappeared_owner_ids": [],
+        "host_growth": [],
+        "moved_incumbent_rows": 0,
+        "moved_residual_area": 0.0,
+        "moved_residual_rows": 0
+      },
+      "manifest": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001/predictions/office4/IR06_ANYUP_REREAD/manifest.json",
+      "owner_partition_digest": "0f0e0272c5f85a083c48250d6da2578c4aa6f8c5f7575f1d34e4233b6511e17d",
+      "prediction_key": "ab929dfdd736ac5cd9fb864b4659d5200164fc1581900b05f0d8b168f539a3a8",
+      "record_key": "628872c2799bfba587ca8eec454aa0ce9342f87ead7d65c516fd62e170450e68",
+      "source_kind": "MEASURED_NEW_PARTITION",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR07_BOUNDARY_STABLE": {
+      "audit": {
+        "applied": [],
+        "canceled": [],
+        "class_transitions": [
+          {
+            "class": 5,
+            "evidence_anchor": "b0a5fae1878c6939e42a4132d75389d8c8a3ff6e0a6f7119ff4a16a69fe985e1",
+            "old_class": 11,
+            "owner": 5
+          },
+          {
+            "class": 51,
+            "evidence_anchor": "cbc7cdc62d7dd6fb957e75a63acdf9660ad838729c95b5241b614fe7b6560d9a",
+            "old_class": 12,
+            "owner": 26
+          },
+          {
+            "class": 51,
+            "evidence_anchor": "0ccff1f5313adc24732d36a7188038331893673e132db012430711e60cb84cfd",
+            "old_class": 50,
+            "owner": 55
+          }
+        ],
+        "disappeared_owner_ids": [],
+        "host_growth": [],
+        "moved_incumbent_rows": 0,
+        "moved_residual_area": 0.0,
+        "moved_residual_rows": 0
+      },
+      "manifest": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001/predictions/office4/IR07_BOUNDARY_STABLE/manifest.json",
+      "owner_partition_digest": "0f0e0272c5f85a083c48250d6da2578c4aa6f8c5f7575f1d34e4233b6511e17d",
+      "prediction_key": "5ee5e3d417675610ff6c6fda8a635830ffa3a3829a927168505b19dc7e1d9b4e",
+      "record_key": "e6110829d3affb18122dc0d0ca159f07bfdbe9e3220c535867ef1474e6353676",
+      "source_kind": "MEASURED_NEW_PARTITION",
+      "status": "PREDICTION_LOCKED"
+    },
+    "IR08_COMBINATION": {
+      "audit": {
+        "applied": [],
+        "canceled": [],
+        "class_transitions": [
+          {
+            "class": 5,
+            "evidence_anchor": "b0a5fae1878c6939e42a4132d75389d8c8a3ff6e0a6f7119ff4a16a69fe985e1",
+            "old_class": 11,
+            "owner": 5
+          },
+          {
+            "class": 51,
+            "evidence_anchor": "cbc7cdc62d7dd6fb957e75a63acdf9660ad838729c95b5241b614fe7b6560d9a",
+            "old_class": 12,
+            "owner": 26
+          },
+          {
+            "class": 51,
+            "evidence_anchor": "0ccff1f5313adc24732d36a7188038331893673e132db012430711e60cb84cfd",
+            "old_class": 50,
+            "owner": 55
+          }
+        ],
+        "disappeared_owner_ids": [],
+        "host_growth": [],
+        "moved_incumbent_rows": 0,
+        "moved_residual_area": 0.0,
+        "moved_residual_rows": 0
+      },
+      "manifest": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001/predictions/office4/IR08_COMBINATION/manifest.json",
+      "owner_partition_digest": "0f0e0272c5f85a083c48250d6da2578c4aa6f8c5f7575f1d34e4233b6511e17d",
+      "prediction_key": "5ee5e3d417675610ff6c6fda8a635830ffa3a3829a927168505b19dc7e1d9b4e",
+      "record_key": "86a59338fec98d92e49d3aa1e63ddef61153d5cc0d101cc1e151d7645f7960ee",
+      "source_kind": "MEASURED_NEW_PARTITION",
+      "status": "PREDICTION_LOCKED"
+    }
+  },
+  "scene": "office4",
+  "semantic_identity": "078a1a7c08b7a4914e1cd9ced47fb139f462055c2a951ba64cc59fab20f9b823",
+  "status": "PREDICTIONS_LOCKED",
+  "structural_identity": "9e2ca9560fc7716632a4109bf002cc8a5fa946e9753400b7609355800ef20f29"
+}

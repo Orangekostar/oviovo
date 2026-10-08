@@ -1,0 +1,298 @@
+{
+  "blocked": [],
+  "candidate_edges": 6,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "57ffd70efa5f7a069eb021ccf29fd3ea564bdae12d0fc706cd0db812780a4cc6",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:132",
+            "I:119"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "7e0f7a70dde684b5062c8fa925d5c2aedd77d52bc396fd191632d6ccab286256",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:161",
+            "I:154"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "d3d42f752cd4f2e2da18a318cabe0d1ac4efbfeb2bd06608dc993e09e0cb4c77",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:178",
+            "I:82"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "d97747eec1c2f6dd7d28afb7ebab007a21801251c7b7b37846d05fb73c55a0b1",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:180",
+            "I:82"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 4,
+      "selected": [
+        {
+          "digest": "57ffd70efa5f7a069eb021ccf29fd3ea564bdae12d0fc706cd0db812780a4cc6",
+          "distance": 0.0,
+          "edit_cost": 0.029157851673087754,
+          "fresh_owner": null,
+          "host": 119,
+          "output_owner": 119,
+          "proposal_score": null,
+          "seed": "C:132",
+          "units": [
+            "C:132",
+            "I:119"
+          ]
+        },
+        {
+          "digest": "7e0f7a70dde684b5062c8fa925d5c2aedd77d52bc396fd191632d6ccab286256",
+          "distance": 0.0,
+          "edit_cost": 0.03663661772655032,
+          "fresh_owner": null,
+          "host": 154,
+          "output_owner": 154,
+          "proposal_score": null,
+          "seed": "C:161",
+          "units": [
+            "C:161",
+            "I:154"
+          ]
+        },
+        {
+          "digest": "d3d42f752cd4f2e2da18a318cabe0d1ac4efbfeb2bd06608dc993e09e0cb4c77",
+          "distance": 0.0,
+          "edit_cost": 0.000722815309447434,
+          "fresh_owner": null,
+          "host": 82,
+          "output_owner": 82,
+          "proposal_score": null,
+          "seed": "C:178",
+          "units": [
+            "C:178",
+            "I:82"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:132": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.004814004376367615,
+        "unit": "I:119"
+      },
+      {
+        "distance": 0.05288400042844028,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:82"
+      }
+    ],
+    "C:161": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.009358752166377816,
+        "unit": "I:154"
+      },
+      {
+        "distance": 0.018832768641544557,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:143"
+      }
+    ],
+    "C:178": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.32744405182567726,
+        "unit": "I:82"
+      }
+    ],
+    "C:180": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.026931254429482635,
+        "unit": "I:82"
+      }
+    ]
+  },
+  "elapsed_seconds": 1.4162925931159407,
+  "identity": "ef182eebae0f04e30653e53397bc57eb277bec249d6b41bf3e769fd7077b8964",
+  "input_identity": "bc81995264ff3d2e90bdae4749ac7bdaf37bf20d5dfcd53c8e70184f230f2f11",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "0a2c928b368e6137653725182d235d3432b65845ffcd2171b9a0fbc970b3d3a2",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:132",
+        "I:119"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.05288400042844028,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:132",
+        "I:82"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.018832768641544557,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:161",
+        "I:143"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:161",
+        "I:154"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:178",
+        "I:82"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:180",
+        "I:82"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 6,
+  "scene": "scene0378_00",
+  "seed_count": 4,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "fbefeaccfdd419baa479df112272b3777904cb38820611937f8320470c2e1d67",
+  "undirected_neighbors": {
+    "C:132": [
+      {
+        "distance": 0.0,
+        "unit": "I:119"
+      },
+      {
+        "distance": 0.05288400042844028,
+        "unit": "I:82"
+      }
+    ],
+    "C:161": [
+      {
+        "distance": 0.0,
+        "unit": "I:154"
+      },
+      {
+        "distance": 0.018832768641544557,
+        "unit": "I:143"
+      }
+    ],
+    "C:178": [
+      {
+        "distance": 0.0,
+        "unit": "I:82"
+      }
+    ],
+    "C:180": [
+      {
+        "distance": 0.0,
+        "unit": "I:82"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 5
+}

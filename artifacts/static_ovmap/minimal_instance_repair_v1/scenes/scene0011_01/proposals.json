@@ -1,0 +1,429 @@
+{
+  "blocked": [],
+  "candidate_edges": 9,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "74c9330120d7ed1aae456ee4663983d00fe9d5a557b1795efb788bd618910380",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:10",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "03e3fb550cf570f43153984e93601578dbb77ddbeac7776fcf6b10896f013b27",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:48",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "72016dca1090cf8bde7f3173d56de14752ac5821f5ed1dd8168be4bebff58491",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:60",
+            "I:4"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "f80db710416d951063626200b53c0eb9094c52510cb9d484db09facaa9506d11",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:7",
+            "I:52"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "85931adcb28dc7e5ac4e5a7efc97ee18db50a4daf528ef59c3582bf34a6c1fa1",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:8",
+            "I:52"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "ef8efada1fa899846966366bcd2682a7877d3bbc095843fe431b7509fc88637a",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:97",
+            "I:15"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "e6eb4c9dfe9492112afeb026f059fb6516a3b6e7dafe8ed9152afce04288ade7",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:99",
+            "I:1"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 7,
+      "selected": [
+        {
+          "digest": "74c9330120d7ed1aae456ee4663983d00fe9d5a557b1795efb788bd618910380",
+          "distance": 0.0,
+          "edit_cost": 0.0021022475063512836,
+          "fresh_owner": null,
+          "host": 1,
+          "output_owner": 1,
+          "proposal_score": null,
+          "seed": "C:10",
+          "units": [
+            "C:10",
+            "I:1"
+          ]
+        },
+        {
+          "digest": "72016dca1090cf8bde7f3173d56de14752ac5821f5ed1dd8168be4bebff58491",
+          "distance": 0.0,
+          "edit_cost": 0.0007030809582875291,
+          "fresh_owner": null,
+          "host": 4,
+          "output_owner": 4,
+          "proposal_score": null,
+          "seed": "C:60",
+          "units": [
+            "C:60",
+            "I:4"
+          ]
+        },
+        {
+          "digest": "f80db710416d951063626200b53c0eb9094c52510cb9d484db09facaa9506d11",
+          "distance": 0.0,
+          "edit_cost": 0.02515085144305282,
+          "fresh_owner": null,
+          "host": 52,
+          "output_owner": 52,
+          "proposal_score": null,
+          "seed": "C:7",
+          "units": [
+            "C:7",
+            "I:52"
+          ]
+        },
+        {
+          "digest": "ef8efada1fa899846966366bcd2682a7877d3bbc095843fe431b7509fc88637a",
+          "distance": 0.0,
+          "edit_cost": 0.2307025766743568,
+          "fresh_owner": null,
+          "host": 15,
+          "output_owner": 15,
+          "proposal_score": null,
+          "seed": "C:97",
+          "units": [
+            "C:97",
+            "I:15"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:10": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.09854403409090909,
+        "unit": "I:1"
+      }
+    ],
+    "C:48": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0939917695473251,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0019753086419753087,
+        "unit": "I:24"
+      },
+      {
+        "distance": 0.014551117700239032,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:33"
+      }
+    ],
+    "C:60": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.23469387755102042,
+        "unit": "I:4"
+      }
+    ],
+    "C:7": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.07730851825340014,
+        "unit": "I:52"
+      }
+    ],
+    "C:8": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.08531656937584194,
+        "unit": "I:52"
+      }
+    ],
+    "C:97": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.037555697008274984,
+        "unit": "I:15"
+      }
+    ],
+    "C:99": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.00732739084453845,
+        "unit": "I:1"
+      }
+    ]
+  },
+  "elapsed_seconds": 9.660694117192179,
+  "identity": "b3b54cea26cb021037f3412fb304eabeff4c6bd77849ae948f627ef5b51a9fa2",
+  "input_identity": "c98f724279f49adf883af7eaceab64ec330c2c5c7a590724eec898b794d8580e",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "f500888be3db05d3f855dd7b525f2030c7f1f36eb240f1b962376a5f38bf5da7",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:10",
+        "I:1"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:48",
+        "I:1"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:48",
+        "I:24"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.014551117700239032,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:48",
+        "I:33"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:60",
+        "I:4"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:7",
+        "I:52"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:8",
+        "I:52"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:97",
+        "I:15"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:99",
+        "I:1"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 6,
+  "scene": "scene0011_01",
+  "seed_count": 7,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "52d7bf93f07adea5aebdf81283c457bb6ef87fe5d88b6b1f88cf34644e62c257",
+  "undirected_neighbors": {
+    "C:10": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:48": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:24"
+      },
+      {
+        "distance": 0.014551117700239032,
+        "unit": "I:33"
+      }
+    ],
+    "C:60": [
+      {
+        "distance": 0.0,
+        "unit": "I:4"
+      }
+    ],
+    "C:7": [
+      {
+        "distance": 0.0,
+        "unit": "I:52"
+      }
+    ],
+    "C:8": [
+      {
+        "distance": 0.0,
+        "unit": "I:52"
+      }
+    ],
+    "C:97": [
+      {
+        "distance": 0.0,
+        "unit": "I:15"
+      }
+    ],
+    "C:99": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 8
+}

@@ -1,0 +1,881 @@
+{
+  "blocked": [],
+  "candidate_edges": 19,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "cb3ec933ee3ad1e1d1fb9ade7c51f2e1e3823db4db8c7c6235d37296591560f4",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:138",
+            "I:65"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "cd6d54ca7674ebe7ff12c7530e87ff42c8a204728852d7ca7d4ecac79f17a945",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:144",
+            "I:24"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "b099680e65c0898c36138410b3cf0c891a947c603fd60d19ed9a541cb66dac7a",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:156",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "fa91da71db71ddf765cd1398046a75083c8bbf3ea33397518339f33a2684f38d",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:157",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "be565cc95e50ba7820b39b14c37b977120f657fe4385f465d544a02de3bfae0a",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:158",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "df624ba0c9fcad5fad95924a3a5b0e7bbda0cbe48f1e5deb56b084d2a54b2783",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:22",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "aba47749ced66ea761ccc09fbf3f95be960a022aa6ccf0728e9c233030a5fe27",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:242",
+            "I:4"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "06b24d7ae98d89eaac5026bcce357316c5d6d7c436d6856df733ef0f5af7fec8",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:30",
+            "I:24"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "808e2add22b41594c4e5e903fdebaafb1b1850f5031848c7f09ceebd3e67b0c5",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:31",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "55ee06ef18e9ae3b93d4d5988704a535ae15bcc0612f3f64603b05b1e73fe0bc",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:77",
+            "I:65"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "4eddeb560ae8d897d890ee0451b705c11c8db3444a1db2bea594f7a626c39711",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:79",
+            "I:4"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "9143aed7ff605f9a2efa9fe6bf576adeca8a3dfe6681d268090a426c4c360629",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:93",
+            "I:24"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "959291618190d18606a78d3d8e5cd1c5bf6d8502209f984e6014d54aeb398353",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:97",
+            "I:24"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "b2f8040d70f03625f62875d3571357baa952195034d253d20190e32d9e0ca676",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:98",
+            "I:1"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 14,
+      "selected": [
+        {
+          "digest": "cb3ec933ee3ad1e1d1fb9ade7c51f2e1e3823db4db8c7c6235d37296591560f4",
+          "distance": 0.0,
+          "edit_cost": 0.002222109668333631,
+          "fresh_owner": null,
+          "host": 65,
+          "output_owner": 65,
+          "proposal_score": null,
+          "seed": "C:138",
+          "units": [
+            "C:138",
+            "I:65"
+          ]
+        },
+        {
+          "digest": "cd6d54ca7674ebe7ff12c7530e87ff42c8a204728852d7ca7d4ecac79f17a945",
+          "distance": 0.0,
+          "edit_cost": 5.911070937880755e-05,
+          "fresh_owner": null,
+          "host": 24,
+          "output_owner": 24,
+          "proposal_score": null,
+          "seed": "C:144",
+          "units": [
+            "C:144",
+            "I:24"
+          ]
+        },
+        {
+          "digest": "b099680e65c0898c36138410b3cf0c891a947c603fd60d19ed9a541cb66dac7a",
+          "distance": 0.0,
+          "edit_cost": 7.273113138554878e-05,
+          "fresh_owner": null,
+          "host": 1,
+          "output_owner": 1,
+          "proposal_score": null,
+          "seed": "C:156",
+          "units": [
+            "C:156",
+            "I:1"
+          ]
+        },
+        {
+          "digest": "aba47749ced66ea761ccc09fbf3f95be960a022aa6ccf0728e9c233030a5fe27",
+          "distance": 0.0,
+          "edit_cost": 0.00011997276517699981,
+          "fresh_owner": null,
+          "host": 4,
+          "output_owner": 4,
+          "proposal_score": null,
+          "seed": "C:242",
+          "units": [
+            "C:242",
+            "I:4"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [
+        {
+          "digest": "56173498280d34cb73c5584701b8a3c5bd599a26627a10ffea82023e048a1951",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:156",
+            "C:98"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 1,
+      "selected": [
+        {
+          "digest": "56173498280d34cb73c5584701b8a3c5bd599a26627a10ffea82023e048a1951",
+          "edit_cost": 0.2629861377881081,
+          "fresh_owner": 262,
+          "host": null,
+          "library_lex_index": 0,
+          "output_owner": 262,
+          "physical_area": 0.006613590374289733,
+          "proposal_min_views": 2,
+          "proposal_same": 1.0,
+          "proposal_score": 0.9737013862211892,
+          "proposal_separate": 0.0,
+          "support_hash": "4a6729a7f10e10c856d23fd25c5c91292eff90fe40a015f9f2aee68da1c78937",
+          "units": [
+            "C:156",
+            "C:98"
+          ]
+        }
+      ]
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [
+        {
+          "digest": "56173498280d34cb73c5584701b8a3c5bd599a26627a10ffea82023e048a1951",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:156",
+            "C:98"
+          ],
+          "verification": {
+            "minimum_views": 3,
+            "same": 1.0,
+            "score": 0.9737013862211892,
+            "separate": 0.0,
+            "status": "VERIFICATION_ACCEPTED"
+          }
+        }
+      ],
+      "proposal_count": 1,
+      "selected": [
+        {
+          "digest": "56173498280d34cb73c5584701b8a3c5bd599a26627a10ffea82023e048a1951",
+          "edit_cost": 0.2629861377881081,
+          "fresh_owner": 262,
+          "host": null,
+          "library_lex_index": 0,
+          "output_owner": 262,
+          "physical_area": 0.006613590374289733,
+          "proposal_min_views": 2,
+          "proposal_same": 1.0,
+          "proposal_score": 0.9737013862211892,
+          "proposal_separate": 0.0,
+          "support_hash": "4a6729a7f10e10c856d23fd25c5c91292eff90fe40a015f9f2aee68da1c78937",
+          "units": [
+            "C:156",
+            "C:98"
+          ]
+        }
+      ]
+    }
+  },
+  "directed_neighbors": {
+    "C:138": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1588355464759959,
+        "unit": "I:65"
+      },
+      {
+        "distance": 0.04702300729922885,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:2"
+      }
+    ],
+    "C:144": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.2488479262672811,
+        "unit": "I:24"
+      }
+    ],
+    "C:156": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.2777777777777778,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.010007200303294442,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:98"
+      }
+    ],
+    "C:157": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.18840579710144928,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.030081755312508156,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:158"
+      }
+    ],
+    "C:158": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.09216589861751152,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.030081755312508156,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:157"
+      }
+    ],
+    "C:22": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1259259259259259,
+        "unit": "I:1"
+      }
+    ],
+    "C:242": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.13812154696132597,
+        "unit": "I:4"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.07734806629834254,
+        "unit": "I:65"
+      }
+    ],
+    "C:30": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.05167785234899329,
+        "unit": "I:24"
+      }
+    ],
+    "C:31": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.11764705882352941,
+        "unit": "I:1"
+      }
+    ],
+    "C:77": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.4729064039408867,
+        "unit": "I:65"
+      },
+      {
+        "distance": 0.0510052337542185,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:2"
+      }
+    ],
+    "C:79": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.03314917127071823,
+        "unit": "I:4"
+      }
+    ],
+    "C:93": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.09788867562380038,
+        "unit": "I:24"
+      }
+    ],
+    "C:97": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.13454545454545455,
+        "unit": "I:24"
+      }
+    ],
+    "C:98": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.13392857142857142,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.010007200303294442,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:156"
+      }
+    ]
+  },
+  "elapsed_seconds": 24.766115362988785,
+  "identity": "ec0a55bdef0e511f4fd3bf91c4b986c90115859b6bbbed719578684974788921",
+  "input_identity": "641787040a52a2b7067a643ab9fe83a76c95eb4df53867bad0fb72d8a8364998",
+  "library": [
+    {
+      "digest": "56173498280d34cb73c5584701b8a3c5bd599a26627a10ffea82023e048a1951",
+      "edit_cost": 0.2629861377881081,
+      "fresh_owner": 262,
+      "host": null,
+      "library_lex_index": 0,
+      "output_owner": 262,
+      "physical_area": 0.006613590374289733,
+      "proposal_min_views": 2,
+      "proposal_same": 1.0,
+      "proposal_score": 0.9737013862211892,
+      "proposal_separate": 0.0,
+      "support_hash": "4a6729a7f10e10c856d23fd25c5c91292eff90fe40a015f9f2aee68da1c78937",
+      "units": [
+        "C:156",
+        "C:98"
+      ]
+    }
+  ],
+  "new_neural_inference": 0,
+  "observation_identity": "1d4bde60f3b3f33f097e5b4f1f331859a2077ca42ad6773c882e88a7f34b6388",
+  "pairs": [
+    {
+      "distance": 0.04702300729922885,
+      "proposal": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 0.75
+      },
+      "units": [
+        "C:138",
+        "I:2"
+      ],
+      "verification": {
+        "n": 5,
+        "same": 0.0,
+        "separate": 0.8
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 0.75
+      },
+      "units": [
+        "C:138",
+        "I:65"
+      ],
+      "verification": {
+        "n": 5,
+        "same": 0.0,
+        "separate": 0.6
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:144",
+        "I:24"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.010007200303294442,
+      "proposal": {
+        "n": 2,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:156",
+        "C:98"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:156",
+        "I:1"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.030081755312508156,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:157",
+        "C:158"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:157",
+        "I:1"
+      ],
+      "verification": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:158",
+        "I:1"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 5,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:22",
+        "I:1"
+      ],
+      "verification": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:242",
+        "I:4"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:242",
+        "I:65"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:30",
+        "I:24"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 0.6666666666666666
+      },
+      "units": [
+        "C:31",
+        "I:1"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 0.6666666666666666
+      }
+    },
+    {
+      "distance": 0.0510052337542185,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:77",
+        "I:2"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:77",
+        "I:65"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 5,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:79",
+        "I:4"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:93",
+        "I:24"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:97",
+        "I:24"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 5,
+        "same": 0.0,
+        "separate": 0.8
+      },
+      "units": [
+        "C:98",
+        "I:1"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    }
+  ],
+  "positive_edges": 1,
+  "proposal_unknown_pairs": 5,
+  "scene": "room0",
+  "seed_count": 14,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "c9319397cff0594c2ea13c7cab7ff92b10b9dcf0c246fcb5b40a6259a56560f4",
+  "undirected_neighbors": {
+    "C:138": [
+      {
+        "distance": 0.0,
+        "unit": "I:65"
+      },
+      {
+        "distance": 0.04702300729922885,
+        "unit": "I:2"
+      }
+    ],
+    "C:144": [
+      {
+        "distance": 0.0,
+        "unit": "I:24"
+      }
+    ],
+    "C:156": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.010007200303294442,
+        "unit": "C:98"
+      }
+    ],
+    "C:157": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.030081755312508156,
+        "unit": "C:158"
+      }
+    ],
+    "C:158": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.030081755312508156,
+        "unit": "C:157"
+      }
+    ],
+    "C:22": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:242": [
+      {
+        "distance": 0.0,
+        "unit": "I:4"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:65"
+      }
+    ],
+    "C:30": [
+      {
+        "distance": 0.0,
+        "unit": "I:24"
+      }
+    ],
+    "C:31": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:77": [
+      {
+        "distance": 0.0,
+        "unit": "I:65"
+      },
+      {
+        "distance": 0.0510052337542185,
+        "unit": "I:2"
+      }
+    ],
+    "C:79": [
+      {
+        "distance": 0.0,
+        "unit": "I:4"
+      }
+    ],
+    "C:93": [
+      {
+        "distance": 0.0,
+        "unit": "I:24"
+      }
+    ],
+    "C:97": [
+      {
+        "distance": 0.0,
+        "unit": "I:24"
+      }
+    ],
+    "C:98": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.010007200303294442,
+        "unit": "C:156"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 4
+}

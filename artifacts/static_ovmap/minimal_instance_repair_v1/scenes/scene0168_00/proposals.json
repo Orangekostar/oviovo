@@ -1,0 +1,966 @@
+{
+  "blocked": [],
+  "candidate_edges": 25,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "ffa16910fb62db5b778b5d3c974c44c2ffca371c2fe0f7493784b896f00c3070",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:107",
+            "I:90"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "eca73f62f3363b4089658bec4011fa9cef07822dce221b33eeb5574d5a091540",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:120",
+            "I:63"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "8414328bc1ca722b2b894380998a7c206e8a74a0a21a61bae9c05968de0e1961",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:128",
+            "I:44"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "6d208d563063f43c230cc22ce79310a5049db23ecafef3e89017d67ab3aed7d0",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:173",
+            "I:165"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "e2f1d2f0169e52231a6a18be9c3d2e4720177f571f0e7777c203ddd3488cd74f",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:185",
+            "I:167"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "c4049764f66f916beed819760faebd5f6773335e337ba93838b1c85a73a5d03c",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:206",
+            "I:202"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "bd2e04fc3daf1989b46c625004ac989573ed061e78a0a8e46dcb11c0ecf58043",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:241",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "74a8c9943bcaf8940555d30957289ebece4ebec001d069808d460e3b20304025",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:245",
+            "I:7"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "f73f0cf4bf455716244cf44dc8d3f409b08f9ab99f79a0dfc8156b303a170ecc",
+          "status": "KEEP_OPERATION_CAP",
+          "units": [
+            "C:275",
+            "I:255"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "da8a10d0a9460f19e46b0645a43c13558a9ed0e6fdfd4fad6652faedd52a0ab7",
+          "status": "KEEP_OPERATION_CAP",
+          "units": [
+            "C:283",
+            "I:3"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "18cdceef91d44cff9273b2b49fd29b59f645a362c4a2afba8bd7351d12d4ecd3",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:284",
+            "I:44"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "346a2fb03522658d5beb09d4a05c4c87a49f7ba644bdc2e4c39bf33c9b7331dc",
+          "status": "KEEP_OPERATION_CAP",
+          "units": [
+            "C:177",
+            "I:166"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 12,
+      "selected": [
+        {
+          "digest": "ffa16910fb62db5b778b5d3c974c44c2ffca371c2fe0f7493784b896f00c3070",
+          "distance": 0.0,
+          "edit_cost": 0.27241124932850697,
+          "fresh_owner": null,
+          "host": 90,
+          "output_owner": 90,
+          "proposal_score": null,
+          "seed": "C:107",
+          "units": [
+            "C:107",
+            "I:90"
+          ]
+        },
+        {
+          "digest": "eca73f62f3363b4089658bec4011fa9cef07822dce221b33eeb5574d5a091540",
+          "distance": 0.0,
+          "edit_cost": 0.0024940030754379058,
+          "fresh_owner": null,
+          "host": 63,
+          "output_owner": 63,
+          "proposal_score": null,
+          "seed": "C:120",
+          "units": [
+            "C:120",
+            "I:63"
+          ]
+        },
+        {
+          "digest": "8414328bc1ca722b2b894380998a7c206e8a74a0a21a61bae9c05968de0e1961",
+          "distance": 0.0,
+          "edit_cost": 0.007132220256867185,
+          "fresh_owner": null,
+          "host": 44,
+          "output_owner": 44,
+          "proposal_score": null,
+          "seed": "C:128",
+          "units": [
+            "C:128",
+            "I:44"
+          ]
+        },
+        {
+          "digest": "6d208d563063f43c230cc22ce79310a5049db23ecafef3e89017d67ab3aed7d0",
+          "distance": 0.0,
+          "edit_cost": 0.515815720892056,
+          "fresh_owner": null,
+          "host": 165,
+          "output_owner": 165,
+          "proposal_score": null,
+          "seed": "C:173",
+          "units": [
+            "C:173",
+            "I:165"
+          ]
+        },
+        {
+          "digest": "e2f1d2f0169e52231a6a18be9c3d2e4720177f571f0e7777c203ddd3488cd74f",
+          "distance": 0.0,
+          "edit_cost": 0.13752390631484185,
+          "fresh_owner": null,
+          "host": 167,
+          "output_owner": 167,
+          "proposal_score": null,
+          "seed": "C:185",
+          "units": [
+            "C:185",
+            "I:167"
+          ]
+        },
+        {
+          "digest": "c4049764f66f916beed819760faebd5f6773335e337ba93838b1c85a73a5d03c",
+          "distance": 0.0,
+          "edit_cost": 0.022092085592129235,
+          "fresh_owner": null,
+          "host": 202,
+          "output_owner": 202,
+          "proposal_score": null,
+          "seed": "C:206",
+          "units": [
+            "C:206",
+            "I:202"
+          ]
+        },
+        {
+          "digest": "bd2e04fc3daf1989b46c625004ac989573ed061e78a0a8e46dcb11c0ecf58043",
+          "distance": 0.0,
+          "edit_cost": 0.0008419746683661873,
+          "fresh_owner": null,
+          "host": 1,
+          "output_owner": 1,
+          "proposal_score": null,
+          "seed": "C:241",
+          "units": [
+            "C:241",
+            "I:1"
+          ]
+        },
+        {
+          "digest": "74a8c9943bcaf8940555d30957289ebece4ebec001d069808d460e3b20304025",
+          "distance": 0.0,
+          "edit_cost": 0.13050251124056422,
+          "fresh_owner": null,
+          "host": 7,
+          "output_owner": 7,
+          "proposal_score": null,
+          "seed": "C:245",
+          "units": [
+            "C:245",
+            "I:7"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:107": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.011148272017837236,
+        "unit": "I:90"
+      },
+      {
+        "distance": 0.06404020401406382,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:91"
+      }
+    ],
+    "C:120": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.16038144776766364,
+        "unit": "I:63"
+      }
+    ],
+    "C:128": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0012582573136206354,
+        "unit": "I:44"
+      },
+      {
+        "distance": 0.04979325872440983,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:173": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.00018677624206200972,
+        "unit": "I:165"
+      },
+      {
+        "distance": 0.07961689825323912,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:19"
+      }
+    ],
+    "C:177": [
+      {
+        "distance": 0.03290733075493791,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:166"
+      },
+      {
+        "distance": 0.05021866585435036,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:163"
+      }
+    ],
+    "C:185": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.14467697907188354,
+        "unit": "I:167"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.020018198362147407,
+        "unit": "I:19"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.051865332120109194,
+        "unit": "I:28"
+      }
+    ],
+    "C:206": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1032258064516129,
+        "unit": "I:202"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1967741935483871,
+        "unit": "I:85"
+      },
+      {
+        "distance": 0.06002852039124314,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:87"
+      }
+    ],
+    "C:241": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.007352941176470588,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.08823529411764706,
+        "unit": "I:34"
+      }
+    ],
+    "C:245": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.00419219606578523,
+        "unit": "I:7"
+      },
+      {
+        "distance": 0.07786399908275919,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:246"
+      }
+    ],
+    "C:275": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.003629764065335753,
+        "unit": "I:255"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.07562008469449485,
+        "unit": "I:256"
+      }
+    ],
+    "C:283": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.19889502762430938,
+        "unit": "I:3"
+      }
+    ],
+    "C:284": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.042222222222222223,
+        "unit": "I:44"
+      },
+      {
+        "distance": 0.010500648800660258,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:266"
+      },
+      {
+        "distance": 0.06577513557006376,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:273"
+      }
+    ]
+  },
+  "elapsed_seconds": 4.578091289149597,
+  "identity": "f74e5fd0398df264d054e55305850e163f3fcff39bc961cf441b98ae35732bd0",
+  "input_identity": "58254e6c7925291e23d1b3ff65d32351cb989345a1bf531172a224297cc427a2",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "e393a57d59d9a28e45bf0858c4cc5f43cd14505dacb98c85a6a8a82808ddd27e",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:107",
+        "I:90"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.06404020401406382,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:107",
+        "I:91"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:120",
+        "I:63"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.04979325872440983,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:128",
+        "I:1"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:128",
+        "I:44"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:173",
+        "I:165"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.07961689825323912,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:173",
+        "I:19"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.05021866585435036,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:177",
+        "I:163"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.03290733075493791,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:177",
+        "I:166"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:185",
+        "I:167"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:185",
+        "I:19"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:185",
+        "I:28"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:206",
+        "I:202"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:206",
+        "I:85"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.06002852039124314,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:206",
+        "I:87"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 0.6666666666666666
+      },
+      "units": [
+        "C:241",
+        "I:1"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 0.6666666666666666
+      },
+      "units": [
+        "C:241",
+        "I:34"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.5,
+        "separate": 0.5
+      }
+    },
+    {
+      "distance": 0.07786399908275919,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:245",
+        "I:246"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:245",
+        "I:7"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 0.5
+      },
+      "units": [
+        "C:275",
+        "I:255"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:275",
+        "I:256"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:283",
+        "I:3"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.010500648800660258,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:284",
+        "I:266"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.06577513557006376,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:284",
+        "I:273"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:284",
+        "I:44"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 14,
+  "scene": "scene0168_00",
+  "seed_count": 12,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "e2f68b5c57bbea4f6790efdd392452d09d4363c862cbc487760147788c5c5576",
+  "undirected_neighbors": {
+    "C:107": [
+      {
+        "distance": 0.0,
+        "unit": "I:90"
+      },
+      {
+        "distance": 0.06404020401406382,
+        "unit": "I:91"
+      }
+    ],
+    "C:120": [
+      {
+        "distance": 0.0,
+        "unit": "I:63"
+      }
+    ],
+    "C:128": [
+      {
+        "distance": 0.0,
+        "unit": "I:44"
+      },
+      {
+        "distance": 0.04979325872440983,
+        "unit": "I:1"
+      }
+    ],
+    "C:173": [
+      {
+        "distance": 0.0,
+        "unit": "I:165"
+      },
+      {
+        "distance": 0.07961689825323912,
+        "unit": "I:19"
+      }
+    ],
+    "C:177": [
+      {
+        "distance": 0.03290733075493791,
+        "unit": "I:166"
+      },
+      {
+        "distance": 0.05021866585435036,
+        "unit": "I:163"
+      }
+    ],
+    "C:185": [
+      {
+        "distance": 0.0,
+        "unit": "I:167"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:19"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:28"
+      }
+    ],
+    "C:206": [
+      {
+        "distance": 0.0,
+        "unit": "I:202"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:85"
+      },
+      {
+        "distance": 0.06002852039124314,
+        "unit": "I:87"
+      }
+    ],
+    "C:241": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:34"
+      }
+    ],
+    "C:245": [
+      {
+        "distance": 0.0,
+        "unit": "I:7"
+      },
+      {
+        "distance": 0.07786399908275919,
+        "unit": "I:246"
+      }
+    ],
+    "C:275": [
+      {
+        "distance": 0.0,
+        "unit": "I:255"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:256"
+      }
+    ],
+    "C:283": [
+      {
+        "distance": 0.0,
+        "unit": "I:3"
+      }
+    ],
+    "C:284": [
+      {
+        "distance": 0.0,
+        "unit": "I:44"
+      },
+      {
+        "distance": 0.010500648800660258,
+        "unit": "I:266"
+      },
+      {
+        "distance": 0.06577513557006376,
+        "unit": "I:273"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 13
+}

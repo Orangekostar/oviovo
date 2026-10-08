@@ -1,0 +1,107 @@
+{
+  "artifact_bytes": 40539739,
+  "canonical_result_store_identity": "9b4fec25adb59776fee4ad322e917e00c8c5087d0ba6d778c6b42d85417b815d",
+  "checks": {
+    "all_234_predictions_locked_GT_free": true,
+    "all_five_gate": true,
+    "all_loaded_threshold_diagnostics": true,
+    "both_real_pilots_18": true,
+    "cold_64": true,
+    "compact_budget": true,
+    "coverage_234": true,
+    "deployment_unchanged": true,
+    "edits_capped_no_incumbent_transfer": true,
+    "extra_pilot_caps": true,
+    "frozen_spec": true,
+    "model_environment_unchanged": true,
+    "observer_cap": true,
+    "pools_18": true,
+    "pose_banks_disjoint_and_capped": true,
+    "postlock_26": true,
+    "preserved_other_research": true,
+    "production_boundary_tests": true,
+    "render_inspected": true,
+    "science_FC_cap": true,
+    "science_QK_cap": true,
+    "three_main_tables": true,
+    "zero_NQ_inference": true,
+    "zero_maps_and_segmentation": true
+  },
+  "evidence": {
+    "actual_ordinary_AnyUp_parity": "provenance/pilots/ordinary_anyup_parity.json",
+    "cold_call_parity_and_memory": "timing_calls.json",
+    "complete_metrics_and_costs": "result_store.json",
+    "final_boundary_validation": "provenance/tests/final_validation.json",
+    "implementation": "src/static_ovmap/minimal_instance_repair",
+    "initial_and_corrective_freezes": "provenance/history/freeze",
+    "numeric_protocol": "configs/static_ovmap/minimal_instance_repair_v1.json",
+    "pose_roles": "scenes/*/pose_roles.json",
+    "postlock_diagnostics": "scenes/*/output_comparisons.json.gz",
+    "predictions": "scenes/*/prediction_lock.json"
+  },
+  "freeze_commit": "f7bd2a8112cd62f35e93d48d8950b820aac7f445",
+  "identity": "ace3a67c8d430f60ac15cd97c1d2920ffdde8a319dd8c64de974ecf89d3fde01",
+  "review_count": 1,
+  "specification_files": [
+    "AUDIT_REPORT.json",
+    "CODEX_FINAL_EXECUTION_EN.md",
+    "CODE_REVIEW_AND_PLAN_ZH.md",
+    "EVALUATION_AND_SELECTION.md",
+    "EXPERIMENT_MATRIX.csv",
+    "EXPERIMENT_MATRIX.md",
+    "FILE_MANIFEST.json",
+    "IMPLEMENTATION_CONTRACTS.md",
+    "PROTOCOL_SPEC.json",
+    "README.md",
+    "REFERENCE_TEST_LOG.txt",
+    "SOURCE_EVIDENCE.md",
+    "audit_package.py",
+    "reference_kernels.py",
+    "test_reference_kernels.py"
+  ],
+  "status": "REQUIREMENTS_VERIFIED",
+  "visual_QA": {
+    "checks": {
+      "PDF_fonts_embedded": true,
+      "all_rows_visible": true,
+      "headers_legible": true,
+      "no_clipping_or_overlap": true,
+      "source_values_match_MD_and_JSON": true,
+      "units_percent_and_pp_consistent": true,
+      "unmeasured_values_are_dashes": true
+    },
+    "column_definitions": {
+      "GT": "RELEASED_CLASS_AWARE_MATCHING",
+      "Geom": "CLASS_AGNOSTIC_MATCHING",
+      "Regions/call": "ANYUP_REGION_POOLS_ONLY; G1 pools remain in timing receipts",
+      "printed_negative_zero": "ROUNDED_SMALL_NEGATIVE_FRACTION; RAW_JSON_IS_AUTHORITATIVE"
+    },
+    "files": [
+      {
+        "bytes": 46082,
+        "path": "/home/ww/ovimap-minimal-instance-repair-v1-storage/worktree/artifacts/static_ovmap/minimal_instance_repair_v1/table_layout_preview.pdf",
+        "sha256": "7144435fe12d653b254357258b9f30fb839a59081d04bc61ee9aac23154b2eb9"
+      },
+      {
+        "bytes": 90576,
+        "path": "/home/ww/ovimap-minimal-instance-repair-v1-storage/worktree/artifacts/static_ovmap/minimal_instance_repair_v1/table_1_preview.png",
+        "sha256": "44a22ab890192309bed3178261a3ef66ba266b37680e4f9fb53aff43dbdfb1ea"
+      },
+      {
+        "bytes": 82782,
+        "path": "/home/ww/ovimap-minimal-instance-repair-v1-storage/worktree/artifacts/static_ovmap/minimal_instance_repair_v1/table_2_preview.png",
+        "sha256": "91ba394c401bc24cd51c587ea376b63c2224ea1b0281a234f784ce55061ddf9c"
+      },
+      {
+        "bytes": 81839,
+        "path": "/home/ww/ovimap-minimal-instance-repair-v1-storage/worktree/artifacts/static_ovmap/minimal_instance_repair_v1/table_3_preview.png",
+        "sha256": "e7728f0feefe80fa55c7eabbf8c1629da80b7da244378cac9640a784ede4d4ae"
+      }
+    ],
+    "identity": "c64288d1c40a928a499ce4441efb48653d50d9cc8c010a9e855e30d4011659c8",
+    "inspection": "PRIMARY_AGENT_VISUALLY_INSPECTED_ALL_THREE_PNG_PAGES_AND_PDF_METADATA",
+    "pages": 3,
+    "result_store_identity": "9b4fec25adb59776fee4ad322e917e00c8c5087d0ba6d778c6b42d85417b815d",
+    "status": "RENDER_INSPECTED"
+  }
+}

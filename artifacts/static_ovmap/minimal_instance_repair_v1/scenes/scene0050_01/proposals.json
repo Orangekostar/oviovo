@@ -1,0 +1,1009 @@
+{
+  "blocked": [],
+  "candidate_edges": 27,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "98ae2dd08126377b3a5bdd97fd0746a3d52224766dcd41638fb2783a0fdcf54f",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:126",
+            "I:104"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "b2e76186d0ce7e2dc38ad76e72e688b76579c38cd640512e79c4e4aa55445ea5",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:186",
+            "I:118"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "37079b7bcd5e090824a9dfd24ecbf83ff966d8edf6bedecf3ae68e8379abe6de",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:187",
+            "I:130"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "e6ebfa60c44a7055aeb8d3b51100a08f0de71637ab8b10b60383d1cd24087c8a",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:193",
+            "I:115"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "dd4fd1e0b9b1363510dcdd7f2174db5e8824832c4b5e68cfac80ed77de692a4e",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:194",
+            "I:115"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "94d88679314a803ee4c6f88a60a0780373fb771cf8f44492632af411a25ef2c4",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:197",
+            "I:116"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "3bc3d3ecd57cb010b89ff1257a429d14efa31e9c18070079985dd0c7e10dc91a",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:203",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "660bf441c658c1083d41905062fcc2981fa138c974ad4a9e3c83d31632474c86",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:45",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "53b8e65f2debb9630f5323a87dd19bd63ef2dfdb735e6ff7750d75749e2443ff",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:74",
+            "I:71"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "0d7592303b677c2f65471070d1b5e213fe94e06b8149d41d31d62a8f9cdaf587",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:83",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "1f261cc47b4a2d14c9e26ae7fbf4837d90863393c82352847ec6ec8489bc17ea",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:128",
+            "I:48"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 11,
+      "selected": [
+        {
+          "digest": "98ae2dd08126377b3a5bdd97fd0746a3d52224766dcd41638fb2783a0fdcf54f",
+          "distance": 0.0,
+          "edit_cost": 0.09311961346538054,
+          "fresh_owner": null,
+          "host": 104,
+          "output_owner": 104,
+          "proposal_score": null,
+          "seed": "C:126",
+          "units": [
+            "C:126",
+            "I:104"
+          ]
+        },
+        {
+          "digest": "b2e76186d0ce7e2dc38ad76e72e688b76579c38cd640512e79c4e4aa55445ea5",
+          "distance": 0.0,
+          "edit_cost": 0.014815114410448265,
+          "fresh_owner": null,
+          "host": 118,
+          "output_owner": 118,
+          "proposal_score": null,
+          "seed": "C:186",
+          "units": [
+            "C:186",
+            "I:118"
+          ]
+        },
+        {
+          "digest": "37079b7bcd5e090824a9dfd24ecbf83ff966d8edf6bedecf3ae68e8379abe6de",
+          "distance": 0.0,
+          "edit_cost": 0.03610207988206931,
+          "fresh_owner": null,
+          "host": 130,
+          "output_owner": 130,
+          "proposal_score": null,
+          "seed": "C:187",
+          "units": [
+            "C:187",
+            "I:130"
+          ]
+        },
+        {
+          "digest": "e6ebfa60c44a7055aeb8d3b51100a08f0de71637ab8b10b60383d1cd24087c8a",
+          "distance": 0.0,
+          "edit_cost": 0.014884311390138294,
+          "fresh_owner": null,
+          "host": 115,
+          "output_owner": 115,
+          "proposal_score": null,
+          "seed": "C:193",
+          "units": [
+            "C:193",
+            "I:115"
+          ]
+        },
+        {
+          "digest": "94d88679314a803ee4c6f88a60a0780373fb771cf8f44492632af411a25ef2c4",
+          "distance": 0.0,
+          "edit_cost": 0.016234441826055542,
+          "fresh_owner": null,
+          "host": 116,
+          "output_owner": 116,
+          "proposal_score": null,
+          "seed": "C:197",
+          "units": [
+            "C:197",
+            "I:116"
+          ]
+        },
+        {
+          "digest": "3bc3d3ecd57cb010b89ff1257a429d14efa31e9c18070079985dd0c7e10dc91a",
+          "distance": 0.0,
+          "edit_cost": 0.0013962927788281245,
+          "fresh_owner": null,
+          "host": 1,
+          "output_owner": 1,
+          "proposal_score": null,
+          "seed": "C:203",
+          "units": [
+            "C:203",
+            "I:1"
+          ]
+        },
+        {
+          "digest": "53b8e65f2debb9630f5323a87dd19bd63ef2dfdb735e6ff7750d75749e2443ff",
+          "distance": 0.0,
+          "edit_cost": 0.11059762840351206,
+          "fresh_owner": null,
+          "host": 71,
+          "output_owner": 71,
+          "proposal_score": null,
+          "seed": "C:74",
+          "units": [
+            "C:74",
+            "I:71"
+          ]
+        },
+        {
+          "digest": "1f261cc47b4a2d14c9e26ae7fbf4837d90863393c82352847ec6ec8489bc17ea",
+          "distance": 0.017593207075780836,
+          "edit_cost": 0.005187826937018516,
+          "fresh_owner": null,
+          "host": 48,
+          "output_owner": 48,
+          "proposal_score": null,
+          "seed": "C:128",
+          "units": [
+            "C:128",
+            "I:48"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:126": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0013869625520110957,
+        "unit": "I:104"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.004160887656033287,
+        "unit": "I:110"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.005547850208044383,
+        "unit": "I:49"
+      }
+    ],
+    "C:128": [
+      {
+        "distance": 0.017593207075780836,
+        "raw_overlap_fraction": 0.004672897196261682,
+        "unit": "I:48"
+      },
+      {
+        "distance": 0.02741831991483378,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:49"
+      }
+    ],
+    "C:186": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0027137042062415195,
+        "unit": "I:118"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.2700135685210312,
+        "unit": "I:55"
+      },
+      {
+        "distance": 0.027559995651245117,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:135"
+      }
+    ],
+    "C:187": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.10141766630316248,
+        "unit": "I:130"
+      },
+      {
+        "distance": 0.024812311891248495,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:129"
+      },
+      {
+        "distance": 0.055600975482976704,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:46"
+      }
+    ],
+    "C:193": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.038910505836575876,
+        "unit": "I:115"
+      },
+      {
+        "distance": 0.05875611753600061,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:150"
+      }
+    ],
+    "C:194": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.05359877488514548,
+        "unit": "I:115"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.10566615620214395,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.030627871362940276,
+        "unit": "I:55"
+      }
+    ],
+    "C:197": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.02023121387283237,
+        "unit": "I:116"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.023121387283236993,
+        "unit": "I:183"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.008670520231213872,
+        "unit": "I:55"
+      }
+    ],
+    "C:203": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.13752665245202558,
+        "unit": "I:1"
+      }
+    ],
+    "C:21": [],
+    "C:45": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.15315315315315314,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.036036036036036036,
+        "unit": "I:49"
+      },
+      {
+        "distance": 0.04951358015896675,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:46"
+      }
+    ],
+    "C:74": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.002722940776038121,
+        "unit": "I:71"
+      },
+      {
+        "distance": 0.020877941369907612,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:73"
+      }
+    ],
+    "C:8": [],
+    "C:83": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1787429769147914,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.019912084073243866,
+        "unit": "I:49"
+      }
+    ]
+  },
+  "elapsed_seconds": 6.375334402080625,
+  "identity": "892baa186594487fea6006b7dcf432365ff248455eb44b54b8e1044a2b20f883",
+  "input_identity": "3ad07c9bab9759b30a5d252fa06410801a66db231e2795c58e85e695b50f3553",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "f548cb5eb6bb80cda5e13a81efae183c1ce21b5f1dfe6c348fcd7bd0a4cd8a6b",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:126",
+        "I:104"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:126",
+        "I:110"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:126",
+        "I:49"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.017593207075780836,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:128",
+        "I:48"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.02741831991483378,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:128",
+        "I:49"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:186",
+        "I:118"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.027559995651245117,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:186",
+        "I:135"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:186",
+        "I:55"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.024812311891248495,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:187",
+        "I:129"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:187",
+        "I:130"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.055600975482976704,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:187",
+        "I:46"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:193",
+        "I:115"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.05875611753600061,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:193",
+        "I:150"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:194",
+        "I:115"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:194",
+        "I:3"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:194",
+        "I:55"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:197",
+        "I:116"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:197",
+        "I:183"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:197",
+        "I:55"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 0.5
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:203",
+        "I:1"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:45",
+        "I:1"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.04951358015896675,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 0.5
+      },
+      "units": [
+        "C:45",
+        "I:46"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 3,
+        "same": 0.3333333333333333,
+        "separate": 0.0
+      },
+      "units": [
+        "C:45",
+        "I:49"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:74",
+        "I:71"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.020877941369907612,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:74",
+        "I:73"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:83",
+        "I:1"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:83",
+        "I:49"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 16,
+  "scene": "scene0050_01",
+  "seed_count": 13,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "c1f5671480af7e08094c421257561add6b88cda439d2c7f9b5ca6bcb3184e031",
+  "undirected_neighbors": {
+    "C:126": [
+      {
+        "distance": 0.0,
+        "unit": "I:104"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:110"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:49"
+      }
+    ],
+    "C:128": [
+      {
+        "distance": 0.017593207075780836,
+        "unit": "I:48"
+      },
+      {
+        "distance": 0.02741831991483378,
+        "unit": "I:49"
+      }
+    ],
+    "C:186": [
+      {
+        "distance": 0.0,
+        "unit": "I:118"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:55"
+      },
+      {
+        "distance": 0.027559995651245117,
+        "unit": "I:135"
+      }
+    ],
+    "C:187": [
+      {
+        "distance": 0.0,
+        "unit": "I:130"
+      },
+      {
+        "distance": 0.024812311891248495,
+        "unit": "I:129"
+      },
+      {
+        "distance": 0.055600975482976704,
+        "unit": "I:46"
+      }
+    ],
+    "C:193": [
+      {
+        "distance": 0.0,
+        "unit": "I:115"
+      },
+      {
+        "distance": 0.05875611753600061,
+        "unit": "I:150"
+      }
+    ],
+    "C:194": [
+      {
+        "distance": 0.0,
+        "unit": "I:115"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:55"
+      }
+    ],
+    "C:197": [
+      {
+        "distance": 0.0,
+        "unit": "I:116"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:183"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:55"
+      }
+    ],
+    "C:203": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:21": [],
+    "C:45": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:49"
+      },
+      {
+        "distance": 0.04951358015896675,
+        "unit": "I:46"
+      }
+    ],
+    "C:74": [
+      {
+        "distance": 0.0,
+        "unit": "I:71"
+      },
+      {
+        "distance": 0.020877941369907612,
+        "unit": "I:73"
+      }
+    ],
+    "C:8": [],
+    "C:83": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:49"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 14
+}

@@ -1,0 +1,306 @@
+{
+  "blocked": [],
+  "candidate_edges": 6,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "fdca6103e795c7ee5ef64784617a292429eea3b056d01602e22060cb55825181",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:10",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "054671b146da00f7b2d4148bddc8bc3cdd5b093de158459894472a3d43a1fb07",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:11",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "85822fc0a3fa05954a7307ac194ff6de3389a6ce5ae5426b9f37d588821eee6b",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:38",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "2ecac0be0fc093f87e1fc14eda456d0fed03c727cff20d2de1bb8f91516ccc86",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:39",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "4d325543ed624771a812bf9843342d694a8510fde19d099565441fb9d61be148",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:62",
+            "I:42"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 5,
+      "selected": [
+        {
+          "digest": "fdca6103e795c7ee5ef64784617a292429eea3b056d01602e22060cb55825181",
+          "distance": 0.0,
+          "edit_cost": 0.00021455142499674746,
+          "fresh_owner": null,
+          "host": 1,
+          "output_owner": 1,
+          "proposal_score": null,
+          "seed": "C:10",
+          "units": [
+            "C:10",
+            "I:1"
+          ]
+        },
+        {
+          "digest": "4d325543ed624771a812bf9843342d694a8510fde19d099565441fb9d61be148",
+          "distance": 0.0,
+          "edit_cost": 0.0002716251959971925,
+          "fresh_owner": null,
+          "host": 42,
+          "output_owner": 42,
+          "proposal_score": null,
+          "seed": "C:62",
+          "units": [
+            "C:62",
+            "I:42"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:10": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.09752066115702479,
+        "unit": "I:1"
+      }
+    ],
+    "C:11": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.12044817927170869,
+        "unit": "I:1"
+      }
+    ],
+    "C:38": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.11295180722891567,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.04248161754762449,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:39"
+      }
+    ],
+    "C:39": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.08086253369272237,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.04248161754762449,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:38"
+      }
+    ],
+    "C:62": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.17120622568093385,
+        "unit": "I:42"
+      }
+    ]
+  },
+  "elapsed_seconds": 2.3876558360643685,
+  "identity": "6305bdf32daec1c9ab7d3e812cde7022023779936070e389939ce35c9240ef99",
+  "input_identity": "d246b582f204d5fa74b35dbf1909f6c301bdb69d5487034bc9767331b5cbba58",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "a07de197c7393371b6cd7b45b40992ac8cff1f00ed2ead19d5ef4cd36f97b5df",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:10",
+        "I:1"
+      ],
+      "verification": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:11",
+        "I:1"
+      ],
+      "verification": {
+        "n": 4,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.04248161754762449,
+      "proposal": {
+        "n": 6,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:38",
+        "C:39"
+      ],
+      "verification": {
+        "n": 8,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 7,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:38",
+        "I:1"
+      ],
+      "verification": {
+        "n": 8,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 6,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:39",
+        "I:1"
+      ],
+      "verification": {
+        "n": 8,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:62",
+        "I:42"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 0,
+  "scene": "room1",
+  "seed_count": 5,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "d7c6519b51c9ff3de41d91750d172af08b52dd449abc996cb59bd8624f692fd2",
+  "undirected_neighbors": {
+    "C:10": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:11": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      }
+    ],
+    "C:38": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.04248161754762449,
+        "unit": "C:39"
+      }
+    ],
+    "C:39": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.04248161754762449,
+        "unit": "C:38"
+      }
+    ],
+    "C:62": [
+      {
+        "distance": 0.0,
+        "unit": "I:42"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 0
+}

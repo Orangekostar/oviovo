@@ -1,0 +1,234 @@
+{
+  "blocked": [],
+  "candidate_edges": 5,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "51eef78370c9cc3d75467ce0fda9b521f38b6642f6cef7809b3c03a983b82846",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:17",
+            "I:11"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "1b9ede4bb971624d6f6b54b58f0e6f172bbe0ec92e92b1d35623687808f7d7ca",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:64",
+            "I:2"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 2,
+      "selected": [
+        {
+          "digest": "51eef78370c9cc3d75467ce0fda9b521f38b6642f6cef7809b3c03a983b82846",
+          "distance": 0.0,
+          "edit_cost": 0.004953101185817876,
+          "fresh_owner": null,
+          "host": 11,
+          "output_owner": 11,
+          "proposal_score": null,
+          "seed": "C:17",
+          "units": [
+            "C:17",
+            "I:11"
+          ]
+        },
+        {
+          "digest": "1b9ede4bb971624d6f6b54b58f0e6f172bbe0ec92e92b1d35623687808f7d7ca",
+          "distance": 0.0,
+          "edit_cost": 0.0004063102577786072,
+          "fresh_owner": null,
+          "host": 2,
+          "output_owner": 2,
+          "proposal_score": null,
+          "seed": "C:64",
+          "units": [
+            "C:64",
+            "I:2"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:17": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1870748299319728,
+        "unit": "I:11"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.06462585034013606,
+        "unit": "I:2"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.02040816326530612,
+        "unit": "I:8"
+      }
+    ],
+    "C:36": [],
+    "C:64": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.010856453558504222,
+        "unit": "I:2"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.12545235223160434,
+        "unit": "I:52"
+      }
+    ]
+  },
+  "elapsed_seconds": 1.132273088907823,
+  "identity": "f33c38b1a51f51046e6b66cdb0c0676dbcd0d679f8566825ae93fddac0dd8f66",
+  "input_identity": "46c6e9fec8c8d3bb694352d0376f57ae40d22e0650e992ff182f17abdc8f58e7",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "7f56be65bb4790ae2024fc54ae8b425b5a9d619077395d4d701e990c96c844e4",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:17",
+        "I:11"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:17",
+        "I:2"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:17",
+        "I:8"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:64",
+        "I:2"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:64",
+        "I:52"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 5,
+  "scene": "scene0084_01",
+  "seed_count": 3,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "ad4e125cafedab93ec39c2053b304f3a3c0f3682a1c7dcbda1c044ded0f198eb",
+  "undirected_neighbors": {
+    "C:17": [
+      {
+        "distance": 0.0,
+        "unit": "I:11"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:2"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:8"
+      }
+    ],
+    "C:36": [],
+    "C:64": [
+      {
+        "distance": 0.0,
+        "unit": "I:2"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:52"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 3
+}

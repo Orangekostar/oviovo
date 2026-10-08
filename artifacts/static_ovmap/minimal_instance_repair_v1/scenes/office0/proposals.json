@@ -1,0 +1,376 @@
+{
+  "blocked": [],
+  "candidate_edges": 9,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "bd7a0768eecd8e5af89edaa31e6c586130add016ebe20665e5b51afa4c9e2d41",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:102",
+            "I:26"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "c26b4b4c027a7e09a0ff2236a5add3f7902abf7fa94aa4808e8ff61ce3151146",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:160",
+            "I:3"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "7117aa5bd600c3fad8a6a2de896bbdeb18898e4240fbb4fb211b5dfc03048176",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:60",
+            "I:48"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "6f6d994fdbac5c93ce3ddca6726d47b9d69f4a200146bcd9dce2f1ccaceed08d",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:91",
+            "I:3"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 4,
+      "selected": [
+        {
+          "digest": "bd7a0768eecd8e5af89edaa31e6c586130add016ebe20665e5b51afa4c9e2d41",
+          "distance": 0.0,
+          "edit_cost": 0.0014427491362749808,
+          "fresh_owner": null,
+          "host": 26,
+          "output_owner": 26,
+          "proposal_score": null,
+          "seed": "C:102",
+          "units": [
+            "C:102",
+            "I:26"
+          ]
+        },
+        {
+          "digest": "c26b4b4c027a7e09a0ff2236a5add3f7902abf7fa94aa4808e8ff61ce3151146",
+          "distance": 0.0,
+          "edit_cost": 0.0005621358163672357,
+          "fresh_owner": null,
+          "host": 3,
+          "output_owner": 3,
+          "proposal_score": null,
+          "seed": "C:160",
+          "units": [
+            "C:160",
+            "I:3"
+          ]
+        },
+        {
+          "digest": "7117aa5bd600c3fad8a6a2de896bbdeb18898e4240fbb4fb211b5dfc03048176",
+          "distance": 0.0,
+          "edit_cost": 0.0004926896986141366,
+          "fresh_owner": null,
+          "host": 48,
+          "output_owner": 48,
+          "proposal_score": null,
+          "seed": "C:60",
+          "units": [
+            "C:60",
+            "I:48"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:102": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.1258741258741259,
+        "unit": "I:26"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.013986013986013986,
+        "unit": "I:4"
+      }
+    ],
+    "C:160": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0019723865877712033,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.08086785009861933,
+        "unit": "I:4"
+      }
+    ],
+    "C:60": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0794979079497908,
+        "unit": "I:48"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.03138075313807531,
+        "unit": "I:49"
+      },
+      {
+        "distance": 0.038625787626213465,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:52"
+      }
+    ],
+    "C:91": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.12831858407079647,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.030973451327433628,
+        "unit": "I:55"
+      }
+    ]
+  },
+  "elapsed_seconds": 2.915766633115709,
+  "identity": "4000d2030c5fc53dd6837cb0539831a24990e2743ac2f81b975103349e02ed64",
+  "input_identity": "41f6a5933d4990807c0a294dd889b3d48bc40afd34e0c2585353a82916d486b1",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "ed0e2bba8ab5f83deee2fa909bf965c6c11e90fb8f56dffd72a3956241c7fbee",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:102",
+        "I:26"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:102",
+        "I:4"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:160",
+        "I:3"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:160",
+        "I:4"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 0.6666666666666666
+      },
+      "units": [
+        "C:60",
+        "I:48"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 0.5
+      },
+      "units": [
+        "C:60",
+        "I:49"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 0.5
+      }
+    },
+    {
+      "distance": 0.038625787626213465,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:60",
+        "I:52"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:91",
+        "I:3"
+      ],
+      "verification": {
+        "n": 3,
+        "same": 0.3333333333333333,
+        "separate": 0.6666666666666666
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:91",
+        "I:55"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 4,
+  "scene": "office0",
+  "seed_count": 4,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "4e5ef66f2d06f24f1358926fde308beba3d1a6bdc2a6199eefa95c3204f0c96d",
+  "undirected_neighbors": {
+    "C:102": [
+      {
+        "distance": 0.0,
+        "unit": "I:26"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:4"
+      }
+    ],
+    "C:160": [
+      {
+        "distance": 0.0,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:4"
+      }
+    ],
+    "C:60": [
+      {
+        "distance": 0.0,
+        "unit": "I:48"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:49"
+      },
+      {
+        "distance": 0.038625787626213465,
+        "unit": "I:52"
+      }
+    ],
+    "C:91": [
+      {
+        "distance": 0.0,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:55"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 1
+}

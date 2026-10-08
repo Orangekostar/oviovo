@@ -1,0 +1,590 @@
+{
+  "identity": "cecd21429c79907ae7e257b55763fe391e80d8314e85ace82dd6ee04a4f3ea86",
+  "matching": {
+    "common_positive_group_library_only": {
+      "0.25": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 32,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.25
+      },
+      "0.5": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 32,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.5
+      },
+      "0.75": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 32,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.75
+      },
+      "0.9": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 32,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.9
+      }
+    },
+    "current_G1_partition": {
+      "0.25": {
+        "comparison": "STRICT_GREATER",
+        "count": 22,
+        "eligible_GT_count": 32,
+        "gt_ids": [
+          1000,
+          1001,
+          1003,
+          2000,
+          3000,
+          5001,
+          5002,
+          6000,
+          9000,
+          23000,
+          28000,
+          41000,
+          47000,
+          48000,
+          48001,
+          50000,
+          67000,
+          77001,
+          90000,
+          130000,
+          230000,
+          1163000
+        ],
+        "pairs": [
+          {
+            "gt_id": 90000,
+            "support": "G1:2"
+          },
+          {
+            "gt_id": 1000,
+            "support": "G1:3"
+          },
+          {
+            "gt_id": 6000,
+            "support": "G1:10"
+          },
+          {
+            "gt_id": 48001,
+            "support": "G1:11"
+          },
+          {
+            "gt_id": 230000,
+            "support": "G1:13"
+          },
+          {
+            "gt_id": 48000,
+            "support": "G1:15"
+          },
+          {
+            "gt_id": 2000,
+            "support": "G1:23"
+          },
+          {
+            "gt_id": 9000,
+            "support": "G1:25"
+          },
+          {
+            "gt_id": 28000,
+            "support": "G1:27"
+          },
+          {
+            "gt_id": 23000,
+            "support": "G1:29"
+          },
+          {
+            "gt_id": 77001,
+            "support": "G1:31"
+          },
+          {
+            "gt_id": 47000,
+            "support": "G1:39"
+          },
+          {
+            "gt_id": 50000,
+            "support": "G1:46"
+          },
+          {
+            "gt_id": 130000,
+            "support": "G1:48"
+          },
+          {
+            "gt_id": 5001,
+            "support": "G1:49"
+          },
+          {
+            "gt_id": 1163000,
+            "support": "G1:50"
+          },
+          {
+            "gt_id": 3000,
+            "support": "G1:55"
+          },
+          {
+            "gt_id": 1003,
+            "support": "G1:64"
+          },
+          {
+            "gt_id": 5002,
+            "support": "G1:82"
+          },
+          {
+            "gt_id": 67000,
+            "support": "G1:86"
+          },
+          {
+            "gt_id": 1001,
+            "support": "G1:99"
+          },
+          {
+            "gt_id": 41000,
+            "support": "G1:105"
+          }
+        ],
+        "support_count": 116,
+        "threshold": 0.25
+      },
+      "0.5": {
+        "comparison": "STRICT_GREATER",
+        "count": 17,
+        "eligible_GT_count": 32,
+        "gt_ids": [
+          1000,
+          2000,
+          3000,
+          6000,
+          9000,
+          23000,
+          41000,
+          47000,
+          48000,
+          48001,
+          50000,
+          67000,
+          77001,
+          90000,
+          130000,
+          230000,
+          1163000
+        ],
+        "pairs": [
+          {
+            "gt_id": 90000,
+            "support": "G1:2"
+          },
+          {
+            "gt_id": 1000,
+            "support": "G1:3"
+          },
+          {
+            "gt_id": 6000,
+            "support": "G1:10"
+          },
+          {
+            "gt_id": 48001,
+            "support": "G1:11"
+          },
+          {
+            "gt_id": 230000,
+            "support": "G1:13"
+          },
+          {
+            "gt_id": 48000,
+            "support": "G1:15"
+          },
+          {
+            "gt_id": 2000,
+            "support": "G1:23"
+          },
+          {
+            "gt_id": 9000,
+            "support": "G1:25"
+          },
+          {
+            "gt_id": 23000,
+            "support": "G1:29"
+          },
+          {
+            "gt_id": 77001,
+            "support": "G1:31"
+          },
+          {
+            "gt_id": 47000,
+            "support": "G1:39"
+          },
+          {
+            "gt_id": 50000,
+            "support": "G1:46"
+          },
+          {
+            "gt_id": 130000,
+            "support": "G1:48"
+          },
+          {
+            "gt_id": 1163000,
+            "support": "G1:50"
+          },
+          {
+            "gt_id": 3000,
+            "support": "G1:55"
+          },
+          {
+            "gt_id": 67000,
+            "support": "G1:86"
+          },
+          {
+            "gt_id": 41000,
+            "support": "G1:105"
+          }
+        ],
+        "support_count": 116,
+        "threshold": 0.5
+      },
+      "0.75": {
+        "comparison": "STRICT_GREATER",
+        "count": 6,
+        "eligible_GT_count": 32,
+        "gt_ids": [
+          2000,
+          23000,
+          48001,
+          67000,
+          90000,
+          230000
+        ],
+        "pairs": [
+          {
+            "gt_id": 90000,
+            "support": "G1:2"
+          },
+          {
+            "gt_id": 48001,
+            "support": "G1:11"
+          },
+          {
+            "gt_id": 230000,
+            "support": "G1:13"
+          },
+          {
+            "gt_id": 2000,
+            "support": "G1:23"
+          },
+          {
+            "gt_id": 23000,
+            "support": "G1:29"
+          },
+          {
+            "gt_id": 67000,
+            "support": "G1:86"
+          }
+        ],
+        "support_count": 116,
+        "threshold": 0.75
+      },
+      "0.9": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 32,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 116,
+        "threshold": 0.9
+      }
+    },
+    "relaxed_incumbents_residuals_locked_hypotheses": {
+      "0.25": {
+        "comparison": "STRICT_GREATER",
+        "count": 22,
+        "eligible_GT_count": 32,
+        "gt_ids": [
+          1000,
+          1001,
+          1003,
+          2000,
+          3000,
+          5001,
+          5002,
+          6000,
+          9000,
+          23000,
+          28000,
+          41000,
+          47000,
+          48000,
+          48001,
+          50000,
+          67000,
+          77001,
+          90000,
+          130000,
+          230000,
+          1163000
+        ],
+        "pairs": [
+          {
+            "gt_id": 90000,
+            "support": "I:2"
+          },
+          {
+            "gt_id": 1000,
+            "support": "I:3"
+          },
+          {
+            "gt_id": 6000,
+            "support": "I:10"
+          },
+          {
+            "gt_id": 48001,
+            "support": "I:11"
+          },
+          {
+            "gt_id": 230000,
+            "support": "I:13"
+          },
+          {
+            "gt_id": 48000,
+            "support": "I:15"
+          },
+          {
+            "gt_id": 2000,
+            "support": "I:23"
+          },
+          {
+            "gt_id": 9000,
+            "support": "I:25"
+          },
+          {
+            "gt_id": 28000,
+            "support": "I:27"
+          },
+          {
+            "gt_id": 23000,
+            "support": "I:29"
+          },
+          {
+            "gt_id": 77001,
+            "support": "I:31"
+          },
+          {
+            "gt_id": 47000,
+            "support": "I:39"
+          },
+          {
+            "gt_id": 50000,
+            "support": "I:46"
+          },
+          {
+            "gt_id": 130000,
+            "support": "I:48"
+          },
+          {
+            "gt_id": 5001,
+            "support": "I:49"
+          },
+          {
+            "gt_id": 1163000,
+            "support": "I:50"
+          },
+          {
+            "gt_id": 3000,
+            "support": "I:55"
+          },
+          {
+            "gt_id": 1003,
+            "support": "I:64"
+          },
+          {
+            "gt_id": 5002,
+            "support": "I:82"
+          },
+          {
+            "gt_id": 67000,
+            "support": "I:86"
+          },
+          {
+            "gt_id": 1001,
+            "support": "I:99"
+          },
+          {
+            "gt_id": 41000,
+            "support": "I:105"
+          }
+        ],
+        "support_count": 138,
+        "threshold": 0.25
+      },
+      "0.5": {
+        "comparison": "STRICT_GREATER",
+        "count": 17,
+        "eligible_GT_count": 32,
+        "gt_ids": [
+          1000,
+          2000,
+          3000,
+          6000,
+          9000,
+          23000,
+          41000,
+          47000,
+          48000,
+          48001,
+          50000,
+          67000,
+          77001,
+          90000,
+          130000,
+          230000,
+          1163000
+        ],
+        "pairs": [
+          {
+            "gt_id": 90000,
+            "support": "I:2"
+          },
+          {
+            "gt_id": 1000,
+            "support": "I:3"
+          },
+          {
+            "gt_id": 6000,
+            "support": "I:10"
+          },
+          {
+            "gt_id": 48001,
+            "support": "I:11"
+          },
+          {
+            "gt_id": 230000,
+            "support": "I:13"
+          },
+          {
+            "gt_id": 48000,
+            "support": "I:15"
+          },
+          {
+            "gt_id": 2000,
+            "support": "I:23"
+          },
+          {
+            "gt_id": 9000,
+            "support": "I:25"
+          },
+          {
+            "gt_id": 23000,
+            "support": "I:29"
+          },
+          {
+            "gt_id": 77001,
+            "support": "I:31"
+          },
+          {
+            "gt_id": 47000,
+            "support": "I:39"
+          },
+          {
+            "gt_id": 50000,
+            "support": "I:46"
+          },
+          {
+            "gt_id": 130000,
+            "support": "I:48"
+          },
+          {
+            "gt_id": 1163000,
+            "support": "I:50"
+          },
+          {
+            "gt_id": 3000,
+            "support": "I:55"
+          },
+          {
+            "gt_id": 67000,
+            "support": "I:86"
+          },
+          {
+            "gt_id": 41000,
+            "support": "I:105"
+          }
+        ],
+        "support_count": 138,
+        "threshold": 0.5
+      },
+      "0.75": {
+        "comparison": "STRICT_GREATER",
+        "count": 6,
+        "eligible_GT_count": 32,
+        "gt_ids": [
+          2000,
+          23000,
+          48001,
+          67000,
+          90000,
+          230000
+        ],
+        "pairs": [
+          {
+            "gt_id": 90000,
+            "support": "I:2"
+          },
+          {
+            "gt_id": 48001,
+            "support": "I:11"
+          },
+          {
+            "gt_id": 230000,
+            "support": "I:13"
+          },
+          {
+            "gt_id": 2000,
+            "support": "I:23"
+          },
+          {
+            "gt_id": 23000,
+            "support": "I:29"
+          },
+          {
+            "gt_id": 67000,
+            "support": "I:86"
+          }
+        ],
+        "support_count": 138,
+        "threshold": 0.75
+      },
+      "0.9": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 32,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 138,
+        "threshold": 0.9
+      }
+    }
+  },
+  "summary": {
+    "K_insufficient50": 7,
+    "R_insufficient50": 7,
+    "clipping_loses_matchable50": 0,
+    "incumbents": 112,
+    "residuals": 7,
+    "selected_incumbents_matchable50": 0,
+    "selected_incumbents_matchable50_wrong": 0
+  }
+}

@@ -1,0 +1,700 @@
+{
+  "blocked": [],
+  "candidate_edges": 18,
+  "class_scores_read": false,
+  "decisions": {
+    "IR02_NEAREST_ATTACH": {
+      "ledger": [
+        {
+          "digest": "232825bdf6fe67eb3aed18e09b091b0226215edf93e13c7e89c958655d456bad",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:10",
+            "I:1"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "d7451c854d81c5dadb259fd2757c4f30d444a2e56bb9584a5650d417afba264c",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:147",
+            "I:124"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "aa36f646375b1ba8526698c2a7f05e4bf8614ae065a513f00443aa5f273cce05",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:151",
+            "I:131"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "94212fd994e979e55f823130f48ff8b408aed7cbb2a08c2732de4feea5aba274",
+          "status": "KEEP_CONFLICT",
+          "units": [
+            "C:202",
+            "I:124"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "beb18b02188245cc1f9dcf1d258157a6936420fd73166e7dd26401e8a602547f",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:282",
+            "I:259"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "8d6fb8874cd5fa4d75c3806a1b0cc63ff3de388bd69aef41edc70a945157dc88",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:45",
+            "I:18"
+          ],
+          "verification": null
+        },
+        {
+          "digest": "8cbaade1fa19a5ab2e3ce95f28f974f6a01c4b2703383c69ef7418bf38a9b921",
+          "status": "SELECTED_PROVISIONAL",
+          "units": [
+            "C:283",
+            "I:278"
+          ],
+          "verification": null
+        }
+      ],
+      "proposal_count": 7,
+      "selected": [
+        {
+          "digest": "232825bdf6fe67eb3aed18e09b091b0226215edf93e13c7e89c958655d456bad",
+          "distance": 0.0,
+          "edit_cost": 0.0007424242848016357,
+          "fresh_owner": null,
+          "host": 1,
+          "output_owner": 1,
+          "proposal_score": null,
+          "seed": "C:10",
+          "units": [
+            "C:10",
+            "I:1"
+          ]
+        },
+        {
+          "digest": "d7451c854d81c5dadb259fd2757c4f30d444a2e56bb9584a5650d417afba264c",
+          "distance": 0.0,
+          "edit_cost": 0.011557698971602333,
+          "fresh_owner": null,
+          "host": 124,
+          "output_owner": 124,
+          "proposal_score": null,
+          "seed": "C:147",
+          "units": [
+            "C:147",
+            "I:124"
+          ]
+        },
+        {
+          "digest": "aa36f646375b1ba8526698c2a7f05e4bf8614ae065a513f00443aa5f273cce05",
+          "distance": 0.0,
+          "edit_cost": 0.013617972296419513,
+          "fresh_owner": null,
+          "host": 131,
+          "output_owner": 131,
+          "proposal_score": null,
+          "seed": "C:151",
+          "units": [
+            "C:151",
+            "I:131"
+          ]
+        },
+        {
+          "digest": "beb18b02188245cc1f9dcf1d258157a6936420fd73166e7dd26401e8a602547f",
+          "distance": 0.0,
+          "edit_cost": 0.14061040824207996,
+          "fresh_owner": null,
+          "host": 259,
+          "output_owner": 259,
+          "proposal_score": null,
+          "seed": "C:282",
+          "units": [
+            "C:282",
+            "I:259"
+          ]
+        },
+        {
+          "digest": "8d6fb8874cd5fa4d75c3806a1b0cc63ff3de388bd69aef41edc70a945157dc88",
+          "distance": 0.0,
+          "edit_cost": 0.003094429730323431,
+          "fresh_owner": null,
+          "host": 18,
+          "output_owner": 18,
+          "proposal_score": null,
+          "seed": "C:45",
+          "units": [
+            "C:45",
+            "I:18"
+          ]
+        },
+        {
+          "digest": "8cbaade1fa19a5ab2e3ce95f28f974f6a01c4b2703383c69ef7418bf38a9b921",
+          "distance": 0.05824118001710762,
+          "edit_cost": 0.08390177056712975,
+          "fresh_owner": null,
+          "host": 278,
+          "output_owner": 278,
+          "proposal_score": null,
+          "seed": "C:283",
+          "units": [
+            "C:283",
+            "I:278"
+          ]
+        }
+      ]
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR04_DIRECT_GROUP": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "ledger": [],
+      "proposal_count": 0,
+      "selected": []
+    }
+  },
+  "directed_neighbors": {
+    "C:10": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.30303030303030304,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.014148673194892294,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.027302345769811092,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:6"
+      }
+    ],
+    "C:147": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.056487695749440715,
+        "unit": "I:124"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.005592841163310962,
+        "unit": "I:135"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.01621923937360179,
+        "unit": "I:94"
+      }
+    ],
+    "C:151": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.022950819672131147,
+        "unit": "I:131"
+      }
+    ],
+    "C:202": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.007722007722007722,
+        "unit": "I:124"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.0222007722007722,
+        "unit": "I:175"
+      },
+      {
+        "distance": 0.0523060681230206,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:174"
+      }
+    ],
+    "C:282": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.011359333585762969,
+        "unit": "I:259"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.000946611132146914,
+        "unit": "I:273"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.004354411207875805,
+        "unit": "I:277"
+      },
+      {
+        "distance": 0.005878888784466142,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:283"
+      }
+    ],
+    "C:283": [
+      {
+        "distance": 0.05824118001710762,
+        "raw_overlap_fraction": 0.0,
+        "unit": "I:278"
+      },
+      {
+        "distance": 0.005878888784466142,
+        "raw_overlap_fraction": 0.0,
+        "unit": "C:282"
+      }
+    ],
+    "C:45": [
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.12995245641838352,
+        "unit": "I:18"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.07844690966719493,
+        "unit": "I:216"
+      },
+      {
+        "distance": 0.0,
+        "raw_overlap_fraction": 0.018225039619651346,
+        "unit": "I:220"
+      }
+    ]
+  },
+  "elapsed_seconds": 0.902988218003884,
+  "identity": "617c3946c61ed7f414bf81a7d2387b7b6c7fbc1b5e450f04100d9bd6e8aeb403",
+  "input_identity": "00b6734e0eec7f4a322a6a3f21a99f09278da08b2e9a0f15285dcdcbfabdac93",
+  "library": [],
+  "new_neural_inference": 0,
+  "observation_identity": "c076ba83f71d8decbf77e298e08369fe577b634c452fd93bc8287f9919475e27",
+  "pairs": [
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:10",
+        "I:1"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.014148673194892294,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:10",
+        "I:3"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.027302345769811092,
+      "proposal": {
+        "n": 3,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:10",
+        "I:6"
+      ],
+      "verification": {
+        "n": 2,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:147",
+        "I:124"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:147",
+        "I:135"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:147",
+        "I:94"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:151",
+        "I:131"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:202",
+        "I:124"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0523060681230206,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      },
+      "units": [
+        "C:202",
+        "I:174"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:202",
+        "I:175"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.005878888784466142,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:282",
+        "C:283"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 0.0
+      },
+      "units": [
+        "C:282",
+        "I:259"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 1.0,
+        "separate": 0.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:282",
+        "I:273"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:282",
+        "I:277"
+      ],
+      "verification": {
+        "n": 1,
+        "same": 0.0,
+        "separate": 1.0
+      }
+    },
+    {
+      "distance": 0.05824118001710762,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:283",
+        "I:278"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:45",
+        "I:18"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:45",
+        "I:216"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    },
+    {
+      "distance": 0.0,
+      "proposal": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      },
+      "units": [
+        "C:45",
+        "I:220"
+      ],
+      "verification": {
+        "n": 0,
+        "same": null,
+        "separate": null
+      }
+    }
+  ],
+  "positive_edges": 0,
+  "proposal_unknown_pairs": 11,
+  "scene": "scene0168_02",
+  "seed_count": 7,
+  "status": "PROVISIONAL_STRUCTURE_LOCKED",
+  "support_identity": "0982b1c7fd277cd1d5cab237a4d5395da838a5d33b76cc7a3d73450e9c2fd960",
+  "undirected_neighbors": {
+    "C:10": [
+      {
+        "distance": 0.0,
+        "unit": "I:1"
+      },
+      {
+        "distance": 0.014148673194892294,
+        "unit": "I:3"
+      },
+      {
+        "distance": 0.027302345769811092,
+        "unit": "I:6"
+      }
+    ],
+    "C:147": [
+      {
+        "distance": 0.0,
+        "unit": "I:124"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:135"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:94"
+      }
+    ],
+    "C:151": [
+      {
+        "distance": 0.0,
+        "unit": "I:131"
+      }
+    ],
+    "C:202": [
+      {
+        "distance": 0.0,
+        "unit": "I:124"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:175"
+      },
+      {
+        "distance": 0.0523060681230206,
+        "unit": "I:174"
+      }
+    ],
+    "C:282": [
+      {
+        "distance": 0.0,
+        "unit": "I:259"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:273"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:277"
+      },
+      {
+        "distance": 0.005878888784466142,
+        "unit": "C:283"
+      }
+    ],
+    "C:283": [
+      {
+        "distance": 0.005878888784466142,
+        "unit": "C:282"
+      },
+      {
+        "distance": 0.05824118001710762,
+        "unit": "I:278"
+      }
+    ],
+    "C:45": [
+      {
+        "distance": 0.0,
+        "unit": "I:18"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:216"
+      },
+      {
+        "distance": 0.0,
+        "unit": "I:220"
+      }
+    ]
+  },
+  "verification_unknown_pairs": 10
+}

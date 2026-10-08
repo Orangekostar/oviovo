@@ -1,0 +1,69 @@
+{
+  "FC_python": "/home/ww/miniconda3/envs/oviovo-radseg/bin/python",
+  "checkout": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup",
+  "checkpoint": {
+    "bytes": 3540612,
+    "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup_paper.pth",
+    "sha256": "9d035c0f27114a6f32bdd3d8ed93b6cd39dad4b8f8bf94e69fddbfbf022901b2"
+  },
+  "commit": "351807a9c4287368732cc247f26c7c81c9139af4",
+  "environment_modified": false,
+  "execution_config": {
+    "assets_root": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets",
+    "fc": {
+      "model_root": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model",
+      "operator_root": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/ovrcoat/code",
+      "python": "/home/ww/miniconda3/envs/oviovo-radseg/bin/python",
+      "receipt": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json"
+    },
+    "final_temperatures": {
+      "F": 0.016176252917508814,
+      "N": 0.010357429721631367,
+      "Q": 0.010000492837221748
+    },
+    "gpu": "2",
+    "gpu_lock": "/mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-2.lock",
+    "identity": "aab44cdbe2fa6fb5aefcdf0296baa1daceb50491e122983de63069412c507f29",
+    "parent_recovery_root": "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001",
+    "path_map": {},
+    "spec": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/worktree/configs/static_ovmap/cvpr_compact_tables_v1.json"
+  },
+  "identity": "a20f1d0455633d7322c2a9163c39869dcbe822148f9454d13717a8dbec3b1d2e",
+  "license": "CC-BY-4.0",
+  "read_only_dense_cache_roots": [
+    "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/content_cache/fc",
+    "/mnt/shared/ww/ovimap-recovery-wave2-v1/attempt_001/content_cache/fc",
+    "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc"
+  ],
+  "sources": {
+    "LICENSE": {
+      "bytes": 18658,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/LICENSE",
+      "sha256": "f5b745ef98087f531e719ee8ca6a96809444573ecc7173c6fa68eaad39b3cc3f"
+    },
+    "anyup/layers/attention/attention_masking.py": {
+      "bytes": 2204,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/anyup/layers/attention/attention_masking.py",
+      "sha256": "8cab50713617adfc637e19337ec8b55b961ba5bbacf0733435bc2c7a3f095b1d"
+    },
+    "anyup/layers/attention/chunked_attention.py": {
+      "bytes": 5059,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/anyup/layers/attention/chunked_attention.py",
+      "sha256": "3aaaf194c7c9b90c3a68510d4f99903912415e2a7ea3ceaf32c8ef98fea96465"
+    },
+    "anyup/model.py": {
+      "bytes": 3789,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/anyup/model.py",
+      "sha256": "103b12b65c6603a841f31314f1c0b7a4e0460efec51130cfc8fc83b4a1d3baec"
+    },
+    "hubconf.py": {
+      "bytes": 2169,
+      "path": "/mnt/shared/ww/ovimap-evidence-exploration-v1/assets/anyup/hubconf.py",
+      "sha256": "03303e1bac7f0b6d43c528d8a38e25a99d00ced1878635b87a37173208a21327"
+    }
+  },
+  "status": "ASSETS_AVAILABLE_STRICT_LOAD_VERIFIED",
+  "strict_load_receipt": "/home/ww/ovimap-evidence-exploration-v1-storage/attempt_001/assets.json",
+  "strict_load_reuse_identity": "77d20dd26f87eacd2e0a587d2a53e3f7b5ebb71284103dea93bed21711c38663",
+  "weights_published": false
+}

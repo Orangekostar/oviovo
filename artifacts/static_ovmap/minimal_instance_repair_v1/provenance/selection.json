@@ -1,0 +1,191 @@
+{
+  "MATERIAL_TARGET_MET": false,
+  "TARGET_MET": false,
+  "all_five_gate_unchanged": true,
+  "deployment": "N0_UNCHANGED",
+  "identity": "057322eedd0d8bf39a2ba1fd1f660c36ae671c4f215da68d84747f3f25a9311a",
+  "method_outcomes": {
+    "IR02_NEAREST_ATTACH": {
+      "MATERIAL_TARGET_MET": false,
+      "TARGET_MET": false,
+      "checks": {
+        "CF18_AP50_at_least_D2": false,
+        "CF18_APall_strictly_above_D2": false,
+        "replica8.ap25.nondecrease": true,
+        "replica8.ap50.nondecrease": false,
+        "replica8.apall.nondecrease": false,
+        "replica8.macc.nondecrease": false,
+        "replica8.miou.nondecrease": false,
+        "scannet_cf18.ap25.nondecrease": false,
+        "scannet_cf18.ap50.nondecrease": true,
+        "scannet_cf18.apall.nondecrease": true,
+        "scannet_cf18.macc.nondecrease": false,
+        "scannet_cf18.miou.nondecrease": true
+      },
+      "failed_checks": [
+        "replica8.apall.nondecrease",
+        "replica8.ap50.nondecrease",
+        "replica8.miou.nondecrease",
+        "replica8.macc.nondecrease",
+        "scannet_cf18.ap25.nondecrease",
+        "scannet_cf18.macc.nondecrease",
+        "CF18_APall_strictly_above_D2",
+        "CF18_AP50_at_least_D2"
+      ],
+      "status": "COMPLETE"
+    },
+    "IR03_EVIDENCE_ATTACH": {
+      "MATERIAL_TARGET_MET": false,
+      "TARGET_MET": false,
+      "checks": {
+        "CF18_AP50_at_least_D2": false,
+        "CF18_APall_strictly_above_D2": false,
+        "replica8.ap25.nondecrease": true,
+        "replica8.ap50.nondecrease": true,
+        "replica8.apall.nondecrease": true,
+        "replica8.macc.nondecrease": true,
+        "replica8.miou.nondecrease": true,
+        "scannet_cf18.ap25.nondecrease": true,
+        "scannet_cf18.ap50.nondecrease": true,
+        "scannet_cf18.apall.nondecrease": true,
+        "scannet_cf18.macc.nondecrease": true,
+        "scannet_cf18.miou.nondecrease": true
+      },
+      "failed_checks": [
+        "CF18_APall_strictly_above_D2",
+        "CF18_AP50_at_least_D2"
+      ],
+      "status": "COMPLETE"
+    },
+    "IR04_DIRECT_GROUP": {
+      "MATERIAL_TARGET_MET": false,
+      "TARGET_MET": false,
+      "checks": {
+        "CF18_AP50_at_least_D2": false,
+        "CF18_APall_strictly_above_D2": false,
+        "replica8.ap25.nondecrease": true,
+        "replica8.ap50.nondecrease": true,
+        "replica8.apall.nondecrease": true,
+        "replica8.macc.nondecrease": true,
+        "replica8.miou.nondecrease": true,
+        "scannet_cf18.ap25.nondecrease": true,
+        "scannet_cf18.ap50.nondecrease": true,
+        "scannet_cf18.apall.nondecrease": true,
+        "scannet_cf18.macc.nondecrease": true,
+        "scannet_cf18.miou.nondecrease": true
+      },
+      "failed_checks": [
+        "CF18_APall_strictly_above_D2",
+        "CF18_AP50_at_least_D2"
+      ],
+      "status": "COMPLETE"
+    },
+    "IR05_VERIFIED_REPAIR": {
+      "MATERIAL_TARGET_MET": false,
+      "TARGET_MET": false,
+      "checks": {
+        "CF18_AP50_at_least_D2": false,
+        "CF18_APall_strictly_above_D2": false,
+        "replica8.ap25.nondecrease": true,
+        "replica8.ap50.nondecrease": true,
+        "replica8.apall.nondecrease": true,
+        "replica8.macc.nondecrease": true,
+        "replica8.miou.nondecrease": true,
+        "scannet_cf18.ap25.nondecrease": true,
+        "scannet_cf18.ap50.nondecrease": true,
+        "scannet_cf18.apall.nondecrease": true,
+        "scannet_cf18.macc.nondecrease": true,
+        "scannet_cf18.miou.nondecrease": true
+      },
+      "failed_checks": [
+        "CF18_APall_strictly_above_D2",
+        "CF18_AP50_at_least_D2"
+      ],
+      "status": "COMPLETE"
+    },
+    "IR06_ANYUP_REREAD": {
+      "MATERIAL_TARGET_MET": false,
+      "TARGET_MET": false,
+      "checks": {
+        "CF18_AP50_at_least_D2": true,
+        "CF18_APall_strictly_above_D2": true,
+        "replica8.ap25.nondecrease": false,
+        "replica8.ap50.nondecrease": false,
+        "replica8.apall.nondecrease": false,
+        "replica8.macc.nondecrease": false,
+        "replica8.miou.nondecrease": false,
+        "scannet_cf18.ap25.nondecrease": true,
+        "scannet_cf18.ap50.nondecrease": true,
+        "scannet_cf18.apall.nondecrease": true,
+        "scannet_cf18.macc.nondecrease": true,
+        "scannet_cf18.miou.nondecrease": true
+      },
+      "failed_checks": [
+        "replica8.apall.nondecrease",
+        "replica8.ap50.nondecrease",
+        "replica8.ap25.nondecrease",
+        "replica8.miou.nondecrease",
+        "replica8.macc.nondecrease"
+      ],
+      "status": "COMPLETE"
+    },
+    "IR07_BOUNDARY_STABLE": {
+      "MATERIAL_TARGET_MET": false,
+      "TARGET_MET": false,
+      "checks": {
+        "CF18_AP50_at_least_D2": true,
+        "CF18_APall_strictly_above_D2": true,
+        "replica8.ap25.nondecrease": false,
+        "replica8.ap50.nondecrease": false,
+        "replica8.apall.nondecrease": false,
+        "replica8.macc.nondecrease": false,
+        "replica8.miou.nondecrease": false,
+        "scannet_cf18.ap25.nondecrease": true,
+        "scannet_cf18.ap50.nondecrease": true,
+        "scannet_cf18.apall.nondecrease": true,
+        "scannet_cf18.macc.nondecrease": true,
+        "scannet_cf18.miou.nondecrease": true
+      },
+      "failed_checks": [
+        "replica8.apall.nondecrease",
+        "replica8.ap50.nondecrease",
+        "replica8.ap25.nondecrease",
+        "replica8.miou.nondecrease",
+        "replica8.macc.nondecrease"
+      ],
+      "status": "COMPLETE"
+    },
+    "IR08_COMBINATION": {
+      "MATERIAL_TARGET_MET": false,
+      "TARGET_MET": false,
+      "checks": {
+        "CF18_AP50_at_least_D2": true,
+        "CF18_APall_strictly_above_D2": true,
+        "replica8.ap25.nondecrease": false,
+        "replica8.ap50.nondecrease": false,
+        "replica8.apall.nondecrease": false,
+        "replica8.macc.nondecrease": false,
+        "replica8.miou.nondecrease": false,
+        "scannet_cf18.ap25.nondecrease": true,
+        "scannet_cf18.ap50.nondecrease": true,
+        "scannet_cf18.apall.nondecrease": true,
+        "scannet_cf18.macc.nondecrease": true,
+        "scannet_cf18.miou.nondecrease": true
+      },
+      "failed_checks": [
+        "replica8.apall.nondecrease",
+        "replica8.ap50.nondecrease",
+        "replica8.ap25.nondecrease",
+        "replica8.miou.nondecrease",
+        "replica8.macc.nondecrease"
+      ],
+      "status": "COMPLETE"
+    }
+  },
+  "passing_methods": [],
+  "result_store_identity": "9d69f39c7009654906facfabad1c02cfafc5957da04d5b7e9a50f3d693bd9b7f",
+  "selected": "IR01_G1",
+  "selection_scope": "RETROSPECTIVE_EXPOSED_COHORTS",
+  "status": "NO_NEW_METHOD_MEETS_TARGET",
+  "tolerance_fraction": 1e-10
+}

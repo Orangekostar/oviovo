@@ -1,0 +1,8 @@
+{
+  "status": "EXPECTED_REGRESSION_FAILURE",
+  "returncode": 1,
+  "elapsed_seconds": 4.270302195101976,
+  "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n_ test_completed_cold_series_resumes_without_reloading_models_and_rejects_changed_call _\ntests/static_ovmap/test_minimal_instance_repair.py:351: in test_completed_cold_series_resumes_without_reloading_models_and_rejects_changed_call\n    assert timing.time_study(binding)==summary\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/static_ovmap/minimal_instance_repair/timing.py:54: in time_study\n    run = subprocess.run([binding['FC_python'],'-m','static_ovmap.minimal_instance_repair.timing_worker',\ntests/static_ovmap/test_minimal_instance_repair.py:349: in forbidden\n    raise AssertionError('completed timing must not reload models or replace measured load receipts')\nE   AssertionError: completed timing must not reload models or replace measured load receipts\n=========================== short test summary info ============================\nFAILED tests/static_ovmap/test_minimal_instance_repair.py::test_completed_cold_series_resumes_without_reloading_models_and_rejects_changed_call\n1 failed, 20 deselected in 1.04s\n",
+  "stderr": "",
+  "new_GPU_inference": 0
+}

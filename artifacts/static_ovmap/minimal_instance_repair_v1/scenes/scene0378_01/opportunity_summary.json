@@ -1,0 +1,634 @@
+{
+  "identity": "884478e86538749f1bb57463d9c0f4b87226ea143afb8ec327d392b4223e74ba",
+  "matching": {
+    "common_positive_group_library_only": {
+      "0.25": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 45,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.25
+      },
+      "0.5": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 45,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.5
+      },
+      "0.75": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 45,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.75
+      },
+      "0.9": {
+        "comparison": "STRICT_GREATER",
+        "count": 0,
+        "eligible_GT_count": 45,
+        "gt_ids": [],
+        "pairs": [],
+        "support_count": 0,
+        "threshold": 0.9
+      }
+    },
+    "current_G1_partition": {
+      "0.25": {
+        "comparison": "STRICT_GREATER",
+        "count": 28,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          1000,
+          1002,
+          2000,
+          2001,
+          2002,
+          2003,
+          5000,
+          7000,
+          9000,
+          9001,
+          9002,
+          16000,
+          18000,
+          18001,
+          19000,
+          26000,
+          41000,
+          50000,
+          56000,
+          63000,
+          69000,
+          75000,
+          103000,
+          118000,
+          131000,
+          131001,
+          1168000,
+          1168001
+        ],
+        "pairs": [
+          {
+            "gt_id": 2000,
+            "support": "G1:1"
+          },
+          {
+            "gt_id": 1000,
+            "support": "G1:2"
+          },
+          {
+            "gt_id": 9002,
+            "support": "G1:3"
+          },
+          {
+            "gt_id": 9001,
+            "support": "G1:6"
+          },
+          {
+            "gt_id": 7000,
+            "support": "G1:7"
+          },
+          {
+            "gt_id": 50000,
+            "support": "G1:10"
+          },
+          {
+            "gt_id": 56000,
+            "support": "G1:11"
+          },
+          {
+            "gt_id": 19000,
+            "support": "G1:18"
+          },
+          {
+            "gt_id": 118000,
+            "support": "G1:28"
+          },
+          {
+            "gt_id": 16000,
+            "support": "G1:37"
+          },
+          {
+            "gt_id": 41000,
+            "support": "G1:45"
+          },
+          {
+            "gt_id": 2001,
+            "support": "G1:56"
+          },
+          {
+            "gt_id": 69000,
+            "support": "G1:76"
+          },
+          {
+            "gt_id": 1002,
+            "support": "G1:102"
+          },
+          {
+            "gt_id": 75000,
+            "support": "G1:104"
+          },
+          {
+            "gt_id": 2003,
+            "support": "G1:105"
+          },
+          {
+            "gt_id": 131000,
+            "support": "G1:107"
+          },
+          {
+            "gt_id": 26000,
+            "support": "G1:108"
+          },
+          {
+            "gt_id": 63000,
+            "support": "G1:112"
+          },
+          {
+            "gt_id": 18000,
+            "support": "G1:128"
+          },
+          {
+            "gt_id": 5000,
+            "support": "G1:135"
+          },
+          {
+            "gt_id": 131001,
+            "support": "G1:145"
+          },
+          {
+            "gt_id": 9000,
+            "support": "G1:147"
+          },
+          {
+            "gt_id": 2002,
+            "support": "G1:148"
+          },
+          {
+            "gt_id": 18001,
+            "support": "G1:157"
+          },
+          {
+            "gt_id": 103000,
+            "support": "G1:184"
+          },
+          {
+            "gt_id": 1168000,
+            "support": "G1:191"
+          },
+          {
+            "gt_id": 1168001,
+            "support": "G1:194"
+          }
+        ],
+        "support_count": 97,
+        "threshold": 0.25
+      },
+      "0.5": {
+        "comparison": "STRICT_GREATER",
+        "count": 16,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          1000,
+          2000,
+          2001,
+          2003,
+          5000,
+          7000,
+          9001,
+          9002,
+          16000,
+          19000,
+          41000,
+          56000,
+          63000,
+          118000,
+          131000,
+          131001
+        ],
+        "pairs": [
+          {
+            "gt_id": 2000,
+            "support": "G1:1"
+          },
+          {
+            "gt_id": 1000,
+            "support": "G1:2"
+          },
+          {
+            "gt_id": 9002,
+            "support": "G1:3"
+          },
+          {
+            "gt_id": 9001,
+            "support": "G1:6"
+          },
+          {
+            "gt_id": 7000,
+            "support": "G1:7"
+          },
+          {
+            "gt_id": 56000,
+            "support": "G1:11"
+          },
+          {
+            "gt_id": 19000,
+            "support": "G1:18"
+          },
+          {
+            "gt_id": 118000,
+            "support": "G1:28"
+          },
+          {
+            "gt_id": 16000,
+            "support": "G1:37"
+          },
+          {
+            "gt_id": 41000,
+            "support": "G1:45"
+          },
+          {
+            "gt_id": 2001,
+            "support": "G1:56"
+          },
+          {
+            "gt_id": 2003,
+            "support": "G1:105"
+          },
+          {
+            "gt_id": 131000,
+            "support": "G1:107"
+          },
+          {
+            "gt_id": 63000,
+            "support": "G1:112"
+          },
+          {
+            "gt_id": 5000,
+            "support": "G1:135"
+          },
+          {
+            "gt_id": 131001,
+            "support": "G1:145"
+          }
+        ],
+        "support_count": 97,
+        "threshold": 0.5
+      },
+      "0.75": {
+        "comparison": "STRICT_GREATER",
+        "count": 4,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          2003,
+          19000,
+          131000,
+          131001
+        ],
+        "pairs": [
+          {
+            "gt_id": 19000,
+            "support": "G1:18"
+          },
+          {
+            "gt_id": 2003,
+            "support": "G1:105"
+          },
+          {
+            "gt_id": 131000,
+            "support": "G1:107"
+          },
+          {
+            "gt_id": 131001,
+            "support": "G1:145"
+          }
+        ],
+        "support_count": 97,
+        "threshold": 0.75
+      },
+      "0.9": {
+        "comparison": "STRICT_GREATER",
+        "count": 1,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          131000
+        ],
+        "pairs": [
+          {
+            "gt_id": 131000,
+            "support": "G1:107"
+          }
+        ],
+        "support_count": 97,
+        "threshold": 0.9
+      }
+    },
+    "relaxed_incumbents_residuals_locked_hypotheses": {
+      "0.25": {
+        "comparison": "STRICT_GREATER",
+        "count": 28,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          1000,
+          1002,
+          2000,
+          2001,
+          2002,
+          2003,
+          5000,
+          7000,
+          9000,
+          9001,
+          9002,
+          16000,
+          18000,
+          18001,
+          19000,
+          26000,
+          41000,
+          50000,
+          56000,
+          63000,
+          69000,
+          75000,
+          103000,
+          118000,
+          131000,
+          131001,
+          1168000,
+          1168001
+        ],
+        "pairs": [
+          {
+            "gt_id": 2000,
+            "support": "I:1"
+          },
+          {
+            "gt_id": 1000,
+            "support": "I:2"
+          },
+          {
+            "gt_id": 9002,
+            "support": "I:3"
+          },
+          {
+            "gt_id": 9001,
+            "support": "I:6"
+          },
+          {
+            "gt_id": 7000,
+            "support": "I:7"
+          },
+          {
+            "gt_id": 50000,
+            "support": "I:10"
+          },
+          {
+            "gt_id": 56000,
+            "support": "I:11"
+          },
+          {
+            "gt_id": 19000,
+            "support": "I:18"
+          },
+          {
+            "gt_id": 118000,
+            "support": "I:28"
+          },
+          {
+            "gt_id": 16000,
+            "support": "I:37"
+          },
+          {
+            "gt_id": 41000,
+            "support": "I:45"
+          },
+          {
+            "gt_id": 2001,
+            "support": "I:56"
+          },
+          {
+            "gt_id": 69000,
+            "support": "I:76"
+          },
+          {
+            "gt_id": 1002,
+            "support": "I:102"
+          },
+          {
+            "gt_id": 75000,
+            "support": "I:104"
+          },
+          {
+            "gt_id": 2003,
+            "support": "I:105"
+          },
+          {
+            "gt_id": 131000,
+            "support": "I:107"
+          },
+          {
+            "gt_id": 26000,
+            "support": "I:108"
+          },
+          {
+            "gt_id": 63000,
+            "support": "I:112"
+          },
+          {
+            "gt_id": 18000,
+            "support": "I:128"
+          },
+          {
+            "gt_id": 5000,
+            "support": "I:135"
+          },
+          {
+            "gt_id": 131001,
+            "support": "I:145"
+          },
+          {
+            "gt_id": 9000,
+            "support": "I:147"
+          },
+          {
+            "gt_id": 2002,
+            "support": "I:148"
+          },
+          {
+            "gt_id": 18001,
+            "support": "I:157"
+          },
+          {
+            "gt_id": 103000,
+            "support": "I:184"
+          },
+          {
+            "gt_id": 1168000,
+            "support": "I:191"
+          },
+          {
+            "gt_id": 1168001,
+            "support": "I:194"
+          }
+        ],
+        "support_count": 109,
+        "threshold": 0.25
+      },
+      "0.5": {
+        "comparison": "STRICT_GREATER",
+        "count": 16,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          1000,
+          2000,
+          2001,
+          2003,
+          5000,
+          7000,
+          9001,
+          9002,
+          16000,
+          19000,
+          41000,
+          56000,
+          63000,
+          118000,
+          131000,
+          131001
+        ],
+        "pairs": [
+          {
+            "gt_id": 2000,
+            "support": "I:1"
+          },
+          {
+            "gt_id": 1000,
+            "support": "I:2"
+          },
+          {
+            "gt_id": 9002,
+            "support": "I:3"
+          },
+          {
+            "gt_id": 9001,
+            "support": "I:6"
+          },
+          {
+            "gt_id": 7000,
+            "support": "I:7"
+          },
+          {
+            "gt_id": 56000,
+            "support": "I:11"
+          },
+          {
+            "gt_id": 19000,
+            "support": "I:18"
+          },
+          {
+            "gt_id": 118000,
+            "support": "I:28"
+          },
+          {
+            "gt_id": 16000,
+            "support": "I:37"
+          },
+          {
+            "gt_id": 41000,
+            "support": "I:45"
+          },
+          {
+            "gt_id": 2001,
+            "support": "I:56"
+          },
+          {
+            "gt_id": 2003,
+            "support": "I:105"
+          },
+          {
+            "gt_id": 131000,
+            "support": "I:107"
+          },
+          {
+            "gt_id": 63000,
+            "support": "I:112"
+          },
+          {
+            "gt_id": 5000,
+            "support": "I:135"
+          },
+          {
+            "gt_id": 131001,
+            "support": "I:145"
+          }
+        ],
+        "support_count": 109,
+        "threshold": 0.5
+      },
+      "0.75": {
+        "comparison": "STRICT_GREATER",
+        "count": 4,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          2003,
+          19000,
+          131000,
+          131001
+        ],
+        "pairs": [
+          {
+            "gt_id": 19000,
+            "support": "I:18"
+          },
+          {
+            "gt_id": 2003,
+            "support": "I:105"
+          },
+          {
+            "gt_id": 131000,
+            "support": "I:107"
+          },
+          {
+            "gt_id": 131001,
+            "support": "I:145"
+          }
+        ],
+        "support_count": 109,
+        "threshold": 0.75
+      },
+      "0.9": {
+        "comparison": "STRICT_GREATER",
+        "count": 1,
+        "eligible_GT_count": 45,
+        "gt_ids": [
+          131000
+        ],
+        "pairs": [
+          {
+            "gt_id": 131000,
+            "support": "I:107"
+          }
+        ],
+        "support_count": 109,
+        "threshold": 0.9
+      }
+    }
+  },
+  "summary": {
+    "K_insufficient50": 6,
+    "R_insufficient50": 6,
+    "clipping_loses_matchable50": 0,
+    "incumbents": 92,
+    "residuals": 6,
+    "selected_incumbents_matchable50": 2,
+    "selected_incumbents_matchable50_wrong": 2
+  }
+}
