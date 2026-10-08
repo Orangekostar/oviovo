@@ -340,3 +340,17 @@ def test_postlock_semantic_errors_separate_matchable_from_insufficient_geometry(
     assert counts['geometry_insufficient_right_to_wrong']==1
     assert counts.get('matchable_right_to_wrong',0)==0
     assert len(ledger)==2
+
+
+def test_incumbent_relabel_abstains_when_uniform_class_would_modify_raw_zero():
+    outputs = module('outputs')
+    inputs = partition_fixture()
+    inputs.raw[0] = 0  # Native-painted P can include a raw-unowned boundary row.
+    payload,audit = outputs.construct_partition(inputs,'IR06_ANYUP_REREAD',[],relabels={1:2})
+    assert payload.prediction_key==inputs.g1.prediction_key
+    assert not audit['class_transitions']
+    assert audit['canceled_class_transitions'][0]['reason']=='KEEP_PROTECTED_RAW_ZERO_UNIFORM_CLASS_CONFLICT'
+    attached = {'units':['C:2','I:1'],'host':1,'output_owner':1,'fresh_owner':None,'digest':'attach'}
+    combined,audit = outputs.construct_partition(inputs,'IR08_COMBINATION',[attached],relabels={1:2})
+    np.testing.assert_array_equal(combined.semantic_labels[:4],[1,1,1,1])
+    assert combined.semantic_labels[0]==inputs.g1.semantic_labels[0]

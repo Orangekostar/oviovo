@@ -60,7 +60,7 @@ def construct_partition(inputs, method, operations, *, union_classes=None, relab
         applied.append({'digest':operation['digest'],'units':members,'output_owner':operation['output_owner'],
                         'host':host,'class':label,'source_rows':len(rows),
                         'physical_area':float(inputs.units.vertex_weights[rows].sum())})
-    class_transitions = []
+    class_transitions,canceled_class_transitions = [],[]
     for owner,label in sorted(relabels.items()):
         owner,label = int(owner),int(label)
         if owner not in old_labels or label not in inputs.valid_ids:
@@ -69,6 +69,13 @@ def construct_partition(inputs, method, operations, *, union_classes=None, relab
         if not support.any():
             raise ValueError('original incumbent identity disappeared')
         before = int(semantics[support][0])
+        protected = int(np.count_nonzero(inputs.raw[support]==0))
+        if before!=label and protected:
+            # Native triangle painting can include raw-unowned boundary rows in
+            # P. Neither partial relabeling nor modifying r==0 is permissible.
+            canceled_class_transitions.append({'owner':owner,'old_class':before,'proposed_class':label,
+                'protected_raw_zero_rows':protected,'reason':'KEEP_PROTECTED_RAW_ZERO_UNIFORM_CLASS_CONFLICT'})
+            continue
         semantics[support] = label
         if before != label:
             declared[support] = True
@@ -93,6 +100,8 @@ def construct_partition(inputs, method, operations, *, union_classes=None, relab
         'applied_operations':applied,'canceled_operations':canceled,'class_transition':class_transitions,
         'owner_semantic_decisions':{str(k):v for k,v in sorted(labels.items())},
         'semantic_evidence_on_original_incumbent_support':True,'official_current_class_ranks_recomputed':True}
+    if canceled_class_transitions:
+        metadata['canceled_class_transitions'] = canceled_class_transitions
     # Hash fields are populated only outside a caller's cold timer.
     payload = PredictionPayload(method,'COMBO',base.scene_id,base.geometry,owners,semantics,ranks,costs,metadata)
     if lock:
@@ -103,6 +112,8 @@ def construct_partition(inputs, method, operations, *, union_classes=None, relab
         'moved_incumbent_rows':0,'disappeared_owner_ids':sorted(set(map(int,np.unique(base.owner_ids)))-set(map(int,np.unique(owners)))),
         'host_growth':[{'host':row['host'],'added_rows':row['source_rows'],'added_area':row['physical_area']}
                        for row in applied if row['host'] is not None]}
+    if canceled_class_transitions:
+        audit['canceled_class_transitions'] = canceled_class_transitions
     return payload,audit
 
 
