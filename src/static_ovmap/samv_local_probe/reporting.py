@@ -12,9 +12,24 @@ from .binding import load_scene
 from .common import METHODS,REPO,ConsumptionIndex,read,verified,write
 
 LABELS={'REF_D2':'D2 reference','SV00_G1':'G1','SV01_SAM2_GEOM':'SAM2 geometry',
-    'SV02_SAMV_GEOM':'SAM-V geometry','SV03_OLDMASK_FC':'OLD-mask same-view FC',
-    'SV04_SAMV_FC':'SAM-V-mask same-view FC','SV05_COMBINED':'SAM-V geometry + fixed NEW class decisions'}
+    'SV02_SAMV_GEOM':'SAM-V geometry','SV03_OLDMASK_FC':'OLD-mask FC',
+    'SV04_SAMV_FC':'SAM-V-mask FC','SV05_COMBINED':'SAM-V + fixed FC'}
 METRICS=('apall','ap50','ap25','miou','macc')
+HEADERS={'method':'Method','cohort':'Cohort','model':'Model','targets':'Targets','anchor_success':'Anchor OK',
+    'raw_positive_rows':'Raw rows','admitted_positive_rows':'Admitted rows','suppressed_rows':'Blocked rows',
+    'mean_best_iou':'Best IoU','mean_fixed_iou':'Fixed-GT IoU','joint_eligible':'Joint eligible',
+    'wrong_to_right':'Wrong to right','right_to_wrong':'Right to wrong','undefined_fixed_reference':'No fixed GT',
+    'scene':'Scene','owner':'Owner','calls':'Calls','window_frames':'Frames','dtype':'Dtype',
+    'mean_seconds':'Mean (s)','median_seconds':'Median (s)','peak_allocated_GiB':'Allocated (GiB)',
+    'peak_reserved_GiB':'Reserved (GiB)','observation':'Observer (s)',
+    'query_planning_and_canonical_preparation':'Planning/JPEG (s)','SAM2_lifting':'SAM2 lifting (s)',
+    'SAMV_lifting':'SAM-V lifting (s)','FC_worker_wall_including_first_load':'FC wall (s)',
+    'output_rank_construction':'Output/rank (s)','released_evaluation_registry_and_export':'Evaluation (s)',
+    'diagnostics':'Diagnosis (s)','new_observer_frames':'New ray frames','new_observer_rays':'New rays'}
+for _cohort,_label in [('replica_probe2','Replica'),('cf_probe2','CF')]:
+    for _metric,_title in [('apall','APall'),('ap50','AP50'),('ap25','AP25'),('miou','mIoU'),('macc','mAcc')]:
+        HEADERS[_cohort+'_'+_metric+'_percent']=_label+' '+_title
+        HEADERS[_metric+'_delta_pp']=_title+' delta (pp)'
 
 
 def table(output,name,rows,columns):
@@ -27,12 +42,13 @@ def table(output,name,rows,columns):
         if value is None:return '—'
         if isinstance(value,float):return f'{value:.3f}'
         return str(value)
-    body=['| '+' | '.join(columns)+' |','| '+' | '.join(['---']*len(columns))+' |']
+    headings=[HEADERS.get(c,c) for c in columns]
+    body=['| '+' | '.join(headings)+' |','| '+' | '.join(['---']*len(columns))+' |']
     body+=['| '+' | '.join(display(row.get(c)) for c in columns)+' |' for row in rows]
     (output/(name+'.md')).write_text('\n'.join(body)+'\n')
     def tex(value):
         return display(value).replace('—',r'\textemdash{}').replace('_',r'\_').replace('%',r'\%').replace('&',r'\&')
-    text=['\\begin{tabular}{'+('l'*len(columns))+'}',r'\toprule',' & '.join(tex(c) for c in columns)+r' \\',r'\midrule']
+    text=['\\begin{tabular}{'+('l'*len(columns))+'}',r'\toprule',' & '.join(tex(c) for c in headings)+r' \\',r'\midrule']
     text+=[' & '.join(tex(row.get(c)) for c in columns)+r' \\' for row in rows]
     text +=[r'\bottomrule',r'\end{tabular}']
     (output/(name+'.tex')).write_text('\n'.join(text)+'\n')
@@ -71,9 +87,10 @@ def contact_sheets(binding,output,diagnostics):
             for j,(name,mask) in enumerate(zip(('G1 visible mask','SAM2 raw mask','SAM-V raw mask'),masks)):
                 ax=axes[pos,j];ax.imshow(mask,cmap='gray',vmin=0,vmax=1,interpolation='nearest');ax.axis('off')
                 pts=np.asarray(query['points_xy_canonical']);ax.scatter(pts[:,0],pts[:,1],s=8,c='#E69F00',marker='+')
-                ax.set_title(f"{name} | owner {query['owner']}",fontsize=8)
-                if j==0:ax.text(0,1.03,f"anchor {query['anchor_frame_id']} | {query['pool']}",transform=ax.transAxes,fontsize=7)
-                if j==2:ax.text(0,-.06,f"anchor={target['models']['SAMV']['active']} | 3D best-IoU Δ={target['models']['SAMV']['best_iou_delta']:+.3f}",transform=ax.transAxes,fontsize=7)
+                title=f"{name} | owner {query['owner']}"
+                if j==0:title+=f"\nanchor {query['anchor_frame_id']} | {query['pool']}"
+                ax.set_title(title,fontsize=7,pad=7)
+                if j==2:ax.text(0,-.06,f"anchor={target['models']['SAMV']['active']} | 3D ΔIoU={target['models']['SAMV']['best_iou_delta']:+.6f}",transform=ax.transAxes,fontsize=6)
         fig.suptitle(scene+' — all locked targets; raw anchor masks, no RGB or 2D GT',fontsize=9)
         fig.tight_layout(rect=(0,0,1,.98));fig.savefig(output/(scene+'_all_targets.png'),dpi=160);fig.savefig(output/(scene+'_all_targets.pdf'));plt.close(fig)
     success=next((c for c in cases if c['anchor'] and c['delta']>0),None)
@@ -89,8 +106,9 @@ def contact_sheets(binding,output,diagnostics):
             query,masks,_=case['images']
             for j,mask in enumerate(masks):
                 axes[i,j].imshow(mask,cmap='gray',vmin=0,vmax=1);axes[i,j].axis('off')
-                axes[i,j].set_title(('G1','SAM2','SAM-V')[j],fontsize=9)
-            axes[i,0].text(0,1.1,kind+f" | {case['scene']}/{case['owner']}",transform=axes[i,0].transAxes,fontsize=8)
+                title=('G1','SAM2','SAM-V')[j]
+                if j==0:title=kind+f"\n{case['scene']}/{case['owner']} | ΔIoU={case['delta']:+.6f} | G1"
+                axes[i,j].set_title(title,fontsize=7,pad=7)
         fig.tight_layout();fig.savefig(output/'labeled_gain_failure_pair.png',dpi=180);plt.close(fig)
     write(output/'mask_sources.json',{'selected_cases':receipts,'case_pair':pair,'RGB_published':False,
         'rendered_from_actual_binary_masks':True,'GT_images_published':False})
@@ -101,7 +119,7 @@ def compact(binding,output,store):
     """Actual small results plus content references to heavy read-only inputs."""
     root=Path(binding['output_root']);index=ConsumptionIndex(output/'verification_memo.json')
     write(output/'result_store.json',store)
-    for name in ['model_assets.json','resource_profile.json','freeze.json','selection.json','costs.json','diagnostics/summary.json','pilots/summary.json']:
+    for name in ['model_assets.json','resource_profile.json','freeze.json','selection.json','costs.json','diagnostics/summary.json','pilots/summary.json','no_evidence_builder_check.json']:
         value=verified(root/name);write(output/'receipts'/name,value)
     write(output/'source_references.json',{'binding_identity':binding['identity'],'base_commit':binding['base_commit'],
         'parent_store':binding['parent_result_store'],'scenes':{s:{'source_update_prediction_receipt':r['source_update_prediction_receipt']} for s,r in binding['scenes'].items()},
@@ -164,6 +182,8 @@ def audit(binding,store,costs,diagnostics):
         'deployment_N0_unchanged':verified(root/'selection.json')['deployment']=='N0_UNCHANGED',
         'focused_tests_pass':freeze['focused_tests']['exit_code']==0 and '12 passed' in Path(freeze['focused_tests']['log']['path']).read_text(),
         'complete_implementation_committed_before_science':bool(freeze['commit']) and freeze['all_implementation_present']}
+    no_evidence=verified(root/'no_evidence_builder_check.json')
+    checks['real_four_map_no_evidence_builder_parity']=len(no_evidence['rows'])==4 and all(all(r['checks'].values()) for r in no_evidence['rows'])
     if not all(checks.values()):raise ValueError('completion evidence audit failed: '+str({k:v for k,v in checks.items() if not v}))
     return write(root/'requirement_audit.json',{'status':'MEASURED_REQUIREMENTS_VERIFIED','checks':checks,
         'source_freeze_identity':freeze['identity'],'result_store_identity':store['identity'],
@@ -175,9 +195,22 @@ def report(binding):
     costs=verified(root/'costs.json')
     from .selection import select
     selection=write(root/'selection.json',select(store['pooled_metrics'],binding['specification']['selection']))
+    # Report the controls separately, using the already fixed lexicographic order.
+    from functools import cmp_to_key
+    controls=['SV01_SAM2_GEOM','SV03_OLDMASK_FC']
+    def control_compare(a,b):
+        for cell in binding['specification']['selection']['lexicographic']:
+            cohort,metric=cell.split('.');delta=store['pooled_metrics'][cohort][a]['metrics'][metric]-store['pooled_metrics'][cohort][b]['metrics'][metric]
+            if abs(delta)>1e-10:return -1 if delta>0 else 1
+        return controls.index(a)-controls.index(b)
+    best_control=sorted(controls,key=cmp_to_key(control_compare))[0]
+    control_report={'best_simple_control':best_control,'candidates':controls,
+        'fixed_lexicographic_order':binding['specification']['selection']['lexicographic'],
+        'control_is_not_a_proposed_method':True,'metrics':{c:{m:store['pooled_metrics'][c][m]['metrics'] for m in controls} for c in binding['cohorts']}}
     store=write(root/'result_store.json',{**store,'diagnostics_identity':diagnostics['identity'],'costs_identity':costs['identity'],
         'selection':selection,'freeze_identity':verified(root/'freeze.json')['identity']})
     output=REPO/'artifacts/static_ovmap/samv_local_probe_v1';tables=output/'tables'
+    write(output/'best_simple_control.json',control_report)
     main=[];full=[]
     for method in ('REF_D2',*METHODS):
         row={'method':LABELS[method]};complete={'method':method,'label':LABELS[method],'cell_sources':{}}
@@ -202,9 +235,14 @@ def report(binding):
     sem=[]
     for cohort,data in diagnostics['cohorts'].items():
         a,b=(store['pooled_metrics'][cohort][m]['metrics'] for m in ('SV04_SAMV_FC','SV03_OLDMASK_FC'))
-        sem.append({'cohort':cohort,**data['semantic'],**{k+'_delta_pp':(a[k]-b[k])*100 for k in METRICS},'cell_source':diagnostics['identity']})
+        sem.append({'cohort':cohort,**data['semantic'],**{k+'_delta_pp':(a[k]-b[k])*100 for k in METRICS},
+            'diagnostic_source':diagnostics['identity'],'metric_sources':{m:store['pooled_metrics'][cohort][m]['identity'] for m in ('SV04_SAMV_FC','SV03_OLDMASK_FC')}})
     t2s=table(tables,'table2_semantic',sem,['cohort','joint_eligible','wrong_to_right','right_to_wrong','undefined_fixed_reference',*[k+'_delta_pp' for k in METRICS]])
     t3=table(tables,'table3_window_timing',costs['timing']['summaries'],['scene','owner','model','calls','window_frames','dtype','mean_seconds','median_seconds','peak_allocated_GiB','peak_reserved_GiB'])
+    write(tables/'cell_sources.json',{'table1':full,'table2_structure':mechanism,'table2_semantic':sem,
+        'table3_window':[{'scene':r['scene'],'model':r['model'],'owner':r['owner'],'aggregate_source':costs['timing']['identity'],
+            'measurement_sources':[v['identity'] for v in costs['timing']['rows'] if v['scene']==r['scene'] and v['model']==r['model']]} for r in costs['timing']['summaries']],
+        'table3_stages':costs['identity']})
     stages=[{'scene':s,**{k:v for k,v in row.items() if isinstance(v,(int,float)) or v is None},'cell_source':costs['identity']} for s,row in costs['stage_seconds'].items()]
     stage_columns=['scene','observation','query_planning_and_canonical_preparation','SAM2_lifting','SAMV_lifting','FC_worker_wall_including_first_load','output_rank_construction','released_evaluation_registry_and_export','diagnostics','new_observer_frames','new_observer_rays']
     table(tables,'table3_actual_stage_costs',stages,stage_columns)
@@ -213,13 +251,14 @@ def report(binding):
     captions='固定完整场景 office1、room0、scene0011_00、scene0050_00；前两者为 Replica-probe2，后两者为 CF-probe2。每组由两个场景按固定顺序调用 released evaluator 池化，非逐场景 AP 平均。APall 使用 .50:.05:.90，最小实例100点。全部场景此前已曝光。'
     text=['# SAM-V 固定局部探针结果','',captions,'',t1,'',
         f"研究选择：{selection['selected']}；状态 {selection['status']}；MATERIAL={selection['material_met']}。部署 N0_UNCHANGED。",'',
+        f"固定词典序下的最佳简单对照：{best_control}。该对照单独报告，不重命名为候选新方法。",'',
         '原始、允许修改与最终独占支持分别保留；class-agnostic GT50/75 不等于官方 AP，也不以查询数作为 precision 分母。','',t2,'',t2s,'',
         '窗口计时：相同预锁定 JPEG/提示、BF16、模型驻留、无特征/结果缓存；读图到原尺寸二值 mask，加载/lifting/FC/评分/保存在计时外。第二轮反序；OS 页缓存未控制。每个输出与科学结果逐像素一致。','',t3,'',
         f"逻辑记录28、两场景池14；新场景 scorer 调用 {store['physical_new_scene_scorer_calls']}。独立的工程检查、失败、模型加载和缓存成本见机器数据。",'',
         f"[完整五项指标]({artifact}/tables/table1_all_five_metrics.md) · [阶段成本]({artifact}/tables/table3_actual_stage_costs.md) · [真实 mask 全目标展示]({artifact}/visuals) · [规范结果库]({artifact}/result_store.json)",'',
         '完整地图独立延迟为 NOT_MEASURED_THIS_PROBE；不声称在线30 FPS。未自动扩大到 Replica8/CF18。']
     (docs/'SAMV_PROBE_RESULTS.md').write_text('\n'.join(text)+'\n')
-    (docs/'SAMV_PROBE_SELECTION.md').write_text('# 固定选模规则与结论\n\n'+json.dumps(selection,ensure_ascii=False,indent=2)+'\n\n所有判定使用未舍入 fraction：每个候选五项指标在两个池均不低于G1−1e−10；CF APall>D2+1e−10且AP50≥D2−1e−10；额外 MATERIAL 需 APall−D2≥.001。按 CF APall、CF AP50、Replica APall、CF mIoU 排序，1e−10内视作相等，再优先SV02、SV04、SV05。\n\n'+('建议先分析本轮局部正负案例，再独立审批全量确认实验。' if selection['target_met'] else '本轮未达到固定晋升条件；保持 G1 研究参照，不开展自动全量扩展。')+'\n')
+    (docs/'SAMV_PROBE_SELECTION.md').write_text('# 固定选模规则与结论\n\n'+json.dumps(selection,ensure_ascii=False,indent=2)+'\n\n所有判定使用未舍入 fraction：每个候选五项指标在两个池均不低于G1−1e−10；CF APall>D2+1e−10且AP50≥D2−1e−10；额外 MATERIAL 需 APall−D2≥.001。按 CF APall、CF AP50、Replica APall、CF mIoU 排序，1e−10内视作相等，再优先SV02、SV04、SV05。\n\n'+f'最佳简单对照为 {best_control}，按同一固定词典序比较，仅作对照报告。\n\n'+('建议先分析本轮局部正负案例，再独立审批全量确认实验。' if selection['target_met'] else '本轮未达到固定晋升条件；保持 G1 研究参照，不开展自动全量扩展。')+'\n')
     (docs/'SAMV_PROBE_CLAIMS.md').write_text('# 证据与主张边界\n\n'+json.dumps(diagnostics['mechanism_flags'],ensure_ascii=False,indent=2)+'\n\nSAM-V 是外部预训练分割器。本实验只检验固定提示、实测深度观察、共同 lifter 下的模块集成，不构成新几何感知解码器，也不证明对所有多视角方法更优。\n\n结构与语义主张独立于选模目标。SV04 对照 SV03 使用同一双源双视角成功域；SV05 固定复制 SV02 分区和 SV04 标签，等同某组件时不声称协同增益。未获取新2D GT，不把前插入 panoptic 预测作为GT。\n\n四个已曝光场景只提供开发证据，不是独立确认。两场景池类别覆盖有限，MATERIAL并非统计显著性。仅窗口计时可比较，完整地图延迟及在线FPS未测。\n')
     command='/home/ww/miniconda3/envs/ovimap-map/bin/python scripts/evaluation/run_ovimap_samv_local_probe.py --spec configs/static_ovmap/samv_local_probe_v1.json --parent-root /mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001 --output-root /mnt/shared/ww/ovimap-samv-local-probe-v1/attempt_001 --phase all --resume'
     (docs/'SAMV_PROBE_HANDOFF.md').write_text('# 交接\n\n'+f"完整代码/资源配置以外部 freeze.json 为准，基座 {binding['base_commit']}，研究分支 {binding['branch']}。全局窗口 {verified(root/'resource_profile.json')['window_length']}，SAM-V/SAM2独立环境；原始FC保持FP32。\n\n"+'```bash\n'+command+'\n```\n\n'+f"持久存储：{root}。输入、稠密地图、RGB/depth与模型权重留在共享盘，只发布实际紧凑 mask、改动行、类决策、指标与 trace。公开引用见 artifacts/static_ovmap/samv_local_probe_v1/source_references.json。\n\n"+'全流程实际终态/退出码见 execution/all_terminal.json；普通 push 的本地/远程完整SHA在外部 publication/final.json。上述最后两项需在最终发布时实测核验，当前报告不将其预先标记成功。\n\n'+f"模型失败调用数：{len(costs['failed_attempts'])}，详细真实日志/已知耗时/未知null见 costs.json。两次导入问题已纠正，成功的同身份分割叶子在resume时复用；新增前向不被计作缓存命中。部署仍为N0。\n")

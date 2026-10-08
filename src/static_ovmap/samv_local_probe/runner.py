@@ -52,6 +52,34 @@ def require_freeze(binding):
     return record
 
 
+def no_evidence_check(binding):
+    import numpy as np
+    from .binding import load_scene
+    from .outputs import build
+    root=Path(binding['output_root']);path=root/'no_evidence_builder_check.json'
+    if path.exists():
+        record=verified(path)
+        if len(record['rows'])!=4 or not all(all(r['checks'].values()) for r in record['rows']):raise ValueError('real no-evidence parity failed')
+        for row in record['rows']:
+            if load_scene(binding,row['scene']).g1.prediction_key!=row['parent_prediction_key']:raise ValueError('no-evidence baseline changed')
+        return record
+    rows=[];begin=time.perf_counter()
+    for scene in binding['scenes']:
+        inputs=load_scene(binding,scene);plan=verified(root/'query_plan'/scene/'receipt.json')
+        with np.load(plan['domain']['path'],allow_pickle=False) as arrays:editable=arrays['editable']
+        prompts={int(r):int(o) for r,o in plan['prompt_owners'].items()}
+        payload,audit=build(inputs,'G1_NO_EVIDENCE_REAL_PARITY',inputs.g1.owner_ids,{},editable,prompts)
+        checks={'owners':np.array_equal(payload.owner_ids,inputs.g1.owner_ids),
+            'semantics':np.array_equal(payload.semantic_labels,inputs.g1.semantic_labels),
+            'ranks':payload.instance_ranks==inputs.g1.instance_ranks,'geometry':payload.geometry==inputs.g1.geometry,
+            'zero_edits':audit['ownership_edits']==audit['semantic_row_edits']==0}
+        if not all(checks.values()):raise ValueError('real no-evidence builder mismatch: '+scene)
+        rows.append({'scene':scene,'checks':checks,'parent_prediction_key':inputs.g1.prediction_key,
+            'actual_builder_prediction_key':payload.prediction_key})
+    return write(path,{'status':'ALL_FOUR_REAL_G1_NO_EVIDENCE_BUILDS_EXACT','rows':rows,
+        'actual_elapsed_seconds':time.perf_counter()-begin,'new_GPU_inference':0,'new_AP':0,'GT_annotation_arrays_read':False})
+
+
 def invalidate(binding,phase,scene,reason):
     """Journal a primary-reviewed correction without touching inherited roots."""
     root=Path(binding['output_root']);graph={
@@ -102,6 +130,7 @@ def run(args):
                     require_freeze(binding);result=acquire(binding)
                 elif phase=='predict':
                     from .outputs import predict
+                    no_evidence_check(binding)
                     result=predict(binding)
                 elif phase=='evaluate':
                     from .evaluation import evaluate

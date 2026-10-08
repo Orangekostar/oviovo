@@ -114,5 +114,9 @@ def collect(binding,assets,*,run_timing=True):
         'extra_timing_counts':dict(timed),'unique_scientific_targets':unique,'FC_counts':dict(fc_counts),
         'model_loads':loads,'FC_model_loads':[verified(p) for p in sorted((root/'readout/model_loads').glob('*.json'))],
         'failed_attempts':failures,'unknown_failed_GPU_work_is_null':True,
+        'real_no_evidence_builder_engineering_check':verified(root/'no_evidence_builder_check.json'),
+        'FC_head_work_audited_from_completed_region_vectors':{'completed_head_projections':fc_counts['successful_region_pools'],
+            'evidence':'EVERY_SUCCESSFUL_REGION_VECTOR_EXECUTES_ONE_FROZEN_VISUAL_HEAD; COMPLETED_REGION_AUDITS_RETAINED',
+            'separate_head_elapsed_seconds':None},
         'timing_summary_identity':timing['identity'],'timing':timing,'standalone_complete_map_latency':'NOT_MEASURED_THIS_PROBE',
         'new_maps':0,'new_AnyUp':0,'new_NQ':0,'new_training':0,'online_FPS':None,'budgets_verified':True})
