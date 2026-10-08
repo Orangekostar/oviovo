@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "task_id": "ovimap-samv-local-probe-v1",
+  "date": "2026-10-08",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "a95c24d990cea57b14bb537e9acca95b95659bda",
+  "branch": "research/ovimap-samv-local-probe-v1",
+  "parent_root": "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+  "output_root": "/mnt/shared/ww/ovimap-samv-local-probe-v1/attempt_001",
+  "worktree_hint": "/mnt/shared/ww/ovimap-samv-local-probe-v1/worktree",
+  "controller_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "cohorts": {
+    "replica_probe2": [
+      "office1",
+      "room0"
+    ],
+    "cf_probe2": [
+      "scene0011_00",
+      "scene0050_00"
+    ]
+  },
+  "engineering_pilots": [
+    "office1",
+    "scene0011_00"
+  ],
+  "methods": [
+    {
+      "id": "SV00_G1",
+      "partition": "PARENT_G1",
+      "labels": "PARENT_G1",
+      "role": "reference"
+    },
+    {
+      "id": "SV01_SAM2_GEOM",
+      "partition": "SAM2_LOCAL",
+      "labels": "INHERIT_G1",
+      "role": "segmentation_control"
+    },
+    {
+      "id": "SV02_SAMV_GEOM",
+      "partition": "SAMV_LOCAL",
+      "labels": "INHERIT_G1",
+      "role": "structural_candidate"
+    },
+    {
+      "id": "SV03_OLDMASK_FC",
+      "partition": "PARENT_G1",
+      "labels": "MATCHED_OLDMASK_FC",
+      "role": "same_view_semantic_control"
+    },
+    {
+      "id": "SV04_SAMV_FC",
+      "partition": "PARENT_G1",
+      "labels": "MATCHED_SAMV_FC",
+      "role": "semantic_candidate"
+    },
+    {
+      "id": "SV05_COMBINED",
+      "partition": "EXACT_SV02",
+      "labels": "EXACT_SV04_CLASS_MAP",
+      "role": "fixed_combination"
+    }
+  ],
+  "reference_only": [
+    "REF_D2"
+  ],
+  "scope": {
+    "scenes": 4,
+    "main_methods": 6,
+    "main_scene_rows": 24,
+    "main_pools": 12,
+    "reference_scene_rows": 4,
+    "reference_pools": 2,
+    "all_scene_rows": 28,
+    "all_pools": 14,
+    "targets_per_scene_max": 8,
+    "targets_total_max": 32,
+    "observer_frames_per_scene_max": 32,
+    "observer_frames_total_max": 128,
+    "samv_scientific_joint_calls_max": 32,
+    "samv_scientific_frame_slots_max": 192,
+    "sam2_scientific_tracks_max": 32,
+    "semantic_views_per_target": 2,
+    "semantic_region_pools_max": 128,
+    "new_FC_images_max": 64,
+    "extra_segmentation_timing_calls": 8,
+    "new_maps": 0,
+    "new_training": 0,
+    "new_AnyUp": 0,
+    "new_NQ": 0,
+    "full_26_scene_expansion": false
+  },
+  "assets": {
+    "samv": {
+      "repo": "gong208/SAM-V",
+      "commit": "33fab24c1d0d21ac56f4e471abf30c6de3e7018b",
+      "weights_repo": "Frank-Gong123/SAM-V",
+      "weights_file": "sam_v_stage2.pth",
+      "weights_sha256": null,
+      "hash_policy": "RESOLVE_AUTHOR_REVISION_AND_HASH_BEFORE_FREEZE_NO_SUBSTITUTION",
+      "sam_model": "vit_h",
+      "sam_weights": "sam_vit_h_4b8939.pth",
+      "sam_weights_url": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth",
+      "vggt_repo": "facebook/VGGT-1B",
+      "vggt_file": "model.pt",
+      "sam_hq_gitlink": "8c0ef8de98c5b84f3c050339d91e953c7249f10e",
+      "vggt_gitlink": "44b3afbd1869d8bde4894dd8ea1e293112dd5eba",
+      "python": "3.10",
+      "torch": "2.3.1",
+      "torchvision": "0.18.1",
+      "timm": "1.0.22",
+      "strict_partial_loader": "utils.checkpoint.load_partial_checkpoint",
+      "base_weight_hashes": "BIND_ACTUAL_AUTHOR_FILES_BEFORE_FREEZE"
+    },
+    "sam2": {
+      "repo": "facebookresearch/sam2",
+      "commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+      "model": "SAM2.1_HIERA_LARGE",
+      "config": "configs/sam2.1/sam2.1_hiera_l.yaml",
+      "weights": "sam2.1_hiera_large.pt",
+      "weights_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt",
+      "python": "3.10",
+      "torch": "2.5.1",
+      "torchvision": "0.20.1",
+      "separate_environment": true,
+      "vos_optimized": false,
+      "dynamic_multimask": true,
+      "binarize_mask_from_pts_for_mem_enc": true,
+      "fill_hole_area": 0,
+      "postprocessing_profile": "EXPLICIT_STABILITY_ENABLED_HOLE_FILL_DISABLED",
+      "propagation": "FORWARD_THEN_REVERSE_FROM_SAME_ANCHOR_RESET_BETWEEN_TARGETS",
+      "builder_apply_postprocessing": false,
+      "hydra_overrides_extra": [
+        "++model.sam_mask_decoder_extra_args.dynamic_multimask_via_stability=true",
+        "++model.sam_mask_decoder_extra_args.dynamic_multimask_stability_delta=0.05",
+        "++model.sam_mask_decoder_extra_args.dynamic_multimask_stability_thresh=0.98",
+        "++model.binarize_mask_from_pts_for_mem_enc=true",
+        "++model.fill_hole_area=0"
+      ],
+      "SAM2_BUILD_CUDA": "0",
+      "controller_or_FC_upgrade_allowed": false
+    },
+    "fc": {
+      "source": "BOUND_PARENT_FC",
+      "new_backbone": false,
+      "precision": "PARENT_FP32",
+      "pooling": "cvpr_compact.area_fallback.region_vector",
+      "text": "BOUND_PARENT_ORDER"
+    }
+  },
+  "observer": {
+    "pose_bins": "INHERITED_MINIMAL_REPAIR_32_FRAME_RULE",
+    "translation_m": 0.2,
+    "rotation_degrees": 15.0,
+    "maximum_frames": 32,
+    "depth_absolute_m": 0.02,
+    "depth_relative": 0.02,
+    "minimum_depth_m": 1e-06,
+    "source_mapping": "LARGEST_BARYCENTRIC_VERTEX_TIE_SMALLEST_SOURCE_ROW",
+    "cache_reuse": "EXACT_GEOMETRY_CAMERA_DEPTH_AND_OBSERVER_ONLY"
+  },
+  "targets": {
+    "incumbent_quota": 4,
+    "recovered_quota": 4,
+    "fill_shortage_from_other_pool": true,
+    "incumbents": "ASC_D2_TOP2_MARGIN_THEN_OWNER_ID",
+    "recovered": "DESC_MAX_VISIBLE_AREA_THEN_OWNER_ID",
+    "output_label_must_be_in_vocabulary": true,
+    "min_qualified_old_views": 2,
+    "minimum_old_mask_pixels": 100,
+    "minimum_bbox_extent": 2,
+    "no_model_or_GT_based_reselection": true
+  },
+  "prompts": {
+    "points_max": 3,
+    "negative_points": 0,
+    "anchor": "MAX_OLD_MASK_AREA_THEN_FRAME_ID",
+    "component": "LARGEST_8_CONNECTED_COMPONENT_TIE_SMALLEST_LINEAR_PIXEL",
+    "interior_distance_pixels": 2.0,
+    "first": "MAX_PADDED_EDT_TIE_YX",
+    "next": "MAX_MIN_EUCLIDEAN_DISTANCE_IN_INTERIOR_TIE_YX",
+    "shortage": "USE_DISTINCT_AVAILABLE_POSITIVE_POINTS_NO_DUPLICATION",
+    "box_or_GT_or_text_prompts": false
+  },
+  "views": {
+    "count_primary": 6,
+    "count_resource_fallback": 4,
+    "mandatory": [
+      "ANCHOR",
+      "FARTHEST_QUALIFIED_OLD_VIEW_FROM_ANCHOR"
+    ],
+    "additional": "GREEDY_MAX_MIN_SE3_DISTANCE_OVER_ALL_POSE_REPRESENTATIVES",
+    "distance": "translation/0.2 + rotation_degrees/15",
+    "final_order": "ORIGINAL_FRAME_ID_ASCENDING",
+    "fallback_policy": "ONLY_TRUE_PREFREEZE_CUDA_OOM_GLOBAL_FOUR_FRAMES_ALL_TARGETS_ALL_ARMS",
+    "samv_rgb_hw": [
+      1024,
+      1024
+    ],
+    "vggt_hw": [
+      896,
+      896
+    ],
+    "sam_encode_chunk": 1,
+    "batch_size": 1,
+    "amp": "bf16",
+    "multimask_output": false,
+    "canonical_rgb": "BILINEAR_1024_TRUNCATE_UINT8_JPEG95_DECODE_IDENTICAL_FOR_BOTH_MODELS",
+    "mask_restore": "SPLIT_LOWRES_BY_VIEW_THEN_BILINEAR_TO_1024_THEN_ORIGINAL_HW_THEN_LOGIT_GE_0"
+  },
+  "repair": {
+    "aabb_padding_m": 0.3,
+    "min_visible_views": 2,
+    "positive_rate": 0.6666666666666666,
+    "negative_rate": 0.3333333333333333,
+    "per_view_row_foreground": "MEAN_BINARY_PIXELS_GE_0.5_ONE_VOTE_PER_VIEW",
+    "unselected_boundary_hops": 2,
+    "preserve_unselected_core": true,
+    "unknown_visibility": "KEEP_NOT_NEGATIVE",
+    "prompt_rows": "FORCE_PARENT_OWNER",
+    "prompt_success": "ALL_ANCHOR_POSITIVE_POINTS_INSIDE_PREDICTION",
+    "conflict": "MAX_POSITIVE_VOTE_RATE_TIE_KEEP_PARENT_NO_SEQUENTIAL_CASCADE",
+    "raw_zero_policy": "CAN_EDIT_OBSERVED_SURFACE_IN_PREDECLARED_DOMAIN_NOT_BLANKET_PROTECTED",
+    "new_owner_ids": false,
+    "delete_unobserved_support": false,
+    "post_G1_whole_unit_assertions_reused": false
+  },
+  "semantics": {
+    "views": "SAME_TWO_MANDATORY_ORIGINAL_VIEWS",
+    "masks": "ORIGINAL_SUPPORT_VS_SAMV_BINARY_INTERSECT_VALID_DEPTH_AND_TARGET_AABB",
+    "pixels_min": 100,
+    "same_joint_success_domain": true,
+    "required_successful_views_per_mask_source": 2,
+    "aggregate": "EQUAL_MEAN_FULL_VOCABULARY_COSINES_FLOAT64",
+    "class_update": "ARGMAX_IF_NEW_MINUS_OLD_GE_0.01_ELSE_KEEP",
+    "raw_margin": 0.01,
+    "new_fits": 0,
+    "AnyUp": false,
+    "combined": "REUSE_EXACT_SV04_OWNER_CLASS_DECISION_ON_SV02_PARTITION"
+  },
+  "evaluation": {
+    "metrics": [
+      "apall",
+      "ap50",
+      "ap25",
+      "miou",
+      "macc"
+    ],
+    "rank": "OFFICIAL_CURRENT_CLASS",
+    "overlaps": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "minimum_region_points": 100,
+    "target_projection": "UNCHANGED_PARENT_NEAREST_MATCHED",
+    "rebuild_all_masks_for_actual_partition": true,
+    "class_agnostic_thresholds": [
+      0.5,
+      0.75
+    ],
+    "one_exclusive_partition": true,
+    "GT_prediction_inputs": false
+  },
+  "selection": {
+    "type": "EXPOSED_FOUR_SCENE_PILOT_ONLY",
+    "tolerance_fraction": 1e-10,
+    "eligible_methods": [
+      "SV02_SAMV_GEOM",
+      "SV04_SAMV_FC",
+      "SV05_COMBINED"
+    ],
+    "all_five_nondecrease_each_probe_vs": "SV00_G1",
+    "CF_APall_strictly_above": "REF_D2",
+    "CF_AP50_at_least": "REF_D2",
+    "material_delta_fraction": 0.001,
+    "lexicographic": [
+      "cf_probe2.apall",
+      "cf_probe2.ap50",
+      "replica_probe2.apall",
+      "cf_probe2.miou"
+    ],
+    "simplicity_order": [
+      "SV02_SAMV_GEOM",
+      "SV04_SAMV_FC",
+      "SV05_COMBINED"
+    ],
+    "fallback": "SV00_G1",
+    "deployment": "N0_UNCHANGED",
+    "automatic_expansion": false
+  },
+  "cost": {
+    "science_record_all_actual_stages": true,
+    "extra_timing": "SEGMENTATION_WINDOW_ONLY",
+    "timing_windows": "FIRST_LOCKED_TARGET_OFFICE1_AND_SCENE0011_00",
+    "methods": [
+      "SAM2",
+      "SAMV"
+    ],
+    "repeats": 2,
+    "model_resident": true,
+    "feature_and_result_cache": false,
+    "OS_page_cache": "UNCONTROLLED",
+    "measured_boundary": "READ_CANONICAL_IMAGES_THROUGH_RESTORED_RAW_MASKS",
+    "end_to_end_latency_claim": false,
+    "raw_mask_parity_required": true,
+    "empty_cohort_timing_policy": "UNMEASURED_NO_QUERIABLE_TARGET_WITH_REASON; NO_REPLACEMENT_SCENE"
+  },
+  "resources": {
+    "one_GPU_worker_at_once": true,
+    "raycast_threads": 4,
+    "CPU_workers_max": 2,
+    "free_disk_GiB_before_assets": 30,
+    "identical_retry_max": 1,
+    "full_repo_tests": false,
+    "new_production_tests_target_max": 12,
+    "samv_expected_asset_bytes_not_claimed": true,
+    "publish_target_MiB": 30,
+    "weight_data_upload": false
+  },
+  "engineering_pilot_no_target_policy": "NEXT_FIXED_SCENE_IN_SAME_COHORT; IF_NONE_MARK_NO_QUERY_NO_MODEL_CLAIM"
+}

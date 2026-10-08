@@ -1,0 +1,312 @@
+{
+  "generated_utc": "2026-10-08T12:54:12.705548+00:00",
+  "sources": [
+    {
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/artifacts/static_ovmap/evidence_exploration_v1/resource_G1_G3.json",
+      "sha256": "dd4a1fae6ac48350b89ffd5f5c63c7612f806a3ebb2189ac83b4c2776db73ade"
+    },
+    {
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/artifacts/static_ovmap/evidence_exploration_v1/resource_module_reference.json",
+      "sha256": "3b47c941704944c5a1bc7233d53f639e520fabe5bba63c6402bccde2cf87e335"
+    },
+    {
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/worktree/artifacts/static_ovmap/evidence_exploration_v1/timing_records.json",
+      "sha256": "e8ebf8a138e2a20885f566b5698cc9137e30f1c2c05598be965eb54629df171b"
+    },
+    {
+      "path": "/mnt/shared/ww/ovimap-samv-local-probe-v1/attempt_001/segmentation/office1/SAM2/8/receipt.json",
+      "sha256": "5fad48f5f5f597f593d14f15d5dac150b6623907f28e2be6d8fa204d8a706b0e"
+    },
+    {
+      "path": "/mnt/shared/ww/ovimap-samv-local-probe-v1/attempt_001/segmentation/office1/SAMV/8/receipt.json",
+      "sha256": "4aafe24d1999872f54731f7f3a9403c249116ec9a3085debd7b144d79afeb99c"
+    },
+    {
+      "path": "/mnt/shared/ww/ovimap-samv-local-probe-v1/attempt_001/segmentation/scene0011_00/SAM2/14/receipt.json",
+      "sha256": "ca6ffd4b5dd4901f441aee7ee5078c653cca8e8a0611fcc0eb57b7bc29dd370f"
+    },
+    {
+      "path": "/mnt/shared/ww/ovimap-samv-local-probe-v1/attempt_001/segmentation/scene0011_00/SAMV/14/receipt.json",
+      "sha256": "b8612d7dd3b551408b00114558d12e9e301d07365699d1e602d883d8b7e2954b"
+    }
+  ],
+  "G1_G3_formal": [
+    {
+      "Allocated_GiB": 1.8887314796447754,
+      "Calls": 16,
+      "FC_images_scene": 4.5,
+      "Method": "G1_SELECTED",
+      "Reserved_GiB": 2.455078125,
+      "Seconds_scene": 19.885861151924473,
+      "time_change_percent_vs_G1": 0.0
+    },
+    {
+      "Allocated_GiB": 1.8887314796447754,
+      "Calls": 16,
+      "FC_images_scene": 11.5,
+      "Method": "G3_SELECTED",
+      "Reserved_GiB": 2.20703125,
+      "Seconds_scene": 20.94206223425863,
+      "time_change_percent_vs_G1": 5.311316790683418
+    }
+  ],
+  "evidence_exploration_formal": [
+    {
+      "calls": 16,
+      "counts": {
+        "FC_image_inputs": 72,
+        "coarse_target_pools": 84,
+        "head_projections": 84
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7255606860562693,
+        "additional_geometry": 5.978290573693812e-06,
+        "output": 3.9158731536008418,
+        "view_search": 18.07123362866696
+      },
+      "mean_seconds_per_scene": 22.713021570656565,
+      "median_seconds_per_scene": 22.797673649038188,
+      "method": "EV01_G1_V2",
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "Allocated_GiB": 1.9002423286437988,
+      "Reserved_GiB": 2.212890625,
+      "time_change_percent_vs_EV01": 0.0,
+      "allocated_change_percent_vs_EV01": 0.0
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "AnyUp_QK_computations": 70,
+        "AnyUp_target_or_control_pools": 188,
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_target_pools": 84,
+        "geometry_attention_applications": 280,
+        "head_projections": 272,
+        "original_attention_applications": 112,
+        "query_chunks": 112,
+        "query_locations": 19528
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 1.5958650296379346,
+        "FC": 0.7233780017995741,
+        "additional_geometry": 2.6385754815564724,
+        "output": 3.9486859528406058,
+        "view_search": 15.288021031185053
+      },
+      "mean_seconds_per_scene": 24.195117602706887,
+      "median_seconds_per_scene": 24.744553892989643,
+      "method": "EV07_COMBINATION",
+      "peak_cuda_allocated_bytes": 4667931136,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "Allocated_GiB": 4.347349643707275,
+      "Reserved_GiB": 6.65234375,
+      "time_change_percent_vs_EV01": 6.525314245133607,
+      "allocated_change_percent_vs_EV01": 128.77869723120918
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_control_pools": 106,
+        "coarse_target_pools": 84,
+        "head_projections": 190
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7194700556574389,
+        "additional_geometry": 2.563045787450392,
+        "output": 3.851839865150396,
+        "view_search": 15.550318902009167
+      },
+      "mean_seconds_per_scene": 22.685154549282743,
+      "median_seconds_per_scene": 22.51757191098295,
+      "method": "EV03_CONTRAST",
+      "peak_cuda_allocated_bytes": 2044698112,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "Allocated_GiB": 1.904273509979248,
+      "Reserved_GiB": 2.212890625,
+      "time_change_percent_vs_EV01": -0.12269182806493584,
+      "allocated_change_percent_vs_EV01": 0.2121403820283474
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "AnyUp_QK_computations": 70,
+        "AnyUp_target_or_control_pools": 82,
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_target_pools": 84,
+        "geometry_attention_applications": 84,
+        "head_projections": 166,
+        "original_attention_applications": 72,
+        "query_chunks": 72,
+        "query_locations": 4902
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 1.5663590881449636,
+        "FC": 0.7144267993135145,
+        "additional_geometry": 2.753212901443476,
+        "output": 3.9279677226004424,
+        "view_search": 16.523852656886447
+      },
+      "mean_seconds_per_scene": 25.486417793828878,
+      "median_seconds_per_scene": 23.90800939593464,
+      "method": "EV06_OWNER_ANYUP",
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "Allocated_GiB": 4.334349155426025,
+      "Reserved_GiB": 6.650390625,
+      "time_change_percent_vs_EV01": 12.210600049600284,
+      "allocated_change_percent_vs_EV01": 128.09454826319157
+    }
+  ],
+  "SAM2_SAMV_engineering_only": [
+    {
+      "scene": "office1",
+      "owner": 8,
+      "model": "SAM2",
+      "elapsed_seconds": 0.6117003350518644,
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks",
+      "model_load_in_timer": false,
+      "hardware": {
+        "CUDA": "12.4",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.5.1+cu124"
+      },
+      "input_identity": "2298582fdcc4cc3dbc7e3ad2744afd546a701d6200f993be50b36ff425ce663a",
+      "query_identity": "08c28ca5fa7da0d88ca92bda924a8d6ec2e9a71761c6329461e7919aa9423fc1",
+      "Allocated_GiB": 1.8217906951904297,
+      "Reserved_GiB": 2.1015625,
+      "window_frames": 6,
+      "receipt_identity": "870460a321f02e61db8a87adc609191029e540bcf02cdfcf795c36ebdfea6d15",
+      "formal_comparison": false
+    },
+    {
+      "scene": "office1",
+      "owner": 8,
+      "model": "SAMV",
+      "elapsed_seconds": 3.222656964091584,
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks",
+      "model_load_in_timer": false,
+      "hardware": {
+        "CUDA": "12.1",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.3.1+cu121"
+      },
+      "input_identity": "416047c04a2675f68d3353036c976cf530dce4f6eff20d4f9db5b72013526d89",
+      "query_identity": "08c28ca5fa7da0d88ca92bda924a8d6ec2e9a71761c6329461e7919aa9423fc1",
+      "Allocated_GiB": 12.574801445007324,
+      "Reserved_GiB": 13.498046875,
+      "window_frames": 6,
+      "receipt_identity": "35a3d1083d5094c6eb30434960ca65a0da8c052fd510ebb807b251a99604aade",
+      "formal_comparison": false
+    },
+    {
+      "scene": "scene0011_00",
+      "owner": 14,
+      "model": "SAM2",
+      "elapsed_seconds": 1.5841901658568531,
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks",
+      "model_load_in_timer": false,
+      "hardware": {
+        "CUDA": "12.4",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.5.1+cu124"
+      },
+      "input_identity": "384367ac775bc4bb9f9aead90a9838db98ac89066a4a53977b75ed6613b3a232",
+      "query_identity": "9aea3d2986b1cdd3150d7d08cac69c690e0421e289ba16a5b1d283c2b3d5e5cb",
+      "Allocated_GiB": 1.8223934173583984,
+      "Reserved_GiB": 2.1015625,
+      "window_frames": 6,
+      "receipt_identity": "ca9fa7a156e40d782db74cbcccfdc44c0fba1193f368d510c6bd3ff7406d91b2",
+      "formal_comparison": false
+    },
+    {
+      "scene": "scene0011_00",
+      "owner": 14,
+      "model": "SAMV",
+      "elapsed_seconds": 9.332605283008888,
+      "timing_boundary": "canonical_JPEG_read_through_restored_binary_masks",
+      "model_load_in_timer": false,
+      "hardware": {
+        "CUDA": "12.1",
+        "CUDA_VISIBLE_DEVICES": "2",
+        "GPU": "NVIDIA A40",
+        "inference_dtype": "bfloat16_autocast",
+        "model_weights_dtype": "float32",
+        "python": "3.10.22",
+        "torch": "2.3.1+cu121"
+      },
+      "input_identity": "2aff03e53798901327899c7c433f593b6ba6f9e0e27ae91a9ba1c0b69f22d393",
+      "query_identity": "9aea3d2986b1cdd3150d7d08cac69c690e0421e289ba16a5b1d283c2b3d5e5cb",
+      "Allocated_GiB": 12.574801445007324,
+      "Reserved_GiB": 13.498046875,
+      "window_frames": 6,
+      "receipt_identity": "1455e6a8e97a3e2a53c73972751f157f7e9f7e79b6ec49441197ba8687e66d8f",
+      "formal_comparison": false
+    }
+  ],
+  "OVIMAP_author_report": {
+    "source": "https://arxiv.org/html/2603.26541v1#S8",
+    "GPU": "RTX3090",
+    "CPU": "i7-12700K",
+    "peak_VRAM_GiB": null,
+    "same_hardware_comparison": false,
+    "modules": [
+      {
+        "G1_ms": 1474.1985446385997,
+        "G3_ms": 1474.1985446385997,
+        "Module": "RGB segmentation",
+        "OVIMAP_ms": 964.8,
+        "n": 30
+      },
+      {
+        "G1_ms": 1488.411755188118,
+        "G3_ms": 1488.411755188118,
+        "Module": "Depth segmentation",
+        "OVIMAP_ms": 88.4,
+        "n": 30
+      },
+      {
+        "G1_ms": 3676.873069263494,
+        "G3_ms": 3676.873069263494,
+        "Module": "2D--3D association",
+        "OVIMAP_ms": 76.3,
+        "n": 30
+      },
+      {
+        "G1_ms": 52.22018920132541,
+        "G3_ms": 52.030881595565006,
+        "Module": "View selection",
+        "OVIMAP_ms": 140.8,
+        "n": 10
+      },
+      {
+        "G1_ms": 219.72176852028093,
+        "G3_ms": 194.47612906325324,
+        "Module": "Semantic extraction",
+        "OVIMAP_ms": 131.3,
+        "n": 10
+      }
+    ]
+  },
+  "online_30FPS_validated": false,
+  "measurement_scope": "allocator peaks of each measured worker, not full mapping system",
+  "SAM2_SAMV_formal_timings_completed": 0
+}

@@ -1,0 +1,166 @@
+{
+  "artifact": "INSTRUCTION_PACKAGE_AUDIT",
+  "date": "2026-10-08",
+  "status": "PASS",
+  "checks_passed": 34,
+  "checks": [
+    {
+      "name": "exact_four_scenes",
+      "passed": true
+    },
+    {
+      "name": "unique_scenes",
+      "passed": true
+    },
+    {
+      "name": "six_main_arms",
+      "passed": true
+    },
+    {
+      "name": "unique_method_ids",
+      "passed": true
+    },
+    {
+      "name": "main_coverage",
+      "passed": true
+    },
+    {
+      "name": "total_coverage",
+      "passed": true
+    },
+    {
+      "name": "subset_pools",
+      "passed": true
+    },
+    {
+      "name": "targets_bound",
+      "passed": true
+    },
+    {
+      "name": "observation_bound",
+      "passed": true
+    },
+    {
+      "name": "joint_frame_slots",
+      "passed": true
+    },
+    {
+      "name": "fc_request_bound",
+      "passed": true
+    },
+    {
+      "name": "fc_image_bound",
+      "passed": true
+    },
+    {
+      "name": "timing_bound",
+      "passed": true
+    },
+    {
+      "name": "no_unapproved_expansion",
+      "passed": true
+    },
+    {
+      "name": "no_new_training_mapping",
+      "passed": true
+    },
+    {
+      "name": "pinned_commits",
+      "passed": true
+    },
+    {
+      "name": "unknown_asset_hash_honest",
+      "passed": true
+    },
+    {
+      "name": "isolated_incompatible_envs",
+      "passed": true
+    },
+    {
+      "name": "sam2_not_default_bplus",
+      "passed": true
+    },
+    {
+      "name": "explicit_sam2_postprocessing",
+      "passed": true
+    },
+    {
+      "name": "no_gt_model_prompts",
+      "passed": true
+    },
+    {
+      "name": "global_resource_profile",
+      "passed": true
+    },
+    {
+      "name": "finite_main_pred_contract",
+      "passed": true
+    },
+    {
+      "name": "single_partition",
+      "passed": true
+    },
+    {
+      "name": "paired_semantics",
+      "passed": true
+    },
+    {
+      "name": "combined_not_new_inference",
+      "passed": true
+    },
+    {
+      "name": "valid_primary_candidates",
+      "passed": true
+    },
+    {
+      "name": "limited_tests",
+      "passed": true
+    },
+    {
+      "name": "synchronized_cost_parity",
+      "passed": true
+    },
+    {
+      "name": "scope_terms_in_main",
+      "passed": true
+    },
+    {
+      "name": "new_support_permission_documented",
+      "passed": true
+    },
+    {
+      "name": "file_set_present",
+      "passed": true
+    },
+    {
+      "name": "reference_python_parses",
+      "passed": true
+    },
+    {
+      "name": "12_synthetic_rules_pass",
+      "passed": true
+    }
+  ],
+  "synthetic_test_count": 12,
+  "synthetic_test_returncode": 0,
+  "manual_review": [
+    "GT-derived upstream CLI excluded",
+    "Six-to-four only prefreeze real OOM",
+    "Different Torch environments isolated",
+    "Single source-row partition for all metrics",
+    "Original-mask paired FC control added",
+    "Protected-core and raw-mask suppression separately diagnosed",
+    "Stage-2 author checkpoint not claimed downloaded",
+    "No full benchmark expansion",
+    "Code/compact results normal push and exact remote SHA proof"
+  ],
+  "not_executed": [
+    "SAM-V model loading/inference",
+    "SAM2 inference",
+    "server asset/data verification",
+    "new scene AP/mIoU evaluation",
+    "new runtime/VRAM benchmark",
+    "GitHub writes"
+  ],
+  "scope_warning": "PASS verifies this specification and synthetic rules only, not a scientific gain."
+}
