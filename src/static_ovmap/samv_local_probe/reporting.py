@@ -22,7 +22,7 @@ def table(output,name,rows,columns):
     write(output/(name+'.json'),{'columns':columns,'rows':rows,'source_unit':'EXPLICIT_PER_COLUMN',
         'undefined_cells_are_null':True})
     with (output/(name+'.csv')).open('w',newline='') as f:
-        writer=csv.DictWriter(f,fieldnames=columns,extrasaction='ignore');writer.writeheader();writer.writerows(rows)
+        writer=csv.DictWriter(f,fieldnames=columns,extrasaction='ignore',lineterminator='\n');writer.writeheader();writer.writerows(rows)
     def display(value):
         if value is None:return '—'
         if isinstance(value,float):return f'{value:.3f}'
