@@ -1,0 +1,3976 @@
+{
+  "F_group_vs_equal_A_mass_global": [
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.005924972716022603,
+        "ap50": 0.0023280227841859513,
+        "apall": 0.00313475066956935,
+        "macc": -0.003647501849896595,
+        "miou": 0.0012929000815794511
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 28,
+      "recovered_rank_changes": 1,
+      "reference": "SU07_GLOBAL_BLEND",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 15,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 16
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "plate",
+                33000
+              ],
+              "scene": "room0"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 16,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 16
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 78,
+          "UNCHANGED_WRONG": 66,
+          "WRONG_TO_RIGHT": 1,
+          "WRONG_TO_WRONG": 1
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 33,
+          "WRONG_TO_WRONG": 1
+        }
+      }
+    },
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.008258471014277624,
+        "ap50": -0.005789622425206059,
+        "apall": -0.0019626038554461794,
+        "macc": -0.0034828856370160977,
+        "miou": -0.006443805975104355
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 72,
+      "recovered_rank_changes": 1,
+      "reference": "SU07_GLOBAL_BLEND",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 48,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 3,
+            "lost_unique_GT_matches": 3,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 45
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_00"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 51,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 51
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 3,
+          "UNCHANGED_RIGHT": 153,
+          "UNCHANGED_WRONG": 122,
+          "WRONG_TO_WRONG": 6
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 45,
+          "WRONG_TO_WRONG": 3
+        }
+      }
+    }
+  ],
+  "availability_limitation": {
+    "replica8": {
+      "common": 111,
+      "protected": 1,
+      "selected": 128
+    },
+    "scannet_cf18": {
+      "common": 209,
+      "protected": 19,
+      "selected": 288
+    }
+  },
+  "exclusion_coverage": {
+    "replica8": {
+      "SU02_HARD_MATCHED": {
+        "applied_changes": 62,
+        "common": 111,
+        "common_FULL_pairs": 218,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 0,
+        "proposed_changes": 62,
+        "protected": 1,
+        "scenes": 8,
+        "selected": 128,
+        "source_available_counts": {
+          "F": 126,
+          "N": 128,
+          "Q": 125
+        },
+        "successful_FULL_A_views": 224,
+        "unavailable": 16
+      },
+      "SU03_STABLE_MATCHED": {
+        "applied_changes": 23,
+        "common": 111,
+        "common_FULL_pairs": 218,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 0,
+        "proposed_changes": 23,
+        "protected": 1,
+        "scenes": 8,
+        "selected": 128,
+        "source_available_counts": {
+          "F": 126,
+          "N": 128,
+          "Q": 125
+        },
+        "successful_FULL_A_views": 224,
+        "unavailable": 16
+      },
+      "SU04_F_REPLACE": {
+        "applied_changes": 34,
+        "common": 111,
+        "common_FULL_pairs": 218,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 111,
+        "proposed_changes": 34,
+        "protected": 1,
+        "scenes": 8,
+        "selected": 128,
+        "source_available_counts": {
+          "F": 126,
+          "N": 128,
+          "Q": 125
+        },
+        "successful_FULL_A_views": 224,
+        "unavailable": 16
+      },
+      "SU05_F_BLEND": {
+        "applied_changes": 19,
+        "common": 111,
+        "common_FULL_pairs": 218,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 111,
+        "proposed_changes": 19,
+        "protected": 1,
+        "scenes": 8,
+        "selected": 128,
+        "source_available_counts": {
+          "F": 126,
+          "N": 128,
+          "Q": 125
+        },
+        "successful_FULL_A_views": 224,
+        "unavailable": 16
+      },
+      "SU06_F_COARSE": {
+        "applied_changes": 20,
+        "common": 111,
+        "common_FULL_pairs": 218,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 111,
+        "proposed_changes": 20,
+        "protected": 1,
+        "scenes": 8,
+        "selected": 128,
+        "source_available_counts": {
+          "F": 126,
+          "N": 128,
+          "Q": 125
+        },
+        "successful_FULL_A_views": 224,
+        "unavailable": 16
+      },
+      "SU07_GLOBAL_BLEND": {
+        "applied_changes": 32,
+        "common": 111,
+        "common_FULL_pairs": 218,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 111,
+        "proposed_changes": 32,
+        "protected": 1,
+        "scenes": 8,
+        "selected": 128,
+        "source_available_counts": {
+          "F": 126,
+          "N": 128,
+          "Q": 125
+        },
+        "successful_FULL_A_views": 224,
+        "unavailable": 16
+      },
+      "SU08_PAIRED_DELTA": {
+        "applied_changes": 14,
+        "common": 111,
+        "common_FULL_pairs": 218,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 111,
+        "proposed_changes": 14,
+        "protected": 1,
+        "scenes": 8,
+        "selected": 128,
+        "source_available_counts": {
+          "F": 126,
+          "N": 128,
+          "Q": 125
+        },
+        "successful_FULL_A_views": 224,
+        "unavailable": 16
+      }
+    },
+    "scannet_cf18": {
+      "SU02_HARD_MATCHED": {
+        "applied_changes": 127,
+        "common": 209,
+        "common_FULL_pairs": 366,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 0,
+        "proposed_changes": 127,
+        "protected": 19,
+        "scenes": 18,
+        "selected": 288,
+        "source_available_counts": {
+          "F": 267,
+          "N": 288,
+          "Q": 244
+        },
+        "successful_FULL_A_views": 430,
+        "unavailable": 62
+      },
+      "SU03_STABLE_MATCHED": {
+        "applied_changes": 26,
+        "common": 209,
+        "common_FULL_pairs": 366,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 0,
+        "proposed_changes": 26,
+        "protected": 19,
+        "scenes": 18,
+        "selected": 288,
+        "source_available_counts": {
+          "F": 267,
+          "N": 288,
+          "Q": 244
+        },
+        "successful_FULL_A_views": 430,
+        "unavailable": 62
+      },
+      "SU04_F_REPLACE": {
+        "applied_changes": 111,
+        "common": 209,
+        "common_FULL_pairs": 366,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 209,
+        "proposed_changes": 111,
+        "protected": 19,
+        "scenes": 18,
+        "selected": 288,
+        "source_available_counts": {
+          "F": 267,
+          "N": 288,
+          "Q": 244
+        },
+        "successful_FULL_A_views": 430,
+        "unavailable": 62
+      },
+      "SU05_F_BLEND": {
+        "applied_changes": 86,
+        "common": 209,
+        "common_FULL_pairs": 366,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 209,
+        "proposed_changes": 86,
+        "protected": 19,
+        "scenes": 18,
+        "selected": 288,
+        "source_available_counts": {
+          "F": 267,
+          "N": 288,
+          "Q": 244
+        },
+        "successful_FULL_A_views": 430,
+        "unavailable": 62
+      },
+      "SU06_F_COARSE": {
+        "applied_changes": 86,
+        "common": 209,
+        "common_FULL_pairs": 366,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 209,
+        "proposed_changes": 86,
+        "protected": 19,
+        "scenes": 18,
+        "selected": 288,
+        "source_available_counts": {
+          "F": 267,
+          "N": 288,
+          "Q": 244
+        },
+        "successful_FULL_A_views": 430,
+        "unavailable": 62
+      },
+      "SU07_GLOBAL_BLEND": {
+        "applied_changes": 90,
+        "common": 209,
+        "common_FULL_pairs": 366,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 209,
+        "proposed_changes": 90,
+        "protected": 19,
+        "scenes": 18,
+        "selected": 288,
+        "source_available_counts": {
+          "F": 267,
+          "N": 288,
+          "Q": 244
+        },
+        "successful_FULL_A_views": 430,
+        "unavailable": 62
+      },
+      "SU08_PAIRED_DELTA": {
+        "applied_changes": 51,
+        "common": 209,
+        "common_FULL_pairs": 366,
+        "full_cohort": true,
+        "new_proposals_cancelled_by_raw_zero": 0,
+        "posterior_changes": 209,
+        "proposed_changes": 51,
+        "protected": 19,
+        "scenes": 18,
+        "selected": 288,
+        "source_available_counts": {
+          "F": 267,
+          "N": 288,
+          "Q": 244
+        },
+        "successful_FULL_A_views": 430,
+        "unavailable": 62
+      }
+    }
+  },
+  "fixed_gate_selection": {
+    "deployment": "N0_UNCHANGED",
+    "flags": {
+      "SU02_HARD_MATCHED": {
+        "CF_D2_crossing": true,
+        "cf_all5": true,
+        "material_target_met": false,
+        "replica_all5": false,
+        "target_met": false
+      },
+      "SU03_STABLE_MATCHED": {
+        "CF_D2_crossing": false,
+        "cf_all5": true,
+        "material_target_met": false,
+        "replica_all5": false,
+        "target_met": false
+      },
+      "SU04_F_REPLACE": {
+        "CF_D2_crossing": false,
+        "cf_all5": true,
+        "material_target_met": false,
+        "replica_all5": false,
+        "target_met": false
+      },
+      "SU05_F_BLEND": {
+        "CF_D2_crossing": false,
+        "cf_all5": false,
+        "material_target_met": false,
+        "replica_all5": false,
+        "target_met": false
+      },
+      "SU06_F_COARSE": {
+        "CF_D2_crossing": false,
+        "cf_all5": false,
+        "material_target_met": false,
+        "replica_all5": false,
+        "target_met": false
+      },
+      "SU07_GLOBAL_BLEND": {
+        "CF_D2_crossing": true,
+        "cf_all5": true,
+        "material_target_met": false,
+        "replica_all5": false,
+        "target_met": false
+      },
+      "SU08_PAIRED_DELTA": {
+        "CF_D2_crossing": false,
+        "cf_all5": false,
+        "material_target_met": false,
+        "replica_all5": false,
+        "target_met": false
+      }
+    },
+    "independent_confirmation": false,
+    "material_target_met": false,
+    "passing_candidates": [],
+    "selected": "SU01_G1",
+    "status": "COMPLETE_NO_TARGET_GAIN",
+    "target_met": false
+  },
+  "future_update_risk_study": "only separately specified with training/physical-family separation; not executed",
+  "hard_control_effects": {
+    "replica8": {
+      "SU02_HARD_MATCHED": {
+        "0.5": {
+          "damage_remains": 4,
+          "hard_damage": 4
+        },
+        "0.75": {
+          "damage_remains": 1,
+          "hard_damage": 1
+        }
+      },
+      "SU03_STABLE_MATCHED": {
+        "0.5": {
+          "damage_prevented": 1,
+          "damage_remains": 3,
+          "hard_damage": 4
+        },
+        "0.75": {
+          "damage_remains": 1,
+          "hard_damage": 1
+        }
+      },
+      "SU04_F_REPLACE": {
+        "0.5": {
+          "damage_prevented": 1,
+          "damage_remains": 3,
+          "hard_damage": 4
+        },
+        "0.75": {
+          "damage_remains": 1,
+          "hard_damage": 1
+        }
+      },
+      "SU05_F_BLEND": {
+        "0.5": {
+          "damage_prevented": 1,
+          "damage_remains": 3,
+          "hard_damage": 4
+        },
+        "0.75": {
+          "damage_remains": 1,
+          "hard_damage": 1
+        }
+      },
+      "SU06_F_COARSE": {
+        "0.5": {
+          "damage_prevented": 2,
+          "damage_remains": 2,
+          "hard_damage": 4
+        },
+        "0.75": {
+          "damage_remains": 1,
+          "hard_damage": 1
+        }
+      },
+      "SU07_GLOBAL_BLEND": {
+        "0.5": {
+          "damage_prevented": 1,
+          "damage_remains": 3,
+          "hard_damage": 4
+        },
+        "0.75": {
+          "damage_prevented": 1,
+          "hard_damage": 1
+        }
+      },
+      "SU08_PAIRED_DELTA": {
+        "0.5": {
+          "damage_prevented": 3,
+          "damage_remains": 1,
+          "hard_damage": 4
+        },
+        "0.75": {
+          "damage_prevented": 1,
+          "hard_damage": 1
+        }
+      }
+    },
+    "scannet_cf18": {
+      "SU02_HARD_MATCHED": {
+        "0.5": {
+          "correction_retained": 3,
+          "hard_useful_correction": 3
+        },
+        "0.75": {}
+      },
+      "SU03_STABLE_MATCHED": {
+        "0.5": {
+          "correction_lost": 1,
+          "correction_retained": 2,
+          "hard_useful_correction": 3
+        },
+        "0.75": {}
+      },
+      "SU04_F_REPLACE": {
+        "0.5": {
+          "correction_retained": 3,
+          "hard_useful_correction": 3
+        },
+        "0.75": {}
+      },
+      "SU05_F_BLEND": {
+        "0.5": {
+          "correction_retained": 3,
+          "hard_useful_correction": 3
+        },
+        "0.75": {}
+      },
+      "SU06_F_COARSE": {
+        "0.5": {
+          "correction_retained": 3,
+          "hard_useful_correction": 3
+        },
+        "0.75": {}
+      },
+      "SU07_GLOBAL_BLEND": {
+        "0.5": {
+          "correction_retained": 3,
+          "hard_useful_correction": 3
+        },
+        "0.75": {}
+      },
+      "SU08_PAIRED_DELTA": {
+        "0.5": {
+          "correction_lost": 2,
+          "correction_retained": 1,
+          "hard_useful_correction": 3
+        },
+        "0.75": {}
+      }
+    }
+  },
+  "identity": "3aa0ad7fb50cc91e2eb982fc32f3d06eee78df71892737ac5471e818e30d78b7",
+  "independent_confirmation": false,
+  "interpretations": [
+    {
+      "all_five_metrics_both_cohorts_nondecrease": false,
+      "candidate": "SU04_F_REPLACE",
+      "complete": true,
+      "measured_contrasts": [
+        {
+          "candidate": "SU04_F_REPLACE",
+          "cohort": "replica8",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": 0.012328005231651062,
+            "ap50": 0.01549459434919509,
+            "apall": 0.010104488679044996,
+            "macc": 0.002940379984575525,
+            "miou": 0.011623506195574562
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 44,
+          "recovered_rank_changes": 1,
+          "reference": "SU02_HARD_MATCHED",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 27,
+                "added_definite_TP_score_entries": 1,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 1,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 27
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "plate",
+                    33000
+                  ],
+                  "scene": "room0"
+                }
+              ]
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 28,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 28
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 189,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 78,
+              "UNCHANGED_WRONG": 65,
+              "WRONG_TO_RIGHT": 1,
+              "WRONG_TO_WRONG": 3
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 276,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 25,
+              "UNCHANGED_WRONG": 34,
+              "WRONG_TO_WRONG": 1
+            }
+          }
+        },
+        {
+          "candidate": "SU04_F_REPLACE",
+          "cohort": "scannet_cf18",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": -0.006845471500287803,
+            "ap50": -0.005339466168799267,
+            "apall": -0.001043264082787057,
+            "macc": -0.001994365964307021,
+            "miou": -0.006696915034267337
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 84,
+          "recovered_rank_changes": 2,
+          "reference": "SU02_HARD_MATCHED",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 47,
+                "added_definite_TP_score_entries": 1,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 4,
+                "lost_unique_GT_matches": 4,
+                "new_unique_GT_matches": 1,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 44
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "trash can",
+                    56001
+                  ],
+                  "scene": "scene0084_00"
+                },
+                {
+                  "class_and_GT_id": [
+                    "trash can",
+                    56000
+                  ],
+                  "scene": "scene0084_02"
+                },
+                {
+                  "class_and_GT_id": [
+                    "backpack",
+                    48000
+                  ],
+                  "scene": "scene0168_00"
+                },
+                {
+                  "class_and_GT_id": [
+                    "office chair",
+                    10001
+                  ],
+                  "scene": "scene0378_00"
+                }
+              ],
+              "new_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "chair",
+                    2000
+                  ],
+                  "scene": "scene0378_01"
+                }
+              ]
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 52,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 52
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 1339,
+              "NO_ELIGIBLE_GT": 315,
+              "RIGHT_TO_WRONG": 4,
+              "UNCHANGED_RIGHT": 153,
+              "UNCHANGED_WRONG": 120,
+              "WRONG_TO_RIGHT": 1,
+              "WRONG_TO_WRONG": 6
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 1517,
+              "NO_ELIGIBLE_GT": 315,
+              "UNCHANGED_RIGHT": 58,
+              "UNCHANGED_WRONG": 46,
+              "WRONG_TO_WRONG": 2
+            }
+          }
+        }
+      ],
+      "metric_relation": "TRADEOFF",
+      "reference": "SU02_HARD_MATCHED"
+    },
+    {
+      "all_five_metrics_both_cohorts_nondecrease": false,
+      "candidate": "SU05_F_BLEND",
+      "complete": true,
+      "measured_contrasts": [
+        {
+          "candidate": "SU05_F_BLEND",
+          "cohort": "replica8",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": -0.0038516113516113837,
+            "ap50": -0.0013152356902357276,
+            "apall": -0.0010799834025142507,
+            "macc": 6.646092101070256e-05,
+            "miou": -0.0009931207283278565
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 19,
+          "recovered_rank_changes": 0,
+          "reference": "SU04_F_REPLACE",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 10,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 10
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 10,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 10
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 189,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 79,
+              "UNCHANGED_WRONG": 68
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 276,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 25,
+              "UNCHANGED_WRONG": 35
+            }
+          }
+        },
+        {
+          "candidate": "SU05_F_BLEND",
+          "cohort": "scannet_cf18",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": -6.241933167028257e-05,
+            "ap50": -0.0007605094238734011,
+            "apall": -0.0011205988989782395,
+            "macc": -0.00018234381982573655,
+            "miou": -0.0009456873239035712
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 38,
+          "recovered_rank_changes": 0,
+          "reference": "SU04_F_REPLACE",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 22,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 1,
+                "lost_unique_GT_matches": 1,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 21
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "chair",
+                    2000
+                  ],
+                  "scene": "scene0378_01"
+                }
+              ],
+              "new_unique_GT": []
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 24,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 24
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 1339,
+              "NO_ELIGIBLE_GT": 315,
+              "RIGHT_TO_WRONG": 1,
+              "UNCHANGED_RIGHT": 153,
+              "UNCHANGED_WRONG": 128,
+              "WRONG_TO_WRONG": 2
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 1517,
+              "NO_ELIGIBLE_GT": 315,
+              "UNCHANGED_RIGHT": 58,
+              "UNCHANGED_WRONG": 48
+            }
+          }
+        }
+      ],
+      "metric_relation": "TRADEOFF",
+      "reference": "SU04_F_REPLACE"
+    },
+    {
+      "all_five_metrics_both_cohorts_nondecrease": false,
+      "candidate": "SU05_F_BLEND",
+      "complete": true,
+      "measured_contrasts": [
+        {
+          "candidate": "SU05_F_BLEND",
+          "cohort": "replica8",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": -0.03029513888888896,
+            "ap50": -0.018663194444444475,
+            "apall": -0.0103202160493827,
+            "macc": -0.02069800167436736,
+            "miou": -0.016878779390694876
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 6,
+          "recovered_rank_changes": 1,
+          "reference": "SU06_F_COARSE",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 7,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 2,
+                "lost_unique_GT_matches": 2,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 4
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "bottle",
+                    47000
+                  ],
+                  "scene": "office2"
+                },
+                {
+                  "class_and_GT_id": [
+                    "bowl",
+                    49000
+                  ],
+                  "scene": "room2"
+                }
+              ],
+              "new_unique_GT": []
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 7,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 7
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 189,
+              "NO_ELIGIBLE_GT": 39,
+              "RIGHT_TO_WRONG": 2,
+              "UNCHANGED_RIGHT": 79,
+              "UNCHANGED_WRONG": 66
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 276,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 25,
+              "UNCHANGED_WRONG": 35
+            }
+          }
+        },
+        {
+          "candidate": "SU05_F_BLEND",
+          "cohort": "scannet_cf18",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": 4.516680787580718e-05,
+            "ap50": -0.00015537582473412748,
+            "apall": -3.264697813017137e-05,
+            "macc": -0.00018846003426498115,
+            "miou": 0.00010715294072219383
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 34,
+          "recovered_rank_changes": 1,
+          "reference": "SU06_F_COARSE",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 19,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 1,
+                "lost_unique_GT_matches": 1,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 18
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "chair",
+                    2000
+                  ],
+                  "scene": "scene0378_01"
+                }
+              ],
+              "new_unique_GT": []
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 20,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 20
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 1339,
+              "NO_ELIGIBLE_GT": 315,
+              "RIGHT_TO_WRONG": 1,
+              "UNCHANGED_RIGHT": 153,
+              "UNCHANGED_WRONG": 130
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 1517,
+              "NO_ELIGIBLE_GT": 315,
+              "UNCHANGED_RIGHT": 58,
+              "UNCHANGED_WRONG": 48
+            }
+          }
+        }
+      ],
+      "metric_relation": "TRADEOFF",
+      "reference": "SU06_F_COARSE"
+    },
+    {
+      "all_five_metrics_both_cohorts_nondecrease": false,
+      "candidate": "SU05_F_BLEND",
+      "complete": true,
+      "measured_contrasts": [
+        {
+          "candidate": "SU05_F_BLEND",
+          "cohort": "replica8",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": 0.005924972716022603,
+            "ap50": 0.0023280227841859513,
+            "apall": 0.00313475066956935,
+            "macc": -0.003647501849896595,
+            "miou": 0.0012929000815794511
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 28,
+          "recovered_rank_changes": 1,
+          "reference": "SU07_GLOBAL_BLEND",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 15,
+                "added_definite_TP_score_entries": 1,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 1,
+                "lost_unique_GT_matches": 1,
+                "new_unique_GT_matches": 1,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 16
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "rug",
+                    8000
+                  ],
+                  "scene": "office0"
+                }
+              ],
+              "new_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "plate",
+                    33000
+                  ],
+                  "scene": "room0"
+                }
+              ]
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 16,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 1,
+                "lost_unique_GT_matches": 1,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 16
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "rug",
+                    8000
+                  ],
+                  "scene": "office0"
+                }
+              ],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 189,
+              "NO_ELIGIBLE_GT": 39,
+              "RIGHT_TO_WRONG": 1,
+              "UNCHANGED_RIGHT": 78,
+              "UNCHANGED_WRONG": 66,
+              "WRONG_TO_RIGHT": 1,
+              "WRONG_TO_WRONG": 1
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 276,
+              "NO_ELIGIBLE_GT": 39,
+              "RIGHT_TO_WRONG": 1,
+              "UNCHANGED_RIGHT": 25,
+              "UNCHANGED_WRONG": 33,
+              "WRONG_TO_WRONG": 1
+            }
+          }
+        },
+        {
+          "candidate": "SU05_F_BLEND",
+          "cohort": "scannet_cf18",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": -0.008258471014277624,
+            "ap50": -0.005789622425206059,
+            "apall": -0.0019626038554461794,
+            "macc": -0.0034828856370160977,
+            "miou": -0.006443805975104355
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 72,
+          "recovered_rank_changes": 1,
+          "reference": "SU07_GLOBAL_BLEND",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 48,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 3,
+                "lost_unique_GT_matches": 3,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 45
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "trash can",
+                    56001
+                  ],
+                  "scene": "scene0084_00"
+                },
+                {
+                  "class_and_GT_id": [
+                    "backpack",
+                    48000
+                  ],
+                  "scene": "scene0168_00"
+                },
+                {
+                  "class_and_GT_id": [
+                    "office chair",
+                    10001
+                  ],
+                  "scene": "scene0378_00"
+                }
+              ],
+              "new_unique_GT": []
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 51,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 51
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 1339,
+              "NO_ELIGIBLE_GT": 315,
+              "RIGHT_TO_WRONG": 3,
+              "UNCHANGED_RIGHT": 153,
+              "UNCHANGED_WRONG": 122,
+              "WRONG_TO_WRONG": 6
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 1517,
+              "NO_ELIGIBLE_GT": 315,
+              "UNCHANGED_RIGHT": 58,
+              "UNCHANGED_WRONG": 45,
+              "WRONG_TO_WRONG": 3
+            }
+          }
+        }
+      ],
+      "metric_relation": "TRADEOFF",
+      "reference": "SU07_GLOBAL_BLEND"
+    },
+    {
+      "all_five_metrics_both_cohorts_nondecrease": false,
+      "candidate": "SU08_PAIRED_DELTA",
+      "complete": true,
+      "measured_contrasts": [
+        {
+          "candidate": "SU08_PAIRED_DELTA",
+          "cohort": "replica8",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": 0.002764833089668628,
+            "ap50": 0.00787657076719575,
+            "apall": 0.005280288555751508,
+            "macc": 0.004408277105856007,
+            "miou": 0.0013519725880612454
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 16,
+          "recovered_rank_changes": 0,
+          "reference": "SU05_F_BLEND",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 8,
+                "added_definite_TP_score_entries": 2,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 2,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 9
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "rug",
+                    8000
+                  ],
+                  "scene": "office0"
+                },
+                {
+                  "class_and_GT_id": [
+                    "table",
+                    7000
+                  ],
+                  "scene": "office0"
+                }
+              ]
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 10,
+                "added_definite_TP_score_entries": 1,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 1,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 10
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "rug",
+                    8000
+                  ],
+                  "scene": "office0"
+                }
+              ]
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 189,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 79,
+              "UNCHANGED_WRONG": 65,
+              "WRONG_TO_RIGHT": 2,
+              "WRONG_TO_WRONG": 1
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 276,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 25,
+              "UNCHANGED_WRONG": 34,
+              "WRONG_TO_RIGHT": 1
+            }
+          }
+        },
+        {
+          "candidate": "SU08_PAIRED_DELTA",
+          "cohort": "scannet_cf18",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": -0.006449185308753214,
+            "ap50": 0.0008728352524628447,
+            "apall": 0.0010893213682306863,
+            "macc": -0.0063462241932750185,
+            "miou": -0.007134531106451014
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 107,
+          "recovered_rank_changes": 3,
+          "reference": "SU05_F_BLEND",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 50,
+                "added_definite_TP_score_entries": 3,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 3,
+                "lost_unique_GT_matches": 3,
+                "new_unique_GT_matches": 3,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 50
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "trash can",
+                    56000
+                  ],
+                  "scene": "scene0168_01"
+                },
+                {
+                  "class_and_GT_id": [
+                    "poster",
+                    1188000
+                  ],
+                  "scene": "scene0231_01"
+                },
+                {
+                  "class_and_GT_id": [
+                    "kitchen cabinet",
+                    29001
+                  ],
+                  "scene": "scene0231_02"
+                }
+              ],
+              "new_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "trash can",
+                    56001
+                  ],
+                  "scene": "scene0084_00"
+                },
+                {
+                  "class_and_GT_id": [
+                    "trash can",
+                    56000
+                  ],
+                  "scene": "scene0084_02"
+                },
+                {
+                  "class_and_GT_id": [
+                    "office chair",
+                    10001
+                  ],
+                  "scene": "scene0378_00"
+                }
+              ]
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 57,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 1,
+                "lost_unique_GT_matches": 1,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 56
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "kitchen cabinet",
+                    29001
+                  ],
+                  "scene": "scene0231_02"
+                }
+              ],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 1339,
+              "NO_ELIGIBLE_GT": 315,
+              "RIGHT_TO_WRONG": 3,
+              "UNCHANGED_RIGHT": 150,
+              "UNCHANGED_WRONG": 120,
+              "WRONG_TO_RIGHT": 3,
+              "WRONG_TO_WRONG": 8
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 1517,
+              "NO_ELIGIBLE_GT": 315,
+              "RIGHT_TO_WRONG": 1,
+              "UNCHANGED_RIGHT": 57,
+              "UNCHANGED_WRONG": 43,
+              "WRONG_TO_WRONG": 5
+            }
+          }
+        }
+      ],
+      "metric_relation": "TRADEOFF",
+      "reference": "SU05_F_BLEND"
+    },
+    {
+      "all_five_metrics_both_cohorts_nondecrease": false,
+      "candidate": "SU03_STABLE_MATCHED",
+      "complete": true,
+      "measured_contrasts": [
+        {
+          "candidate": "SU03_STABLE_MATCHED",
+          "cohort": "replica8",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": 0.00903216336741558,
+            "ap50": 0.013715899664250353,
+            "apall": 0.006896020806611072,
+            "macc": 0.004257039722091127,
+            "miou": 0.008366576719617769
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 40,
+          "recovered_rank_changes": 1,
+          "reference": "SU02_HARD_MATCHED",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 22,
+                "added_definite_TP_score_entries": 1,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 1,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 23
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "plate",
+                    33000
+                  ],
+                  "scene": "room0"
+                }
+              ]
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 24,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 23
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 189,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 78,
+              "UNCHANGED_WRONG": 65,
+              "WRONG_TO_RIGHT": 1,
+              "WRONG_TO_WRONG": 3
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 276,
+              "NO_ELIGIBLE_GT": 39,
+              "UNCHANGED_RIGHT": 25,
+              "UNCHANGED_WRONG": 34,
+              "WRONG_TO_WRONG": 1
+            }
+          }
+        },
+        {
+          "candidate": "SU03_STABLE_MATCHED",
+          "cohort": "scannet_cf18",
+          "full_cohort": true,
+          "metric_deltas_fraction": {
+            "ap25": -0.0013940904772056228,
+            "ap50": -0.0031304128687849597,
+            "apall": -0.0009107705207511418,
+            "macc": 0.0006802074219994791,
+            "miou": -0.004662913354545439
+          },
+          "output_identity_tie_all_scenes": false,
+          "rank_changes": 65,
+          "recovered_rank_changes": 1,
+          "reference": "SU02_HARD_MATCHED",
+          "released_matches": {
+            "0.5": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 51,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 1,
+                "lost_unique_GT_matches": 1,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 50
+              },
+              "lost_unique_GT": [
+                {
+                  "class_and_GT_id": [
+                    "trash can",
+                    56000
+                  ],
+                  "scene": "scene0168_01"
+                }
+              ],
+              "new_unique_GT": []
+            },
+            "0.75": {
+              "counts": {
+                "added_ambiguous_FP_score_entries": 0,
+                "added_ambiguous_TP_score_entries": 0,
+                "added_definite_FP_score_entries": 54,
+                "added_definite_TP_score_entries": 0,
+                "lost_ambiguous_TP_score_entries": 0,
+                "lost_definite_TP_score_entries": 0,
+                "lost_unique_GT_matches": 0,
+                "new_unique_GT_matches": 0,
+                "removed_ambiguous_FP_score_entries": 0,
+                "removed_definite_FP_score_entries": 54
+              },
+              "lost_unique_GT": [],
+              "new_unique_GT": []
+            }
+          },
+          "semantic_outcomes": {
+            "0.5": {
+              "GEOMETRY_INSUFFICIENT": 1339,
+              "NO_ELIGIBLE_GT": 315,
+              "RIGHT_TO_WRONG": 1,
+              "UNCHANGED_RIGHT": 156,
+              "UNCHANGED_WRONG": 125,
+              "WRONG_TO_WRONG": 2
+            },
+            "0.75": {
+              "GEOMETRY_INSUFFICIENT": 1517,
+              "NO_ELIGIBLE_GT": 315,
+              "UNCHANGED_RIGHT": 58,
+              "UNCHANGED_WRONG": 46,
+              "WRONG_TO_WRONG": 2
+            }
+          }
+        }
+      ],
+      "metric_relation": "TRADEOFF",
+      "reference": "SU02_HARD_MATCHED"
+    }
+  ],
+  "next_stage_executed": false,
+  "paired_change_vs_absolute_A": [
+    {
+      "candidate": "SU08_PAIRED_DELTA",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.002764833089668628,
+        "ap50": 0.00787657076719575,
+        "apall": 0.005280288555751508,
+        "macc": 0.004408277105856007,
+        "miou": 0.0013519725880612454
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 16,
+      "recovered_rank_changes": 0,
+      "reference": "SU05_F_BLEND",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 8,
+            "added_definite_TP_score_entries": 2,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 2,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 9
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office0"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 10,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 10
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ]
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 79,
+          "UNCHANGED_WRONG": 65,
+          "WRONG_TO_RIGHT": 2,
+          "WRONG_TO_WRONG": 1
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 34,
+          "WRONG_TO_RIGHT": 1
+        }
+      }
+    },
+    {
+      "candidate": "SU08_PAIRED_DELTA",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.006449185308753214,
+        "ap50": 0.0008728352524628447,
+        "apall": 0.0010893213682306863,
+        "macc": -0.0063462241932750185,
+        "miou": -0.007134531106451014
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 107,
+      "recovered_rank_changes": 3,
+      "reference": "SU05_F_BLEND",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 50,
+            "added_definite_TP_score_entries": 3,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 3,
+            "lost_unique_GT_matches": 3,
+            "new_unique_GT_matches": 3,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 50
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            },
+            {
+              "class_and_GT_id": [
+                "kitchen cabinet",
+                29001
+              ],
+              "scene": "scene0231_02"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_00"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 57,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 56
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "kitchen cabinet",
+                29001
+              ],
+              "scene": "scene0231_02"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 3,
+          "UNCHANGED_RIGHT": 150,
+          "UNCHANGED_WRONG": 120,
+          "WRONG_TO_RIGHT": 3,
+          "WRONG_TO_WRONG": 8
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 57,
+          "UNCHANGED_WRONG": 43,
+          "WRONG_TO_WRONG": 5
+        }
+      }
+    }
+  ],
+  "recommendation": "stop these five fixed transformations under this target; no weight sweep is authorized",
+  "remaining_changes_vs_G1": [
+    {
+      "candidate": "SU02_HARD_MATCHED",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.035792731599337935,
+        "ap50": -0.041399100722451454,
+        "apall": -0.024416033544216426,
+        "macc": -0.02517179511258122,
+        "miou": -0.02828582854113787
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 57,
+      "recovered_rank_changes": 1,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 33,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 4,
+            "lost_unique_GT_matches": 4,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 30
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "plate",
+                33000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 34,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 34
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 4,
+          "UNCHANGED_RIGHT": 78,
+          "UNCHANGED_WRONG": 62,
+          "WRONG_TO_WRONG": 3
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 33,
+          "WRONG_TO_WRONG": 1
+        }
+      }
+    },
+    {
+      "candidate": "SU03_STABLE_MATCHED",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.026760568231922355,
+        "ap50": -0.0276832010582011,
+        "apall": -0.017520012737605353,
+        "macc": -0.020914755390490092,
+        "miou": -0.0199192518215201
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 19,
+      "recovered_rank_changes": 0,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 10,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 3,
+            "lost_unique_GT_matches": 3,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 8
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 11,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 10
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 3,
+          "UNCHANGED_RIGHT": 79,
+          "UNCHANGED_WRONG": 65
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 34
+        }
+      }
+    },
+    {
+      "candidate": "SU04_F_REPLACE",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.023464726367686872,
+        "ap50": -0.025904506373256364,
+        "apall": -0.01431154486517143,
+        "macc": -0.022231415128005694,
+        "miou": -0.016662322345563307
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 30,
+      "recovered_rank_changes": 0,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 17,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 3,
+            "lost_unique_GT_matches": 3,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 14
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 17,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 17
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 3,
+          "UNCHANGED_RIGHT": 79,
+          "UNCHANGED_WRONG": 65
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 34
+        }
+      }
+    },
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.027316337719298256,
+        "ap50": -0.02721974206349209,
+        "apall": -0.01539152826768568,
+        "macc": -0.02216495420699499,
+        "miou": -0.017655443073891164
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 11,
+      "recovered_rank_changes": 0,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 7,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 3,
+            "lost_unique_GT_matches": 3,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 4
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 7,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 7
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 3,
+          "UNCHANGED_RIGHT": 79,
+          "UNCHANGED_WRONG": 65
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 34
+        }
+      }
+    },
+    {
+      "candidate": "SU06_F_COARSE",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.0029788011695907057,
+        "ap50": -0.008556547619047616,
+        "apall": -0.005071312218302981,
+        "macc": -0.00146695253262763,
+        "miou": -0.0007766636831962881
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 15,
+      "recovered_rank_changes": 1,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 9,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 9
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "bottle",
+                47000
+              ],
+              "scene": "office2"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 10,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 10
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "rug",
+                8000
+              ],
+              "scene": "office0"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 2,
+          "UNCHANGED_RIGHT": 80,
+          "UNCHANGED_WRONG": 64,
+          "WRONG_TO_RIGHT": 1
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 34
+        }
+      }
+    },
+    {
+      "candidate": "SU07_GLOBAL_BLEND",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.03324131043532086,
+        "ap50": -0.029547764847678043,
+        "apall": -0.01852627893725503,
+        "macc": -0.018517452357098396,
+        "miou": -0.018948343155470615
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 28,
+      "recovered_rank_changes": 1,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 19,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 3,
+            "lost_unique_GT_matches": 3,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 15
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "plate",
+                33000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 19,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 19
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 3,
+          "UNCHANGED_RIGHT": 79,
+          "UNCHANGED_WRONG": 64,
+          "WRONG_TO_WRONG": 1
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 26,
+          "UNCHANGED_WRONG": 33,
+          "WRONG_TO_WRONG": 1
+        }
+      }
+    },
+    {
+      "candidate": "SU08_PAIRED_DELTA",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.024551504629629628,
+        "ap50": -0.01934317129629634,
+        "apall": -0.010111239711934172,
+        "macc": -0.017756677101138985,
+        "miou": -0.01630347048582992
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 11,
+      "recovered_rank_changes": 0,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 6,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 4
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 7,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 7
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 81,
+          "UNCHANGED_WRONG": 64,
+          "WRONG_TO_WRONG": 1
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 26,
+          "UNCHANGED_WRONG": 34
+        }
+      }
+    },
+    {
+      "candidate": "SU02_HARD_MATCHED",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.014144669795520731,
+        "ap50": 0.007225459624723901,
+        "apall": 0.0016688401615255477,
+        "macc": 0.005504485537412007,
+        "miou": 0.015956531764641346
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 111,
+      "recovered_rank_changes": 3,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 65,
+            "added_definite_TP_score_entries": 3,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 3,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 68
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                19000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 72,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 72
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 154,
+          "UNCHANGED_WRONG": 123,
+          "WRONG_TO_RIGHT": 3,
+          "WRONG_TO_WRONG": 4
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 46,
+          "WRONG_TO_WRONG": 2
+        }
+      }
+    },
+    {
+      "candidate": "SU03_STABLE_MATCHED",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.012750579318315108,
+        "ap50": 0.004095046755938941,
+        "apall": 0.0007580696407744059,
+        "macc": 0.006184692959411486,
+        "miou": 0.011293618410095907
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 47,
+      "recovered_rank_changes": 2,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 15,
+            "added_definite_TP_score_entries": 2,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 2,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 17
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                19000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 18,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 18
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 154,
+          "UNCHANGED_WRONG": 126,
+          "WRONG_TO_RIGHT": 2,
+          "WRONG_TO_WRONG": 2
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 48
+        }
+      }
+    },
+    {
+      "candidate": "SU04_F_REPLACE",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.007299198295232928,
+        "ap50": 0.0018859934559246339,
+        "apall": 0.0006255760787384906,
+        "macc": 0.003510119573104986,
+        "miou": 0.00925961673037401
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 114,
+      "recovered_rank_changes": 3,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 62,
+            "added_definite_TP_score_entries": 4,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 4,
+            "lost_unique_GT_matches": 4,
+            "new_unique_GT_matches": 4,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 62
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_00"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                19000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0378_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 72,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 72
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 4,
+          "UNCHANGED_RIGHT": 150,
+          "UNCHANGED_WRONG": 119,
+          "WRONG_TO_RIGHT": 4,
+          "WRONG_TO_WRONG": 7
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 45,
+          "WRONG_TO_WRONG": 3
+        }
+      }
+    },
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.007236778963562646,
+        "ap50": 0.0011254840320512327,
+        "apall": -0.0004950228202397489,
+        "macc": 0.0033277757532792496,
+        "miou": 0.008313929406470438
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 92,
+      "recovered_rank_changes": 3,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 49,
+            "added_definite_TP_score_entries": 3,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 4,
+            "lost_unique_GT_matches": 4,
+            "new_unique_GT_matches": 3,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 48
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_00"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                19000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 56,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 56
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 4,
+          "UNCHANGED_RIGHT": 150,
+          "UNCHANGED_WRONG": 122,
+          "WRONG_TO_RIGHT": 3,
+          "WRONG_TO_WRONG": 5
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 45,
+          "WRONG_TO_WRONG": 3
+        }
+      }
+    },
+    {
+      "candidate": "SU06_F_COARSE",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.007191612155686838,
+        "ap50": 0.0012808598567853602,
+        "apall": -0.0004623758421095775,
+        "macc": 0.0035162357875442307,
+        "miou": 0.008206776465748244
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 103,
+      "recovered_rank_changes": 4,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 49,
+            "added_definite_TP_score_entries": 4,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 4,
+            "lost_unique_GT_matches": 4,
+            "new_unique_GT_matches": 4,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 49
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_00"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                19000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0378_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 58,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 58
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 4,
+          "UNCHANGED_RIGHT": 150,
+          "UNCHANGED_WRONG": 121,
+          "WRONG_TO_RIGHT": 4,
+          "WRONG_TO_WRONG": 5
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 45,
+          "WRONG_TO_WRONG": 3
+        }
+      }
+    },
+    {
+      "candidate": "SU07_GLOBAL_BLEND",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.01549524997784027,
+        "ap50": 0.006915106457257292,
+        "apall": 0.0014675810352064306,
+        "macc": 0.006810661390295347,
+        "miou": 0.014757735381574794
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 95,
+      "recovered_rank_changes": 2,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 47,
+            "added_definite_TP_score_entries": 3,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 3,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 49
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                19000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 53,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 53
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 153,
+          "UNCHANGED_WRONG": 124,
+          "WRONG_TO_RIGHT": 3,
+          "WRONG_TO_WRONG": 3
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 46,
+          "WRONG_TO_WRONG": 2
+        }
+      }
+    },
+    {
+      "candidate": "SU08_PAIRED_DELTA",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.000787593654809432,
+        "ap50": 0.0019983192845140774,
+        "apall": 0.0005942985479909374,
+        "macc": -0.003018448439995769,
+        "miou": 0.0011793983000194241
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 52,
+      "recovered_rank_changes": 0,
+      "reference": "SU01_G1",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 29,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 28
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "kitchen cabinet",
+                29001
+              ],
+              "scene": "scene0231_02"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                19000
+              ],
+              "scene": "scene0168_00"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 30,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 29
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "kitchen cabinet",
+                29001
+              ],
+              "scene": "scene0231_02"
+            }
+          ],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 2,
+          "UNCHANGED_RIGHT": 152,
+          "UNCHANGED_WRONG": 125,
+          "WRONG_TO_RIGHT": 1,
+          "WRONG_TO_WRONG": 4
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 57,
+          "UNCHANGED_WRONG": 46,
+          "WRONG_TO_WRONG": 2
+        }
+      }
+    }
+  ],
+  "retain_old_F_vs_replace": [
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.0038516113516113837,
+        "ap50": -0.0013152356902357276,
+        "apall": -0.0010799834025142507,
+        "macc": 6.646092101070256e-05,
+        "miou": -0.0009931207283278565
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 19,
+      "recovered_rank_changes": 0,
+      "reference": "SU04_F_REPLACE",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 10,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 10
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 10,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 10
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 79,
+          "UNCHANGED_WRONG": 68
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 35
+        }
+      }
+    },
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -6.241933167028257e-05,
+        "ap50": -0.0007605094238734011,
+        "apall": -0.0011205988989782395,
+        "macc": -0.00018234381982573655,
+        "miou": -0.0009456873239035712
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 38,
+      "recovered_rank_changes": 0,
+      "reference": "SU04_F_REPLACE",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 22,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 21
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0378_01"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 24,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 24
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 153,
+          "UNCHANGED_WRONG": 128,
+          "WRONG_TO_WRONG": 2
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 48
+        }
+      }
+    }
+  ],
+  "same_view_AnyUp_vs_coarse": [
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.03029513888888896,
+        "ap50": -0.018663194444444475,
+        "apall": -0.0103202160493827,
+        "macc": -0.02069800167436736,
+        "miou": -0.016878779390694876
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 6,
+      "recovered_rank_changes": 1,
+      "reference": "SU06_F_COARSE",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 7,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 4
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "bottle",
+                47000
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 7,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 7
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "RIGHT_TO_WRONG": 2,
+          "UNCHANGED_RIGHT": 79,
+          "UNCHANGED_WRONG": 66
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 35
+        }
+      }
+    },
+    {
+      "candidate": "SU05_F_BLEND",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 4.516680787580718e-05,
+        "ap50": -0.00015537582473412748,
+        "apall": -3.264697813017137e-05,
+        "macc": -0.00018846003426498115,
+        "miou": 0.00010715294072219383
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 34,
+      "recovered_rank_changes": 1,
+      "reference": "SU06_F_COARSE",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 19,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 18
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0378_01"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 20,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 20
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 153,
+          "UNCHANGED_WRONG": 130
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 48
+        }
+      }
+    }
+  ],
+  "source_preservation_vs_hard": [
+    {
+      "candidate": "SU04_F_REPLACE",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.012328005231651062,
+        "ap50": 0.01549459434919509,
+        "apall": 0.010104488679044996,
+        "macc": 0.002940379984575525,
+        "miou": 0.011623506195574562
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 44,
+      "recovered_rank_changes": 1,
+      "reference": "SU02_HARD_MATCHED",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 27,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 27
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "plate",
+                33000
+              ],
+              "scene": "room0"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 28,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 28
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 78,
+          "UNCHANGED_WRONG": 65,
+          "WRONG_TO_RIGHT": 1,
+          "WRONG_TO_WRONG": 3
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 34,
+          "WRONG_TO_WRONG": 1
+        }
+      }
+    },
+    {
+      "candidate": "SU04_F_REPLACE",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.006845471500287803,
+        "ap50": -0.005339466168799267,
+        "apall": -0.001043264082787057,
+        "macc": -0.001994365964307021,
+        "miou": -0.006696915034267337
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 84,
+      "recovered_rank_changes": 2,
+      "reference": "SU02_HARD_MATCHED",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 47,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 4,
+            "lost_unique_GT_matches": 4,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 44
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_00"
+            }
+          ],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0378_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 52,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 52
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 4,
+          "UNCHANGED_RIGHT": 153,
+          "UNCHANGED_WRONG": 120,
+          "WRONG_TO_RIGHT": 1,
+          "WRONG_TO_WRONG": 6
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 46,
+          "WRONG_TO_WRONG": 2
+        }
+      }
+    }
+  ],
+  "stability_control": [
+    {
+      "candidate": "SU03_STABLE_MATCHED",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.00903216336741558,
+        "ap50": 0.013715899664250353,
+        "apall": 0.006896020806611072,
+        "macc": 0.004257039722091127,
+        "miou": 0.008366576719617769
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 40,
+      "recovered_rank_changes": 1,
+      "reference": "SU02_HARD_MATCHED",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 22,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 23
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "plate",
+                33000
+              ],
+              "scene": "room0"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 24,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 23
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 189,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 78,
+          "UNCHANGED_WRONG": 65,
+          "WRONG_TO_RIGHT": 1,
+          "WRONG_TO_WRONG": 3
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 276,
+          "NO_ELIGIBLE_GT": 39,
+          "UNCHANGED_RIGHT": 25,
+          "UNCHANGED_WRONG": 34,
+          "WRONG_TO_WRONG": 1
+        }
+      }
+    },
+    {
+      "candidate": "SU03_STABLE_MATCHED",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.0013940904772056228,
+        "ap50": -0.0031304128687849597,
+        "apall": -0.0009107705207511418,
+        "macc": 0.0006802074219994791,
+        "miou": -0.004662913354545439
+      },
+      "output_identity_tie_all_scenes": false,
+      "rank_changes": 65,
+      "recovered_rank_changes": 1,
+      "reference": "SU02_HARD_MATCHED",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 51,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 50
+          },
+          "lost_unique_GT": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            }
+          ],
+          "new_unique_GT": []
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 54,
+            "added_definite_TP_score_entries": 0,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 0,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 54
+          },
+          "lost_unique_GT": [],
+          "new_unique_GT": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "GEOMETRY_INSUFFICIENT": 1339,
+          "NO_ELIGIBLE_GT": 315,
+          "RIGHT_TO_WRONG": 1,
+          "UNCHANGED_RIGHT": 156,
+          "UNCHANGED_WRONG": 125,
+          "WRONG_TO_WRONG": 2
+        },
+        "0.75": {
+          "GEOMETRY_INSUFFICIENT": 1517,
+          "NO_ELIGIBLE_GT": 315,
+          "UNCHANGED_RIGHT": 58,
+          "UNCHANGED_WRONG": 46,
+          "WRONG_TO_WRONG": 2
+        }
+      }
+    }
+  ],
+  "status": "DIAGNOSTICS_COMPLETE"
+}

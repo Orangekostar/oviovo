@@ -1,0 +1,125 @@
+{
+  "caption": "Nine fixed conditions; matched controls explicitly marked. Released ordered pools, percent; gates use unrounded fractions.",
+  "columns": [
+    "Method",
+    "Rule",
+    "Replica_apall_pct",
+    "Replica_ap50_pct",
+    "Replica_miou_pct",
+    "CF18_apall_pct",
+    "CF18_ap50_pct",
+    "CF18_miou_pct",
+    "Target_met",
+    "Material_met"
+  ],
+  "rows": [
+    {
+      "CF18_ap50_pct": 17.96135985259656,
+      "CF18_apall_pct": 8.309185182632056,
+      "CF18_miou_pct": 18.997179844670278,
+      "Material_met": null,
+      "Method": "SU00_D2",
+      "Replica_ap50_pct": 24.495210428669075,
+      "Replica_apall_pct": 11.741338226305203,
+      "Replica_miou_pct": 29.691084892465803,
+      "Rule": "Inherited D2",
+      "Target_met": null
+    },
+    {
+      "CF18_ap50_pct": 17.83399041763044,
+      "CF18_apall_pct": 8.232194837949772,
+      "CF18_miou_pct": 19.021902419388002,
+      "Material_met": null,
+      "Method": "SU01_G1",
+      "Replica_ap50_pct": 26.057090388986538,
+      "Replica_apall_pct": 12.386368952716136,
+      "Replica_miou_pct": 30.272532343176334,
+      "Rule": "Inherited G1",
+      "Target_met": null
+    },
+    {
+      "CF18_ap50_pct": 18.556536380102827,
+      "CF18_apall_pct": 8.399078854102326,
+      "CF18_miou_pct": 20.61755559585214,
+      "Material_met": false,
+      "Method": "SU02_HARD_MATCHED",
+      "Replica_ap50_pct": 21.91718031674139,
+      "Replica_apall_pct": 9.944765598294495,
+      "Replica_miou_pct": 27.443949489062547,
+      "Rule": "Hard overwrite (matched)",
+      "Target_met": false
+    },
+    {
+      "CF18_ap50_pct": 18.243495093224332,
+      "CF18_apall_pct": 8.308001802027212,
+      "CF18_miou_pct": 20.151264260397596,
+      "Material_met": false,
+      "Method": "SU03_STABLE_MATCHED",
+      "Replica_ap50_pct": 23.28877028316643,
+      "Replica_apall_pct": 10.634367678955602,
+      "Replica_miou_pct": 28.280607161024324,
+      "Rule": "Stable overwrite (matched)",
+      "Target_met": false
+    },
+    {
+      "CF18_ap50_pct": 18.0225897632229,
+      "CF18_apall_pct": 8.29475244582362,
+      "CF18_miou_pct": 19.947864092425405,
+      "Material_met": false,
+      "Method": "SU04_F_REPLACE",
+      "Replica_ap50_pct": 23.4666397516609,
+      "Replica_apall_pct": 10.955214466198994,
+      "Replica_miou_pct": 28.606300108620005,
+      "Rule": "Replace F",
+      "Target_met": false
+    },
+    {
+      "CF18_ap50_pct": 17.94653882083556,
+      "CF18_apall_pct": 8.182692555925797,
+      "CF18_miou_pct": 19.853295360035048,
+      "Material_met": false,
+      "Method": "SU05_F_BLEND",
+      "Replica_ap50_pct": 23.33511618263733,
+      "Replica_apall_pct": 10.847216125947568,
+      "Replica_miou_pct": 28.506988035787217,
+      "Rule": "Blend F+A",
+      "Target_met": false
+    },
+    {
+      "CF18_ap50_pct": 17.962076403308973,
+      "CF18_apall_pct": 8.185957253738813,
+      "CF18_miou_pct": 19.842580065962828,
+      "Material_met": false,
+      "Method": "SU06_F_COARSE",
+      "Replica_ap50_pct": 25.201435627081775,
+      "Replica_apall_pct": 11.879237730885839,
+      "Replica_miou_pct": 30.194865974856704,
+      "Rule": "Blend F+C",
+      "Target_met": false
+    },
+    {
+      "CF18_ap50_pct": 18.525501063356167,
+      "CF18_apall_pct": 8.378952941470414,
+      "CF18_miou_pct": 20.497675957545482,
+      "Material_met": false,
+      "Method": "SU07_GLOBAL_BLEND",
+      "Replica_ap50_pct": 23.102313904218732,
+      "Replica_apall_pct": 10.533741058990634,
+      "Replica_miou_pct": 28.377698027629272,
+      "Rule": "Global same-A-mass blend",
+      "Target_met": false
+    },
+    {
+      "CF18_ap50_pct": 18.033822346081845,
+      "CF18_apall_pct": 8.291624692748865,
+      "CF18_miou_pct": 19.139842249389947,
+      "Material_met": false,
+      "Method": "SU08_PAIRED_DELTA",
+      "Replica_ap50_pct": 24.122773259356904,
+      "Replica_apall_pct": 11.37524498152272,
+      "Replica_miou_pct": 28.642185294593343,
+      "Rule": "Paired A-C delta",
+      "Target_met": false
+    }
+  ]
+}

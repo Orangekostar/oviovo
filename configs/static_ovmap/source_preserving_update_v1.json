@@ -1,0 +1,336 @@
+{
+  "schema_version": 1,
+  "task_id": "ovimap-source-preserving-update-v1",
+  "date": "2026-10-08",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "b000355eb8f91491e002df1499bd0170d91c35ef",
+  "branch": "research/ovimap-source-preserving-update-v1",
+  "parent_root": "/mnt/shared/ww/ovimap-minimal-instance-repair-v1/attempt_001",
+  "parent_storage_hint": "/home/ww/ovimap-minimal-instance-repair-v1-storage/attempt_001",
+  "output_root": "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+  "controller_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "cohorts": {
+    "replica8": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet_cf18": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0168_00",
+      "scene0168_01",
+      "scene0168_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "pilots": [
+    "office1",
+    "scene0011_00"
+  ],
+  "methods": [
+    {
+      "id": "SU00_D2",
+      "role": "inherited_control",
+      "operator": "ALIAS_IR00_D2"
+    },
+    {
+      "id": "SU01_G1",
+      "role": "inherited_reference",
+      "operator": "ALIAS_IR01_G1"
+    },
+    {
+      "id": "SU02_HARD_MATCHED",
+      "role": "matched_control",
+      "operator": "PARENT_IR06_DECISION_ON_COMMON_DOMAIN"
+    },
+    {
+      "id": "SU03_STABLE_MATCHED",
+      "role": "matched_control",
+      "operator": "PARENT_IR07_DECISION_ON_COMMON_DOMAIN"
+    },
+    {
+      "id": "SU04_F_REPLACE",
+      "role": "source_preserving",
+      "operator": "REPLACE_F_WITH_A"
+    },
+    {
+      "id": "SU05_F_BLEND",
+      "role": "source_preserving",
+      "operator": "BLEND_F_A_IN_DENSE_GROUP"
+    },
+    {
+      "id": "SU06_F_COARSE",
+      "role": "same_observation_control",
+      "operator": "BLEND_F_C_IN_DENSE_GROUP"
+    },
+    {
+      "id": "SU07_GLOBAL_BLEND",
+      "role": "simple_ensemble_control",
+      "operator": "BLEND_P0_A_WITH_MATCHED_A_MASS"
+    },
+    {
+      "id": "SU08_PAIRED_DELTA",
+      "role": "paired_change_control",
+      "operator": "UPDATE_F_BY_PAIRED_A_MINUS_C"
+    }
+  ],
+  "scope": {
+    "scene_count": 26,
+    "method_count": 9,
+    "scene_method_records": 234,
+    "full_pools": 18,
+    "inherited_main_rows": 52,
+    "new_or_identity_proven_main_rows": 182,
+    "historical_IR06_IR07_reconstructed_for_lineage_only": true,
+    "new_maps": 0,
+    "new_structural_operations": 0,
+    "new_observer_rasterizations": 0,
+    "new_view_searches": 0,
+    "new_frontend_inference": 0,
+    "new_NQ_inference": 0,
+    "new_AnyUp_QK": 0,
+    "new_backbones": 0,
+    "parameter_fits": 0,
+    "new_FC_unique_frame_encodings_upper_bound": 832,
+    "new_coarse_full_region_pools_upper_bound": 832,
+    "end_to_end_cold_calls": 0,
+    "learned_risk_gate_in_scope": false,
+    "adaptive_acquisition_in_scope": false,
+    "new_confirmation_scenes_in_scope": false
+  },
+  "parent_selection": {
+    "policy": "EXACT_PARENT_INCUMBENT_LIST",
+    "max_incumbents_per_scene": 16,
+    "max_full_views_per_incumbent": 2,
+    "include_region_types_for_new_evidence": [
+      "FULL"
+    ],
+    "read_CORE_and_FRONTEND_INTERSECTION_for": "RECONSTRUCT_PARENT_IR07_ONLY",
+    "max_full_region_requests": 832,
+    "parent_masks_must_not_be_regenerated": true
+  },
+  "pairing": {
+    "identity_fields": [
+      "scene",
+      "owner",
+      "original_support_digest",
+      "frame_id",
+      "bank",
+      "RGB_sha256",
+      "mask_digest",
+      "bbox",
+      "original_hw",
+      "resized_hw",
+      "padded_hw",
+      "FC_model_identity",
+      "FC_text_identity",
+      "valid_ids"
+    ],
+    "full_view_set": "ALL_PARENT_SUCCESSFUL_ANYUP_FULL_VIEWS_ONE_OR_TWO",
+    "coarse_requires_all_parent_successful_full_views": true,
+    "common_domain": "SELECTED_AND_D2_P0_AVAILABLE_AND_F_AVAILABLE_AND_A_FULL_NONEMPTY_AND_C_SUCCESS_ON_ALL_A_FULL_AND_NO_PROTECTED_RAW_ZERO",
+    "noncommon_behavior": "EXACT_G1_INCUMBENT_CLASS_KEEP_ALL_MATCHED_AND_NEW_ARMS",
+    "allow_result_based_owner_selection": false
+  },
+  "operators": {
+    "dtype": "float64_numpy",
+    "alpha_F": 0.5,
+    "eta_paired_delta": 0.5,
+    "temperature_A": "INHERIT_SAME_SCENE_T_F",
+    "temperature_C": "INHERIT_SAME_SCENE_T_F",
+    "new_aggregation": "MEAN_PER_VIEW_COSINES_THEN_SOFTMAX",
+    "per_view_weight": "EQUAL",
+    "normalize_aggregate_visual_vector": false,
+    "global_beta": "alpha_F * original_dense_group_mass",
+    "residual": "(mean_A_cosine - mean_same_view_C_cosine) / T_F",
+    "residual_target": "F_GROUP_ONLY",
+    "residual_candidate_restriction": "NONE_FULL_FROZEN_VOCABULARY",
+    "historical_IR06_IR07_thresholds": "EXACT_PARENT_REREAD_SPEC",
+    "new_label_rule": "NUMPY_ARGMAX_ORIGINAL_VALID_ID_ORDER",
+    "extra_acceptance_threshold": null,
+    "source_missing": "DO_NOT_ZERO_FILL_OR_CREATE_A_NEW_GROUP",
+    "probability_parity_atol": 1e-12
+  },
+  "coarse_acquisition": {
+    "operator": "cvpr_compact.area_fallback.region_vector",
+    "preprocess": "INHERIT_image_tensor_AND_signed_mask",
+    "head": "INHERIT_visual_prediction_forward_convnext",
+    "FC_precision": "INHERITED_FLOAT32_NO_NEW_AUTOCAST_OR_BATCH_ARITHMETIC",
+    "dense_cache": "READ_ONLY_PARENT_IF_EXACT_TENSOR_MODEL_IDENTITY",
+    "failure_keep_reasons": [
+      "EMPTY_AREA_MASK_SUPPORT",
+      "INVALID_REGION_FEATURE"
+    ],
+    "error_policy": "NUMERICAL_UNAVAILABILITY_IS_KEEP_RESOURCE_OR_CORRUPTION_IS_BLOCK",
+    "anyup_source": "READ_PARENT_SUCCESSFUL_FULL_SCORES_NO_ANYUP_EXECUTION"
+  },
+  "output": {
+    "anchor": "IR01_G1",
+    "owner_ids_bitwise_unchanged": true,
+    "all_G1_recovered_classes_unchanged": true,
+    "unselected_incumbents_unchanged": true,
+    "protected_raw_zero_policy": "KEEP_WHOLE_INCUMBENT_CLASS_AS_PARENT",
+    "branch": "COMBO",
+    "rank_mode": "OFFICIAL_CURRENT_CLASS",
+    "rank_recompute_for_every_new_label_set": true,
+    "semantic_and_instance_same_payload": true
+  },
+  "evaluation": {
+    "metrics": [
+      "apall",
+      "ap50",
+      "ap25",
+      "miou",
+      "macc"
+    ],
+    "unit": "FRACTION",
+    "APall_overlaps": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "AP25_overlap": 0.25,
+    "minimum_region_points": 100,
+    "aggregation": "RELEASED_ORDERED_DATASET_POOL",
+    "label_GT_access": "AFTER_PREDICTION_LOCK_DIAGNOSTIC_ONLY",
+    "official_rank_precision_decimals": 6,
+    "alias_proof": "ACTUAL_OWNER_SEMANTIC_RANK_ARRAYS_AND_SCORER_CONTEXT_AND_ORDERED_POOL_INPUTS"
+  },
+  "comparisons": [
+    [
+      "SU04_F_REPLACE",
+      "SU02_HARD_MATCHED"
+    ],
+    [
+      "SU05_F_BLEND",
+      "SU04_F_REPLACE"
+    ],
+    [
+      "SU05_F_BLEND",
+      "SU06_F_COARSE"
+    ],
+    [
+      "SU05_F_BLEND",
+      "SU07_GLOBAL_BLEND"
+    ],
+    [
+      "SU08_PAIRED_DELTA",
+      "SU05_F_BLEND"
+    ],
+    [
+      "SU03_STABLE_MATCHED",
+      "SU02_HARD_MATCHED"
+    ]
+  ],
+  "selection": {
+    "type": "EXPOSED_COHORT_RESEARCH_SELECTION",
+    "epsilon_fraction": 1e-10,
+    "candidates": [
+      "SU02_HARD_MATCHED",
+      "SU03_STABLE_MATCHED",
+      "SU04_F_REPLACE",
+      "SU05_F_BLEND",
+      "SU06_F_COARSE",
+      "SU07_GLOBAL_BLEND",
+      "SU08_PAIRED_DELTA"
+    ],
+    "baseline": "SU01_G1",
+    "CF_AP_reference": "SU00_D2",
+    "replica_all_five_nondecrease": true,
+    "cf_all_five_nondecrease": true,
+    "cf_apall_strictly_above_D2": true,
+    "cf_ap50_at_least_D2": true,
+    "material_marker_cf_apall_delta_fraction": 0.001,
+    "tie_metrics": [
+      "scannet_cf18.apall",
+      "scannet_cf18.ap50",
+      "replica8.apall",
+      "scannet_cf18.miou"
+    ],
+    "simplicity_order": [
+      "SU06_F_COARSE",
+      "SU04_F_REPLACE",
+      "SU05_F_BLEND",
+      "SU07_GLOBAL_BLEND",
+      "SU08_PAIRED_DELTA",
+      "SU02_HARD_MATCHED",
+      "SU03_STABLE_MATCHED"
+    ],
+    "fallback": "SU01_G1",
+    "deployment": "N0_UNCHANGED",
+    "independent_confirmation": false
+  },
+  "timing": {
+    "mode": "CONDITIONAL_CACHE_RESIDENT_CPU_DECISION_ONLY",
+    "cohort": "replica8",
+    "rounds": 2,
+    "round2_order": "REVERSE_SCENE_AND_METHOD_ORDER",
+    "one_untimed_warmup": true,
+    "batched_repeats_per_sample": 50,
+    "samples_per_method": 16,
+    "denominator": "SCENE",
+    "units": "milliseconds_per_scene",
+    "excludes": [
+      "data_IO",
+      "projection",
+      "FC",
+      "AnyUp",
+      "payload_array_copy",
+      "ranking",
+      "evaluator",
+      "serialization"
+    ],
+    "standalone_latency": "NOT_MEASURED_IN_THIS_TASK",
+    "new_GPU_peak_comparison": false
+  },
+  "resources": {
+    "gpu_workers": 1,
+    "CPU_eval_workers": 3,
+    "BLAS_threads_max": 4,
+    "minimum_new_store_free_GiB": 10,
+    "write_only_new_root": true,
+    "identical_retry_max": 1,
+    "whole_repository_tests": false,
+    "focused_test_functions_target": 10,
+    "publish_target_MiB": 30,
+    "persist_fine_feature_maps": false,
+    "new_dataset_downloads": false
+  },
+  "publication": {
+    "ordinary_push": true,
+    "push_even_if_no_gain": true,
+    "no_force_push": true,
+    "four_reports": [
+      "SOURCE_UPDATE_RESULTS.md",
+      "SOURCE_UPDATE_HANDOFF.md",
+      "SOURCE_UPDATE_SELECTION.md",
+      "SOURCE_UPDATE_CLAIMS.md"
+    ],
+    "final_receipt": "publication/final.json",
+    "verify_full_remote_SHA": true
+  }
+}

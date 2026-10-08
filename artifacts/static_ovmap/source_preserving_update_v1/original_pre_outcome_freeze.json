@@ -1,0 +1,110 @@
+{
+  "actual_coarse_readout": {
+    "FC_model": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+    "actual_worker_python": "/home/ww/miniconda3/envs/oviovo-radseg/bin/python",
+    "feature_content_key": "588a5b0f9dd8bb34e5da3087bf2e02232c10abebba1cd9885e4ad9be9763b705",
+    "frame": "/home/ww/ovimap-source-preserving-update-v1-storage/attempt_001/coarse/office0/0/receipt.json",
+    "frame_identity": "8c42af0ee6e52ef0c2542870445f1480f0501bf7bd8166401e930a2a04564cf7",
+    "path": "original image_tensor/signed_mask/region_vector/cosine_record",
+    "region_id": "0cbf457022b4afe503f8c63bd7a141f0d8a5690fa14f210130eca9736419bf05"
+  },
+  "affected_selection_test_log": {
+    "bytes": 112,
+    "path": "/home/ww/ovimap-source-preserving-update-v1-storage/attempt_001/tests_selection_after_fix.log",
+    "sha256": "d3bc3ac7a27a0243ae0075ed1324a0a27f15be9d6644330a481001780c8d688f"
+  },
+  "applicability": "PAIRED_UPDATES_AVAILABLE",
+  "before_new_full_pooled_outcomes": true,
+  "binding_identity": "b50d0eaf026bbcbb0295b3eb44085fd44ef43f8115fea582d4b9b86f77c54545",
+  "coarse_identity": "aad79b68fecfc2c3bbd96a36dfa26187c057e1a879828216eca18c7b035741bc",
+  "files": [
+    {
+      "bytes": 9513,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/configs/static_ovmap/source_preserving_update_v1.json",
+      "sha256": "fac586f739fd41dd5b265761e94579c809f320924a39cd32aed19434da3d5ba9"
+    },
+    {
+      "bytes": 1067,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/scripts/evaluation/run_ovimap_source_preserving_update.py",
+      "sha256": "46996a401b5b76b9c1b037fe11a12b421dda7b8d9e148455f571af104b87f614"
+    },
+    {
+      "bytes": 63,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/__init__.py",
+      "sha256": "93d60db1206aba50cf7e8d990912fe589212f9b3de889e7b7fb85b3494565691"
+    },
+    {
+      "bytes": 18771,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/analysis.py",
+      "sha256": "299f93e9fb9f058f59a3ef70a17fa2cb98c9948ba6e9f53c7e1af6f1027ed7b7"
+    },
+    {
+      "bytes": 12790,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/binding.py",
+      "sha256": "129d27628ce3c5590cac08a131f1b16f4081ad2c25821d662c0fc11a3046136e"
+    },
+    {
+      "bytes": 14381,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/coarse_worker.py",
+      "sha256": "e88e794ba99892d2e2b1472760abce65a930c06169b05293cdd0bffef9adda36"
+    },
+    {
+      "bytes": 6282,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/costs.py",
+      "sha256": "0c3fedb3ba607aefa99fdd065c9ee07cd0138793fe836d1334f1f8ded7f430cd"
+    },
+    {
+      "bytes": 6293,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/decisions.py",
+      "sha256": "50ea95f62409543e35737cdb133665033372ad8a86002a7b6adc584aa6e98d79"
+    },
+    {
+      "bytes": 13893,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/evaluation.py",
+      "sha256": "6ba0f8ba86c05ebb8117a0db7f3a117764e50ebd19d19c3eb1d486ffd61279d0"
+    },
+    {
+      "bytes": 13446,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/evidence.py",
+      "sha256": "f105949413b8240a340e44d2722a16937e81dbc47fe967a4563f3f32b5335046"
+    },
+    {
+      "bytes": 9076,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/orchestration.py",
+      "sha256": "c93a84fa21a354b2d6ee916957e8e1e74805b92736e1ec58885ecb15f7532b08"
+    },
+    {
+      "bytes": 7773,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/outputs.py",
+      "sha256": "69e1538a8deb2ed4e82e30fd07e2bb5d5a2ff07bc3d29c8ed0fdd3e156350564"
+    },
+    {
+      "bytes": 24160,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/reporting.py",
+      "sha256": "ca5bd397da8031dfd3391d8a1681c83b5e496ff2be7e0fc4a2ee38faae4e36b0"
+    },
+    {
+      "bytes": 1580,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/resume.py",
+      "sha256": "8d65a4b32793581c1e502532ac1c946f6c88996a266e4372ee9e8856412bca62"
+    },
+    {
+      "bytes": 2396,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/src/static_ovmap/source_preserving_update/selection.py",
+      "sha256": "d6eb66c0d7636572835271a7f6cad2a377e03fee9f563a75a3ae9ecf9c500c54"
+    },
+    {
+      "bytes": 8091,
+      "path": "/home/ww/ovimap-source-preserving-update-v1-storage/worktree/tests/evaluation/test_source_preserving_update.py",
+      "sha256": "8d8f7cc6f6cf7dda7ae2720add8fa9da4d63a904a957d758994663f73bd794cc"
+    }
+  ],
+  "identity": "4b5b36f0a416b39259d73ae8b8c6cf29956541805479352f26ad367dec5d1e22",
+  "pilots_identity": "03389f488f4e4ea11416428c1c7206f235c50fd5d63c996025458f6206a8643d",
+  "status": "SOURCE_AND_CONFIG_FROZEN",
+  "test_log": {
+    "bytes": 99,
+    "path": "/home/ww/ovimap-source-preserving-update-v1-storage/attempt_001/tests_initial.log",
+    "sha256": "635bb311dcab44b55c40379f2388953d53ea403a2e60dc0659f7a36ef2b7f531"
+  }
+}

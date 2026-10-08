@@ -1,0 +1,161 @@
+{
+  "caption": "Six fixed contrasts in both complete cohorts. Deltas in percentage points; fixed original P semantic outcomes at strict IoU > .50.",
+  "columns": [
+    "Cohort",
+    "Contrast",
+    "Delta_apall_pp",
+    "Delta_ap50_pp",
+    "Delta_miou_pp",
+    "GT50_gained",
+    "GT50_lost",
+    "Wrong_to_right",
+    "Right_to_wrong",
+    "Output_identity_tie"
+  ],
+  "rows": [
+    {
+      "Cohort": "replica8",
+      "Contrast": "SU04_F_REPLACE - SU02_HARD_MATCHED",
+      "Delta_ap50_pp": 1.549459434919509,
+      "Delta_apall_pp": 1.0104488679044996,
+      "Delta_miou_pp": 1.1623506195574562,
+      "GT50_gained": 1,
+      "GT50_lost": 0,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 0,
+      "Wrong_to_right": 1
+    },
+    {
+      "Cohort": "scannet_cf18",
+      "Contrast": "SU04_F_REPLACE - SU02_HARD_MATCHED",
+      "Delta_ap50_pp": -0.5339466168799267,
+      "Delta_apall_pp": -0.1043264082787057,
+      "Delta_miou_pp": -0.6696915034267337,
+      "GT50_gained": 1,
+      "GT50_lost": 4,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 4,
+      "Wrong_to_right": 1
+    },
+    {
+      "Cohort": "replica8",
+      "Contrast": "SU05_F_BLEND - SU04_F_REPLACE",
+      "Delta_ap50_pp": -0.13152356902357276,
+      "Delta_apall_pp": -0.10799834025142507,
+      "Delta_miou_pp": -0.09931207283278565,
+      "GT50_gained": 0,
+      "GT50_lost": 0,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 0,
+      "Wrong_to_right": 0
+    },
+    {
+      "Cohort": "scannet_cf18",
+      "Contrast": "SU05_F_BLEND - SU04_F_REPLACE",
+      "Delta_ap50_pp": -0.07605094238734011,
+      "Delta_apall_pp": -0.11205988989782395,
+      "Delta_miou_pp": -0.09456873239035712,
+      "GT50_gained": 0,
+      "GT50_lost": 1,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 1,
+      "Wrong_to_right": 0
+    },
+    {
+      "Cohort": "replica8",
+      "Contrast": "SU05_F_BLEND - SU06_F_COARSE",
+      "Delta_ap50_pp": -1.8663194444444475,
+      "Delta_apall_pp": -1.03202160493827,
+      "Delta_miou_pp": -1.6878779390694876,
+      "GT50_gained": 0,
+      "GT50_lost": 2,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 2,
+      "Wrong_to_right": 0
+    },
+    {
+      "Cohort": "scannet_cf18",
+      "Contrast": "SU05_F_BLEND - SU06_F_COARSE",
+      "Delta_ap50_pp": -0.015537582473412748,
+      "Delta_apall_pp": -0.0032646978130171367,
+      "Delta_miou_pp": 0.010715294072219383,
+      "GT50_gained": 0,
+      "GT50_lost": 1,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 1,
+      "Wrong_to_right": 0
+    },
+    {
+      "Cohort": "replica8",
+      "Contrast": "SU05_F_BLEND - SU07_GLOBAL_BLEND",
+      "Delta_ap50_pp": 0.23280227841859513,
+      "Delta_apall_pp": 0.313475066956935,
+      "Delta_miou_pp": 0.1292900081579451,
+      "GT50_gained": 1,
+      "GT50_lost": 1,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 1,
+      "Wrong_to_right": 1
+    },
+    {
+      "Cohort": "scannet_cf18",
+      "Contrast": "SU05_F_BLEND - SU07_GLOBAL_BLEND",
+      "Delta_ap50_pp": -0.5789622425206059,
+      "Delta_apall_pp": -0.19626038554461794,
+      "Delta_miou_pp": -0.6443805975104355,
+      "GT50_gained": 0,
+      "GT50_lost": 3,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 3,
+      "Wrong_to_right": 0
+    },
+    {
+      "Cohort": "replica8",
+      "Contrast": "SU08_PAIRED_DELTA - SU05_F_BLEND",
+      "Delta_ap50_pp": 0.7876570767195751,
+      "Delta_apall_pp": 0.5280288555751509,
+      "Delta_miou_pp": 0.13519725880612454,
+      "GT50_gained": 2,
+      "GT50_lost": 0,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 0,
+      "Wrong_to_right": 2
+    },
+    {
+      "Cohort": "scannet_cf18",
+      "Contrast": "SU08_PAIRED_DELTA - SU05_F_BLEND",
+      "Delta_ap50_pp": 0.08728352524628447,
+      "Delta_apall_pp": 0.10893213682306863,
+      "Delta_miou_pp": -0.7134531106451014,
+      "GT50_gained": 3,
+      "GT50_lost": 3,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 3,
+      "Wrong_to_right": 3
+    },
+    {
+      "Cohort": "replica8",
+      "Contrast": "SU03_STABLE_MATCHED - SU02_HARD_MATCHED",
+      "Delta_ap50_pp": 1.3715899664250353,
+      "Delta_apall_pp": 0.6896020806611072,
+      "Delta_miou_pp": 0.8366576719617769,
+      "GT50_gained": 1,
+      "GT50_lost": 0,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 0,
+      "Wrong_to_right": 1
+    },
+    {
+      "Cohort": "scannet_cf18",
+      "Contrast": "SU03_STABLE_MATCHED - SU02_HARD_MATCHED",
+      "Delta_ap50_pp": -0.313041286878496,
+      "Delta_apall_pp": -0.09107705207511418,
+      "Delta_miou_pp": -0.46629133545454393,
+      "GT50_gained": 0,
+      "GT50_lost": 1,
+      "Output_identity_tie": false,
+      "Right_to_wrong": 1,
+      "Wrong_to_right": 0
+    }
+  ]
+}
