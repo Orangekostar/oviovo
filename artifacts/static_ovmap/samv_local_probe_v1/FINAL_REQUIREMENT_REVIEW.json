@@ -332,11 +332,11 @@
   ],
   "complete_task_requires_external_publication_receipt": true,
   "final_publication_gate": {
-    "performed_after_this_commit": true,
     "receipt": "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/attempt_001/publication/final.json",
-    "requires": "normal push exit0 and exact local/remote full SHA equality"
+    "requires": "normal push exit0 and exact local/remote full SHA equality",
+    "requires_post_commit_observation": true
   },
-  "identity": "e0e3bd86c7009fc9b097c33ee6e29216546f0bf0f593071dab48efac5039217d",
+  "identity": "e1384cf44593d55a72bdf3b575c90e8e4c3c90b4084d4b79c531b326e687b2d6",
   "no_new_inference_or_AP_by_this_review": true,
   "result_store_identity": "93a63a051f5f70a28cc9356db68800ffad4b5fba063e3dd1bb5eb1894bef61fa",
   "reviewer_role": "PRIMARY_AGENT",

@@ -1,0 +1,100 @@
+FFFFFFFFFFFF                                                             [100%]
+=================================== FAILURES ===================================
+_________ test_auto_prompts_largest_component_padded_interior_distinct _________
+
+    def test_auto_prompts_largest_component_padded_interior_distinct():
+>       from static_ovmap.samv_local_probe.geometry import interior_points
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:10: ModuleNotFoundError
+______ test_fixed_view_window_keeps_absent_context_and_sorts_true_anchor _______
+
+    def test_fixed_view_window_keeps_absent_context_and_sorts_true_anchor():
+>       from static_ovmap.samv_local_probe.geometry import choose_window,transform_points
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:20: ModuleNotFoundError
+___________ test_target_quotas_uncertainty_shortage_and_no_gt_inputs ___________
+
+    def test_target_quotas_uncertainty_shortage_and_no_gt_inputs():
+>       from static_ovmap.samv_local_probe.geometry import select_targets
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:31: ModuleNotFoundError
+___________ test_panorama_split_before_resize_avoids_cross_view_seam ___________
+
+    def test_panorama_split_before_resize_avoids_cross_view_seam():
+>       from static_ovmap.samv_local_probe.geometry import split_panorama
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:42: ModuleNotFoundError
+______ test_visibility_normalization_one_vote_per_view_invalid_minus_one _______
+
+    def test_visibility_normalization_one_vote_per_view_invalid_minus_one():
+>       from static_ovmap.samv_local_probe.lifting import count_view_votes
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:50: ModuleNotFoundError
+____ test_simultaneous_conflict_ties_keep_parent_unknown_kept_prompt_forced ____
+
+    def test_simultaneous_conflict_ties_keep_parent_unknown_kept_prompt_forced():
+>       from static_ovmap.samv_local_probe.lifting import arbitrate
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:59: ModuleNotFoundError
+______ test_mesh_boundary_hops_protect_unselected_interiors_allow_unowned ______
+
+    def test_mesh_boundary_hops_protect_unselected_interiors_allow_unowned():
+>       from static_ovmap.samv_local_probe.geometry import boundary_band,edit_domain
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:72: ModuleNotFoundError
+_________ test_local_output_uniform_classes_raw_zero_edits_no_new_ids __________
+
+    def test_local_output_uniform_classes_raw_zero_edits_no_new_ids():
+>       from static_ovmap.samv_local_probe.outputs import build
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:83: ModuleNotFoundError
+__________ test_paired_semantics_requires_both_sources_and_both_views __________
+
+    def test_paired_semantics_requires_both_sources_and_both_views():
+>       from static_ovmap.samv_local_probe.readout import paired_labels
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:99: ModuleNotFoundError
+________ test_registry_key_uses_entire_actual_partition_same_owner_ids _________
+
+    def test_registry_key_uses_entire_actual_partition_same_owner_ids():
+>       from static_ovmap.samv_local_probe.evaluation import partition_registry_key
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:108: ModuleNotFoundError
+_______ test_complete_subset_pooling_rejects_missing_or_duplicate_scenes _______
+
+    def test_complete_subset_pooling_rejects_missing_or_duplicate_scenes():
+>       from static_ovmap.samv_local_probe.evaluation import ordered_rows
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:113: ModuleNotFoundError
+________ test_resume_whole_window_identity_and_selection_tolerant_ties _________
+
+    def test_resume_whole_window_identity_and_selection_tolerant_ties():
+>       from static_ovmap.samv_local_probe.common import request_key
+E       ModuleNotFoundError: No module named 'static_ovmap.samv_local_probe'
+
+tests/evaluation/test_samv_local_probe.py:121: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/evaluation/test_samv_local_probe.py::test_auto_prompts_largest_component_padded_interior_distinct
+FAILED tests/evaluation/test_samv_local_probe.py::test_fixed_view_window_keeps_absent_context_and_sorts_true_anchor
+FAILED tests/evaluation/test_samv_local_probe.py::test_target_quotas_uncertainty_shortage_and_no_gt_inputs
+FAILED tests/evaluation/test_samv_local_probe.py::test_panorama_split_before_resize_avoids_cross_view_seam
+FAILED tests/evaluation/test_samv_local_probe.py::test_visibility_normalization_one_vote_per_view_invalid_minus_one
+FAILED tests/evaluation/test_samv_local_probe.py::test_simultaneous_conflict_ties_keep_parent_unknown_kept_prompt_forced
+FAILED tests/evaluation/test_samv_local_probe.py::test_mesh_boundary_hops_protect_unselected_interiors_allow_unowned
+FAILED tests/evaluation/test_samv_local_probe.py::test_local_output_uniform_classes_raw_zero_edits_no_new_ids
+FAILED tests/evaluation/test_samv_local_probe.py::test_paired_semantics_requires_both_sources_and_both_views
+FAILED tests/evaluation/test_samv_local_probe.py::test_registry_key_uses_entire_actual_partition_same_owner_ids
+FAILED tests/evaluation/test_samv_local_probe.py::test_complete_subset_pooling_rejects_missing_or_duplicate_scenes
+FAILED tests/evaluation/test_samv_local_probe.py::test_resume_whole_window_identity_and_selection_tolerant_ties
+12 failed in 0.64s

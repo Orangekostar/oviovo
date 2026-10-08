@@ -1,0 +1,25 @@
+PHASE bind
+PHASE assets
+PHASE plan
+PHASE pilot
+PHASE segment
+PHASE lift
+PHASE readout
+PHASE predict
+PREDICTIONS_LOCKED office1 7 conditions
+PREDICTIONS_LOCKED room0 7 conditions
+PREDICTIONS_LOCKED scene0011_00 7 conditions
+PREDICTIONS_LOCKED scene0050_00 7 conditions
+PHASE evaluate
+SCORED office1 7 conditions
+SCORED room0 7 conditions
+SCORED scene0011_00 7 conditions
+SCORED scene0050_00 7 conditions
+PHASE diagnose
+DIAGNOSED office1 8 targets
+DIAGNOSED room0 8 targets
+DIAGNOSED scene0011_00 8 targets
+DIAGNOSED scene0050_00 8 targets
+PHASE cost
+PHASE report
+TERMINAL COMPLETE exit 0
