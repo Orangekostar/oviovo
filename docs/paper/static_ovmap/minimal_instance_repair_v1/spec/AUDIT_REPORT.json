@@ -1,0 +1,233 @@
+{
+  "scope": "INSTRUCTION_PACKAGE_ONLY_NOT_SERVER_EXPERIMENTS",
+  "base_commit": "247e1e9782d43e882589bd9ab0015d513c200e49",
+  "checks": [
+    {
+      "check": "pin_and_target_branch",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "nine_unique_methods",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "26_unique_scenes",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "8_and_18_cohorts",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "CF18_has_7_physical_families",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "234_scene_rows",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "18_pools",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "52_reused_182_new_max",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "zero_maps_frontend_training",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "pilot_scenes_in_cohorts",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "observer_832_bound",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "unique_vs_failed_attempts_defined",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "eight_ops_four_units_one_incumbent",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "old_core_and_raw0_are_frozen",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "same_shared_library_and_no_cascade",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "mask_change_requires_new_evaluator_cache",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "single_partition_all_metrics",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "old_vs_new_geometry_identity_explicit",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "loaded_official_ranking_and_pooling",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "APall_nine_thresholds",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "all_five_protected",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "simple_controls_allowed_to_win",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "fallback_and_deployment",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "no_claim_of_independent_confirmation",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "cold_64_bound",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "cold_baseline_work_included",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "model_and_cache_identity_scope",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "pinned_existing_AnyUp",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "ordinary_AnyUp_not_geometry_attention",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "no_extra_semantic_subset_by_GT",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "maximum_support_units_and_views_declared",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "observability_not_missing_file",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "consumed_not_entire_history_hashes",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "self_contained_command_exists_in_prompt",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "publication_and_receipt",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "source_facts_distinguished_from_hypotheses",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "all_methods_in_main_and_matrix",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "syntax_reference_kernels.py",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "syntax_test_reference_kernels.py",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "eight_reference_tests_actually_passed",
+      "passed": true,
+      "note": ""
+    },
+    {
+      "check": "local_document_links_resolve",
+      "passed": true,
+      "note": "[]"
+    }
+  ],
+  "checks_passed": 41,
+  "checks_total": 41,
+  "reference_tests": {
+    "count": 8,
+    "status": "PASS",
+    "log": "REFERENCE_TEST_LOG.txt",
+    "uses_server_data": false
+  },
+  "production_integration": "NOT_RUN",
+  "new_GPU_inference": 0,
+  "new_benchmark_results": 0,
+  "remote_repo_modified": false,
+  "manual_review_corrections": [
+    "Separated parent residual IoU diagnosis from full-raw geometry potential.",
+    "Explicitly allowed host support growth without transferring original incumbent core rows.",
+    "Partition content keys replace owner-ID-only evaluator cache reuse.",
+    "Zero observations are neutral; missing required files are not zero-valued evidence.",
+    "Science input ceilings apply to successful unique leaves; actual failed attempts/pilots/cold calls are separate.",
+    "Fixed barycentric tolerance and retained argmax weights to avoid implementation ambiguity.",
+    "Fixed one missing closing parenthesis in the illustrative reference kernel before the final passing run."
+  ],
+  "overall_status": "PASS"
+}
