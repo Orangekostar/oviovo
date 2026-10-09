@@ -1,0 +1,12 @@
+| method | selected | query_eligible | required_FULL_success | updated | logical_FULL_reads | logical_probe_heads | QD_fallback_count | sign_conflict_count | duplicate_records |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| DQ00_D2 | 64 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| DQ01_G1 | 64 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| AREA_MEAN | 64 | 64 | 64 | 14 | 128 | 0 | 0 | 0 | 0 |
+| COVERAGE_MEAN | 64 | 64 | 64 | 12 | 128 | 0 | 0 | 0 | 0 |
+| VERIFY_MEAN | 64 | 64 | 64 | 20 | 128 | 0 | 0 | 0 | 0 |
+| DISAGREEMENT_MEAN | 64 | 64 | 64 | 20 | 128 | 247 | 0 | 34 | 0 |
+| QS_AREA | 64 | 64 | 64 | 15 | 128 | 0 | 0 | 0 | 0 |
+| QS_SUPPORT | 64 | 64 | 64 | 16 | 128 | 0 | 0 | 0 | 0 |
+| QD_AREA | 64 | 64 | 64 | 18 | 128 | 247 | 0 | 34 | 0 |
+| QD_SUPPORT | 64 | 64 | 64 | 18 | 128 | 247 | 0 | 34 | 0 |

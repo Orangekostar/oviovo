@@ -1,0 +1,352 @@
+{
+  "generated_utc": "2026-10-09T07:37:04.720766+00:00",
+  "sources": [
+    {
+      "kind": "g1_g3",
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/artifacts/static_ovmap/evidence_exploration_v1/resource_G1_G3.json",
+      "sha256": "dd4a1fae6ac48350b89ffd5f5c63c7612f806a3ebb2189ac83b4c2776db73ade",
+      "bytes": 575
+    },
+    {
+      "kind": "ev",
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/artifacts/static_ovmap/evidence_exploration_v1/timing_records.json",
+      "sha256": "e8ebf8a138e2a20885f566b5698cc9137e30f1c2c05598be965eb54629df171b",
+      "bytes": 131030
+    },
+    {
+      "kind": "modules",
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/artifacts/static_ovmap/evidence_exploration_v1/resource_module_reference.json",
+      "sha256": "3b47c941704944c5a1bc7233d53f639e520fabe5bba63c6402bccde2cf87e335",
+      "bytes": 897
+    },
+    {
+      "kind": "windows",
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/artifacts/static_ovmap/samv_local_probe_v1/receipts/window_timings.json",
+      "sha256": "718d0862dcd3e5f8c05d12188a6dbfcf62e6ad3478147989a6668630f6fa0bc3",
+      "bytes": 31399
+    },
+    {
+      "kind": "paper",
+      "path": "/mnt/shared/ww/ovimap-cvpr-compact-tables-v1/attempt_001/external/sources/ovi_map_arxiv_v1.pdf",
+      "sha256": "abbb5e569218a0aecbe9155069f15a14e8044ef7d9474737b5a459dc7a8d3fc8",
+      "bytes": 45550013
+    },
+    {
+      "kind": "G1_optimization",
+      "path": "/mnt/shared/ww/ovimap-runtime-parity-v1/attempt_001/tables/runtime_summary.json",
+      "sha256": "f85ffa24f6a571479cbad0c3203c4b2690cc9a716365805543cf6094d7400419",
+      "bytes": 17634
+    }
+  ],
+  "G1_G3_formal": [
+    {
+      "Allocated_GiB": 1.8887314796447754,
+      "Calls": 16,
+      "FC_images_scene": 4.5,
+      "Method": "G1_SELECTED",
+      "Reserved_GiB": 2.455078125,
+      "Seconds_scene": 19.885861151924473,
+      "time_percent_vs_G1": 0.0
+    },
+    {
+      "Allocated_GiB": 1.8887314796447754,
+      "Calls": 16,
+      "FC_images_scene": 11.5,
+      "Method": "G3_SELECTED",
+      "Reserved_GiB": 2.20703125,
+      "Seconds_scene": 20.94206223425863,
+      "time_percent_vs_G1": 5.311316790683418
+    }
+  ],
+  "evidence_exploration_formal": [
+    {
+      "calls": 16,
+      "counts": {
+        "FC_image_inputs": 72,
+        "coarse_target_pools": 84,
+        "head_projections": 84
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7255606860562693,
+        "additional_geometry": 5.978290573693812e-06,
+        "output": 3.9158731536008418,
+        "view_search": 18.07123362866696
+      },
+      "mean_seconds_per_scene": 22.713021570656565,
+      "median_seconds_per_scene": 22.797673649038188,
+      "method": "EV01_G1_V2",
+      "peak_cuda_allocated_bytes": 2040369664,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "allocated_GiB": 1.9002423286437988,
+      "reserved_GiB": 2.212890625,
+      "time_percent_vs_EV01": 0.0,
+      "allocated_ratio_vs_EV01": 1.0
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "AnyUp_QK_computations": 70,
+        "AnyUp_target_or_control_pools": 188,
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_target_pools": 84,
+        "geometry_attention_applications": 280,
+        "head_projections": 272,
+        "original_attention_applications": 112,
+        "query_chunks": 112,
+        "query_locations": 19528
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 1.5958650296379346,
+        "FC": 0.7233780017995741,
+        "additional_geometry": 2.6385754815564724,
+        "output": 3.9486859528406058,
+        "view_search": 15.288021031185053
+      },
+      "mean_seconds_per_scene": 24.195117602706887,
+      "median_seconds_per_scene": 24.744553892989643,
+      "method": "EV07_COMBINATION",
+      "peak_cuda_allocated_bytes": 4667931136,
+      "peak_cuda_reserved_bytes": 7142899712,
+      "allocated_GiB": 4.347349643707275,
+      "reserved_GiB": 6.65234375,
+      "time_percent_vs_EV01": 6.525314245133607,
+      "allocated_ratio_vs_EV01": 2.287786972312092
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_control_pools": 106,
+        "coarse_target_pools": 84,
+        "head_projections": 190
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 0.0,
+        "FC": 0.7194700556574389,
+        "additional_geometry": 2.563045787450392,
+        "output": 3.851839865150396,
+        "view_search": 15.550318902009167
+      },
+      "mean_seconds_per_scene": 22.685154549282743,
+      "median_seconds_per_scene": 22.51757191098295,
+      "method": "EV03_CONTRAST",
+      "peak_cuda_allocated_bytes": 2044698112,
+      "peak_cuda_reserved_bytes": 2376073216,
+      "allocated_GiB": 1.904273509979248,
+      "reserved_GiB": 2.212890625,
+      "time_percent_vs_EV01": -0.12269182806493584,
+      "allocated_ratio_vs_EV01": 1.0021214038202835
+    },
+    {
+      "calls": 16,
+      "counts": {
+        "AnyUp_QK_computations": 70,
+        "AnyUp_target_or_control_pools": 82,
+        "FC_image_inputs": 72,
+        "additional_full_scene_projection_calls": 72,
+        "coarse_target_pools": 84,
+        "geometry_attention_applications": 84,
+        "head_projections": 166,
+        "original_attention_applications": 72,
+        "query_chunks": 72,
+        "query_locations": 4902
+      },
+      "mean_exclusive_host_seconds": {
+        "AnyUp": 1.5663590881449636,
+        "FC": 0.7144267993135145,
+        "additional_geometry": 2.753212901443476,
+        "output": 3.9279677226004424,
+        "view_search": 16.523852656886447
+      },
+      "mean_seconds_per_scene": 25.486417793828878,
+      "median_seconds_per_scene": 23.90800939593464,
+      "method": "EV06_OWNER_ANYUP",
+      "peak_cuda_allocated_bytes": 4653971968,
+      "peak_cuda_reserved_bytes": 7140802560,
+      "allocated_GiB": 4.334349155426025,
+      "reserved_GiB": 6.650390625,
+      "time_percent_vs_EV01": 12.210600049600284,
+      "allocated_ratio_vs_EV01": 2.2809454826319158
+    }
+  ],
+  "SAM2_SAMV_formal": [
+    {
+      "scene": "office1",
+      "owner": 8,
+      "model": "SAM2",
+      "calls": 2,
+      "window_frames": 6,
+      "dtype": "BF16",
+      "mean_seconds": 0.7959974694531411,
+      "peak_allocated_GiB": 1.8223934173583984,
+      "peak_reserved_GiB": 2.1015625
+    },
+    {
+      "scene": "office1",
+      "owner": 8,
+      "model": "SAMV",
+      "calls": 2,
+      "window_frames": 6,
+      "dtype": "BF16",
+      "mean_seconds": 3.406631328049116,
+      "peak_allocated_GiB": 12.574801445007324,
+      "peak_reserved_GiB": 13.498046875
+    },
+    {
+      "scene": "scene0011_00",
+      "owner": 14,
+      "model": "SAM2",
+      "calls": 2,
+      "window_frames": 6,
+      "dtype": "BF16",
+      "mean_seconds": 0.7205897169187665,
+      "peak_allocated_GiB": 1.8223934173583984,
+      "peak_reserved_GiB": 2.1015625
+    },
+    {
+      "scene": "scene0011_00",
+      "owner": 14,
+      "model": "SAMV",
+      "calls": 2,
+      "window_frames": 6,
+      "dtype": "BF16",
+      "mean_seconds": 3.2196131396340206,
+      "peak_allocated_GiB": 12.574801445007324,
+      "peak_reserved_GiB": 13.498046875
+    }
+  ],
+  "SAM2_SAMV_ratios": [
+    {
+      "scene": "office1",
+      "time_ratio_SAMV_over_SAM2": 4.279701203559741,
+      "allocated_ratio_SAMV_over_SAM2": 6.900157411254695
+    },
+    {
+      "scene": "scene0011_00",
+      "time_ratio_SAMV_over_SAM2": 4.468025374274074,
+      "allocated_ratio_SAMV_over_SAM2": 6.900157411254695
+    }
+  ],
+  "SAM2_SAMV_raw_call_ids": [
+    "4b051cf2c8b734957381c6a728dd79cc48996eba5005baa45c8175b57ee24c01",
+    "e55b96d780ed523372c311fbcf8a24ed7e18183c1934d2f3f323157470864d18",
+    "07f93e65c2b3f5a8d7f07090af3da3419c20c791fd785e0ce5a070ec66c1e1b3",
+    "619a29b732a55da104518ca16e216c771e883244717da1c1d5e3d85fd695d29f",
+    "9f9187aabccaf5df71d8de1ed63841a421565bc14bd9ba3208d3456565f2c474",
+    "300064e9969c7843bf86344a9e9a9848fbe1b91a5da3bd0dd3533eeb923ae998",
+    "858fe61d5572cd198cc78ec6c435971e57003401b7a83472d8287f7aa02ec7a7",
+    "c5135eecd9ef8a028f01388ca3daabab0a9a2a00d56f98d8304998de134b4315"
+  ],
+  "OVIMAP_module_reference": [
+    {
+      "G1_ms": 1474.1985446385997,
+      "G3_ms": 1474.1985446385997,
+      "Module": "RGB segmentation",
+      "OVIMAP_ms": 964.8,
+      "n": 30,
+      "interval_budget_ms_at_30FPS": 1000.0
+    },
+    {
+      "G1_ms": 1488.411755188118,
+      "G3_ms": 1488.411755188118,
+      "Module": "Depth segmentation",
+      "OVIMAP_ms": 88.4,
+      "n": 30,
+      "interval_budget_ms_at_30FPS": 1000.0
+    },
+    {
+      "G1_ms": 3676.873069263494,
+      "G3_ms": 3676.873069263494,
+      "Module": "2D--3D association",
+      "OVIMAP_ms": 76.3,
+      "n": 30,
+      "interval_budget_ms_at_30FPS": 1000.0
+    },
+    {
+      "G1_ms": 52.22018920132541,
+      "G3_ms": 52.030881595565006,
+      "Module": "View selection",
+      "OVIMAP_ms": 140.8,
+      "n": 10,
+      "interval_budget_ms_at_30FPS": 333.3333333333333
+    },
+    {
+      "G1_ms": 219.72176852028093,
+      "G3_ms": 194.47612906325324,
+      "Module": "Semantic extraction",
+      "OVIMAP_ms": 131.3,
+      "n": 10,
+      "interval_budget_ms_at_30FPS": 333.3333333333333
+    }
+  ],
+  "OVIMAP_peak_memory": "NOT_REPORTED_TABLE7_TABLE8",
+  "OVIMAP_hardware": "RTX3090 + i7-12700K",
+  "our_hardware": "A40 + Xeon Silver 4314",
+  "SAM2_SAMV_environment_note": "SAM2 torch2.5.1 CUDA12.4; SAMV torch2.3.1 CUDA12.1; each uses author environment",
+  "VRAM_boundary": "PyTorch measured worker peak allocated/reserved; not whole mapping system",
+  "cross_study_speed_ratios_allowed": false,
+  "online_30FPS_validated": false,
+  "new_GPU_inference_this_comparison": 0,
+  "supersedes": "resource_comparison_20261008 SAM2_SAMV_engineering_only for formal window comparison",
+  "G1_optimization_matched": {
+    "rows": [
+      {
+        "method": "G1_REFERENCE",
+        "calls": 16,
+        "seconds_per_scene": 44.44828242516087,
+        "peak_allocated_GiB": 1.8887314796447754,
+        "peak_reserved_GiB": 2.20703125,
+        "measurement_ids": [
+          "b1369435eacf37258093abc25543e71e792070dbaf4661308ae418cebed1e6aa",
+          "50ad49d8fd4e1fc461d2e5e8f0e2d3f713e8a93a507ffcd5675c315c1620665a",
+          "791f95720f28d838dcb9fb6507f4eed8d90daadaadf42f096e39303bcad5c2eb",
+          "15230f4077636be02bbdcc82c3ad62c657eceeeb58f357a5d60e3c516fabd383",
+          "f28bba5bb2ddc8a8634041f22990f74e453914142510caeeb67578baf5d471c8",
+          "4fbf66c54dec094f27fbcc5f2fc1bdff9f337832d47f16433e49efc11c2ea44c",
+          "ffca9e89e43befc88802e6b9dfa429c7338aca4405f4be1237a6e1495bb674fa",
+          "f7e691dd16ab69bb182276bb602246d42514bfe44961cf54293311529c327b36",
+          "b4009d5917f53b20e85e2a31bf73a953946a548e046473e8e35784693fbc2bd2",
+          "6f6fa374d38c54229403ee6c5aad47b4e848f4b9e306cd4ce650a2c3389fe49b",
+          "c73d290a931dfab4ef9707f0d024a152f0141b89caede3585c1e4046a76c40eb",
+          "6a40cc198f134f358b2884f2e0f7d15fe20e48c7d5c53e00d7e79f3ecf3ad789",
+          "bd367f81034c18389f23daa76a99850228030efe7d097bb8338fd6c87a269630",
+          "d7ee09efb139561c814a84ee666189d1d5f4dd8903b2f51b96d1d84b1f45e862",
+          "acfcc31f29a8de143cee5cf4832a3110669a74b81eab4f6cba7a8399d7438377",
+          "0c9735b9f8da20222766bfa6d354667dcd49b4cd3b741b73100ade23ff6253cb"
+        ]
+      },
+      {
+        "method": "G1_SELECTED",
+        "calls": 16,
+        "seconds_per_scene": 18.85322796656692,
+        "peak_allocated_GiB": 1.8887314796447754,
+        "peak_reserved_GiB": 2.20703125,
+        "measurement_ids": [
+          "361c828e2a8674d28b663c58e03eb794e6c52e6d829b6373cdd90a425a78ccef",
+          "17495517f7b9b871f680113a44875f8e269017ad1f3e07d91c7f2f51aa938762",
+          "78c78dfbfecc887a82c734807b9cc70c3257cecde02bcf1abd8f3bda36d676fc",
+          "be3134a73986fe8db3a1549747f1fcd4197008d9fc8d5a366ea82282470c73c8",
+          "13688d64624836c021c722e7a14b19afea443fd685b8071832713874f1f05e55",
+          "9573ec3a0038166c01579f02583a18c78f971bd145a419849614a9123f954b37",
+          "2df72236ac4b7a5ca463cacdc818a6935fab07e61dd902d07c4c0b7839b507f6",
+          "a4233501b5ac81504f32fa8c2e767b943d68ac92c48b1642e193244a9167ad35",
+          "9ea8aa91eefeadabc2ef19ffb78648c51c28d8add80e162b9fae3e57f5e48616",
+          "556f0892943817b97f1c13e06d777ca951e26892aa4fce8a9c400f7dc7da8753",
+          "743f43829cc3c90d694145bedffa4f3a9fac565fcd5a53c7d607830cf96b198e",
+          "7b9db326ab6b3a8db3a1fe954b2d9b165bfacb852e5b8ea17b10e01f2e2f486c",
+          "d65adee3cab1cc853ebcf566e25a179d38f28fbcf6e94d316fd7ca766ec6ebc3",
+          "c813cddd5e667e9ab47b13118a3ba4de5c3f185112763bcb0118b4712026a2d1",
+          "57a1da4b179c969aec4580ad285f7fd74f11684b631e61b3e7fe873e851a9bd5",
+          "71ea5a2491750d1f0d262fa7fcdd279577dc887e95e23995c8f57a9d4e83d8e8"
+        ]
+      }
+    ],
+    "speedup": 2.357595341444051,
+    "reduction_fraction": 0.5758389989914512,
+    "source_identity": "eeaa1709046d4470d06f2c66e625325b29eac2fce2530c399fb6cbb556bb04fd",
+    "separate_campaign_from_G1_G3": true
+  }
+}

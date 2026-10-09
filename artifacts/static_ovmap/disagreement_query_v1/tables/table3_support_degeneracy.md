@@ -1,0 +1,4 @@
+| method | support_equal_mean_weights_atol1e12 | support_equal_area_weights_atol1e12 | support_exact_mean_pnew | support_exact_area_pnew | support_exact_mean_pfinal | support_exact_area_pfinal | whole_scene_output_equal_mean | whole_scene_output_equal_area |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| QS_SUPPORT | 0 | 12 | 0 | 12 | 0 | 12 | 1 | 3 |
+| QD_SUPPORT | 0 | 1 | 0 | 1 | 0 | 1 | 2 | 3 |

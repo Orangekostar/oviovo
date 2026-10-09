@@ -1,0 +1,157 @@
+{
+  "status": "PASS",
+  "checked_utc": "2026-10-09T07:25:38.624754+00:00",
+  "check_count": 35,
+  "passed": 35,
+  "checks": [
+    {
+      "name": "pinned_base_SHA",
+      "passed": true
+    },
+    {
+      "name": "distinct_cohorts_8_18",
+      "passed": true
+    },
+    {
+      "name": "screen_is_fixed_4_subsets",
+      "passed": true
+    },
+    {
+      "name": "screen_A_24_12",
+      "passed": true
+    },
+    {
+      "name": "screen_total_40_20",
+      "passed": true
+    },
+    {
+      "name": "full_156_12",
+      "passed": true
+    },
+    {
+      "name": "same_two_full_reads",
+      "passed": true
+    },
+    {
+      "name": "nonredundant_three_updates",
+      "passed": true
+    },
+    {
+      "name": "frozen_ordinary_FC_no_extra_models",
+      "passed": true
+    },
+    {
+      "name": "new_evidence_mass_fixed",
+      "passed": true
+    },
+    {
+      "name": "candidate_future_scores_forbidden",
+      "passed": true
+    },
+    {
+      "name": "GT_not_predicted_labels_forbidden",
+      "passed": true
+    },
+    {
+      "name": "physical_sites_bounded",
+      "passed": true
+    },
+    {
+      "name": "physical_not_epsilon_welding",
+      "passed": true
+    },
+    {
+      "name": "exact_pooler_fallback_reuse",
+      "passed": true
+    },
+    {
+      "name": "view_budget_not_FLOP_claim",
+      "passed": true
+    },
+    {
+      "name": "strict_full_gate_all_five",
+      "passed": true
+    },
+    {
+      "name": "strict_material_threshold_fraction",
+      "passed": true
+    },
+    {
+      "name": "screen_gate_is_different_from_upgrade",
+      "passed": true
+    },
+    {
+      "name": "screen_gate_automatic_stop",
+      "passed": true
+    },
+    {
+      "name": "no_historical_unmixing",
+      "passed": true
+    },
+    {
+      "name": "vocab_no_new_prompts_or_fake_AP",
+      "passed": true
+    },
+    {
+      "name": "screen_budget_arithmetic",
+      "passed": true
+    },
+    {
+      "name": "full_budget_arithmetic",
+      "passed": true
+    },
+    {
+      "name": "cold_calls_conditional_32",
+      "passed": true
+    },
+    {
+      "name": "cold_budget_bounds",
+      "passed": true
+    },
+    {
+      "name": "original_cohort_order_preserved",
+      "passed": true
+    },
+    {
+      "name": "new_branch_and_external_publication",
+      "passed": true
+    },
+    {
+      "name": "real_cli_required",
+      "passed": true
+    },
+    {
+      "name": "bounded_tests_not_full_suite",
+      "passed": true
+    },
+    {
+      "name": "source_blob_registry_present",
+      "passed": true
+    },
+    {
+      "name": "no_TODO_or_todo_placeholder",
+      "passed": true
+    },
+    {
+      "name": "reference_Python_syntax",
+      "passed": true
+    },
+    {
+      "name": "reference_12_tests_passed",
+      "passed": true
+    },
+    {
+      "name": "internal_markdown_links_resolve",
+      "passed": true
+    }
+  ],
+  "reference_tests": 12,
+  "not_executed": [
+    "production FC",
+    "Open3D direct visibility",
+    "full dataset/scorer replay",
+    "new GPU experiments",
+    "GitHub write or push"
+  ],
+  "scope": "Instruction consistency and tiny numerical reference contracts only"
+}

@@ -1,0 +1,17 @@
+stage,method_alias,query,update,scenes,role,execution_condition
+screen_A,DQ00_D2,NONE,NONE,4,inherited,always
+screen_A,DQ01_G1,NONE,NONE,4,inherited,always
+screen_A,AREA_MEAN,AREA,MEAN,4,simple,always
+screen_A,COVERAGE_MEAN,COVERAGE,MEAN,4,simple,always
+screen_A,VERIFY_MEAN,VERIFY,MEAN,4,simple,always
+screen_A,DISAGREEMENT_MEAN,DISAGREEMENT,MEAN,4,proposed_query,always
+screen_B,QS_AREA,SELECTED_SIMPLE,AREA,4,simple_update,after screen_A freeze
+screen_B,QS_SUPPORT,SELECTED_SIMPLE,SUPPORT,4,proposed_update,after screen_A freeze
+screen_B,QD_AREA,DISAGREEMENT,AREA,4,proposed_query,after screen_A freeze
+screen_B,QD_SUPPORT,DISAGREEMENT,SUPPORT,4,proposed_combination,after screen_A freeze
+full,DQ00_D2,NONE,NONE,26,inherited,screen_signal
+full,DQ01_G1,NONE,NONE,26,inherited,screen_signal
+full,QS_US,SELECTED_SIMPLE,SELECTED_SIMPLE_UPDATE,26,simple,screen_signal
+full,QD_US,DISAGREEMENT,SELECTED_SIMPLE_UPDATE,26,proposed_query,screen_signal
+full,QS_SUPPORT,SELECTED_SIMPLE,SUPPORT,26,proposed_update,screen_signal
+full,QD_SUPPORT,DISAGREEMENT,SUPPORT,26,proposed_combination,screen_signal

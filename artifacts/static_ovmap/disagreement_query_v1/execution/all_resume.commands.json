@@ -1,0 +1,40 @@
+[
+  {
+    "argv": [
+      "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+      "scripts/evaluation/run_ovimap_disagreement_query.py",
+      "--spec",
+      "configs/static_ovmap/disagreement_query_v1.json",
+      "--parent-root",
+      "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+      "--output-root",
+      "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001",
+      "--phase",
+      "all",
+      "--resume"
+    ],
+    "cwd": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree",
+    "elapsed_seconds": 733.4063067010138,
+    "exit_code": 0,
+    "log": "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001/execution/all_resume.log"
+  },
+  {
+    "argv": [
+      "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+      "scripts/evaluation/run_ovimap_disagreement_query.py",
+      "--spec",
+      "configs/static_ovmap/disagreement_query_v1.json",
+      "--parent-root",
+      "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+      "--output-root",
+      "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001",
+      "--phase",
+      "all",
+      "--resume"
+    ],
+    "cwd": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree",
+    "elapsed_seconds": 731.745611741906,
+    "exit_code": 0,
+    "log": "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001/execution/all_resume.log"
+  }
+]

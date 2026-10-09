@@ -1,0 +1,165 @@
+{
+  "actual_all_CLI": {
+    "command": {
+      "argv": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "scripts/evaluation/run_ovimap_disagreement_query.py",
+        "--spec",
+        "configs/static_ovmap/disagreement_query_v1.json",
+        "--parent-root",
+        "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+        "--output-root",
+        "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001",
+        "--phase",
+        "all",
+        "--resume"
+      ],
+      "cwd": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree",
+      "elapsed_seconds": 731.745611741906,
+      "exit_code": 0,
+      "log": "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001/execution/all_resume.log"
+    },
+    "final_producers": [
+      {
+        "bytes": 64,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/__init__.py",
+        "sha256": "485db58cace6004409ebaf669024ec2b087248e7076a30776f25988a00fae833"
+      },
+      {
+        "bytes": 8827,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/acquisition.py",
+        "sha256": "393bb167867999beac88d09b523ec46a62faa74398a44b6bbe4230a693ed33b7"
+      },
+      {
+        "bytes": 9845,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/analysis.py",
+        "sha256": "b9b4a0d1385e6cf1722f09e2e75b48d1313fac39b7c614c9ff30fca3dfde7c58"
+      },
+      {
+        "bytes": 6772,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/binding.py",
+        "sha256": "5ec8a5cc2b7fbd4afdbbd4d887000f8b997f40c2665aaa3f2b2698a8a33cd2fe"
+      },
+      {
+        "bytes": 8172,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/bundles.py",
+        "sha256": "c64c4d2e8ef2c35e415bf7234a2bfee45b0c8405900944ab90745c5d7423517a"
+      },
+      {
+        "bytes": 11200,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/cold_worker.py",
+        "sha256": "9f30e6e6d912fd4dd6016300cfb096622323c1ccf729a099d99791359f88e19b"
+      },
+      {
+        "bytes": 996,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/common.py",
+        "sha256": "51dd4e225f56373447d8f4daf0b4afd128cf85b6989735fd4e73494fa72b8f92"
+      },
+      {
+        "bytes": 22297,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/compliance.py",
+        "sha256": "bfa60a35eb40905b89d787098517362a3ee5a2bd160fe1d7f85d2529585f3ce7"
+      },
+      {
+        "bytes": 11256,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/diagnostics.py",
+        "sha256": "1456030085a9cc832efe0f13c588e673e1716feb8be93db1b46960cb5f983d8c"
+      },
+      {
+        "bytes": 8822,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/evaluation.py",
+        "sha256": "b8b5b167240010ac28212c073744ad50446ef4e0e887e0a626c99b0f97f50289"
+      },
+      {
+        "bytes": 15967,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/fc_worker.py",
+        "sha256": "d4a426aba96fce966e7fcfa86da73191dc2014cad07b4f32f01a6ef911a9a93a"
+      },
+      {
+        "bytes": 9729,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/outputs.py",
+        "sha256": "aaac6fe9381e5c92eba6124207febd096b83929838603befa798666a42bfda61"
+      },
+      {
+        "bytes": 7089,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/physical_support.py",
+        "sha256": "05add939a17790b77d2c8fc2cc71e4d54059aad2d078686027d2cb8f746be6ed"
+      },
+      {
+        "bytes": 5205,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/policies.py",
+        "sha256": "7c5aef4bd38443d220810b57e49425c396e87eb50e5d558d57e9dbe59ae2bf34"
+      },
+      {
+        "bytes": 11692,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/query_plan.py",
+        "sha256": "5f1f71f21b06e2f505618479fac4c678b45ec5a46b90b8d46a4916d143dbf9b7"
+      },
+      {
+        "bytes": 5200,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/regression.py",
+        "sha256": "5d110e8d12d51693a1c02dd6e53554ba3793304ffb8a7fb662accc095b8a312c"
+      },
+      {
+        "bytes": 29983,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/reporting.py",
+        "sha256": "519b144f5a5506c3b566fe49f168c44a9c9f8283214511244fef0be2896fd3aa"
+      },
+      {
+        "bytes": 1201,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/runner.py",
+        "sha256": "f72aca402ad9be8fd76be5d62e9517768f934dbac8f1ba5c8a3d7b56b8ec19dd"
+      },
+      {
+        "bytes": 4505,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/runtime.py",
+        "sha256": "a7215ba112549933de338406b07e4cec58dcc1dd26b85f8244cdf38e92dd1d29"
+      },
+      {
+        "bytes": 1943,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/selection.py",
+        "sha256": "dd60101200c1d220e433bb24a98adb65f871edc616dc5d78fdfab13cfd275807"
+      },
+      {
+        "bytes": 6024,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/study.py",
+        "sha256": "bf755faf5f7107faaa66f5ab35296bb9abb0dfedb3bd9e8084760e34a58165eb"
+      },
+      {
+        "bytes": 3465,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/updates.py",
+        "sha256": "877fc9671a60de1c3edca59c8ff1668f6f057820370b0ab4d9684cf7a229b252"
+      },
+      {
+        "bytes": 5132,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/src/static_ovmap/disagreement_query/verification.py",
+        "sha256": "fb9a87f71ca30c7ac82c460a9a85278a173257af7226731ba3beee15ed448f65"
+      },
+      {
+        "bytes": 271,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/scripts/evaluation/run_ovimap_disagreement_query.py",
+        "sha256": "eb6c4281ad44e925fede8669669e217527e38ef15b29d445a8439cb65923eed7"
+      },
+      {
+        "bytes": 10878,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-disagreement-query-v1/worktree/configs/static_ovmap/disagreement_query_v1.json",
+        "sha256": "6f575f3be2f4ee29dafa954744bc8e0a859024b68637e2e6bc1e4062d6804f3e"
+      }
+    ],
+    "identity": "9c4d4d9642aeab9816ee9cc8b53c0ae347280fb30129dfc988cf59be87d56521",
+    "producer_changes_during_execution": 0,
+    "result_store_identity": "a5b6bcfbf5e39621472a85e078b3faae03a6a301c7ad2175ed89eca10e480877",
+    "status": "ACTUAL_ALL_CLI_TERMINAL_ZERO",
+    "verification_identity": "2d83788125ad9f65e21c3220fed8fdd5023118fb93236b12dc2b1b05da6daf89"
+  },
+  "identity": "ed5f0f0a0084d5d2c6f6cc0f4e513ec2db3807f2c3ce4afd86075c441e019bbf",
+  "parity_chronology_deviation_disclosed": true,
+  "positive_branch_handlers_executed": false,
+  "publication_receipt_external_only": true,
+  "result_store_identity": "a5b6bcfbf5e39621472a85e078b3faae03a6a301c7ad2175ed89eca10e480877",
+  "selected": "DQ01_G1",
+  "status": "PRE_PUSH_REVIEW_COMPLETE",
+  "strict_and_material_target": "NOT_EVALUATED_FULL_REGRESSION_NOT_TRIGGERED",
+  "utc": "2026-10-09T09:54:06.048268+00:00",
+  "verification_identity": "2d83788125ad9f65e21c3220fed8fdd5023118fb93236b12dc2b1b05da6daf89"
+}

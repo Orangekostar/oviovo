@@ -1,0 +1,16 @@
+| scene | reason | incumbents | selected | physically_query_eligible |
+| --- | --- | --- | --- | --- |
+| office1 | ELIGIBLE | 32 | 16 | 16 |
+| office1 | EXCLUDE_NO_TWO_LEGACY_FULL_VIEWS | 2 | 0 | 0 |
+| office1 | EXCLUDE_UNAVAILABLE_HISTORICAL_F | 1 | 0 | 0 |
+| room0 | ELIGIBLE | 49 | 16 | 16 |
+| room0 | EXCLUDE_NO_TWO_LEGACY_FULL_VIEWS | 4 | 0 | 0 |
+| room0 | EXCLUDE_UNAVAILABLE_HISTORICAL_F | 1 | 0 | 0 |
+| scene0011_00 | ELIGIBLE | 37 | 16 | 16 |
+| scene0011_00 | EXCLUDE_NO_TWO_LEGACY_FULL_VIEWS | 10 | 0 | 0 |
+| scene0011_00 | EXCLUDE_RAW_ZERO_SUPPORT | 2 | 0 | 0 |
+| scene0011_00 | EXCLUDE_UNAVAILABLE_HISTORICAL_F | 3 | 0 | 0 |
+| scene0050_00 | ELIGIBLE | 71 | 16 | 16 |
+| scene0050_00 | EXCLUDE_NO_TWO_LEGACY_FULL_VIEWS | 33 | 0 | 0 |
+| scene0050_00 | EXCLUDE_RAW_ZERO_SUPPORT | 2 | 0 | 0 |
+| scene0050_00 | EXCLUDE_UNAVAILABLE_HISTORICAL_F | 6 | 0 | 0 |
