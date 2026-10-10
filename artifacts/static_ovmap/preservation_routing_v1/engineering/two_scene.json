@@ -1,0 +1,70 @@
+{
+  "FC8_same_input_reproduced": true,
+  "engineering_only": true,
+  "identity": "e1b062167dbbac67d90d8100e0325937cfa841273eda9f1c64d5e085ad6f15f5",
+  "literal_no_relabel_equals_G1": true,
+  "scenes": {
+    "office0": {
+      "FC8_max_abs": 0.0,
+      "actual_output": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/engineering/scenes/office0/prediction/manifest.json",
+      "actual_positive_registry": 48,
+      "ranks": "c9be7badaae72247227b9f2043561e8d0b534b1a6189d6dac9ddbf71579c32d5",
+      "scientific_scene_rows": 0,
+      "scorer_executed": true,
+      "scoring_receipt": {
+        "aggregation": "SCENE",
+        "dataset": "Replica",
+        "evaluation_identity": "4b057b9320a4df04ff48c647b451702ac89d07339775375ffd7b7fd07cc5bbf9",
+        "evaluation_receipt": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/engineering/scenes/office0/partitions/6046f07747a83dc82a8c1b8ec770506bf91b5691b4f8f6327c3854a8cb294519/evaluation_cache/4b057b9320a4df04ff48c647b451702ac89d07339775375ffd7b7fd07cc5bbf9/receipt.json",
+        "method": "PR_ENGINEERING_G1_IDENTITY",
+        "metrics": {
+          "ap25": 0.4125,
+          "ap50": 0.20625,
+          "apall": 0.125,
+          "defined_classes": 24,
+          "macc": 0.36781770346275117,
+          "miou": 0.25609748186293607,
+          "uap": 0.125
+        },
+        "prediction_identity": "8b007827b7fa06f4cd46bf7d8a5e4e162e8e78782f7a429a676c1030fd4c49f3",
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "scene": "office0",
+        "status": "COMPLETE"
+      },
+      "unchanged_owner_digest": "6046f07747a83dc82a8c1b8ec770506bf91b5691b4f8f6327c3854a8cb294519",
+      "unchanged_semantic_digest": "ab342e36fd2e83d364b425a5b1c29f473878e6c0aa694fc2cc8258fcb2614aa0"
+    },
+    "scene0011_00": {
+      "FC8_max_abs": 0.0,
+      "actual_output": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/engineering/scenes/scene0011_00/prediction/manifest.json",
+      "actual_positive_registry": 55,
+      "ranks": "b3aa72b460d1991af90fc4e83edb072d6b497e5e927477a4d2084b29d4c151fc",
+      "scientific_scene_rows": 0,
+      "scorer_executed": true,
+      "scoring_receipt": {
+        "aggregation": "SCENE",
+        "dataset": "ScanNet",
+        "evaluation_identity": "268c70baf5335b5b4c4eb04083b4a47de026eb6e4d4740e1398d6443cc94159c",
+        "evaluation_receipt": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/engineering/scenes/scene0011_00/partitions/3c0fc538ce0ae168d1947a3a61abc818666aa0c23ef8f4be6fcd89fdb3501b6f/evaluation_cache/268c70baf5335b5b4c4eb04083b4a47de026eb6e4d4740e1398d6443cc94159c/receipt.json",
+        "method": "PR_ENGINEERING_G1_IDENTITY",
+        "metrics": {
+          "ap25": 0.19166666666666668,
+          "ap50": 0.1592962962962963,
+          "apall": 0.05539873603762493,
+          "defined_classes": 16,
+          "macc": 0.26851390068946196,
+          "miou": 0.20227028273890207,
+          "uap": 0.05539873603762493
+        },
+        "prediction_identity": "d55ef5aba334c8b7ee235c59770718c2b826bc71295f48f65d7d9909d88fa8e6",
+        "rank_mode": "OFFICIAL_CURRENT_CLASS",
+        "scene": "scene0011_00",
+        "status": "COMPLETE"
+      },
+      "unchanged_owner_digest": "3c0fc538ce0ae168d1947a3a61abc818666aa0c23ef8f4be6fcd89fdb3501b6f",
+      "unchanged_semantic_digest": "6034208c3c77c49e7a85b2f6b33f92396d5f12b6c2b78dbb61295532dac34cd5"
+    }
+  },
+  "scientific_map_expansion": false,
+  "status": "COMPLETE"
+}

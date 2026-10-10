@@ -1,0 +1,220 @@
+{
+  "branch": "PR_R1_RESIDUAL",
+  "completed_steps": 2000,
+  "config": {
+    "preservation": false,
+    "residual": true,
+    "stage": "R"
+  },
+  "discarded_uncheckpointed_updates": 0,
+  "elapsed_seconds": 4929.115578207886,
+  "foundation_pass": false,
+  "frozen_small_parameters": 1829540,
+  "identity": "9702835fc32da3888cef69f78c7ae184bd7995f2d9503492b4506ab170d7bba0",
+  "initial_model_digest": "0dd68daab5db11450490ad4dc4c5138bee1f6296ecc8b863041e069edac15244",
+  "initial_trainable_MA": "4ae944943b73d315911285833c5aa6f26990dea7d3415c654bb3d620d12649de",
+  "input_contract": {
+    "binding": "e17122805c8fbe0682d932d7467ef5c5d853470a1d86c178bb78f150fcdd758d",
+    "branch": "PR_R1_RESIDUAL",
+    "config": {
+      "preservation": false,
+      "residual": true,
+      "stage": "R"
+    },
+    "data": "673d3e1a10b4dfc51e36da93d5e9850dd4c3ba87d3c5dac1f7966e2ac785316d",
+    "draws": "927c5e02df6e310a0527fad9a0c3636a7399fddfd1553e51406878096ab70d2b",
+    "numerical_sources": [
+      {
+        "bytes": 5410,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/worktree/src/static_ovmap/preservation_routing/models.py",
+        "sha256": "be8e10b5fa9721fc909b4e404116d9b186aea22175d1c08f609db79f357d2d47"
+      },
+      {
+        "bytes": 2857,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/worktree/src/static_ovmap/preservation_routing/losses.py",
+        "sha256": "1657b2a89cc15f4335242b8fec6879194cff3c996e37215290bff0c746a262a4"
+      },
+      {
+        "bytes": 13925,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/worktree/src/static_ovmap/preservation_routing/training.py",
+        "sha256": "d620a756b26daa8ae8391826168a48bff31ab83056df59fec979e9b2562ed7b8"
+      },
+      {
+        "bytes": 3275,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/worktree/src/static_ovmap/preservation_routing/recognition.py",
+        "sha256": "27937164468ac767e64de277e29c00e4f6e3a2b67b7796a502bff87c6295caad"
+      },
+      {
+        "bytes": 3143,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/worktree/src/static_ovmap/preservation_routing/selection.py",
+        "sha256": "fc3d5aa6c9060b484fb1bef81268024eeb239aad757dd8d15cc4e1a07a507655"
+      }
+    ],
+    "seed": 17,
+    "teachers": "73d7467ecd074e9edd527149ebfa0662ba88c0181ddef27fd70feab1bf485c3a"
+  },
+  "input_identity": "d4dd830e63664a5d0bbe19b8cb0107602902488e4cd4e894c0e81f15a31ceb55",
+  "last_checkpoint": {
+    "bytes": 29355712,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/last.pt",
+    "sha256": "57286d5ca6bbbd4533e9f52c8fbf1b6ef02b771ba87f9266be6fd2d000427c1a"
+  },
+  "original_item_draws": 32000,
+  "peak_allocated_bytes": 2424809472,
+  "peak_reserved_bytes": 2678063104,
+  "seed": 17,
+  "selected_checkpoint": {
+    "bytes": 29356148,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/selected.pt",
+    "sha256": "42ba0c35dd2b095b1448d0c662c7030d44ce6c177e4589e2c1d88a0c5b2a750b"
+  },
+  "selected_metrics": {
+    "A": 0.3638468013468013,
+    "C": 0.4143308080808081,
+    "CE": 3.858565625771629,
+    "M": 0.4937229437229437,
+    "NLL": 4.084524453213119,
+    "categories": 28,
+    "corrections": 21,
+    "families": 4,
+    "full200_competitors": true,
+    "harm": 21,
+    "net_corrections": 0,
+    "original_objects": 69,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/dev_1000.json",
+    "per_family_A": {
+      "scene0105": 0.4090909090909091,
+      "scene0143": 0.3888888888888889,
+      "scene0211": 0.41666666666666663,
+      "scene0620": 0.24074074074074073
+    },
+    "recognition": "f964aaabc010749dbeb2d113a8de5108914a4f2cf701db171400bfbc5a594c9c",
+    "step": 1000,
+    "variant_records": 276
+  },
+  "selected_step": 1000,
+  "status": "COMPLETE",
+  "trainable_parameters": 1829540,
+  "validations": [
+    {
+      "A": 0.33754208754208753,
+      "C": 0.33377525252525253,
+      "CE": 3.8107664506744454,
+      "M": 0.4898809523809525,
+      "NLL": 4.042479822636654,
+      "categories": 28,
+      "corrections": 19,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 28,
+      "net_corrections": -9,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/dev_0250.json",
+      "per_family_A": {
+        "scene0105": 0.4242424242424242,
+        "scene0143": 0.4444444444444444,
+        "scene0211": 0.3333333333333333,
+        "scene0620": 0.14814814814814814
+      },
+      "recognition": "a8496de198854db6d531ba198bd77a0359e7ab5a828ddba686ef3caa05282404",
+      "step": 250,
+      "variant_records": 276
+    },
+    {
+      "A": 0.35757575757575755,
+      "C": 0.35757575757575755,
+      "CE": 3.7993350462128817,
+      "M": 0.4962031024531025,
+      "NLL": 4.027439267444189,
+      "categories": 28,
+      "corrections": 22,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 21,
+      "net_corrections": 1,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/dev_0500.json",
+      "per_family_A": {
+        "scene0105": 0.36363636363636365,
+        "scene0143": 0.4444444444444444,
+        "scene0211": 0.4,
+        "scene0620": 0.2222222222222222
+      },
+      "recognition": "c05a8de8a823e0d14a4571dfde8c430ba15aeb000f61cca3cf544970dd8744c4",
+      "step": 500,
+      "variant_records": 276
+    },
+    {
+      "A": 0.3638468013468013,
+      "C": 0.4143308080808081,
+      "CE": 3.858565625771629,
+      "M": 0.4937229437229437,
+      "NLL": 4.084524453213119,
+      "categories": 28,
+      "corrections": 21,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 21,
+      "net_corrections": 0,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/dev_1000.json",
+      "per_family_A": {
+        "scene0105": 0.4090909090909091,
+        "scene0143": 0.3888888888888889,
+        "scene0211": 0.41666666666666663,
+        "scene0620": 0.24074074074074073
+      },
+      "recognition": "f964aaabc010749dbeb2d113a8de5108914a4f2cf701db171400bfbc5a594c9c",
+      "step": 1000,
+      "variant_records": 276
+    },
+    {
+      "A": 0.35815446127946127,
+      "C": 0.3916035353535353,
+      "CE": 3.8706011269655494,
+      "M": 0.4867784992784992,
+      "NLL": 4.096341178104632,
+      "categories": 28,
+      "corrections": 20,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 19,
+      "net_corrections": 1,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/dev_1500.json",
+      "per_family_A": {
+        "scene0105": 0.36363636363636365,
+        "scene0143": 0.4259259259259259,
+        "scene0211": 0.4208333333333333,
+        "scene0620": 0.2222222222222222
+      },
+      "recognition": "1729f4c559adbf23358f1a6f1834425d25fefe2918d72e30d2aa0e3b645b90b0",
+      "step": 1500,
+      "variant_records": 276
+    },
+    {
+      "A": 0.35664983164983166,
+      "C": 0.39785353535353535,
+      "CE": 3.898966196472897,
+      "M": 0.49372294372294373,
+      "NLL": 4.124963148196638,
+      "categories": 28,
+      "corrections": 19,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 18,
+      "net_corrections": 1,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/dev_2000.json",
+      "per_family_A": {
+        "scene0105": 0.36363636363636365,
+        "scene0143": 0.4074074074074074,
+        "scene0211": 0.4333333333333333,
+        "scene0620": 0.2222222222222222
+      },
+      "recognition": "af4ac45b4d70a70f4ccbfc686efe2dd01f2b5ca8e9a00b5c4875cbbf8d8f176d",
+      "step": 2000,
+      "variant_records": 276
+    }
+  ]
+}

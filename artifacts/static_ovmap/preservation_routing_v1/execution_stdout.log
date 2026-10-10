@@ -1,0 +1,40 @@
+PHASE bind
+PHASE parent_audit
+WAIT_GPU_LOCK /mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-0.lock
+GPU_LOCK_ACQUIRED
+/home/ww/miniconda3/envs/oviovo-radseg/lib/python3.11/site-packages/torch/cuda/__init__.py:654: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+WARNING:root:No pretrained weights loaded for model 'convnext_large_d_320'. Model initialized randomly.
+PHASE prepare
+PHASE engineer
+WAIT_GPU_LOCK /mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-0.lock
+GPU_LOCK_ACQUIRED
+/home/ww/miniconda3/envs/oviovo-radseg/lib/python3.11/site-packages/torch/cuda/__init__.py:654: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+WARNING:root:No pretrained weights loaded for model 'convnext_large_d_320'. Model initialized randomly.
+PHASE train_R
+WAIT_GPU_LOCK /mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-0.lock
+GPU_LOCK_ACQUIRED
+/home/ww/miniconda3/envs/oviovo-radseg/lib/python3.11/site-packages/torch/cuda/__init__.py:654: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+WARNING:root:No pretrained weights loaded for model 'convnext_large_d_320'. Model initialized randomly.
+PHASE select_R
+PHASE repeat_R
+WAIT_GPU_LOCK /mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-0.lock
+GPU_LOCK_ACQUIRED
+/home/ww/miniconda3/envs/oviovo-radseg/lib/python3.11/site-packages/torch/cuda/__init__.py:654: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+WARNING:root:No pretrained weights loaded for model 'convnext_large_d_320'. Model initialized randomly.
+PHASE train_G
+PHASE repeat_G
+PHASE lock
+PHASE diagnose
+WAIT_GPU_LOCK /mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-0.lock
+GPU_LOCK_ACQUIRED
+/home/ww/miniconda3/envs/oviovo-radseg/lib/python3.11/site-packages/torch/cuda/__init__.py:654: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+WARNING:root:No pretrained weights loaded for model 'convnext_large_d_320'. Model initialized randomly.
+PHASE holdout2
+PHASE predict
+PHASE evaluate
+PHASE report

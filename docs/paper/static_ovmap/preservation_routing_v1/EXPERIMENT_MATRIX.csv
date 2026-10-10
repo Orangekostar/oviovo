@@ -1,0 +1,10 @@
+stage,method,grouping,residual,teacher_keep,membership_loss,direct_routing,correspondence_loss,updates,seed17,seed29,main_map,contrast
+R,PR_R0_DIRECT,NONE,False,False,False,False,False,2000,MANDATORY,Rstar only if main passes,Rstar only,controlled reference
+R,PR_R1_RESIDUAL,NONE,True,False,False,False,False,2000,MANDATORY,Rstar only if main passes,Rstar only,R1-R0
+R,PR_R2_KEEP,NONE,False,True,False,False,False,2000,MANDATORY,Rstar only if main passes,Rstar only,R2-R0
+R,PR_R3_RESIDUAL_KEEP,NONE,True,True,False,False,False,2000,MANDATORY,Rstar only if main passes,Rstar only,R3-R1 and R3-R2
+G,PR_G1_VIEW,VIEW,True,inherit frozen Rstar recipe,False,False,False,2000,IF R qualified in both seeds,all five same condition,True,G1-Rstar
+G,PR_G2_SURFACE,SURFACE,True,inherit frozen Rstar recipe,False,False,False,2000,IF R qualified in both seeds,all five same condition,True,G2-G1
+G,PR_G3_AUX_ONLY,SURFACE,True,inherit frozen Rstar recipe,True,False,False,2000,IF R qualified in both seeds,all five same condition,True,G3-G2
+G,PR_G4_ROUTED,SURFACE,True,inherit frozen Rstar recipe,True,True,False,2000,IF R qualified in both seeds,all five same condition,True,G4-G3
+G,PR_G5_CORRESP,SURFACE,True,inherit frozen Rstar recipe,True,True,True,2000,IF R qualified in both seeds,all five same condition,True,G5-G4

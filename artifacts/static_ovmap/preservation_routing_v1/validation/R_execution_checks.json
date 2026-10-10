@@ -1,0 +1,266 @@
+{
+  "actual_checkpoint_RNG_optimizer_sampler_checked": true,
+  "all_four_matched_initialization_and_draws": true,
+  "arms": {
+    "PR_R0_DIRECT": {
+      "checkpoint_checks": {
+        "last": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 32000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 2000
+        },
+        "selected": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 8000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 500
+        }
+      },
+      "foundation_pass": false,
+      "receipt": "3d02b494e54a7cfbde07b1d5d000b98e6a4c284bb1c61d02c709089ee020af97",
+      "selected_step": 500,
+      "steps": 2000
+    },
+    "PR_R1_RESIDUAL": {
+      "checkpoint_checks": {
+        "last": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 32000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 2000
+        },
+        "selected": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 16000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 1000
+        }
+      },
+      "foundation_pass": false,
+      "receipt": "9702835fc32da3888cef69f78c7ae184bd7995f2d9503492b4506ab170d7bba0",
+      "selected_step": 1000,
+      "steps": 2000
+    },
+    "PR_R2_KEEP": {
+      "checkpoint_checks": {
+        "last": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 32000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 2000
+        },
+        "selected": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 24000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 1500
+        }
+      },
+      "foundation_pass": false,
+      "receipt": "c4800b045e23fddbfa3158d2b182c90fd57ec9fe95f444466e928479eb0e9fd2",
+      "selected_step": 1500,
+      "steps": 2000
+    },
+    "PR_R3_RESIDUAL_KEEP": {
+      "checkpoint_checks": {
+        "last": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 32000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 2000
+        },
+        "selected": {
+          "RNG_keys": [
+            "cuda",
+            "numpy",
+            "python",
+            "torch"
+          ],
+          "sampler_index": 8000,
+          "state_keys": [
+            "RNG",
+            "branch",
+            "config",
+            "discarded_uncheckpointed_updates",
+            "elapsed_seconds",
+            "initial_model_digest",
+            "initial_trainable_MA",
+            "input_identity",
+            "model",
+            "optimizer",
+            "sampler_index",
+            "scheduler",
+            "seed",
+            "step",
+            "validations"
+          ],
+          "step": 500
+        }
+      },
+      "foundation_pass": false,
+      "receipt": "3ac5abce15420309c38dcd44319ce1dffe2502eee25d44e38c23c6a15517aeab",
+      "selected_step": 500,
+      "steps": 2000
+    }
+  },
+  "full_component_curves_and_denominators": true,
+  "identity": "61ec17fce775666f999adef3140fd5b9d5367f0ad03ead733e1b10de65feaac9",
+  "nomination": "5e5c6152c0df85d830608aa9a989c3725983cfcdd945f727076a7549e05532ce",
+  "numerical_sources_unchanged": true,
+  "parent_LR_schedule": {
+    "final": 1e-05,
+    "initial": 0,
+    "linear_warmup_updates": 100,
+    "peak": 0.0001
+  },
+  "scientific_updates": 8000,
+  "status": "COMPLETE"
+}

@@ -1,0 +1,20 @@
+{
+  "actual_GPU": {
+    "name": "NVIDIA A40",
+    "runtime_cuda": "12.1",
+    "torch": "2.4.0",
+    "total_memory_GiB": 44.423828125,
+    "visible_devices": 1
+  },
+  "actual_engineering": "645dc255f0941b9f15325ff3d705eb0ca87bb59ba50b650f013d6efa8eef1c5c",
+  "actual_two_scene": "e1b062167dbbac67d90d8100e0325937cfa841273eda9f1c64d5e085ad6f15f5",
+  "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=.:src:/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001/tooling/test_dependencies OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 OMP_NUM_THREADS=1 /home/ww/miniconda3/envs/oviovo-radseg/bin/python -m pytest -q tests/test_preservation_routing.py tests/test_preservation_routing_tables.py",
+  "focused_groups": 12,
+  "identity": "855813e3b5048514755af7b6b6de30fec1480bd9521a86dfd04076949546e24a",
+  "original_pack_and_spec_byte_identical": true,
+  "original_pack_files": 16,
+  "pytest_result": "12 passed in 2.41s",
+  "science_and_publication_pending_when_checks_ran": true,
+  "status": "PASS",
+  "whole_repository_tests_run": false
+}

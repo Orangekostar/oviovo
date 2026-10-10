@@ -1,0 +1,45 @@
+{
+  "columns": [
+    "method",
+    "seed",
+    "updates",
+    "seconds",
+    "allocated_GiB",
+    "reserved_GiB"
+  ],
+  "identity": "bf082d687794a20313ab1e957661afa1dd47e24edfab5cffae3ed06e5c9fde65",
+  "rows": [
+    {
+      "allocated_GiB": 2.251448154449463,
+      "method": "PR_R0_DIRECT",
+      "reserved_GiB": 2.48828125,
+      "seconds": 4754.73355487315,
+      "seed": 17,
+      "updates": 2000
+    },
+    {
+      "allocated_GiB": 2.258279800415039,
+      "method": "PR_R1_RESIDUAL",
+      "reserved_GiB": 2.494140625,
+      "seconds": 4929.115578207886,
+      "seed": 17,
+      "updates": 2000
+    },
+    {
+      "allocated_GiB": 2.251448154449463,
+      "method": "PR_R2_KEEP",
+      "reserved_GiB": 2.494140625,
+      "seconds": 4800.925264017889,
+      "seed": 17,
+      "updates": 2000
+    },
+    {
+      "allocated_GiB": 2.258279800415039,
+      "method": "PR_R3_RESIDUAL_KEEP",
+      "reserved_GiB": 2.494140625,
+      "seconds": 4830.76904642419,
+      "seed": 17,
+      "updates": 2000
+    }
+  ]
+}

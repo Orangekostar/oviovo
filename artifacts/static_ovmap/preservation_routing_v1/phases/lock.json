@@ -1,0 +1,59 @@
+{
+  "DEV_nominee": null,
+  "G_nominations": {},
+  "H2_plan": "b039887060370dd4250503c7494b60ff0001ae9931023793410be347f4132818",
+  "R_nominations": {
+    "17": "5e5c6152c0df85d830608aa9a989c3725983cfcdd945f727076a7549e05532ce",
+    "29": "c83a3fde0544a85e1f6b7f0f0030d1a9418c6e36bb0f4705188019e643805845"
+  },
+  "Rstar": null,
+  "activated_full_path": false,
+  "deployment": "N0_UNCHANGED",
+  "heads": {
+    "PR_R0_DIRECT": {
+      "branch": "PR_R0_DIRECT",
+      "checkpoint": {
+        "bytes": 22022046,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R0_DIRECT/selected.pt",
+        "sha256": "3fee160f9c73422a4810a870f958e77bd6c06b175233d51bcc3993506654453b"
+      },
+      "seed": 17
+    },
+    "PR_R1_RESIDUAL": {
+      "branch": "PR_R1_RESIDUAL",
+      "checkpoint": {
+        "bytes": 29356148,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/selected.pt",
+        "sha256": "42ba0c35dd2b095b1448d0c662c7030d44ce6c177e4589e2c1d88a0c5b2a750b"
+      },
+      "seed": 17
+    },
+    "PR_R2_KEEP": {
+      "branch": "PR_R2_KEEP",
+      "checkpoint": {
+        "bytes": 22022878,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R2_KEEP/selected.pt",
+        "sha256": "741ce5e9bfb576c0d5382b875ad6834a6f6a55641373b8df3169716e37b3cecf"
+      },
+      "seed": 17
+    },
+    "PR_R3_RESIDUAL_KEEP": {
+      "branch": "PR_R3_RESIDUAL_KEEP",
+      "checkpoint": {
+        "bytes": 29355700,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R3_RESIDUAL_KEEP/selected.pt",
+        "sha256": "d5c4858cf67bc6394941f6dea7160ce2115b365bd0fffc10f7428ea168a2e445"
+      },
+      "seed": 17
+    }
+  },
+  "identity": "1214a1a6deb6a0ee8b33d260eb9846f54f98eadc9c35070bdff71b065b47dcb6",
+  "map_heads": {},
+  "new_maps_expected": 0,
+  "new_pools_expected": 0,
+  "old_H_role": "EXPOSED_POST_NOMINATION_REGRESSION_ONLY",
+  "phase": "lock",
+  "source_binding": "e17122805c8fbe0682d932d7467ef5c5d853470a1d86c178bb78f150fcdd758d",
+  "stage_elapsed_seconds": 0.121684166835621,
+  "status": "COMPLETE_NO_2D_FOUNDATION"
+}

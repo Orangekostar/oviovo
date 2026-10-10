@@ -1,0 +1,593 @@
+{
+  "GT_after_predictor_lock": true,
+  "coefficient_norm_mass_is_proxy": true,
+  "does_not_claim_monotonic_accuracy": true,
+  "fixed_DEV_objects": [
+    "scene0105_00:1",
+    "scene0143_00:11",
+    "scene0211_00:1",
+    "scene0620_00:1"
+  ],
+  "hypotheses_not_full_explanation": true,
+  "identity": "4ae3d6e6a26f19053c863f8a4dd9cf60b0a9ca3a8214313eff3d5ece990aeaec",
+  "intervention_values_predeclared": true,
+  "records": {
+    "scene0105_00:1|0|PR_R0_DIRECT": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|0|PR_R1_RESIDUAL": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|0|PR_R2_KEEP": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|0|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|1|PR_R0_DIRECT": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|1|PR_R1_RESIDUAL": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|1|PR_R2_KEEP": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|1|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 95,
+      "class_correction": false,
+      "class_harm": true,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": true,
+      "truth": 95
+    },
+    "scene0105_00:1|2|PR_R0_DIRECT": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0105_00:1|2|PR_R1_RESIDUAL": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0105_00:1|2|PR_R2_KEEP": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0105_00:1|2|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0105_00:1|3|PR_R0_DIRECT": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0105_00:1|3|PR_R1_RESIDUAL": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0105_00:1|3|PR_R2_KEEP": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0105_00:1|3|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 170,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 170,
+      "teacher_correct": false,
+      "truth": 95
+    },
+    "scene0143_00:11|0|PR_R0_DIRECT": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 23,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|0|PR_R1_RESIDUAL": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|0|PR_R2_KEEP": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|0|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 2,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|1|PR_R0_DIRECT": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 23,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|1|PR_R1_RESIDUAL": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|1|PR_R2_KEEP": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|1|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 23,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|2|PR_R0_DIRECT": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 23,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|2|PR_R1_RESIDUAL": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|2|PR_R2_KEEP": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|2|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 191,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 2,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|3|PR_R0_DIRECT": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 23,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|3|PR_R1_RESIDUAL": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|3|PR_R2_KEEP": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 15,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0143_00:11|3|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 748,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 23,
+      "teacher_correct": false,
+      "truth": 28
+    },
+    "scene0211_00:1|0|PR_R0_DIRECT": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|0|PR_R1_RESIDUAL": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|0|PR_R2_KEEP": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 89,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|0|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|1|PR_R0_DIRECT": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|1|PR_R1_RESIDUAL": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|1|PR_R2_KEEP": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 89,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|1|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|2|PR_R0_DIRECT": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|2|PR_R1_RESIDUAL": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|2|PR_R2_KEEP": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 89,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|2|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 1167,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|3|PR_R0_DIRECT": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|3|PR_R1_RESIDUAL": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 89,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|3|PR_R2_KEEP": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 89,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0211_00:1|3|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 52,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 52,
+      "teacher_correct": false,
+      "truth": 1
+    },
+    "scene0620_00:1|0|PR_R0_DIRECT": {
+      "FC_prediction": 102,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 38,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|0|PR_R1_RESIDUAL": {
+      "FC_prediction": 102,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 130,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|0|PR_R2_KEEP": {
+      "FC_prediction": 102,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 56,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|0|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 102,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 56,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|1|PR_R0_DIRECT": {
+      "FC_prediction": 102,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 9,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|1|PR_R1_RESIDUAL": {
+      "FC_prediction": 102,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 130,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|1|PR_R2_KEEP": {
+      "FC_prediction": 102,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 116,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|1|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 102,
+      "class_correction": true,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 10,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|2|PR_R0_DIRECT": {
+      "FC_prediction": 56,
+      "class_correction": true,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 10,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|2|PR_R1_RESIDUAL": {
+      "FC_prediction": 56,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 130,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|2|PR_R2_KEEP": {
+      "FC_prediction": 56,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 9,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|2|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 56,
+      "class_correction": true,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 10,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|3|PR_R0_DIRECT": {
+      "FC_prediction": 2,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 9,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|3|PR_R1_RESIDUAL": {
+      "FC_prediction": 2,
+      "class_correction": true,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 10,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|3|PR_R2_KEEP": {
+      "FC_prediction": 2,
+      "class_correction": false,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 9,
+      "teacher_correct": false,
+      "truth": 10
+    },
+    "scene0620_00:1|3|PR_R3_RESIDUAL_KEEP": {
+      "FC_prediction": 2,
+      "class_correction": true,
+      "class_harm": false,
+      "no_op": false,
+      "prediction": 10,
+      "teacher_correct": false,
+      "truth": 10
+    }
+  },
+  "status": "COMPLETE"
+}

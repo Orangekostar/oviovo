@@ -1,0 +1,140 @@
+{
+  "FC_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+  "FP32": true,
+  "frozen_FC_parameters": 351772609,
+  "frozen_backbone_included": false,
+  "frozen_text_elements": 153600,
+  "heads": {
+    "PR_R0_DIRECT": {
+      "config": {
+        "preservation": false,
+        "residual": false,
+        "stage": "R"
+      },
+      "dependencies": {},
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 0,
+      "last_logged_gradient_step": 2000,
+      "nonzero_gradient_parameters_at_last_logged_update": 1829540,
+      "selected_step": 500,
+      "trainable_stored_parameters": 1829540,
+      "training_checkpoint": {
+        "bytes": 22022046,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R0_DIRECT/selected.pt",
+        "sha256": "3fee160f9c73422a4810a870f958e77bd6c06b175233d51bcc3993506654453b"
+      },
+      "weights": {
+        "bytes": 7331520,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/export/weights/PR_R0_DIRECT.pt",
+        "relative_path": "weights/PR_R0_DIRECT.pt",
+        "sha256": "f812defec593176d38f43a3dca08ebd5e5be05f1d99f072633f3914a0dd06e0c"
+      }
+    },
+    "PR_R1_RESIDUAL": {
+      "config": {
+        "preservation": false,
+        "residual": true,
+        "stage": "R"
+      },
+      "dependencies": {
+        "initial": {
+          "bytes": 7331486,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/export/weights/initial_seed17.pt",
+          "relative_path": "weights/initial_seed17.pt",
+          "sha256": "b3778a7bc05bd8c30430176846637df5863fe21f73e0c096e02fc1bd71e8c334"
+        }
+      },
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 1829540,
+      "last_logged_gradient_step": 2000,
+      "nonzero_gradient_parameters_at_last_logged_update": 1829540,
+      "selected_step": 1000,
+      "trainable_stored_parameters": 1829540,
+      "training_checkpoint": {
+        "bytes": 29356148,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/selected.pt",
+        "sha256": "42ba0c35dd2b095b1448d0c662c7030d44ce6c177e4589e2c1d88a0c5b2a750b"
+      },
+      "weights": {
+        "bytes": 7331614,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/export/weights/PR_R1_RESIDUAL.pt",
+        "relative_path": "weights/PR_R1_RESIDUAL.pt",
+        "sha256": "a54b2fe9037b6e15aa08a42e485428efe8c0d826a38a465347d5043f3061f100"
+      }
+    },
+    "PR_R2_KEEP": {
+      "config": {
+        "preservation": true,
+        "residual": false,
+        "stage": "R"
+      },
+      "dependencies": {},
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 0,
+      "last_logged_gradient_step": 2000,
+      "nonzero_gradient_parameters_at_last_logged_update": 1829540,
+      "selected_step": 1500,
+      "trainable_stored_parameters": 1829540,
+      "training_checkpoint": {
+        "bytes": 22022878,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R2_KEEP/selected.pt",
+        "sha256": "741ce5e9bfb576c0d5382b875ad6834a6f6a55641373b8df3169716e37b3cecf"
+      },
+      "weights": {
+        "bytes": 7331426,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/export/weights/PR_R2_KEEP.pt",
+        "relative_path": "weights/PR_R2_KEEP.pt",
+        "sha256": "85271464d6cd2cc256bcb87a0ee04b5dcdbc91ea23057d41153fb5b8b664b72b"
+      }
+    },
+    "PR_R3_RESIDUAL_KEEP": {
+      "config": {
+        "preservation": true,
+        "residual": true,
+        "stage": "R"
+      },
+      "dependencies": {
+        "initial": {
+          "bytes": 7331486,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/export/weights/initial_seed17.pt",
+          "relative_path": "weights/initial_seed17.pt",
+          "sha256": "b3778a7bc05bd8c30430176846637df5863fe21f73e0c096e02fc1bd71e8c334"
+        }
+      },
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 1829540,
+      "last_logged_gradient_step": 2000,
+      "nonzero_gradient_parameters_at_last_logged_update": 1829540,
+      "selected_step": 500,
+      "trainable_stored_parameters": 1829540,
+      "training_checkpoint": {
+        "bytes": 29355700,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R3_RESIDUAL_KEEP/selected.pt",
+        "sha256": "d5c4858cf67bc6394941f6dea7160ce2115b365bd0fffc10f7428ea168a2e445"
+      },
+      "weights": {
+        "bytes": 7331849,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/export/weights/PR_R3_RESIDUAL_KEEP.pt",
+        "relative_path": "weights/PR_R3_RESIDUAL_KEEP.pt",
+        "sha256": "d1eccf6ef697eafaf1c779aaf67f255263df7931e8a94393ac061bfe975e70eb"
+      }
+    }
+  },
+  "identity": "187efce71d56e8e0e7d0f558b46320a33f251d37d5b40e730890ed42b4afe64e",
+  "loader": "static_ovmap.preservation_routing.export.load_exported",
+  "predictor_lock": "d23ba82b04e135616f694e64ee9914a7e743757bbe136b7ff2b59e3c2048887d",
+  "shared_initial_references": {
+    "4ae944943b73d315911285833c5aa6f26990dea7d3415c654bb3d620d12649de": {
+      "bytes": 7331486,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/export/weights/initial_seed17.pt",
+      "relative_path": "weights/initial_seed17.pt",
+      "sha256": "b3778a7bc05bd8c30430176846637df5863fe21f73e0c096e02fc1bd71e8c334"
+    }
+  },
+  "status": "COMPLETE",
+  "text_identity": {
+    "bytes": 669136,
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+    "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+  }
+}

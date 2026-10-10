@@ -1,0 +1,40 @@
+{
+  "argv": [
+    "scripts/evaluation/run_ovimap_preservation_routing.py",
+    "--spec",
+    "configs/static_ovmap/preservation_routing_v1.json",
+    "--parent-root",
+    "/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001",
+    "--gpu",
+    "0",
+    "--phase",
+    "all",
+    "--resume"
+  ],
+  "deployment": "N0_UNCHANGED",
+  "elapsed_seconds": 103.65142130991444,
+  "exit_code": 0,
+  "identity": "4567d2cdc55cc8f4d41ba2f4cc3a9e777bc72cf3723d524a043d2daade314d2f",
+  "phase": "all",
+  "phases": {
+    "bind": "2d01da8c3d5c680524697906c925002103b8fb7df7b5a5a2009074609cef1a28",
+    "diagnose": "55cbd2852df82cadd0724244825a176347bf65a0d76f0c120105b50f784a624b",
+    "engineer": "cc4eea63c22f1f78044e8cfcaaf8022964387129383070cfba1e0d4ff8ae9c33",
+    "evaluate": "b80cb363b3a164c9c1c25240385cb613708f8315e37f86235c4e85bd2b21c6ef",
+    "holdout2": "a5705cc886d071aec1e686afd9de003d37fa2e2231dc7883be25eca6dc06d3e6",
+    "lock": "1214a1a6deb6a0ee8b33d260eb9846f54f98eadc9c35070bdff71b065b47dcb6",
+    "parent_audit": "cd5a5342318e90667caeda985582ac7295d3c2ef1c2f673a04387b6f476d638a",
+    "predict": "98e34f0e691a92d42c7709092f572b01d2867ef05f851e837ba09b28a0fcc895",
+    "prepare": "30164bdd9eee55ebb6c07b8727f87e6c3d0cc47115e9adf2bfff0179fc2dd028",
+    "repeat_G": "ce331afe094451e3c647306c7ad1c0eeaacecd82ba553159ce4129ff0af598df",
+    "repeat_R": "678cb42ab3110dccc446fd519b3459b52d83c1b4172cb0b90778fadb6769c0ad",
+    "report": "9b566a0f107d25f6ef901bb28988233a411a9c84e167efe63ad81fa25ce6ef30",
+    "select_R": "eb4f6cb9292de13f206d03274e9002d8f99d3c13898ae667efc80f4c835f907e",
+    "train_G": "2469202ebbb612d50e0a40378d02871e6ddec05f86961411544aa59f3040bb55",
+    "train_R": "41511ea6b082864c1ead15cbc1c00ba982a2137a48b74401c878970921529677"
+  },
+  "source_binding": "e17122805c8fbe0682d932d7467ef5c5d853470a1d86c178bb78f150fcdd758d",
+  "status": "COMPLETE_NO_2D_FOUNDATION"
+}

@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-10",
+  "task_id": "ovimap-preservation-routing-v1",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "6767eb90c2fd6999621b356b87269c012821713a",
+  "branch": "research/ovimap-preservation-routing-v1",
+  "module": "src/static_ovmap/preservation_routing",
+  "entrypoint": "scripts/evaluation/run_ovimap_preservation_routing.py",
+  "parent_root": "/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001",
+  "parent_storage_hint": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001",
+  "output_root": "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001",
+  "controller_python_hint": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "FC_python_hint": "/home/ww/miniconda3/envs/oviovo-radseg/bin/python",
+  "cohorts": {
+    "replica8": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet_cf18": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0168_00",
+      "scene0168_01",
+      "scene0168_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "baseline_methods": {
+    "PR00_D2": "LR00_D2",
+    "PR01_G1": "LR01_G1",
+    "PR02_FC8": "LR04_FC_8"
+  },
+  "data": {
+    "reuse_exact_parent_split": true,
+    "parent_split_identity": "0c1209d9d3887f317251fd7909393329ce804cfa1d42294936addd22d1d56fda",
+    "train_families": 24,
+    "dev_families": 4,
+    "old_H_families": 4,
+    "base_classes": 160,
+    "heldout_classes": 40,
+    "old_H_role": "EXPOSED_POST_NOMINATION_REGRESSION_ONLY",
+    "H2_families": 4,
+    "H2_hash_prefix": "PR1-H2-20261010|",
+    "H2_source": "PINNED_OFFICIAL_SCANNET_V2_TRAIN",
+    "H2_exclude": "parent exclusions + all 32 parent families + all known project exposures",
+    "H2_parse_annotations_after": "both seed nominations and all scientific predictors locked",
+    "H2_min_total_objects": 32,
+    "H2_novel_support_min_objects": 20,
+    "H2_novel_support_min_families": 2,
+    "max_frames_per_new_family": 96,
+    "max_objects_per_new_family": 64,
+    "reuse_train_dev_proposals_and_features": true,
+    "no_new_training_masks": true,
+    "new_H2_FC_images_max": 384,
+    "missing_parent_FC_recovery_images_max": 3904,
+    "real_proposal": {
+      "role": "POST_LOCK_DEV_DIAGNOSTIC_NO_TRAINING_OR_SELECTION",
+      "families": 4,
+      "frames_per_family": 2,
+      "frame_indices": "0 and floor((n-1)/2) in recorded sorted DEV frame bank; deduplicate",
+      "retained_proposals_per_frame": 16,
+      "total_retained_max": 128,
+      "generator_images_max": 8,
+      "sam2_repo": "facebookresearch/sam2",
+      "sam2_commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+      "sam2_config": "configs/sam2.1/sam2.1_hiera_l.yaml",
+      "sam2_checkpoint": "bound existing sam2.1_hiera_large.pt",
+      "points_per_side": 16,
+      "points_per_batch": 64,
+      "pred_iou_thresh": 0.8,
+      "stability_score_thresh": 0.95,
+      "stability_score_offset": 1.0,
+      "mask_threshold": 0.0,
+      "box_nms_thresh": 0.7,
+      "crop_n_layers": 0,
+      "crop_nms_thresh": 0.7,
+      "crop_overlap_ratio": 0.3413333333333333,
+      "crop_n_points_downscale_factor": 1,
+      "min_mask_region_area": 0,
+      "output_mode": "binary_mask",
+      "use_m2m": false,
+      "multimask_output": true,
+      "GT_free_retention": "pixels>=100, bbox>=2; sort predicted_iou descending, stability descending, pixel_count descending, mask_digest ascending",
+      "matching_IoU_threshold": 0.25,
+      "matching_high_quality_threshold": 0.5,
+      "max_FC_context_images": 384,
+      "minimum_matched_for_inference": 0,
+      "insufficient_support": "REPORT_DENOMINATORS_NOT_METHOD_FAILURE_NO_GT_REPLACEMENT"
+    }
+  },
+  "observation": {
+    "max_views": 8,
+    "training_prefixes": [
+      2,
+      4,
+      8
+    ],
+    "evaluation_prefix": 8,
+    "sites": 64,
+    "metadata_dimensions": 8,
+    "geometry": "exact parent predicted maps or frozen GT-derived supervised proposals",
+    "new_AnyUp": 0,
+    "new_SAMV": 0,
+    "new_NQ": 0,
+    "new_ovi_maps": 0
+  },
+  "R_methods": [
+    {
+      "id": "PR_R0_DIRECT",
+      "residual": false,
+      "preservation": false
+    },
+    {
+      "id": "PR_R1_RESIDUAL",
+      "residual": true,
+      "preservation": false
+    },
+    {
+      "id": "PR_R2_KEEP",
+      "residual": false,
+      "preservation": true
+    },
+    {
+      "id": "PR_R3_RESIDUAL_KEEP",
+      "residual": true,
+      "preservation": true
+    }
+  ],
+  "R_model": {
+    "architecture": "exact parent MASKAdapterHead NONE path",
+    "warmup_from_old_LR_weights": false,
+    "functional_residual": "normalize(z_FC + (z_MA_trainable - z_MA_initial_frozen))",
+    "direct": "z_MA_trainable",
+    "initial_reference": "same initialization, eval, frozen, retained with checkpoint",
+    "first_step_gradients_required": true,
+    "output_extra_gate": false
+  },
+  "G_methods": [
+    {
+      "id": "PR_G1_VIEW",
+      "grouping": "VIEW",
+      "membership_loss": false,
+      "direct_routing": false,
+      "correspondence_loss": false
+    },
+    {
+      "id": "PR_G2_SURFACE",
+      "grouping": "SURFACE",
+      "membership_loss": false,
+      "direct_routing": false,
+      "correspondence_loss": false
+    },
+    {
+      "id": "PR_G3_AUX_ONLY",
+      "grouping": "SURFACE",
+      "membership_loss": true,
+      "direct_routing": false,
+      "correspondence_loss": false
+    },
+    {
+      "id": "PR_G4_ROUTED",
+      "grouping": "SURFACE",
+      "membership_loss": true,
+      "direct_routing": true,
+      "correspondence_loss": false
+    },
+    {
+      "id": "PR_G5_CORRESP",
+      "grouping": "SURFACE",
+      "membership_loss": true,
+      "direct_routing": true,
+      "correspondence_loss": true
+    }
+  ],
+  "G_model": {
+    "frozen_base": "Rstar from same seed",
+    "hidden": 128,
+    "queries": 4,
+    "metadata_dimensions": 8,
+    "quality_head": "128->128 GELU ->1",
+    "membership_head": "separate 128->128 GELU ->1",
+    "rho": "mean sigmoid membership logits over valid tokens of a group",
+    "energy": "4*tanh(query dot group_key / sqrt(128))",
+    "null_energy": 0.0,
+    "group_count_normalization": true,
+    "alpha": "(rho_g*exp(e_mg)/J)/(1+sum_h rho_h*exp(e_mh)/J)",
+    "rho_for_unrouted_controls": 1.0,
+    "value": "unit(phi(raw_group_value))-z_base",
+    "output": "unit(z_base + 0.5 * W0 * mean_m sum_g alpha_mg*value_g)",
+    "W0": "Linear(D,D,bias=False), zero initialized",
+    "residual_scale": 0.5,
+    "normalize_local_delta_before_or_after_W0": false,
+    "train_base": false,
+    "supervised_target_from_old_owner": false,
+    "no_valid_tokens": "exact frozen base return",
+    "remove_null_renormalization": false
+  },
+  "loss": {
+    "classification_temperature": 0.07,
+    "class_denominator": "160 parent base prototypes",
+    "clean_CE_weight": 0.5,
+    "corrupt_CE_weight": 0.5,
+    "student_consistency_weight": 0.1,
+    "teacher_preservation_weight": 1.0,
+    "teacher_clean_weight": 0.5,
+    "teacher_corrupt_weight": 0.5,
+    "teacher_condition": "TRAIN clean ordinary FC full200 top1 equals TRAIN target, same view prefix",
+    "teacher_reference": "detached clean ordinary FC normalized embedding",
+    "membership_weight": 0.1,
+    "membership_reduction": "known-token BCE mean within each original object, then batch mean",
+    "correspondence_weight": 0.05,
+    "correspondence_pairs_per_original_max": 128,
+    "G_preservation": "inherit Rstar preservation flag for all G methods"
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.01,
+    "grad_clip": 1.0,
+    "effective_batch": 16,
+    "microbatch": 1,
+    "accumulation": 16,
+    "precision": "FP32",
+    "TF32": false,
+    "autocast": false,
+    "updates_per_phase": 2000,
+    "warmup_updates": 100,
+    "cosine_end_fraction": 0.1,
+    "validation_steps": [
+      0,
+      250,
+      500,
+      1000,
+      1500,
+      2000
+    ],
+    "step0_diagnostic_not_nomination": true,
+    "seeds": [
+      17,
+      29
+    ],
+    "new_main_R_updates": 8000,
+    "repeat_R_updates": 2000,
+    "G_updates_both_seeds": 20000,
+    "maximum_updates": 30000,
+    "engineering_discarded_updates_max": 20,
+    "hyperparameter_sweep": false
+  },
+  "selection": {
+    "DEV": "base-category objects, full200 competitors, frozen existing four variants",
+    "A": "equal-family mean per-original (0.5 clean correct + sum 3 corrupt correct /6)",
+    "M": "equal-class mean of the same per-original weighted correctness",
+    "C": "equal-family clean top1",
+    "CE": "equal-family base160 weighted CE, tie-break only",
+    "checkpoint_order": [
+      "A_desc",
+      "M_desc",
+      "C_desc",
+      "CE_asc",
+      "step_asc"
+    ],
+    "R_gate": {
+      "A_gain_fraction_min": 0.005,
+      "M_nondecrease": true,
+      "C_nondecrease": true,
+      "net_corrections_positive": true,
+      "comparator": "same-prefix FC8"
+    },
+    "Rstar": "best admissible checkpoint/method; tie R0,R1,R2,R3; freeze architecture before repeat",
+    "repeat_R": "same Rstar architecture seed29, independently DEV-selected checkpoint, same R_gate",
+    "G_start": "both R seeds pass R_gate; else completed negative early exit",
+    "G_nomination": "best main-seed G satisfying M,C nondecrease and A gain>=0.005 vs frozen Rstar; otherwise Rstar",
+    "G_repeat": "all five G architectures seed29 with its own frozen Rstar, no architecture switch",
+    "H2_or_regression_drives_selection": false,
+    "latency_gate": false,
+    "whole_map": {
+      "all5_vs_G1_nondecrease": true,
+      "CF_APall_gt_D2": true,
+      "CF_AP50_ge_D2": true,
+      "tolerance_fraction": 1e-10,
+      "material_CF_APall_gain_fraction": 0.001
+    }
+  },
+  "coverage": {
+    "normal_full_regression_condition": "R_gate passed in both seeds",
+    "main_map_methods": [
+      "PR00_D2",
+      "PR01_G1",
+      "PR02_FC8",
+      "PR_RSTAR",
+      "PR_G1_VIEW",
+      "PR_G2_SURFACE",
+      "PR_G3_AUX_ONLY",
+      "PR_G4_ROUTED",
+      "PR_G5_CORRESP"
+    ],
+    "repeat_map_methods": [
+      "R29_PR_RSTAR",
+      "R29_PR_G1_VIEW",
+      "R29_PR_G2_SURFACE",
+      "R29_PR_G3_AUX_ONLY",
+      "R29_PR_G4_ROUTED",
+      "R29_PR_G5_CORRESP"
+    ],
+    "maximum_scene_rows": 390,
+    "maximum_ordered_pools": 30,
+    "new_baseline_map_runs": 0,
+    "early_negative": "no new full-map rows, no G/H2/real-proposal generation, publish R evidence and exact reason"
+  },
+  "phases": [
+    "bind",
+    "parent_audit",
+    "prepare",
+    "engineer",
+    "train_R",
+    "select_R",
+    "repeat_R",
+    "train_G",
+    "repeat_G",
+    "lock",
+    "diagnose",
+    "holdout2",
+    "predict",
+    "evaluate",
+    "report",
+    "all"
+  ],
+  "publication": {
+    "deployment": "N0_UNCHANGED",
+    "reports": [
+      "PRESERVATION_ROUTING_RESULTS.md",
+      "PRESERVATION_ROUTING_HANDOFF.md",
+      "PRESERVATION_ROUTING_SELECTION.md",
+      "PRESERVATION_ROUTING_CLAIMS.md"
+    ],
+    "weights": "all selected trained heads plus frozen initial reference and frozen base dependencies; never FC backbone",
+    "include_training_curves": true,
+    "receipt": "external publication/final.json",
+    "force_push": false
+  },
+  "validation": {
+    "unit_groups_max": 12,
+    "engineering_fit_original_objects": 2,
+    "new_full_repository_test_run": false,
+    "scientific_metric_claim_from_reference_tests": false,
+    "identity_tolerance_abs": 1e-06,
+    "identity_tolerance_rel": 1e-05
+  },
+  "resources": {
+    "device": "one available A40, inherited GPU lock",
+    "cpu_eval_workers": 3,
+    "host_LRU_GiB_max": 32,
+    "no_latency_objective": true,
+    "cold_timing_grid": 0,
+    "free_space_initial_GiB": 40,
+    "maximum_FC_new_images_including_missing_parent_recovery": 4672,
+    "large_immutable_hash_once_per_stage": true,
+    "minibatch_signature_framework": false
+  }
+}

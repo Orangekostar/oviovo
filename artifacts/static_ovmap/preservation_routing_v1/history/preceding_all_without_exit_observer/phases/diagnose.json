@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "/home/ww/miniconda3/envs/oviovo-radseg/bin/python",
+    "-u",
+    "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/worktree/scripts/evaluation/run_ovimap_preservation_routing.py",
+    "--spec",
+    "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/worktree/configs/static_ovmap/preservation_routing_v1.json",
+    "--parent-root",
+    "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001",
+    "--gpu",
+    "0",
+    "--phase",
+    "diagnose",
+    "--resume",
+    "--_worker"
+  ],
+  "identity": "8b56e6c4cccaf5dea28a32ef75255694ec5ef07b00434e7f51921d0726c5abcb",
+  "phase": "diagnose",
+  "source_binding": "e17122805c8fbe0682d932d7467ef5c5d853470a1d86c178bb78f150fcdd758d",
+  "stage_elapsed_seconds": 1436.253731566947,
+  "status": "COMPLETE",
+  "subprocess_exit_code": 0
+}

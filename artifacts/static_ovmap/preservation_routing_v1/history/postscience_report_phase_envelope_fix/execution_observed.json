@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "-u",
+    "scripts/evaluation/run_ovimap_preservation_routing.py",
+    "--spec",
+    "configs/static_ovmap/preservation_routing_v1.json",
+    "--parent-root",
+    "/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001",
+    "--gpu",
+    "0",
+    "--phase",
+    "all",
+    "--resume"
+  ],
+  "elapsed_seconds": 109.09112460003234,
+  "exit_code": 1,
+  "identity": "1cf3cb159a53ff63190ece7bb9c3aff706a986e0b202e08e75da321e2a241ff4",
+  "observer_survives_tool_session": true,
+  "result_store_identity": "702cf2b4be8560a23abe7bc0b2ffb23431c6ec6339f80a758d1a8f6bbbb03e96",
+  "status": "OBSERVED_FAILURE",
+  "stdout": "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001/all.log",
+  "terminal_identity": "31d69b31784b229016ad362fc3833ee2b4be39630d57fbc3fdd33d993d76b349"
+}

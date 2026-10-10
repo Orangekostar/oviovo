@@ -1,0 +1,59 @@
+{
+  "columns": [
+    "method",
+    "trained_head_parameters",
+    "frozen_initial_parameters",
+    "frozen_base_parameters",
+    "frozen_FC_parameters",
+    "nonzero_gradient_parameters",
+    "gradient_observation_step"
+  ],
+  "identity": "6fb70e4c2a2363b41581bf531e96a3972d2dd2f48913e0db4ee57d6dbe90cbc1",
+  "rows": [
+    {
+      "frozen_FC_parameters": 351772609,
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 0,
+      "gradient_observation_step": null,
+      "method": "FC_FROZEN_BACKBONE",
+      "nonzero_gradient_parameters": null,
+      "trained_head_parameters": 0
+    },
+    {
+      "frozen_FC_parameters": 351772609,
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 0,
+      "gradient_observation_step": 2000,
+      "method": "PR_R0_DIRECT",
+      "nonzero_gradient_parameters": 1829540,
+      "trained_head_parameters": 1829540
+    },
+    {
+      "frozen_FC_parameters": 351772609,
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 1829540,
+      "gradient_observation_step": 2000,
+      "method": "PR_R1_RESIDUAL",
+      "nonzero_gradient_parameters": 1829540,
+      "trained_head_parameters": 1829540
+    },
+    {
+      "frozen_FC_parameters": 351772609,
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 0,
+      "gradient_observation_step": 2000,
+      "method": "PR_R2_KEEP",
+      "nonzero_gradient_parameters": 1829540,
+      "trained_head_parameters": 1829540
+    },
+    {
+      "frozen_FC_parameters": 351772609,
+      "frozen_base_parameters": 0,
+      "frozen_initial_parameters": 1829540,
+      "gradient_observation_step": 2000,
+      "method": "PR_R3_RESIDUAL_KEEP",
+      "nonzero_gradient_parameters": 1829540,
+      "trained_head_parameters": 1829540
+    }
+  ]
+}

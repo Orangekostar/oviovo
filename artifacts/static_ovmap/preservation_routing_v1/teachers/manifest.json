@@ -1,0 +1,22 @@
+{
+  "TRAIN_only": true,
+  "arrays": {
+    "bytes": 19616016,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/teachers/train_prefixes.npz",
+    "sha256": "352dfdcb41852c61b9e219b284cd475a0eeca4c18e9af082e39579ea575afe4c"
+  },
+  "clean_and_corrupt_embeddings": true,
+  "correct_by_prefix": {
+    "2": 176,
+    "4": 177,
+    "8": 188
+  },
+  "denominator_per_prefix": 622,
+  "elapsed_seconds": 225.51432048506103,
+  "identity": "73d7467ecd074e9edd527149ebfa0662ba88c0181ddef27fd70feab1bf485c3a",
+  "input_identity": "c1a51ba41d47bb3c1ab3aba84edae6e32d9439b3b895788fbad34254838dffec",
+  "original_objects": 622,
+  "prediction_API_accepts_correctness": false,
+  "status": "COMPLETE",
+  "teacher_full_classes": 200
+}

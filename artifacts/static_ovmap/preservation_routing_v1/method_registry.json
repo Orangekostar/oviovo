@@ -1,0 +1,71 @@
+{
+  "G": [
+    {
+      "correspondence_loss": false,
+      "direct_routing": false,
+      "grouping": "VIEW",
+      "id": "PR_G1_VIEW",
+      "membership_loss": false
+    },
+    {
+      "correspondence_loss": false,
+      "direct_routing": false,
+      "grouping": "SURFACE",
+      "id": "PR_G2_SURFACE",
+      "membership_loss": false
+    },
+    {
+      "correspondence_loss": false,
+      "direct_routing": false,
+      "grouping": "SURFACE",
+      "id": "PR_G3_AUX_ONLY",
+      "membership_loss": true
+    },
+    {
+      "correspondence_loss": false,
+      "direct_routing": true,
+      "grouping": "SURFACE",
+      "id": "PR_G4_ROUTED",
+      "membership_loss": true
+    },
+    {
+      "correspondence_loss": true,
+      "direct_routing": true,
+      "grouping": "SURFACE",
+      "id": "PR_G5_CORRESP",
+      "membership_loss": true
+    }
+  ],
+  "R": [
+    {
+      "id": "PR_R0_DIRECT",
+      "preservation": false,
+      "residual": false
+    },
+    {
+      "id": "PR_R1_RESIDUAL",
+      "preservation": false,
+      "residual": true
+    },
+    {
+      "id": "PR_R2_KEEP",
+      "preservation": true,
+      "residual": false
+    },
+    {
+      "id": "PR_R3_RESIDUAL_KEEP",
+      "preservation": true,
+      "residual": true
+    }
+  ],
+  "aliases": {
+    "PR_G0": "same-seed PR_RSTAR"
+  },
+  "baselines": {
+    "PR00_D2": "LR00_D2",
+    "PR01_G1": "LR01_G1",
+    "PR02_FC8": "LR04_FC_8"
+  },
+  "deployment": "N0_UNCHANGED",
+  "identity": "9aa588bcaf2fe277fa11b70d87e3743fe5a0cded2d60715585fbc2f3308b03ca"
+}

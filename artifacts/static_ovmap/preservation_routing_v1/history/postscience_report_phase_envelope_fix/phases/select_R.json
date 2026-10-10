@@ -1,0 +1,134 @@
+{
+  "Rstar": null,
+  "arms": {
+    "PR_R0_DIRECT": {
+      "A": 0.3135206228956229,
+      "C": 0.3150252525252525,
+      "CE": 3.995591995686995,
+      "M": 0.43690476190476185,
+      "NLL": 4.23094694009333,
+      "categories": 28,
+      "corrections": 25,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 46,
+      "net_corrections": -21,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R0_DIRECT/dev_0500.json",
+      "per_family_A": {
+        "scene0105": 0.45454545454545453,
+        "scene0143": 0.3333333333333333,
+        "scene0211": 0.2625,
+        "scene0620": 0.20370370370370372
+      },
+      "recognition": "1bca352b7a6e58e9cbc3cf378694e2204f4fea799f26514573ad1d0684c6b7a2",
+      "step": 500,
+      "variant_records": 276
+    },
+    "PR_R1_RESIDUAL": {
+      "A": 0.3638468013468013,
+      "C": 0.4143308080808081,
+      "CE": 3.858565625771629,
+      "M": 0.4937229437229437,
+      "NLL": 4.084524453213119,
+      "categories": 28,
+      "corrections": 21,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 21,
+      "net_corrections": 0,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/dev_1000.json",
+      "per_family_A": {
+        "scene0105": 0.4090909090909091,
+        "scene0143": 0.3888888888888889,
+        "scene0211": 0.41666666666666663,
+        "scene0620": 0.24074074074074073
+      },
+      "recognition": "f964aaabc010749dbeb2d113a8de5108914a4f2cf701db171400bfbc5a594c9c",
+      "step": 1000,
+      "variant_records": 276
+    },
+    "PR_R2_KEEP": {
+      "A": 0.33478535353535355,
+      "C": 0.3428030303030303,
+      "CE": 4.052255775919968,
+      "M": 0.45605158730158735,
+      "NLL": 4.281558463602054,
+      "categories": 28,
+      "corrections": 25,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 44,
+      "net_corrections": -19,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R2_KEEP/dev_1500.json",
+      "per_family_A": {
+        "scene0105": 0.46969696969696967,
+        "scene0143": 0.3333333333333333,
+        "scene0211": 0.2583333333333333,
+        "scene0620": 0.2777777777777778
+      },
+      "recognition": "7252e6a53082acb482ff454d37b7d4095f4135237097fa58d5febf688a02c900",
+      "step": 1500,
+      "variant_records": 276
+    },
+    "PR_R3_RESIDUAL_KEEP": {
+      "A": 0.36173190235690234,
+      "C": 0.3678030303030303,
+      "CE": 3.776114007665051,
+      "M": 0.509623015873016,
+      "NLL": 4.003956846667059,
+      "categories": 28,
+      "corrections": 21,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 28,
+      "net_corrections": -7,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R3_RESIDUAL_KEEP/dev_0500.json",
+      "per_family_A": {
+        "scene0105": 0.4242424242424242,
+        "scene0143": 0.4444444444444444,
+        "scene0211": 0.3375,
+        "scene0620": 0.24074074074074073
+      },
+      "recognition": "274205fcee1f30e5ae3ffbbc795fc44d1f4722e45e43c9212314ada5b166a137",
+      "step": 500,
+      "variant_records": 276
+    }
+  },
+  "checkpoints": {
+    "PR_R0_DIRECT": {
+      "bytes": 22022046,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R0_DIRECT/selected.pt",
+      "sha256": "3fee160f9c73422a4810a870f958e77bd6c06b175233d51bcc3993506654453b"
+    },
+    "PR_R1_RESIDUAL": {
+      "bytes": 29356148,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R1_RESIDUAL/selected.pt",
+      "sha256": "42ba0c35dd2b095b1448d0c662c7030d44ce6c177e4589e2c1d88a0c5b2a750b"
+    },
+    "PR_R2_KEEP": {
+      "bytes": 22022878,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R2_KEEP/selected.pt",
+      "sha256": "741ce5e9bfb576c0d5382b875ad6834a6f6a55641373b8df3169716e37b3cecf"
+    },
+    "PR_R3_RESIDUAL_KEEP": {
+      "bytes": 29355700,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-preservation-routing-v1/attempt_001/training/seed17/PR_R3_RESIDUAL_KEEP/selected.pt",
+      "sha256": "d5c4858cf67bc6394941f6dea7160ce2115b365bd0fffc10f7428ea168a2e445"
+    }
+  },
+  "data": "673d3e1a10b4dfc51e36da93d5e9850dd4c3ba87d3c5dac1f7966e2ac785316d",
+  "identity": "9c21a798cc4c1938d547474a68e3905c7e7c5865b7f129ba0039208163b094c3",
+  "phase": "select_R",
+  "seed": 17,
+  "selection_uses_maps": false,
+  "selection_uses_old_H": false,
+  "selection_uses_runtime": false,
+  "source_binding": "e17122805c8fbe0682d932d7467ef5c5d853470a1d86c178bb78f150fcdd758d",
+  "stage_elapsed_seconds": 0.013919444987550378,
+  "status": "COMPLETE_NO_2D_FOUNDATION",
+  "winner": null
+}

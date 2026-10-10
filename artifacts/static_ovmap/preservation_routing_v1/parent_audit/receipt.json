@@ -1,0 +1,1549 @@
+{
+  "TRAIN_DEV": {
+    "dev": {
+      "FC8": {
+        "metrics": {
+          "A": 0.372885101010101,
+          "C": 0.4205808080808081,
+          "CE": 4.066619214157163,
+          "M": 0.5061237373737374,
+          "NLL": 4.290697277146657,
+          "categories": 28,
+          "corrections": 0,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 0,
+          "net_corrections": 0,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.34848484848484845,
+            "scene0143": 0.5555555555555556,
+            "scene0211": 0.4208333333333333,
+            "scene0620": 0.16666666666666666
+          },
+          "variant_records": 276
+        },
+        "recognition": "aff910f145bb8354133312f8d697132f08b4924d653ceed4606c4dd7199d331a"
+      },
+      "seed17_LR05_MA_8": {
+        "metrics": {
+          "A": 0.25738636363636364,
+          "C": 0.2809974747474748,
+          "CE": 4.091854990251137,
+          "M": 0.4089285714285714,
+          "NLL": 4.32173840041564,
+          "categories": 28,
+          "corrections": 17,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 50,
+          "net_corrections": -33,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.45454545454545453,
+            "scene0143": 0.2777777777777778,
+            "scene0211": 0.24166666666666664,
+            "scene0620": 0.05555555555555555
+          },
+          "variant_records": 276
+        },
+        "recognition": "f3bec77f6cca8dd14bcc1df8d103cc58b6c28a9f12aa75f684c7288beba1ffd1"
+      },
+      "seed17_LR06_MV_VIEW": {
+        "metrics": {
+          "A": 0.2670138888888889,
+          "C": 0.2667929292929293,
+          "CE": 3.9942876758047623,
+          "M": 0.4279761904761904,
+          "NLL": 4.225198350982232,
+          "categories": 28,
+          "corrections": 19,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 38,
+          "net_corrections": -19,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.3333333333333333,
+            "scene0143": 0.24074074074074078,
+            "scene0211": 0.3458333333333333,
+            "scene0620": 0.14814814814814814
+          },
+          "variant_records": 276
+        },
+        "recognition": "6cb4d3da0872b6d36184979ec10bbf45c7ec443d45e72cc3660ad942d5e3dc7f"
+      },
+      "seed17_LR07_MV_SURFACE": {
+        "metrics": {
+          "A": 0.30081018518518515,
+          "C": 0.3098484848484848,
+          "CE": 3.9624561290247273,
+          "M": 0.4404761904761904,
+          "NLL": 4.191682347655296,
+          "categories": 28,
+          "corrections": 22,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 43,
+          "net_corrections": -21,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.3333333333333333,
+            "scene0143": 0.4074074074074074,
+            "scene0211": 0.2958333333333333,
+            "scene0620": 0.16666666666666666
+          },
+          "variant_records": 276
+        },
+        "recognition": "b20f86a92e95244a560567f436b6e0f35f801143c3171e87256c99c97bf0ec77"
+      },
+      "seed17_LR08_MV_AUX": {
+        "metrics": {
+          "A": 0.3140151515151515,
+          "C": 0.33377525252525253,
+          "CE": 3.9546688472783122,
+          "M": 0.4803571428571428,
+          "NLL": 4.186337644147752,
+          "categories": 28,
+          "corrections": 21,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 38,
+          "net_corrections": -17,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.4393939393939394,
+            "scene0143": 0.2962962962962963,
+            "scene0211": 0.31666666666666665,
+            "scene0620": 0.2037037037037037
+          },
+          "variant_records": 276
+        },
+        "recognition": "aee04dbe89ea439b09e9558c25f59808e5260b191168e9c2e69bc1ad3af66479"
+      },
+      "seed17_WARMUP": {
+        "metrics": {
+          "A": 0.255881734006734,
+          "C": 0.25946969696969696,
+          "CE": 4.076288318152379,
+          "M": 0.4005952380952381,
+          "NLL": 4.3077964042674015,
+          "categories": 28,
+          "corrections": 20,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 51,
+          "net_corrections": -31,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.45454545454545453,
+            "scene0143": 0.2222222222222222,
+            "scene0211": 0.25416666666666665,
+            "scene0620": 0.09259259259259259
+          },
+          "variant_records": 276
+        },
+        "recognition": "c953ea1bea486019bf377265c41fe6828be971ae0b11d601172024a29393dd0c"
+      },
+      "seed29_LR05_MA_8": {
+        "metrics": {
+          "A": 0.2561237373737374,
+          "C": 0.264520202020202,
+          "CE": 4.07878110379683,
+          "M": 0.377579365079365,
+          "NLL": 4.309469272810904,
+          "categories": 28,
+          "corrections": 17,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 51,
+          "net_corrections": -34,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.393939393939394,
+            "scene0143": 0.24074074074074078,
+            "scene0211": 0.24166666666666664,
+            "scene0620": 0.14814814814814814
+          },
+          "variant_records": 276
+        },
+        "recognition": "d84e29a9e077afc13bd90967bbd3017c57801496757665be64d153b2e56d66b5"
+      },
+      "seed29_LR08_MV_AUX": {
+        "metrics": {
+          "A": 0.27351641414141414,
+          "C": 0.27702020202020206,
+          "CE": 3.945864555927038,
+          "M": 0.4148809523809524,
+          "NLL": 4.177835357984409,
+          "categories": 28,
+          "corrections": 24,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 53,
+          "net_corrections": -29,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.37878787878787884,
+            "scene0143": 0.31481481481481477,
+            "scene0211": 0.2708333333333333,
+            "scene0620": 0.12962962962962965
+          },
+          "variant_records": 276
+        },
+        "recognition": "e65ec3ab34863a7c0d527b4a133d80fe5435db9cc106347bc324a6c50098239a"
+      },
+      "seed29_WARMUP": {
+        "metrics": {
+          "A": 0.21974957912457913,
+          "C": 0.20271464646464646,
+          "CE": 4.073649390786886,
+          "M": 0.3462301587301587,
+          "NLL": 4.303217392003395,
+          "categories": 28,
+          "corrections": 19,
+          "families": 4,
+          "full200_competitors": true,
+          "harm": 57,
+          "net_corrections": -38,
+          "original_objects": 69,
+          "per_family_A": {
+            "scene0105": 0.4090909090909091,
+            "scene0143": 0.2222222222222222,
+            "scene0211": 0.22916666666666669,
+            "scene0620": 0.018518518518518517
+          },
+          "variant_records": 276
+        },
+        "recognition": "92e21441f2123baefa384fef3366aca223140e66b508d9bccf7df2de3f66e44d"
+      }
+    },
+    "train": {
+      "FC8": {
+        "metrics": {
+          "A": 0.28051998255627353,
+          "C": 0.28645155714530673,
+          "CE": 4.210846933383807,
+          "M": 0.38992957296198805,
+          "NLL": 4.434287536365875,
+          "categories": 74,
+          "corrections": 0,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 0,
+          "net_corrections": 0,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.30459770114942525,
+            "scene0102": 0.4270833333333333,
+            "scene0110": 0.26,
+            "scene0132": 0.2971014492753623,
+            "scene0162": 0.35,
+            "scene0194": 0.4166666666666667,
+            "scene0326": 0.10606060606060606,
+            "scene0345": 0.3,
+            "scene0363": 0.5,
+            "scene0369": 0.282051282051282,
+            "scene0393": 0.3333333333333333,
+            "scene0394": 0.3106060606060606,
+            "scene0403": 0.3579234972677596,
+            "scene0413": 0.25,
+            "scene0424": 0.25,
+            "scene0436": 0.09523809523809523,
+            "scene0481": 0.16666666666666666,
+            "scene0519": 0.07777777777777778,
+            "scene0522": 0.21929824561403505,
+            "scene0543": 0.0,
+            "scene0561": 0.3333333333333333,
+            "scene0603": 0.4901960784313725,
+            "scene0634": 0.37121212121212127,
+            "scene0662": 0.23333333333333334
+          },
+          "variant_records": 2488
+        },
+        "recognition": "c9312da43ebe39624715e48db8af78c8667bd39a881a04626d3b323bbddcaba7"
+      },
+      "seed17_LR05_MA_8": {
+        "metrics": {
+          "A": 0.41514324759781807,
+          "C": 0.426569811925756,
+          "CE": 3.7065648653366985,
+          "M": 0.6900454595821516,
+          "NLL": 3.9328153938485726,
+          "categories": 74,
+          "corrections": 466,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 111,
+          "net_corrections": 355,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.3850574712643678,
+            "scene0102": 0.6145833333333333,
+            "scene0110": 0.33333333333333326,
+            "scene0132": 0.40579710144927533,
+            "scene0162": 0.45,
+            "scene0194": 0.4444444444444444,
+            "scene0326": 0.46969696969696967,
+            "scene0345": 0.4888888888888889,
+            "scene0363": 0.06944444444444443,
+            "scene0369": 0.5256410256410257,
+            "scene0393": 0.42857142857142855,
+            "scene0394": 0.5454545454545454,
+            "scene0403": 0.45901639344262296,
+            "scene0413": 0.40277777777777773,
+            "scene0424": 0.35185185185185186,
+            "scene0436": 0.18253968253968253,
+            "scene0481": 0.31972789115646255,
+            "scene0519": 0.28888888888888886,
+            "scene0522": 0.3684210526315789,
+            "scene0543": 0.0,
+            "scene0561": 0.5158730158730158,
+            "scene0603": 0.6568627450980392,
+            "scene0634": 0.712121212121212,
+            "scene0662": 0.5444444444444444
+          },
+          "variant_records": 2488
+        },
+        "recognition": "bdff033a9ffc0b7845bae19ca28165ebeb5bdea672578af585660357e96afa20"
+      },
+      "seed17_LR06_MV_VIEW": {
+        "metrics": {
+          "A": 0.40254766640014567,
+          "C": 0.41254391750977115,
+          "CE": 3.670992929969982,
+          "M": 0.685150782177175,
+          "NLL": 3.8966388076913865,
+          "categories": 74,
+          "corrections": 431,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 120,
+          "net_corrections": 311,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.37356321839080464,
+            "scene0102": 0.5833333333333333,
+            "scene0110": 0.3666666666666667,
+            "scene0132": 0.4275362318840579,
+            "scene0162": 0.425,
+            "scene0194": 0.4537037037037038,
+            "scene0326": 0.37878787878787873,
+            "scene0345": 0.47777777777777775,
+            "scene0363": 0.19444444444444442,
+            "scene0369": 0.3910256410256411,
+            "scene0393": 0.32738095238095244,
+            "scene0394": 0.5189393939393938,
+            "scene0403": 0.43442622950819665,
+            "scene0413": 0.4166666666666667,
+            "scene0424": 0.3796296296296296,
+            "scene0436": 0.23809523809523808,
+            "scene0481": 0.2687074829931973,
+            "scene0519": 0.23333333333333334,
+            "scene0522": 0.3684210526315789,
+            "scene0543": 0.0,
+            "scene0561": 0.4841269841269841,
+            "scene0603": 0.6372549019607844,
+            "scene0634": 0.7045454545454546,
+            "scene0662": 0.5777777777777777
+          },
+          "variant_records": 2488
+        },
+        "recognition": "3f0761cd2a2f7fb489f4280c8e3dc7eb84b9405a99f0bde67db104323ad70862"
+      },
+      "seed17_LR07_MV_SURFACE": {
+        "metrics": {
+          "A": 0.4568799900673659,
+          "C": 0.45932887974814807,
+          "CE": 3.5875662313478522,
+          "M": 0.7583596974214849,
+          "NLL": 3.8129064995676814,
+          "categories": 74,
+          "corrections": 539,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 102,
+          "net_corrections": 437,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.41379310344827586,
+            "scene0102": 0.65625,
+            "scene0110": 0.3666666666666667,
+            "scene0132": 0.46376811594202905,
+            "scene0162": 0.4,
+            "scene0194": 0.4722222222222222,
+            "scene0326": 0.5454545454545454,
+            "scene0345": 0.5611111111111111,
+            "scene0363": 0.2222222222222222,
+            "scene0369": 0.6025641025641025,
+            "scene0393": 0.4047619047619047,
+            "scene0394": 0.5492424242424243,
+            "scene0403": 0.4098360655737705,
+            "scene0413": 0.42361111111111116,
+            "scene0424": 0.4259259259259259,
+            "scene0436": 0.30158730158730157,
+            "scene0481": 0.32653061224489793,
+            "scene0519": 0.2222222222222222,
+            "scene0522": 0.46491228070175444,
+            "scene0543": 0.14285714285714285,
+            "scene0561": 0.5158730158730158,
+            "scene0603": 0.7009803921568627,
+            "scene0634": 0.7727272727272727,
+            "scene0662": 0.6
+          },
+          "variant_records": 2488
+        },
+        "recognition": "a677047b876a410870b7d9fb79ebbd17faa1035253be31b4ebaea1e26b560637"
+      },
+      "seed17_LR08_MV_AUX": {
+        "metrics": {
+          "A": 0.4066539157499685,
+          "C": 0.41251144603818096,
+          "CE": 3.684836060007045,
+          "M": 0.6797416826917039,
+          "NLL": 3.911263224253347,
+          "categories": 74,
+          "corrections": 450,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 120,
+          "net_corrections": 330,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.39080459770114945,
+            "scene0102": 0.6302083333333334,
+            "scene0110": 0.36666666666666664,
+            "scene0132": 0.43478260869565216,
+            "scene0162": 0.4416666666666666,
+            "scene0194": 0.4722222222222222,
+            "scene0326": 0.4090909090909091,
+            "scene0345": 0.5111111111111111,
+            "scene0363": 0.06944444444444443,
+            "scene0369": 0.5128205128205128,
+            "scene0393": 0.35714285714285715,
+            "scene0394": 0.5,
+            "scene0403": 0.4153005464480874,
+            "scene0413": 0.42361111111111116,
+            "scene0424": 0.35185185185185186,
+            "scene0436": 0.2698412698412698,
+            "scene0481": 0.29931972789115646,
+            "scene0519": 0.2111111111111111,
+            "scene0522": 0.3684210526315789,
+            "scene0543": 0.0,
+            "scene0561": 0.4523809523809524,
+            "scene0603": 0.627450980392157,
+            "scene0634": 0.6666666666666666,
+            "scene0662": 0.5777777777777777
+          },
+          "variant_records": 2488
+        },
+        "recognition": "00327c8a6e6d7942a647195dbe75552dff0a1b7403033af0e11af76991184935"
+      },
+      "seed17_WARMUP": {
+        "metrics": {
+          "A": 0.3984504880139798,
+          "C": 0.40428088138021784,
+          "CE": 3.7301863891849614,
+          "M": 0.6754823105132476,
+          "NLL": 3.9570477891408995,
+          "categories": 74,
+          "corrections": 450,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 139,
+          "net_corrections": 311,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.3448275862068966,
+            "scene0102": 0.609375,
+            "scene0110": 0.33333333333333326,
+            "scene0132": 0.40579710144927533,
+            "scene0162": 0.45,
+            "scene0194": 0.4074074074074074,
+            "scene0326": 0.3939393939393939,
+            "scene0345": 0.45555555555555555,
+            "scene0363": 0.0,
+            "scene0369": 0.49358974358974356,
+            "scene0393": 0.35119047619047616,
+            "scene0394": 0.4924242424242424,
+            "scene0403": 0.43169398907103823,
+            "scene0413": 0.3819444444444445,
+            "scene0424": 0.35648148148148145,
+            "scene0436": 0.15079365079365079,
+            "scene0481": 0.30612244897959184,
+            "scene0519": 0.3333333333333333,
+            "scene0522": 0.39473684210526316,
+            "scene0543": 0.0,
+            "scene0561": 0.5079365079365079,
+            "scene0603": 0.5931372549019607,
+            "scene0634": 0.7803030303030304,
+            "scene0662": 0.5888888888888888
+          },
+          "variant_records": 2488
+        },
+        "recognition": "e43a5aa6f91c1d3692d69f3e16077bf6e830e33f62ea5f98fb9cf131e481a426"
+      },
+      "seed29_LR05_MA_8": {
+        "metrics": {
+          "A": 0.43496884030455946,
+          "C": 0.43473839986579055,
+          "CE": 3.700159763088118,
+          "M": 0.7380309605269115,
+          "NLL": 3.9261694492703416,
+          "categories": 74,
+          "corrections": 509,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 133,
+          "net_corrections": 376,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.3793103448275862,
+            "scene0102": 0.609375,
+            "scene0110": 0.33333333333333326,
+            "scene0132": 0.48550724637681164,
+            "scene0162": 0.4333333333333333,
+            "scene0194": 0.4444444444444444,
+            "scene0326": 0.5757575757575757,
+            "scene0345": 0.4666666666666667,
+            "scene0363": 0.25,
+            "scene0369": 0.5448717948717948,
+            "scene0393": 0.42857142857142855,
+            "scene0394": 0.5454545454545454,
+            "scene0403": 0.4125683060109289,
+            "scene0413": 0.4166666666666667,
+            "scene0424": 0.3611111111111111,
+            "scene0436": 0.2857142857142857,
+            "scene0481": 0.2789115646258503,
+            "scene0519": 0.3111111111111111,
+            "scene0522": 0.4912280701754386,
+            "scene0543": 0.0,
+            "scene0561": 0.5396825396825397,
+            "scene0603": 0.627450980392157,
+            "scene0634": 0.6515151515151515,
+            "scene0662": 0.5666666666666667
+          },
+          "variant_records": 2488
+        },
+        "recognition": "b8a88b1b8f7ea0c90f2abb6ee8c789d5b87e8758e44221b8594e86ef8488b054"
+      },
+      "seed29_LR08_MV_AUX": {
+        "metrics": {
+          "A": 0.4237928743628235,
+          "C": 0.42225827025473955,
+          "CE": 3.615911788944581,
+          "M": 0.7447243731366803,
+          "NLL": 3.841428891065695,
+          "categories": 74,
+          "corrections": 492,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 122,
+          "net_corrections": 370,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.43103448275862066,
+            "scene0102": 0.5885416666666666,
+            "scene0110": 0.3533333333333333,
+            "scene0132": 0.5217391304347825,
+            "scene0162": 0.36666666666666664,
+            "scene0194": 0.4444444444444444,
+            "scene0326": 0.393939393939394,
+            "scene0345": 0.4722222222222222,
+            "scene0363": 0.23611111111111108,
+            "scene0369": 0.5705128205128205,
+            "scene0393": 0.38690476190476186,
+            "scene0394": 0.5568181818181818,
+            "scene0403": 0.4098360655737705,
+            "scene0413": 0.4444444444444444,
+            "scene0424": 0.3796296296296296,
+            "scene0436": 0.3095238095238096,
+            "scene0481": 0.2619047619047619,
+            "scene0519": 0.2111111111111111,
+            "scene0522": 0.4385964912280701,
+            "scene0543": 0.07142857142857142,
+            "scene0561": 0.5079365079365079,
+            "scene0603": 0.6764705882352942,
+            "scene0634": 0.5378787878787878,
+            "scene0662": 0.6
+          },
+          "variant_records": 2488
+        },
+        "recognition": "6d190f2132d9572fa43cbf83361bf3fdd908e2aa8a252996da0af1afbeccabaf"
+      },
+      "seed29_WARMUP": {
+        "metrics": {
+          "A": 0.4226538879368224,
+          "C": 0.4290573199622856,
+          "CE": 3.7267166672695993,
+          "M": 0.7170351788405706,
+          "NLL": 3.9528932335506854,
+          "categories": 74,
+          "corrections": 482,
+          "families": 24,
+          "full200_competitors": true,
+          "harm": 137,
+          "net_corrections": 345,
+          "original_objects": 622,
+          "per_family_A": {
+            "scene0047": 0.367816091954023,
+            "scene0102": 0.53125,
+            "scene0110": 0.3066666666666667,
+            "scene0132": 0.5144927536231884,
+            "scene0162": 0.45,
+            "scene0194": 0.4444444444444444,
+            "scene0326": 0.4848484848484848,
+            "scene0345": 0.42777777777777776,
+            "scene0363": 0.23611111111111108,
+            "scene0369": 0.532051282051282,
+            "scene0393": 0.369047619047619,
+            "scene0394": 0.5378787878787878,
+            "scene0403": 0.40710382513661203,
+            "scene0413": 0.3958333333333333,
+            "scene0424": 0.3657407407407407,
+            "scene0436": 0.2777777777777778,
+            "scene0481": 0.2925170068027211,
+            "scene0519": 0.27777777777777773,
+            "scene0522": 0.48245614035087714,
+            "scene0543": 0.0,
+            "scene0561": 0.5634920634920635,
+            "scene0603": 0.622549019607843,
+            "scene0634": 0.6893939393939393,
+            "scene0662": 0.5666666666666667
+          },
+          "variant_records": 2488
+        },
+        "recognition": "17dc34cc6145ae4a37b59cae5a3654e50b4717098a302fce95833619d93b9b11"
+      }
+    }
+  },
+  "curves": {
+    "seed17/LR05_MA_8": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 3.3526145070791245,
+      "loss_last": 3.1074264645576477,
+      "updates": 2000
+    },
+    "seed17/LR06_MV_VIEW": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 3.3526145070791245,
+      "loss_last": 3.0234555155038834,
+      "updates": 2000
+    },
+    "seed17/LR07_MV_SURFACE": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 3.3526145070791245,
+      "loss_last": 3.0671675950288773,
+      "updates": 2000
+    },
+    "seed17/LR08_MV_AUX": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 3.4279036223888397,
+      "loss_last": 3.0738404989242554,
+      "updates": 2000
+    },
+    "seed17/WARMUP": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 4.618137866258621,
+      "loss_last": 3.200832799077034,
+      "updates": 2000
+    },
+    "seed29/LR05_MA_8": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 3.1337254643440247,
+      "loss_last": 3.150429844856262,
+      "updates": 2000
+    },
+    "seed29/LR08_MV_AUX": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 3.2075626850128174,
+      "loss_last": 3.0986792594194412,
+      "updates": 2000
+    },
+    "seed29/WARMUP": {
+      "component_fields": [
+        "correspondence_pairs",
+        "negative_tokens",
+        "positive_tokens",
+        "unknown_tokens"
+      ],
+      "fields": [
+        "auxiliary",
+        "effective_original_objects",
+        "gradient_norm",
+        "loss",
+        "lr",
+        "sampler_index",
+        "step"
+      ],
+      "loss_first": 4.662565514445305,
+      "loss_last": 3.2362329810857773,
+      "updates": 2000
+    }
+  },
+  "elapsed_seconds": 1741.4621939219069,
+  "fixed_key_intervention": {
+    "inference": "Algebraic hypothesis only; not explanation of all historical accuracy loss",
+    "new_local_mass": 0.5,
+    "new_null_after": 0.9900990128517151,
+    "new_reduced_local_mass": 0.009900989010930061,
+    "old_shift_max_abs": 1.1920928955078125e-07,
+    "old_total_mass": 1.0
+  },
+  "historical_checkpoint_metadata": {
+    "seed17/LR05_MA_8": {
+      "DEV_criterion": 4.091854990251137,
+      "auxiliary_totals": {
+        "correspondence_pairs": 0,
+        "negative_tokens": 0,
+        "positive_tokens": 0,
+        "unknown_tokens": 0
+      },
+      "branch": "LR05_MA_8",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 4548.246378770098,
+      "final_model_digest": "c16f4329b23dfb05d1d4cb4455a3a59b0b13a659229c83f11cce647ad9fb9772",
+      "frozen_gradient_parameters": 0,
+      "identity": "a0b8e4e0664378ffd140e928b908098d8a955abc08f06b7de13a8c45694a2df4",
+      "initial_model_digest": "cdc53be74e0b47765d198a77ed452aa67e3cee3d57204b341b208d596479c65f",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "LR05_MA_8",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "927c5e02df6e310a0527fad9a0c3636a7399fddfd1553e51406878096ab70d2b",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 17,
+        "warmup": "50dd2fbb25b1f133aa8b6b49dfd00155a6ba9e4c60df7ec7dc21029bb327ee7a"
+      },
+      "input_identity": "37b44e87988289bd819479a8b07cb4b0f1f0d75de2e808fd56f2326d2ebc169c",
+      "last_checkpoint": {
+        "bytes": 22019990,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/last.pt",
+        "sha256": "485401db946cfd930732b2399eb0601fb677c240a8d68642892e17d5b3895b15"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2392935936,
+      "peak_reserved_bytes": 2636120064,
+      "seed": 17,
+      "selected_checkpoint": {
+        "bytes": 22020510,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/selected.pt",
+        "sha256": "6f336eac9abc4faf88fc050661049a839bdcc46b636ebf65c615ef86bb2d6355"
+      },
+      "selected_step": 500,
+      "status": "COMPLETE",
+      "trainable_parameters": 1829540,
+      "validations": [
+        {
+          "criterion": 4.091854990251137,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/dev_0500.json",
+          "step": 500
+        },
+        {
+          "criterion": 4.119453503484979,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/dev_1000.json",
+          "step": 1000
+        },
+        {
+          "criterion": 4.098731915341684,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/dev_1500.json",
+          "step": 1500
+        },
+        {
+          "criterion": 4.119231917721655,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/dev_2000.json",
+          "step": 2000
+        }
+      ]
+    },
+    "seed17/LR06_MV_VIEW": {
+      "DEV_criterion": 3.9942876758047623,
+      "auxiliary_totals": {
+        "correspondence_pairs": 0,
+        "negative_tokens": 0,
+        "positive_tokens": 0,
+        "unknown_tokens": 0
+      },
+      "branch": "LR06_MV_VIEW",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 5182.530316556804,
+      "final_model_digest": "56579b12f03272977e49a26b8d8415958a14a4ba8af01a14183b04524f62fdbf",
+      "frozen_gradient_parameters": 0,
+      "identity": "bc10d29900c4faca9b4297c167a17a658d637f33f708574224ca660f5bd32c80",
+      "initial_model_digest": "dbd54ee69f72a2508c0385054a3efa9d3d48e843a64e8f536b8aa83c2492dd7a",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "LR06_MV_VIEW",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "927c5e02df6e310a0527fad9a0c3636a7399fddfd1553e51406878096ab70d2b",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 17,
+        "warmup": "50dd2fbb25b1f133aa8b6b49dfd00155a6ba9e4c60df7ec7dc21029bb327ee7a"
+      },
+      "input_identity": "dc7bffa9ba2e3ac04b8473396b41c9517cbb5a77d8dc311b63f3b7121ef066cd",
+      "last_checkpoint": {
+        "bytes": 25623342,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/last.pt",
+        "sha256": "76c076930a321a149119b218679ff6be723e74a25eafcc3b94f72fb647b79ba5"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2405122048,
+      "peak_reserved_bytes": 2644508672,
+      "seed": 17,
+      "selected_checkpoint": {
+        "bytes": 25624198,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/selected.pt",
+        "sha256": "27a608e409167e743272b41542e8cb3bba5d69d8c60004959872dd60f21e07c5"
+      },
+      "selected_step": 500,
+      "status": "COMPLETE",
+      "trainable_parameters": 2127781,
+      "validations": [
+        {
+          "criterion": 3.9942876758047623,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/dev_0500.json",
+          "step": 500
+        },
+        {
+          "criterion": 4.016010148607521,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/dev_1000.json",
+          "step": 1000
+        },
+        {
+          "criterion": 4.005545871361137,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/dev_1500.json",
+          "step": 1500
+        },
+        {
+          "criterion": 3.994987167222331,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/dev_2000.json",
+          "step": 2000
+        }
+      ]
+    },
+    "seed17/LR07_MV_SURFACE": {
+      "DEV_criterion": 3.9624561290247273,
+      "auxiliary_totals": {
+        "correspondence_pairs": 0,
+        "negative_tokens": 0,
+        "positive_tokens": 0,
+        "unknown_tokens": 0
+      },
+      "branch": "LR07_MV_SURFACE",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 5159.825531319948,
+      "final_model_digest": "bd0642638a5718fe890e81921c96e9cd0d1098f4b3811626ed4ea8cb5be17b1a",
+      "frozen_gradient_parameters": 0,
+      "identity": "16ec1c233373045e0daf8e1619fbd2c6cb5c40f696fc2d97bb20b59728a999db",
+      "initial_model_digest": "dbd54ee69f72a2508c0385054a3efa9d3d48e843a64e8f536b8aa83c2492dd7a",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "LR07_MV_SURFACE",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "927c5e02df6e310a0527fad9a0c3636a7399fddfd1553e51406878096ab70d2b",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 17,
+        "warmup": "50dd2fbb25b1f133aa8b6b49dfd00155a6ba9e4c60df7ec7dc21029bb327ee7a"
+      },
+      "input_identity": "98b8318411fdb6fb77596ce85d1d57daed6ae96b0bd62610b9ea9ebde9acfd28",
+      "last_checkpoint": {
+        "bytes": 25623342,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/last.pt",
+        "sha256": "2dbee92ebdf8e738bf935fd5b374c15ceb739aae40f064c8c2bb90a4c2181f8e"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2405810688,
+      "peak_reserved_bytes": 2644508672,
+      "seed": 17,
+      "selected_checkpoint": {
+        "bytes": 25624518,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/selected.pt",
+        "sha256": "e27c73893fb1feec0abaa046c10b35a9c579e60c404e71186c3201e022142f5a"
+      },
+      "selected_step": 1500,
+      "status": "COMPLETE",
+      "trainable_parameters": 2127781,
+      "validations": [
+        {
+          "criterion": 3.970292555578429,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/dev_0500.json",
+          "step": 500
+        },
+        {
+          "criterion": 3.982995697517287,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/dev_1000.json",
+          "step": 1000
+        },
+        {
+          "criterion": 3.9624561290247273,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/dev_1500.json",
+          "step": 1500
+        },
+        {
+          "criterion": 3.9660629005870636,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/dev_2000.json",
+          "step": 2000
+        }
+      ]
+    },
+    "seed17/LR08_MV_AUX": {
+      "DEV_criterion": 3.9546688472783122,
+      "auxiliary_totals": {
+        "correspondence_pairs": 2698202,
+        "negative_tokens": 1938411,
+        "positive_tokens": 5962233,
+        "unknown_tokens": 0
+      },
+      "branch": "LR08_MV_AUX",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 7455.252641306957,
+      "final_model_digest": "cfb9d314bdeff1889a9725450c324d33b1d9f86c4ce2a08a483afd11f72d9f28",
+      "frozen_gradient_parameters": 0,
+      "identity": "a99003951c0bb9ef015d799200e0eb1db33ca8ed8811c26b69779df1dfd1b4ce",
+      "initial_model_digest": "dbd54ee69f72a2508c0385054a3efa9d3d48e843a64e8f536b8aa83c2492dd7a",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "LR08_MV_AUX",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "927c5e02df6e310a0527fad9a0c3636a7399fddfd1553e51406878096ab70d2b",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 17,
+        "warmup": "50dd2fbb25b1f133aa8b6b49dfd00155a6ba9e4c60df7ec7dc21029bb327ee7a"
+      },
+      "input_identity": "3b08ebf46d2c10890db9264d8aae05247fd2bc12a229c03786ae52ac8fdca019",
+      "last_checkpoint": {
+        "bytes": 25623342,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/last.pt",
+        "sha256": "dbcc9962ac087d358d48d2c68086a539e4deefc70e935f6d983010c7f0c0a550"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2405812224,
+      "peak_reserved_bytes": 2646605824,
+      "seed": 17,
+      "selected_checkpoint": {
+        "bytes": 25624198,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/selected.pt",
+        "sha256": "9ac40bdffd82f721062e00a048e8ebdbf1e39219a228fe89ab16c80cb046d680"
+      },
+      "selected_step": 500,
+      "status": "COMPLETE",
+      "trainable_parameters": 2127781,
+      "validations": [
+        {
+          "criterion": 3.9546688472783122,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/dev_0500.json",
+          "step": 500
+        },
+        {
+          "criterion": 3.9722885490718114,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/dev_1000.json",
+          "step": 1000
+        },
+        {
+          "criterion": 3.964362732714876,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/dev_1500.json",
+          "step": 1500
+        },
+        {
+          "criterion": 3.955419564809061,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/dev_2000.json",
+          "step": 2000
+        }
+      ]
+    },
+    "seed17/WARMUP": {
+      "DEV_criterion": null,
+      "auxiliary_totals": {
+        "correspondence_pairs": 0,
+        "negative_tokens": 0,
+        "positive_tokens": 0,
+        "unknown_tokens": 0
+      },
+      "branch": "WARMUP",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 4814.558166838018,
+      "final_model_digest": "cdc53be74e0b47765d198a77ed452aa67e3cee3d57204b341b208d596479c65f",
+      "frozen_gradient_parameters": 0,
+      "identity": "5b5b9cb77358f5b8acac4fc4706b6a9753c6dd7082b40574667b632cb528d58d",
+      "initial_model_digest": "4ae944943b73d315911285833c5aa6f26990dea7d3415c654bb3d620d12649de",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "WARMUP",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "927c5e02df6e310a0527fad9a0c3636a7399fddfd1553e51406878096ab70d2b",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 17,
+        "warmup": null
+      },
+      "input_identity": "1c95a964ad83ee6257bb2065f97826ff7203f7e4b49c6984f77aba15fa71b079",
+      "last_checkpoint": {
+        "bytes": 22019350,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/WARMUP/last.pt",
+        "sha256": "50dd2fbb25b1f133aa8b6b49dfd00155a6ba9e4c60df7ec7dc21029bb327ee7a"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2392935936,
+      "peak_reserved_bytes": 2634022912,
+      "seed": 17,
+      "selected_checkpoint": null,
+      "selected_step": 2000,
+      "status": "COMPLETE",
+      "trainable_parameters": 1829540,
+      "validations": []
+    },
+    "seed29/LR05_MA_8": {
+      "DEV_criterion": 4.07878110379683,
+      "auxiliary_totals": {
+        "correspondence_pairs": 0,
+        "negative_tokens": 0,
+        "positive_tokens": 0,
+        "unknown_tokens": 0
+      },
+      "branch": "LR05_MA_8",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 4620.291057496099,
+      "final_model_digest": "fac5466ec7622313fd7b4f474ebb2d1918bd41678be6799f94ede979d5b70987",
+      "frozen_gradient_parameters": 0,
+      "identity": "7dec0f6a0be4b64f638ba3d73bb437bd759f7962ab26c0f9eca2c48ad0f90053",
+      "initial_model_digest": "944c1dba895835f14380b81faa6b938dc07e36f23f422ff53ba74745d487c3b2",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "LR05_MA_8",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "0987bf8adebfa835a03123586e815ff99b562f53447a41a969ad443f966e8269",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 29,
+        "warmup": "9771260dac3275448eea01059d7d74e96aa060b04f03092c4acf724f74f583d9"
+      },
+      "input_identity": "8f097f845a334d4953056833531dbe6fffef29b751ab2cc81daeaeb8822d11b3",
+      "last_checkpoint": {
+        "bytes": 22019990,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/last.pt",
+        "sha256": "691f5e6571283039e3def53d0232536da6c52b5a9e8671477783d3075dc6e71c"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2395858944,
+      "peak_reserved_bytes": 2743074816,
+      "seed": 29,
+      "selected_checkpoint": {
+        "bytes": 22020510,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/selected.pt",
+        "sha256": "1efaffa0e35aa73e05e38a22b3fb84f77af8d29c4ecb6049deb9e5b166f2252d"
+      },
+      "selected_step": 500,
+      "status": "COMPLETE",
+      "trainable_parameters": 1829540,
+      "validations": [
+        {
+          "criterion": 4.07878110379683,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/dev_0500.json",
+          "step": 500
+        },
+        {
+          "criterion": 4.102774112892371,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/dev_1000.json",
+          "step": 1000
+        },
+        {
+          "criterion": 4.109621512995224,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/dev_1500.json",
+          "step": 1500
+        },
+        {
+          "criterion": 4.111044132170152,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/dev_2000.json",
+          "step": 2000
+        }
+      ]
+    },
+    "seed29/LR08_MV_AUX": {
+      "DEV_criterion": 3.945864555927038,
+      "auxiliary_totals": {
+        "correspondence_pairs": 2697366,
+        "negative_tokens": 1936518,
+        "positive_tokens": 5955156,
+        "unknown_tokens": 0
+      },
+      "branch": "LR08_MV_AUX",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 7703.89508211799,
+      "final_model_digest": "4ab177e2b4ee96195b0d1da56512f3bd2a6b47938cfd5a420c3980e544a2dd40",
+      "frozen_gradient_parameters": 0,
+      "identity": "4b6fa9f3241e67c86b9e3168df4e0d57ec953ba986c72fe67be244bc906478ae",
+      "initial_model_digest": "8bf43b048fd97e8f948eb3d987f6de5eab26f6e1209c63f36c07304de60660e4",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "LR08_MV_AUX",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "0987bf8adebfa835a03123586e815ff99b562f53447a41a969ad443f966e8269",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 29,
+        "warmup": "9771260dac3275448eea01059d7d74e96aa060b04f03092c4acf724f74f583d9"
+      },
+      "input_identity": "4285ed4052acdccf18b0bdf5b502ed34dd13eba3320051e1d32d9ca950c0cf9c",
+      "last_checkpoint": {
+        "bytes": 25623342,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/last.pt",
+        "sha256": "cbded70e3be3c7426a06a8f1bfad9f02cbb12333e44e0217b99c354b5591f426"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2408735232,
+      "peak_reserved_bytes": 2753560576,
+      "seed": 29,
+      "selected_checkpoint": {
+        "bytes": 25624326,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/selected.pt",
+        "sha256": "851d1876ea77686e4354eaab103386c0cf3af41c31cfca5d1ca96db3efdab63b"
+      },
+      "selected_step": 1000,
+      "status": "COMPLETE",
+      "trainable_parameters": 2127781,
+      "validations": [
+        {
+          "criterion": 3.9533103576387822,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/dev_0500.json",
+          "step": 500
+        },
+        {
+          "criterion": 3.945864555927038,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/dev_1000.json",
+          "step": 1000
+        },
+        {
+          "criterion": 3.966765026773267,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/dev_1500.json",
+          "step": 1500
+        },
+        {
+          "criterion": 3.9709483206824023,
+          "receipt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/dev_2000.json",
+          "step": 2000
+        }
+      ]
+    },
+    "seed29/WARMUP": {
+      "DEV_criterion": null,
+      "auxiliary_totals": {
+        "correspondence_pairs": 0,
+        "negative_tokens": 0,
+        "positive_tokens": 0,
+        "unknown_tokens": 0
+      },
+      "branch": "WARMUP",
+      "completed_steps": 2000,
+      "discarded_uncheckpointed_updates": 0,
+      "elapsed_seconds": 4767.654811811168,
+      "final_model_digest": "944c1dba895835f14380b81faa6b938dc07e36f23f422ff53ba74745d487c3b2",
+      "frozen_gradient_parameters": 0,
+      "identity": "9f8fbf2dfe0d891b1f953e4acb89de2012e51b683e8ed4e19305ff4b3bf65f03",
+      "initial_model_digest": "000cd3599a473b75640dc785fe287a6f5a54577ccffd2204f858faddb78b15c2",
+      "input_contract": {
+        "binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+        "branch": "WARMUP",
+        "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+        "draw_identity": "0987bf8adebfa835a03123586e815ff99b562f53447a41a969ad443f966e8269",
+        "features": "8965ae7de6d76d111d0008b9ad317405aaf46ecd6d45e6b7a833771f4f281071",
+        "numerical_code": [
+          {
+            "bytes": 5593,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/model.py",
+            "sha256": "a908a1ddfd946558b3e19de02c6fcd6b9c3f8e8459b5e1c773f4690bcd601a22"
+          },
+          {
+            "bytes": 7056,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/mask_adapter.py",
+            "sha256": "846cc55742a26d23cb3cd32f1e2faca47e87adb623443fd8155b375879e24119"
+          },
+          {
+            "bytes": 16383,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/features.py",
+            "sha256": "e486d81a51e9cb8d5a87f89a9e9526f44ea856b4ff7aace9d392c374c6cb8cc8"
+          },
+          {
+            "bytes": 3045,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/losses.py",
+            "sha256": "7649f77c4c38394754ff22a81245b0cfd4af7d14a1812880a6b4b3de0b31a942"
+          },
+          {
+            "bytes": 20737,
+            "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/src/static_ovmap/learned_object_readout/training.py",
+            "sha256": "4e2b1d0f6f95e3d2a9dd270e809cbd29201acdf968104f73a6f55413fa0e012a"
+          }
+        ],
+        "seed": 29,
+        "warmup": null
+      },
+      "input_identity": "78fc2e5b958e229d2c433c3dc5dd4fa0541ac3c87ec95153aae737b127e38567",
+      "last_checkpoint": {
+        "bytes": 22019286,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/WARMUP/last.pt",
+        "sha256": "9771260dac3275448eea01059d7d74e96aa060b04f03092c4acf724f74f583d9"
+      },
+      "original_item_draws": 32000,
+      "peak_allocated_bytes": 2395858944,
+      "peak_reserved_bytes": 2743074816,
+      "seed": 29,
+      "selected_checkpoint": null,
+      "selected_step": 2000,
+      "status": "COMPLETE",
+      "trainable_parameters": 1829540,
+      "validations": []
+    }
+  },
+  "identity": "4a7378095053a227166cf9bdaed295bdf6722575696513150b199cb11835a1e5",
+  "missing_components": [
+    {
+      "branch": "seed17/LR05_MA_8",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    },
+    {
+      "branch": "seed17/LR06_MV_VIEW",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    },
+    {
+      "branch": "seed17/LR07_MV_SURFACE",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    },
+    {
+      "branch": "seed17/LR08_MV_AUX",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    },
+    {
+      "branch": "seed17/WARMUP",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    },
+    {
+      "branch": "seed29/LR05_MA_8",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    },
+    {
+      "branch": "seed29/LR08_MV_AUX",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    },
+    {
+      "branch": "seed29/WARMUP",
+      "ce_clean": null,
+      "ce_corrupt": null,
+      "consistency": null,
+      "reason": "Historical ledger records summed loss, not these scalar components"
+    }
+  ],
+  "old_H_used_for_selection": false,
+  "parent": "9537aa7ff39395b561361055c90d09b262d33fdee72b19f85144b13230fabb5b",
+  "status": "COMPLETE"
+}
