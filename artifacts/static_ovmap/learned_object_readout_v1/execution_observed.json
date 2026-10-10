@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "-u",
+    "scripts/evaluation/run_ovimap_learned_object_readout.py",
+    "--spec",
+    "configs/static_ovmap/learned_object_readout_v1.json",
+    "--parent-root",
+    "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+    "--observation-root",
+    "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001",
+    "--phase",
+    "all",
+    "--resume"
+  ],
+  "automatically_published": false,
+  "elapsed_seconds": 2407.9141083292197,
+  "exit_code": 0,
+  "identity": "c7adf8b7e55d1cf68e703b1b58ad66c75dea32ca5192d190279004ec7f3be15c",
+  "result_store_identity": "9537aa7ff39395b561361055c90d09b262d33fdee72b19f85144b13230fabb5b",
+  "status": "OBSERVED_SUCCESS",
+  "stdout": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/logs/full_all.log",
+  "terminal_identity": "69b73ec70affb5a28064d01dca3c95315d657abce54af9f4a526465a3dbdadcc"
+}

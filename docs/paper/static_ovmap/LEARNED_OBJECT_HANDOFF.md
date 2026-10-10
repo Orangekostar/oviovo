@@ -19,3 +19,11 @@ Each of the three table families has Markdown/CSV/JSON/LaTeX. Their numerical so
 runtime_profile/receipt.json records one cache-only replay with separate capture/readout clocks, zero new encodings and zero updates. It is reproduced by the predict worker on a fresh output root and reused on resume; it is not cold end-to-end latency. publication/package.json records packaging wall time separately.
 
 The full CLI terminal exit and local/remote publication SHA are verified externally after the process exits; see publication/final.json in the external output root. The release commit never embeds its own future SHA.
+
+Observed successful full CLI (exit0):
+
+```bash
+/home/ww/miniconda3/envs/ovimap-map/bin/python -u scripts/evaluation/run_ovimap_learned_object_readout.py --spec configs/static_ovmap/learned_object_readout_v1.json --parent-root /mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001 --observation-root /mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001 --output-root /mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001 --phase all --resume
+```
+
+[Actual observed execution receipt](../../../artifacts/static_ovmap/learned_object_readout_v1/execution_observed.json). The resolved-path command above reproduces the same bound inputs.
