@@ -1,0 +1,2015 @@
+{
+  "DEV_proposed_minus_MA_CE": -0.1371861429728245,
+  "H_MA_minus_FC8_top1": -0.10396039603960397,
+  "H_proposed_minus_FC8_top1": -0.10396039603960397,
+  "H_proposed_minus_MA_top1": 0.0,
+  "auxiliary_supervision_actual_counts": {
+    "correspondence_pairs": 2698202,
+    "negative_tokens": 1938411,
+    "positive_tokens": 5962233,
+    "unknown_tokens": 0
+  },
+  "exposed_benchmark_selection": true,
+  "geometry_improvement_claim": false,
+  "identity": "c97016ecc7ecf6ce2cbb55c58965a90157dcf962f0bfe8794acc316e34f31133",
+  "independent_whole_map_confirmation": false,
+  "material_upgrade": false,
+  "no_automatic_mechanism_claim_from_gate": true,
+  "nominated_method": "LR08_MV_AUX",
+  "novel_support": {
+    "families": 4,
+    "original_objects": 22,
+    "status": "SUFFICIENT"
+  },
+  "online_FPS_claim": false,
+  "paired_mechanism_evidence": [
+    {
+      "candidate": "LR05_MA_8",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.058949177214749404,
+        "ap50": -0.03665360708611695,
+        "apall": -0.003732445453292016,
+        "macc": -0.07537481774867294,
+        "miou": -0.06666233010177736
+      },
+      "original_incumbent_denominator": 323,
+      "rank_changes": 145,
+      "reference": "LR04_FC_8",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 96,
+            "added_definite_TP_score_entries": 4,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 28,
+            "lost_unique_GT_matches": 28,
+            "new_unique_GT_matches": 4,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 61
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                34000
+              ],
+              "scene": "office1"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "lamp",
+                10001
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "window",
+                9000
+              ],
+              "scene": "room2"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                4000
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                4001
+              ],
+              "scene": "office0"
+            },
+            {
+              "class_and_GT_id": [
+                "blanket",
+                17001
+              ],
+              "scene": "office1"
+            },
+            {
+              "class_and_GT_id": [
+                "desk",
+                26000
+              ],
+              "scene": "office1"
+            },
+            {
+              "class_and_GT_id": [
+                "bottle",
+                47000
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "bottle",
+                47001
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19000
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19001
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19002
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7001
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "blinds",
+                5000
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "blinds",
+                5001
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "blinds",
+                5002
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "blinds",
+                5003
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19002
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "bin",
+                20000
+              ],
+              "scene": "office4"
+            },
+            {
+              "class_and_GT_id": [
+                "window",
+                9000
+              ],
+              "scene": "office4"
+            },
+            {
+              "class_and_GT_id": [
+                "blanket",
+                17000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "book",
+                39003
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "cabinet",
+                15000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "switch",
+                51000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vase",
+                30001
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21001
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                4004
+              ],
+              "scene": "room2"
+            },
+            {
+              "class_and_GT_id": [
+                "vase",
+                30003
+              ],
+              "scene": "room2"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21001
+              ],
+              "scene": "room2"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 98,
+            "added_definite_TP_score_entries": 3,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 6,
+            "lost_unique_GT_matches": 6,
+            "new_unique_GT_matches": 3,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 84
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "monitor",
+                34000
+              ],
+              "scene": "office1"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "lamp",
+                10001
+              ],
+              "scene": "room0"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "blanket",
+                17001
+              ],
+              "scene": "office1"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19001
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19002
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "window",
+                9000
+              ],
+              "scene": "office4"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21001
+              ],
+              "scene": "room0"
+            }
+          ]
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 48,
+            "UNCHANGED_RIGHT": 37,
+            "UNCHANGED_WRONG": 6,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 3,
+            "WRONG_TO_WRONG": 45
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 28,
+            "UNCHANGED_RIGHT": 58,
+            "UNCHANGED_WRONG": 23,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 4,
+            "WRONG_TO_WRONG": 26
+          }
+        },
+        "0.75": {
+          "F": {
+            "RIGHT_TO_WRONG": 13,
+            "UNCHANGED_RIGHT": 13,
+            "UNCHANGED_WRONG": 2,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 3,
+            "WRONG_TO_WRONG": 25
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 6,
+            "UNCHANGED_RIGHT": 19,
+            "UNCHANGED_WRONG": 11,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 3,
+            "WRONG_TO_WRONG": 17
+          }
+        }
+      }
+    },
+    {
+      "candidate": "LR06_MV_VIEW",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.01199232581601234,
+        "ap50": 0.002803400183291088,
+        "apall": -0.0034585791615879546,
+        "macc": 0.006012584188994141,
+        "miou": 0.004316730261886115
+      },
+      "original_incumbent_denominator": 323,
+      "rank_changes": 77,
+      "reference": "LR05_MA_8",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 29,
+            "added_definite_TP_score_entries": 10,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 4,
+            "lost_unique_GT_matches": 4,
+            "new_unique_GT_matches": 10,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 42
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19000
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19002
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue-paper",
+                43000
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "bin",
+                20000
+              ],
+              "scene": "office4"
+            },
+            {
+              "class_and_GT_id": [
+                "panel",
+                36001
+              ],
+              "scene": "office4"
+            },
+            {
+              "class_and_GT_id": [
+                "switch",
+                51000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vase",
+                30001
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21001
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                4004
+              ],
+              "scene": "room2"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "lamp",
+                10001
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "bowl",
+                49000
+              ],
+              "scene": "room2"
+            },
+            {
+              "class_and_GT_id": [
+                "window",
+                9000
+              ],
+              "scene": "room2"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 37,
+            "added_definite_TP_score_entries": 4,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 4,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 46
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19002
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "panel",
+                36001
+              ],
+              "scene": "office4"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21000
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21001
+              ],
+              "scene": "room0"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "lamp",
+                10001
+              ],
+              "scene": "room0"
+            }
+          ]
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 1,
+            "UNCHANGED_RIGHT": 39,
+            "UNCHANGED_WRONG": 56,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 16,
+            "WRONG_TO_WRONG": 27
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 4,
+            "UNCHANGED_RIGHT": 58,
+            "UNCHANGED_WRONG": 51,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 10,
+            "WRONG_TO_WRONG": 16
+          }
+        },
+        "0.75": {
+          "F": {
+            "RIGHT_TO_WRONG": 1,
+            "UNCHANGED_RIGHT": 15,
+            "UNCHANGED_WRONG": 23,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 7,
+            "WRONG_TO_WRONG": 10
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 2,
+            "UNCHANGED_RIGHT": 20,
+            "UNCHANGED_WRONG": 22,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 4,
+            "WRONG_TO_WRONG": 8
+          }
+        }
+      }
+    },
+    {
+      "candidate": "LR07_MV_SURFACE",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.012536384948756751,
+        "ap50": -0.007201671547455796,
+        "apall": -0.00015745554307899923,
+        "macc": -0.005426547379942859,
+        "miou": -0.005343657438980021
+      },
+      "original_incumbent_denominator": 323,
+      "rank_changes": 52,
+      "reference": "LR06_MV_VIEW",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 19,
+            "added_definite_TP_score_entries": 4,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 4,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 20
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19005
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "vent",
+                21001
+              ],
+              "scene": "room2"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "stool",
+                23000
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue-paper",
+                43000
+              ],
+              "scene": "office2"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 22,
+            "added_definite_TP_score_entries": 2,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 2,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 23
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19005
+              ],
+              "scene": "room0"
+            }
+          ],
+          "lost": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 5,
+            "UNCHANGED_RIGHT": 50,
+            "UNCHANGED_WRONG": 70,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 3,
+            "WRONG_TO_WRONG": 11
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 2,
+            "UNCHANGED_RIGHT": 66,
+            "UNCHANGED_WRONG": 63,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 4,
+            "WRONG_TO_WRONG": 4
+          }
+        },
+        "0.75": {
+          "F": {
+            "RIGHT_TO_WRONG": 1,
+            "UNCHANGED_RIGHT": 21,
+            "UNCHANGED_WRONG": 27,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 1,
+            "WRONG_TO_WRONG": 6
+          },
+          "final": {
+            "UNCHANGED_RIGHT": 24,
+            "UNCHANGED_WRONG": 29,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 2,
+            "WRONG_TO_WRONG": 1
+          }
+        }
+      }
+    },
+    {
+      "candidate": "LR08_MV_AUX",
+      "cohort": "replica8",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.004491186523900459,
+        "ap50": 0.003813930655819475,
+        "apall": -0.00016802506538930728,
+        "macc": -0.0009861567931319648,
+        "miou": -0.0012159049741740646
+      },
+      "original_incumbent_denominator": 323,
+      "rank_changes": 47,
+      "reference": "LR07_MV_SURFACE",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 14,
+            "added_definite_TP_score_entries": 2,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 2,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 14
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "stool",
+                23000
+              ],
+              "scene": "office2"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19008
+              ],
+              "scene": "room0"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "table",
+                7000
+              ],
+              "scene": "office3"
+            },
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 16,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 16
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19008
+              ],
+              "scene": "room0"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "cushion",
+                19003
+              ],
+              "scene": "room0"
+            }
+          ]
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 1,
+            "UNCHANGED_RIGHT": 52,
+            "UNCHANGED_WRONG": 67,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 8,
+            "WRONG_TO_WRONG": 11
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 2,
+            "UNCHANGED_RIGHT": 68,
+            "UNCHANGED_WRONG": 63,
+            "UNDEFINED_GT_REFERENCE": 184,
+            "WRONG_TO_RIGHT": 2,
+            "WRONG_TO_WRONG": 4
+          }
+        },
+        "0.75": {
+          "F": {
+            "UNCHANGED_RIGHT": 22,
+            "UNCHANGED_WRONG": 23,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 3,
+            "WRONG_TO_WRONG": 8
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 1,
+            "UNCHANGED_RIGHT": 25,
+            "UNCHANGED_WRONG": 26,
+            "UNDEFINED_GT_REFERENCE": 267,
+            "WRONG_TO_RIGHT": 1,
+            "WRONG_TO_WRONG": 3
+          }
+        }
+      }
+    },
+    {
+      "candidate": "LR05_MA_8",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.052761119188754285,
+        "ap50": -0.03043682934951472,
+        "apall": -0.011281759584919324,
+        "macc": -0.03733332932971045,
+        "miou": -0.04321930571148211
+      },
+      "original_incumbent_denominator": 1113,
+      "rank_changes": 575,
+      "reference": "LR04_FC_8",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 309,
+            "added_definite_TP_score_entries": 5,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 27,
+            "lost_unique_GT_matches": 27,
+            "new_unique_GT_matches": 5,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 287
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56002
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_00"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2009
+              ],
+              "scene": "scene0011_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0011_00"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2007
+              ],
+              "scene": "scene0011_01"
+            },
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48001
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "object",
+                1163000
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue box",
+                230000
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "pillow",
+                13000
+              ],
+              "scene": "scene0050_01"
+            },
+            {
+              "class_and_GT_id": [
+                "floor",
+                3000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "paper towel dispenser",
+                82000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "sign",
+                261000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "toilet seat cover dispenser",
+                208000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "jacket",
+                131000
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "toilet paper",
+                49000
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "radiator",
+                96000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "floor",
+                3000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0168_02"
+            },
+            {
+              "class_and_GT_id": [
+                "desk",
+                9003
+              ],
+              "scene": "scene0168_02"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2002
+              ],
+              "scene": "scene0231_00"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue box",
+                230000
+              ],
+              "scene": "scene0231_00"
+            },
+            {
+              "class_and_GT_id": [
+                "jacket",
+                131000
+              ],
+              "scene": "scene0378_00"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0378_01"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0518_00"
+            },
+            {
+              "class_and_GT_id": [
+                "pillow",
+                13001
+              ],
+              "scene": "scene0518_00"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 327,
+            "added_definite_TP_score_entries": 2,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 9,
+            "lost_unique_GT_matches": 9,
+            "new_unique_GT_matches": 2,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 320
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56002
+              ],
+              "scene": "scene0084_02"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48001
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue box",
+                230000
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "floor",
+                3000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "paper towel dispenser",
+                82000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "toilet paper",
+                49000
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2000
+              ],
+              "scene": "scene0168_02"
+            },
+            {
+              "class_and_GT_id": [
+                "jacket",
+                131000
+              ],
+              "scene": "scene0378_00"
+            }
+          ]
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 59,
+            "UNCHANGED_RIGHT": 66,
+            "UNCHANGED_WRONG": 27,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 11,
+            "WRONG_TO_WRONG": 66
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 27,
+            "UNCHANGED_RIGHT": 108,
+            "UNCHANGED_WRONG": 52,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 5,
+            "WRONG_TO_WRONG": 37
+          }
+        },
+        "0.75": {
+          "F": {
+            "RIGHT_TO_WRONG": 24,
+            "UNCHANGED_RIGHT": 26,
+            "UNCHANGED_WRONG": 12,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 5,
+            "WRONG_TO_WRONG": 20
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 9,
+            "UNCHANGED_RIGHT": 46,
+            "UNCHANGED_WRONG": 24,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 2,
+            "WRONG_TO_WRONG": 6
+          }
+        }
+      }
+    },
+    {
+      "candidate": "LR06_MV_VIEW",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.017477480410167667,
+        "ap50": 0.01196792553558737,
+        "apall": 0.004391970763368863,
+        "macc": 0.021848236765728057,
+        "miou": 0.019265773163314348
+      },
+      "original_incumbent_denominator": 1113,
+      "rank_changes": 383,
+      "reference": "LR05_MA_8",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 140,
+            "added_definite_TP_score_entries": 15,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 15,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 154
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48001
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue box",
+                230000
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "paper towel dispenser",
+                82000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "toilet seat cover dispenser",
+                208000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "jacket",
+                131000
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "toilet paper",
+                49000
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64002
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "desk",
+                9003
+              ],
+              "scene": "scene0168_02"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2002
+              ],
+              "scene": "scene0231_00"
+            },
+            {
+              "class_and_GT_id": [
+                "sink",
+                14001
+              ],
+              "scene": "scene0231_00"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue box",
+                230000
+              ],
+              "scene": "scene0231_00"
+            },
+            {
+              "class_and_GT_id": [
+                "poster",
+                1188000
+              ],
+              "scene": "scene0231_01"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2008
+              ],
+              "scene": "scene0011_01"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 154,
+            "added_definite_TP_score_entries": 7,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 0,
+            "lost_unique_GT_matches": 0,
+            "new_unique_GT_matches": 7,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 161
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "backpack",
+                48001
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "tissue box",
+                230000
+              ],
+              "scene": "scene0050_00"
+            },
+            {
+              "class_and_GT_id": [
+                "paper towel dispenser",
+                82000
+              ],
+              "scene": "scene0084_00"
+            },
+            {
+              "class_and_GT_id": [
+                "toilet paper",
+                49000
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56001
+              ],
+              "scene": "scene0084_01"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64002
+              ],
+              "scene": "scene0168_00"
+            }
+          ],
+          "lost": []
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 6,
+            "UNCHANGED_RIGHT": 71,
+            "UNCHANGED_WRONG": 90,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 17,
+            "WRONG_TO_WRONG": 45
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 1,
+            "UNCHANGED_RIGHT": 112,
+            "UNCHANGED_WRONG": 81,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 15,
+            "WRONG_TO_WRONG": 20
+          }
+        },
+        "0.75": {
+          "F": {
+            "RIGHT_TO_WRONG": 2,
+            "UNCHANGED_RIGHT": 29,
+            "UNCHANGED_WRONG": 34,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 9,
+            "WRONG_TO_WRONG": 13
+          },
+          "final": {
+            "UNCHANGED_RIGHT": 48,
+            "UNCHANGED_WRONG": 28,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 7,
+            "WRONG_TO_WRONG": 4
+          }
+        }
+      }
+    },
+    {
+      "candidate": "LR07_MV_SURFACE",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": 0.009420553517629021,
+        "ap50": 0.005696357330245677,
+        "apall": 0.004361587051005603,
+        "macc": 0.006431768320151798,
+        "miou": 0.0017824166479946668
+      },
+      "original_incumbent_denominator": 1113,
+      "rank_changes": 321,
+      "reference": "LR06_MV_VIEW",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 118,
+            "added_definite_TP_score_entries": 3,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 6,
+            "lost_unique_GT_matches": 6,
+            "new_unique_GT_matches": 3,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 115
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0011_00"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2008
+              ],
+              "scene": "scene0011_01"
+            },
+            {
+              "class_and_GT_id": [
+                "mini fridge",
+                165000
+              ],
+              "scene": "scene0168_02"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2001
+              ],
+              "scene": "scene0011_00"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2005
+              ],
+              "scene": "scene0011_01"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64002
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "desk",
+                9003
+              ],
+              "scene": "scene0168_02"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 129,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 128
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "mini fridge",
+                165000
+              ],
+              "scene": "scene0168_02"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2001
+              ],
+              "scene": "scene0011_00"
+            },
+            {
+              "class_and_GT_id": [
+                "computer tower",
+                64002
+              ],
+              "scene": "scene0168_00"
+            }
+          ]
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 11,
+            "UNCHANGED_RIGHT": 77,
+            "UNCHANGED_WRONG": 92,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 10,
+            "WRONG_TO_WRONG": 39
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 6,
+            "UNCHANGED_RIGHT": 121,
+            "UNCHANGED_WRONG": 86,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 3,
+            "WRONG_TO_WRONG": 13
+          }
+        },
+        "0.75": {
+          "F": {
+            "RIGHT_TO_WRONG": 6,
+            "UNCHANGED_RIGHT": 32,
+            "UNCHANGED_WRONG": 33,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 5,
+            "WRONG_TO_WRONG": 11
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 2,
+            "UNCHANGED_RIGHT": 53,
+            "UNCHANGED_WRONG": 26,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 1,
+            "WRONG_TO_WRONG": 5
+          }
+        }
+      }
+    },
+    {
+      "candidate": "LR08_MV_AUX",
+      "cohort": "scannet_cf18",
+      "full_cohort": true,
+      "metric_deltas_fraction": {
+        "ap25": -0.003533229620998002,
+        "ap50": -0.0012997465152646825,
+        "apall": -0.0019310545965323112,
+        "macc": -0.004198778360749278,
+        "miou": -0.002166108397776839
+      },
+      "original_incumbent_denominator": 1113,
+      "rank_changes": 257,
+      "reference": "LR07_MV_SURFACE",
+      "released_matches": {
+        "0.5": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 99,
+            "added_definite_TP_score_entries": 7,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 2,
+            "lost_unique_GT_matches": 2,
+            "new_unique_GT_matches": 7,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 104
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2001
+              ],
+              "scene": "scene0011_00"
+            },
+            {
+              "class_and_GT_id": [
+                "chair",
+                2005
+              ],
+              "scene": "scene0011_01"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0084_02"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_00"
+            },
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0168_01"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0378_02"
+            },
+            {
+              "class_and_GT_id": [
+                "office chair",
+                10001
+              ],
+              "scene": "scene0518_00"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "trash can",
+                56000
+              ],
+              "scene": "scene0011_00"
+            },
+            {
+              "class_and_GT_id": [
+                "mini fridge",
+                165000
+              ],
+              "scene": "scene0168_02"
+            }
+          ]
+        },
+        "0.75": {
+          "counts": {
+            "added_ambiguous_FP_score_entries": 0,
+            "added_ambiguous_TP_score_entries": 0,
+            "added_definite_FP_score_entries": 112,
+            "added_definite_TP_score_entries": 1,
+            "lost_ambiguous_TP_score_entries": 0,
+            "lost_definite_TP_score_entries": 1,
+            "lost_unique_GT_matches": 1,
+            "new_unique_GT_matches": 1,
+            "removed_ambiguous_FP_score_entries": 0,
+            "removed_definite_FP_score_entries": 112
+          },
+          "gained": [
+            {
+              "class_and_GT_id": [
+                "chair",
+                2001
+              ],
+              "scene": "scene0011_00"
+            }
+          ],
+          "lost": [
+            {
+              "class_and_GT_id": [
+                "mini fridge",
+                165000
+              ],
+              "scene": "scene0168_02"
+            }
+          ]
+        }
+      },
+      "semantic_outcomes": {
+        "0.5": {
+          "F": {
+            "RIGHT_TO_WRONG": 3,
+            "UNCHANGED_RIGHT": 84,
+            "UNCHANGED_WRONG": 99,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 13,
+            "WRONG_TO_WRONG": 30
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 2,
+            "UNCHANGED_RIGHT": 122,
+            "UNCHANGED_WRONG": 88,
+            "UNDEFINED_GT_REFERENCE": 884,
+            "WRONG_TO_RIGHT": 7,
+            "WRONG_TO_WRONG": 10
+          }
+        },
+        "0.75": {
+          "F": {
+            "RIGHT_TO_WRONG": 2,
+            "UNCHANGED_RIGHT": 35,
+            "UNCHANGED_WRONG": 35,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 6,
+            "WRONG_TO_WRONG": 9
+          },
+          "final": {
+            "RIGHT_TO_WRONG": 1,
+            "UNCHANGED_RIGHT": 53,
+            "UNCHANGED_WRONG": 30,
+            "UNDEFINED_GT_REFERENCE": 1026,
+            "WRONG_TO_RIGHT": 1,
+            "WRONG_TO_WRONG": 2
+          }
+        }
+      }
+    }
+  ],
+  "repeat_consistency": {
+    "flags": {
+      "LR05_MA_8": {
+        "CF_D2_AP50_nondecrease": false,
+        "CF_D2_APall_strict": false,
+        "all5_checks": {
+          "replica8": {
+            "ap25": false,
+            "ap50": false,
+            "apall": true,
+            "macc": false,
+            "miou": false
+          },
+          "scannet_cf18": {
+            "ap25": false,
+            "ap50": false,
+            "apall": false,
+            "macc": false,
+            "miou": false
+          }
+        },
+        "material_target_met": false,
+        "target_met": false
+      },
+      "LR08_MV_AUX": {
+        "CF_D2_AP50_nondecrease": false,
+        "CF_D2_APall_strict": false,
+        "all5_checks": {
+          "replica8": {
+            "ap25": false,
+            "ap50": false,
+            "apall": false,
+            "macc": false,
+            "miou": false
+          },
+          "scannet_cf18": {
+            "ap25": false,
+            "ap50": false,
+            "apall": false,
+            "macc": false,
+            "miou": false
+          }
+        },
+        "material_target_met": false,
+        "target_met": false
+      }
+    },
+    "proposed_minus_MA_by_seed": {
+      "replica8": {
+        "seed17": {
+          "ap25": -0.02003752424086863,
+          "ap50": -0.0005843407083452323,
+          "apall": -0.003784059770056261,
+          "macc": -0.0004001199840806824,
+          "miou": -0.0022428321512679705
+        },
+        "seed29": {
+          "ap25": 0.007774639798648342,
+          "ap50": -0.007342704005078471,
+          "apall": -0.011109652085070434,
+          "macc": 0.0034674175370421056,
+          "miou": 0.006650285543297552
+        }
+      },
+      "scannet_cf18": {
+        "seed17": {
+          "ap25": 0.023364804306798687,
+          "ap50": 0.016364536350568365,
+          "apall": 0.006822503217842155,
+          "macc": 0.024081226725130578,
+          "miou": 0.018882081413532176
+        },
+        "seed29": {
+          "ap25": 0.009611204868211154,
+          "ap50": 0.007878115366476646,
+          "apall": 0.003967373282815337,
+          "macc": 0.010602072314228661,
+          "miou": 0.004887884376542945
+        }
+      }
+    },
+    "seed29_minus_seed17": {
+      "replica8": {
+        "LR05_MA_8": {
+          "ap25": 0.014905725836113215,
+          "ap50": 0.02730582314086369,
+          "apall": 0.012594594790236988,
+          "macc": 0.0120590138099258,
+          "miou": 0.0013120657824661208
+        },
+        "LR08_MV_AUX": {
+          "ap25": 0.04271788987563019,
+          "ap50": 0.02054745984413045,
+          "apall": 0.005269002475222814,
+          "macc": 0.01592655133104859,
+          "miou": 0.010205183477031643
+        }
+      },
+      "scannet_cf18": {
+        "LR05_MA_8": {
+          "ap25": 0.01232064216971357,
+          "ap50": 0.010882665053944085,
+          "apall": 0.0059241505312038895,
+          "macc": 0.01605316281645025,
+          "miou": 0.012411621315918775
+        },
+        "LR08_MV_AUX": {
+          "ap25": -0.0014329572688739634,
+          "ap50": 0.0023962440698523657,
+          "apall": 0.0030690205961770717,
+          "macc": 0.0025740084055483337,
+          "miou": -0.001582575721070456
+        }
+      }
+    }
+  },
+  "whole_map_upgrade": false
+}

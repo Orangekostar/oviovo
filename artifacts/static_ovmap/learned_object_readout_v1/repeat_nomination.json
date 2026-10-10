@@ -1,0 +1,48 @@
+{
+  "FC8_reference_identity": "a5c8b346a8e85f841a97d1e24b790df1cd7373ac06633b1082a2253e587fc7d0",
+  "checkpoints": {
+    "LR05_MA_8": {
+      "bytes": 22020510,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/selected.pt",
+      "sha256": "1efaffa0e35aa73e05e38a22b3fb84f77af8d29c4ecb6049deb9e5b166f2252d"
+    },
+    "LR08_MV_AUX": {
+      "bytes": 25624326,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/selected.pt",
+      "sha256": "851d1876ea77686e4354eaab103386c0cf3af41c31cfca5d1ca96db3efdab63b"
+    }
+  },
+  "classes": "5fe3b8d50d3149e9eebb6874d27c558121b7c83381e037178e3c7a486fbdccad",
+  "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+  "descriptive_DEV_criterion_margin_vs_FC8": 0.12075465823012532,
+  "descriptive_DEV_criterion_margin_vs_MA": 0.132916547869792,
+  "holdout_annotation_reads": 0,
+  "identity": "8c560f7f7bc728e913a3efc8f770f599850953918e89d56adcb34afd804a4f62",
+  "proposed_architecture": "LR08_MV_AUX",
+  "ranking": [
+    {
+      "DEV_criterion": 3.945864555927038,
+      "branch": "LR08_MV_AUX",
+      "checkpoint": {
+        "bytes": 25624326,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/selected.pt",
+        "sha256": "851d1876ea77686e4354eaab103386c0cf3af41c31cfca5d1ca96db3efdab63b"
+      },
+      "selected_step": 1000
+    },
+    {
+      "DEV_criterion": 4.07878110379683,
+      "branch": "LR05_MA_8",
+      "checkpoint": {
+        "bytes": 22020510,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/selected.pt",
+        "sha256": "1efaffa0e35aa73e05e38a22b3fb84f77af8d29c4ecb6049deb9e5b166f2252d"
+      },
+      "selected_step": 500
+    }
+  ],
+  "seed": 29,
+  "selection_uses_benchmark_AP": false,
+  "selection_uses_runtime": false,
+  "status": "NOMINATED"
+}

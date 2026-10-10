@@ -1,0 +1,296 @@
+{
+  "best_regression_candidate": null,
+  "deployment": "N0_UNCHANGED",
+  "dev_nomination": "f0e9df5a41e2142cea5cad6d697bb399932968ac4666e8c7d42e58aa1496e56a",
+  "dev_proposed_architecture": "LR08_MV_AUX",
+  "flags": {
+    "LR02_FC_2": {
+      "CF_D2_AP50_nondecrease": true,
+      "CF_D2_APall_strict": false,
+      "all5_checks": {
+        "replica8": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": true,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_target_met": false,
+      "target_met": false
+    },
+    "LR03_FC_4": {
+      "CF_D2_AP50_nondecrease": true,
+      "CF_D2_APall_strict": true,
+      "all5_checks": {
+        "replica8": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": true,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_target_met": false,
+      "target_met": false
+    },
+    "LR04_FC_8": {
+      "CF_D2_AP50_nondecrease": false,
+      "CF_D2_APall_strict": false,
+      "all5_checks": {
+        "replica8": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_target_met": false,
+      "target_met": false
+    },
+    "LR05_MA_8": {
+      "CF_D2_AP50_nondecrease": false,
+      "CF_D2_APall_strict": false,
+      "all5_checks": {
+        "replica8": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        },
+        "scannet_cf18": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        }
+      },
+      "material_target_met": false,
+      "target_met": false
+    },
+    "LR06_MV_VIEW": {
+      "CF_D2_AP50_nondecrease": false,
+      "CF_D2_APall_strict": false,
+      "all5_checks": {
+        "replica8": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        },
+        "scannet_cf18": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        }
+      },
+      "material_target_met": false,
+      "target_met": false
+    },
+    "LR07_MV_SURFACE": {
+      "CF_D2_AP50_nondecrease": false,
+      "CF_D2_APall_strict": false,
+      "all5_checks": {
+        "replica8": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        },
+        "scannet_cf18": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        }
+      },
+      "material_target_met": false,
+      "target_met": false
+    },
+    "LR08_MV_AUX": {
+      "CF_D2_AP50_nondecrease": false,
+      "CF_D2_APall_strict": false,
+      "all5_checks": {
+        "replica8": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        },
+        "scannet_cf18": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        }
+      },
+      "material_target_met": false,
+      "target_met": false
+    }
+  },
+  "identity": "19a4875d55adca5b4c6920f95e36b07815babd4c1cff4a4e01f9d624c8472db6",
+  "independent_confirmation": false,
+  "material_target_met": false,
+  "parameter_counts": {
+    "LR05_MA_8": 1829540,
+    "LR06_MV_VIEW": 2127781,
+    "LR07_MV_SURFACE": 2127781,
+    "LR08_MV_AUX": 2127781
+  },
+  "passing_candidates": [],
+  "repeat_consistency": {
+    "flags": {
+      "LR05_MA_8": {
+        "CF_D2_AP50_nondecrease": false,
+        "CF_D2_APall_strict": false,
+        "all5_checks": {
+          "replica8": {
+            "ap25": false,
+            "ap50": false,
+            "apall": true,
+            "macc": false,
+            "miou": false
+          },
+          "scannet_cf18": {
+            "ap25": false,
+            "ap50": false,
+            "apall": false,
+            "macc": false,
+            "miou": false
+          }
+        },
+        "material_target_met": false,
+        "target_met": false
+      },
+      "LR08_MV_AUX": {
+        "CF_D2_AP50_nondecrease": false,
+        "CF_D2_APall_strict": false,
+        "all5_checks": {
+          "replica8": {
+            "ap25": false,
+            "ap50": false,
+            "apall": false,
+            "macc": false,
+            "miou": false
+          },
+          "scannet_cf18": {
+            "ap25": false,
+            "ap50": false,
+            "apall": false,
+            "macc": false,
+            "miou": false
+          }
+        },
+        "material_target_met": false,
+        "target_met": false
+      }
+    },
+    "proposed_minus_MA_by_seed": {
+      "replica8": {
+        "seed17": {
+          "ap25": -0.02003752424086863,
+          "ap50": -0.0005843407083452323,
+          "apall": -0.003784059770056261,
+          "macc": -0.0004001199840806824,
+          "miou": -0.0022428321512679705
+        },
+        "seed29": {
+          "ap25": 0.007774639798648342,
+          "ap50": -0.007342704005078471,
+          "apall": -0.011109652085070434,
+          "macc": 0.0034674175370421056,
+          "miou": 0.006650285543297552
+        }
+      },
+      "scannet_cf18": {
+        "seed17": {
+          "ap25": 0.023364804306798687,
+          "ap50": 0.016364536350568365,
+          "apall": 0.006822503217842155,
+          "macc": 0.024081226725130578,
+          "miou": 0.018882081413532176
+        },
+        "seed29": {
+          "ap25": 0.009611204868211154,
+          "ap50": 0.007878115366476646,
+          "apall": 0.003967373282815337,
+          "macc": 0.010602072314228661,
+          "miou": 0.004887884376542945
+        }
+      }
+    },
+    "seed29_minus_seed17": {
+      "replica8": {
+        "LR05_MA_8": {
+          "ap25": 0.014905725836113215,
+          "ap50": 0.02730582314086369,
+          "apall": 0.012594594790236988,
+          "macc": 0.0120590138099258,
+          "miou": 0.0013120657824661208
+        },
+        "LR08_MV_AUX": {
+          "ap25": 0.04271788987563019,
+          "ap50": 0.02054745984413045,
+          "apall": 0.005269002475222814,
+          "macc": 0.01592655133104859,
+          "miou": 0.010205183477031643
+        }
+      },
+      "scannet_cf18": {
+        "LR05_MA_8": {
+          "ap25": 0.01232064216971357,
+          "ap50": 0.010882665053944085,
+          "apall": 0.0059241505312038895,
+          "macc": 0.01605316281645025,
+          "miou": 0.012411621315918775
+        },
+        "LR08_MV_AUX": {
+          "ap25": -0.0014329572688739634,
+          "ap50": 0.0023962440698523657,
+          "apall": 0.0030690205961770717,
+          "macc": 0.0025740084055483337,
+          "miou": -0.001582575721070456
+        }
+      }
+    }
+  },
+  "repeat_nomination": "8c560f7f7bc728e913a3efc8f770f599850953918e89d56adcb34afd804a4f62",
+  "research_retained": "LR01_G1",
+  "research_retained_replication": "UNTRAINED_CONTROL",
+  "runtime_in_gate": false,
+  "selection_scope": "EXPLORATORY_ON_REPEATEDLY_EXPOSED_BENCHMARKS",
+  "status": "COMPLETE_NO_TARGET_GAIN",
+  "target_met": false,
+  "training_or_seed_selection_uses_regression": false
+}

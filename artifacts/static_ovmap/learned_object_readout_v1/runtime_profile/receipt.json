@@ -1,0 +1,45 @@
+{
+  "all_predictions_equal": true,
+  "cold_timing_runs": 0,
+  "elapsed_seconds": 246.77771675190888,
+  "excluded_from_science": true,
+  "frames": 828,
+  "identity": "4d2ac966dbf0aa5000813779fa0d08d78ad5ffdfa6a86a767da3245c692874b8",
+  "learned_head_forwards": 8616,
+  "max_absolute_difference": 0.0,
+  "methods": [
+    "LR02_FC_2",
+    "LR03_FC_4",
+    "LR04_FC_8",
+    "LR05_MA_8",
+    "LR06_MV_VIEW",
+    "LR07_MV_SURFACE",
+    "LR08_MV_AUX",
+    "R29_LR05_MA_8",
+    "R29_LR08_MV_AUX"
+  ],
+  "objects": 1436,
+  "optimizer_updates": 0,
+  "original_readout": "722afdcae3a8c8b242892ea5ceafd060f33f9e6d5279b0a86c55d1b462502c49",
+  "physical_image_encodings": 0,
+  "replay_readout": "429c8d48d4e0de2edee1f176e6cccf16954fdc3a7e96d6602b52fc571d5240cc",
+  "scientific_inputs_unchanged": true,
+  "stages": {
+    "CACHE_ONLY_MAP_CAPTURE": {
+      "memory_boundary": "FROZEN_FC_LOAD_AND_CACHE_CAPTURE_NO_LEARNED_HEADS",
+      "peak_allocated_GiB": 1.3475251197814941,
+      "peak_reserved_GiB": 1.453125,
+      "seconds": 55.195666937856004,
+      "timing_boundary": "LOCK_WAIT_MODEL_LOAD_RGB_PREPROCESS_CACHE_VERIFY_AND_CAPTURE_RECEIPT"
+    },
+    "CACHE_ONLY_MAP_READOUT": {
+      "memory_boundary": "AFTER_HEAD_LOAD_RESET_ALL_SIX_HEADS_AND_FROZEN_FC_RESIDENT",
+      "peak_allocated_GiB": 1.6982755661010742,
+      "peak_reserved_GiB": 1.99609375,
+      "seconds": 191.58204981405288,
+      "timing_boundary": "HEAD_LOAD_CACHED_GRIDS_FORWARD_ARRAY_EXPORT_AND_LOCK_RELEASE"
+    }
+  },
+  "status": "CACHE_ONLY_PROFILE_COMPLETE",
+  "verification_seconds": 4.527940697968006
+}

@@ -1,0 +1,396 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-09",
+  "task_id": "ovimap-learned-object-readout-v1",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "30f59c1fa3d783054dc53fc6693e1fd68e8c2a6d",
+  "branch": "research/ovimap-learned-object-readout-v1",
+  "new_module": "src/static_ovmap/learned_object_readout",
+  "entrypoint": "scripts/evaluation/run_ovimap_learned_object_readout.py",
+  "output_root": "/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001",
+  "parent_root": "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+  "observation_cache_root": "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001",
+  "controller_python_hint": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "cohorts": {
+    "replica8": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet_cf18": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0168_00",
+      "scene0168_01",
+      "scene0168_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "deployment": "N0_UNCHANGED",
+  "accuracy_priority": true,
+  "upstream": {
+    "mask_adapter": {
+      "repo": "hustvl/MaskAdapter",
+      "commit": "c0516d8a548d90055c3dca7f2a9b4281a4da842f",
+      "weights": "NOT_USED; common-protocol training from scratch"
+    },
+    "fc_operators": {
+      "repo": "nickormushev/OVRCOAT",
+      "commit": "9fd9450d22852d269d426b521663a127f3983a4b"
+    },
+    "scannet": {
+      "repo": "ScanNet/ScanNet",
+      "bind_live_code_commit": true,
+      "sensor_header_blob": "94e77e3d4f9c782e18bda35d4100ecaf306713f8",
+      "preprocess_blob": "6f0e2bb79c61095dfb4bb89d07b5bc7a3a4a96ab"
+    }
+  },
+  "data": {
+    "source": "already authorized ScanNet v2 official TRAIN split, new families only",
+    "profile": {
+      "train_families": 24,
+      "dev_families": 4,
+      "holdout_families": 4
+    },
+    "fallback_profile": null,
+    "family_order_hash_prefix": "LR1-family-20261009|",
+    "scan_selection": "lowest complete scan suffix in each eligible family",
+    "deny_families": [
+      "scene0011",
+      "scene0050",
+      "scene0084",
+      "scene0168",
+      "scene0231",
+      "scene0378",
+      "scene0518"
+    ],
+    "also_exclude": "all prior project training/tuning/evaluation families discoverable in input lineage",
+    "max_training_pool_frames_per_family": 96,
+    "max_original_objects_per_family": 64,
+    "minimum_original_base_objects": {
+      "train": 240,
+      "dev": 32,
+      "holdout": 32
+    },
+    "minimum_train_base_classes": 8,
+    "class_holdout": {
+      "count": 40,
+      "total": 200,
+      "hash_prefix": "LR1-class-20261009|",
+      "train_positive_classes": 160,
+      "loss_denominator": "base classes only"
+    },
+    "train_masks": "TRAIN_GT_DERIVED_PLUS_FIXED_3D_CORRUPTIONS",
+    "holdout_measurement": "held-out proposal recognition, NOT independent whole-map AP",
+    "corruption": {
+      "types": [
+        "clean",
+        "truncate",
+        "append",
+        "truncate_append"
+      ],
+      "truncate_keep_fraction": 0.7,
+      "donor_distance_m": 0.05,
+      "donor_max_area_fraction": 0.2,
+      "directions": [
+        "+x",
+        "-x",
+        "+y",
+        "-y",
+        "+z",
+        "-z"
+      ],
+      "variants_train": "one fixed hash direction per original instance; same static suite across branches/seeds",
+      "variants_eval": "one fixed hash direction per original instance"
+    },
+    "require_sensor_calibration": true,
+    "raw_sens_pose": "world_from_depth; E_depth maps depth to color when E_color is identity",
+    "preserve_unaligned_mesh_coordinates": true,
+    "new_ovi_maps": 0,
+    "minimum_base_objects_per_family": 1
+  },
+  "observation": {
+    "evaluation_representative_frames": 32,
+    "pose_translation_m": 0.2,
+    "pose_rotation_degrees": 15.0,
+    "maximum_views": 8,
+    "prefixes": [
+      2,
+      4,
+      8
+    ],
+    "minimum_views": 2,
+    "minimum_full_pixels": 100,
+    "minimum_bbox_extent": 2,
+    "anchor": "maximum original FULL pixels, then smallest frame ID",
+    "later": "maximum new visible physical area, then FULL pixels, then frame ID",
+    "depth_absolute_m": 0.02,
+    "depth_relative": 0.02,
+    "minimum_depth_m": 1e-06,
+    "physical_samples_for_planning": 4096,
+    "local_sites": 64,
+    "proposal_sites": 48,
+    "context_sites": 16,
+    "context_distance_m": 0.05,
+    "position_rounding": "floor(u+0.5)",
+    "bilinear_feature_sampling_align_corners": false,
+    "rgb_preprocessing": "exact a7_evidence_upgrade.region_adapter.image_tensor",
+    "feature_cache_dtype": "float32",
+    "trained_operation_dtype": "float32",
+    "autocast": false
+  },
+  "model": {
+    "backbone": "bound FC_FROZEN convnext_large_d_320",
+    "backbone_frozen": true,
+    "text_frozen": true,
+    "raw_channels": "BIND_FROM_REAL_DENSE",
+    "projected_channels": "BIND_FROM_REAL_FROZEN_HEAD",
+    "mask_adapter": {
+      "mask_in_chans": 16,
+      "num_channels": 256,
+      "num_output_maps": 4,
+      "convnext_blocks": 3,
+      "drop_path": 0.0
+    },
+    "local_hidden": 128,
+    "object_queries": 4,
+    "token_quality_features": 8,
+    "token_metadata": [
+      "occupancy",
+      "clipped_depth_residual",
+      "direction_x",
+      "direction_y",
+      "direction_z",
+      "centered_x",
+      "centered_y",
+      "centered_z"
+    ],
+    "local_global_raw_mix": 0.5,
+    "final_embedding_residual": 0.5,
+    "ramp_steps": 200,
+    "num_categories_in_predictor_parameters": 0,
+    "learned_gate": false,
+    "projected_dense_operator": "upstream FCCLIP.visual_prediction_forward_convnext_2d: trunk.head.norm/drop then visual.head, no L2 normalization",
+    "object_query_initialization_std": 0.02
+  },
+  "loss": {
+    "classification_temperature": 0.07,
+    "clean_ce_weight": 0.5,
+    "corrupt_ce_weight": 0.5,
+    "mask_consistency_weight": 0.1,
+    "purity_weight_aux": 0.1,
+    "same_surface_cosine_weight_aux": 0.05,
+    "contrastive_different_instance_negatives": false,
+    "unknown_purity_target": -1
+  },
+  "training": {
+    "main_seed": 17,
+    "repeat_seed": 29,
+    "warmup_steps": 2000,
+    "branch_steps": 2000,
+    "learned_main_branches": [
+      "LR05_MA_8",
+      "LR06_MV_VIEW",
+      "LR07_MV_SURFACE",
+      "LR08_MV_AUX"
+    ],
+    "repeat_branches": "LR05_MA_8 plus DEV-best among LR06/LR07/LR08, selected before holdout/regression",
+    "optimizer": "AdamW",
+    "lr": 0.0001,
+    "weight_decay": 0.01,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "effective_batch": 16,
+    "micro_batch": 1,
+    "accumulation_steps": 16,
+    "gradient_clip_norm": 1.0,
+    "linear_lr_warmup_steps": 100,
+    "schedule": "cosine after warmup, final lr = 0.1 * initial",
+    "branch_optimizer_reset": true,
+    "view_count_cycle": [
+      2,
+      4,
+      8
+    ],
+    "validation_steps": [
+      500,
+      1000,
+      1500,
+      2000
+    ],
+    "checkpoint_selection": "minimum equal-family mean per-object [0.5 CE clean + sum(3 corrupted CE)/6] on DEV base classes; tie earlier step",
+    "branch_data_schedule_shared": true,
+    "main_optimizer_updates": 10000,
+    "repeat_optimizer_updates": 6000,
+    "max_optimizer_updates_science": 16000,
+    "fit_to_regression_metrics": false,
+    "readout_gate_training": false
+  },
+  "methods": [
+    {
+      "id": "LR00_D2",
+      "operator": "parent",
+      "grouping": "NONE",
+      "max_views": 0,
+      "trained": false,
+      "aux": false
+    },
+    {
+      "id": "LR01_G1",
+      "operator": "parent",
+      "grouping": "NONE",
+      "max_views": 0,
+      "trained": false,
+      "aux": false
+    },
+    {
+      "id": "LR02_FC_2",
+      "operator": "ordinary_pooling",
+      "grouping": "NONE",
+      "max_views": 2,
+      "trained": false,
+      "aux": false
+    },
+    {
+      "id": "LR03_FC_4",
+      "operator": "ordinary_pooling",
+      "grouping": "NONE",
+      "max_views": 4,
+      "trained": false,
+      "aux": false
+    },
+    {
+      "id": "LR04_FC_8",
+      "operator": "ordinary_pooling",
+      "grouping": "NONE",
+      "max_views": 8,
+      "trained": false,
+      "aux": false
+    },
+    {
+      "id": "LR05_MA_8",
+      "operator": "mask_adapter_retrained",
+      "grouping": "NONE",
+      "max_views": 8,
+      "trained": true,
+      "aux": false
+    },
+    {
+      "id": "LR06_MV_VIEW",
+      "operator": "hierarchical_readout",
+      "grouping": "VIEW",
+      "max_views": 8,
+      "trained": true,
+      "aux": false
+    },
+    {
+      "id": "LR07_MV_SURFACE",
+      "operator": "hierarchical_readout",
+      "grouping": "SURFACE",
+      "max_views": 8,
+      "trained": true,
+      "aux": false
+    },
+    {
+      "id": "LR08_MV_AUX",
+      "operator": "hierarchical_readout",
+      "grouping": "SURFACE",
+      "max_views": 8,
+      "trained": true,
+      "aux": true
+    }
+  ],
+  "deployment_readout": {
+    "operation": "replace historical F only; retain exact N/Q grouping/missing-source normalization",
+    "score_kind": "cosine of normalized learned object embedding with existing dataset text prototypes",
+    "temperature": "inherited per-scene frozen F temperature",
+    "extra_global_mixture": null,
+    "common_domain": "existing D2 owner, historical F and D2 prior available, raw-zero-free support, >=2 qualified views",
+    "invalid_prediction": "execution failure, never metric-aware fallback",
+    "no_valid_local_tokens": "model-defined MA feature fallback",
+    "recovered_classes_unchanged": true,
+    "geometry_unchanged": true,
+    "recompute_official_ranks": true
+  },
+  "evaluation": {
+    "main_records": 234,
+    "main_pools": 18,
+    "repeat_records": 52,
+    "repeat_pools": 4,
+    "total_records_if_complete": 286,
+    "total_pools_if_complete": 22,
+    "official_apall_thresholds": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "minimum_instance_points": 100,
+    "fraction_tolerance": 1e-10,
+    "five_metrics": [
+      "apall",
+      "ap50",
+      "ap25",
+      "miou",
+      "macc"
+    ],
+    "gate": "both cohorts >= G1 on all five; CF APall > D2, AP50 >= D2",
+    "material_cf_apall_pp": 0.1,
+    "repeat_selection_by_regression": false,
+    "holdout_labels_after_dev_nomination": true,
+    "cold_timing_runs": 0
+  },
+  "resources": {
+    "gpu_default": "one available A40, use existing lock; no forced GPU ID",
+    "cpu_data_workers": 4,
+    "cpu_eval_workers": 3,
+    "training_pool_unique_FC_image_upper": 3072,
+    "regression_unique_FC_image_upper": 832,
+    "total_science_unique_FC_image_upper": 3904,
+    "new_NQ_encodings": 0,
+    "new_segmentation_calls": 0,
+    "new_AnyUp_calls": 0,
+    "new_SAMV_calls": 0,
+    "free_space_min_GiB": 40,
+    "read_only_parent_caches": true,
+    "runtime_or_memory_in_selection": false,
+    "host_feature_LRU_limit_GiB": 32
+  },
+  "publication": {
+    "normal_push": true,
+    "external_receipt": "publication/final.json",
+    "required_reports": [
+      "LEARNED_OBJECT_RESULTS.md",
+      "LEARNED_OBJECT_HANDOFF.md",
+      "LEARNED_OBJECT_SELECTION.md",
+      "LEARNED_OBJECT_CLAIMS.md"
+    ],
+    "learned_weights": "all selected small new-head checkpoints plus configs; not frozen backbone/data",
+    "full_command_must_run": true
+  }
+}

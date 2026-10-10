@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "scripts/evaluation/run_ovimap_learned_object_readout.py",
+    "--spec",
+    "configs/static_ovmap/learned_object_readout_v1.json",
+    "--parent-root",
+    "/mnt/shared/ww/ovimap-source-preserving-update-v1/attempt_001",
+    "--observation-root",
+    "/mnt/shared/ww/ovimap-disagreement-query-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001",
+    "--phase",
+    "all",
+    "--resume"
+  ],
+  "identity": "ac289b74d90080ab0ae30956fd1ec0e2c2454b851ead01f67d095481f8e011d0",
+  "invocation_elapsed_seconds": 2211.3002286739647,
+  "phase": "predict",
+  "result_identity": "a415ca6e92e647cbbe9417e9d0a2275720c8ba095099a4545dc2ae392f40f079",
+  "resume": true,
+  "source_binding": "2e362239c1926c35dbd488b6aaef5511a19d2d043a34028ff6127718fc4ede38",
+  "status": "COMPLETE"
+}

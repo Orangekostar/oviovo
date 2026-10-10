@@ -1,0 +1,87 @@
+{
+  "identity": "41f35a2eb27ba615f42b7ecb482145f186c14189965592cfcc530e57631666f6",
+  "main": [
+    {
+      "aux": false,
+      "grouping": "NONE",
+      "id": "LR00_D2",
+      "max_views": 0,
+      "operator": "parent",
+      "trained": false
+    },
+    {
+      "aux": false,
+      "grouping": "NONE",
+      "id": "LR01_G1",
+      "max_views": 0,
+      "operator": "parent",
+      "trained": false
+    },
+    {
+      "aux": false,
+      "grouping": "NONE",
+      "id": "LR02_FC_2",
+      "max_views": 2,
+      "operator": "ordinary_pooling",
+      "trained": false
+    },
+    {
+      "aux": false,
+      "grouping": "NONE",
+      "id": "LR03_FC_4",
+      "max_views": 4,
+      "operator": "ordinary_pooling",
+      "trained": false
+    },
+    {
+      "aux": false,
+      "grouping": "NONE",
+      "id": "LR04_FC_8",
+      "max_views": 8,
+      "operator": "ordinary_pooling",
+      "trained": false
+    },
+    {
+      "aux": false,
+      "grouping": "NONE",
+      "id": "LR05_MA_8",
+      "max_views": 8,
+      "operator": "mask_adapter_retrained",
+      "trained": true
+    },
+    {
+      "aux": false,
+      "grouping": "VIEW",
+      "id": "LR06_MV_VIEW",
+      "max_views": 8,
+      "operator": "hierarchical_readout",
+      "trained": true
+    },
+    {
+      "aux": false,
+      "grouping": "SURFACE",
+      "id": "LR07_MV_SURFACE",
+      "max_views": 8,
+      "operator": "hierarchical_readout",
+      "trained": true
+    },
+    {
+      "aux": true,
+      "grouping": "SURFACE",
+      "id": "LR08_MV_AUX",
+      "max_views": 8,
+      "operator": "hierarchical_readout",
+      "trained": true
+    }
+  ],
+  "parameters": {
+    "LR05_MA_8": 1829540,
+    "LR06_MV_VIEW": 2127781,
+    "LR07_MV_SURFACE": 2127781,
+    "LR08_MV_AUX": 2127781
+  },
+  "repeat": [
+    "R29_LR05_MA_8",
+    "R29_LR08_MV_AUX"
+  ]
+}

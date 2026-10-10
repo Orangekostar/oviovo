@@ -1,0 +1,218 @@
+{
+  "H_primary_review": "1097f7364e267939184d61717a517573f5df692641a971dd7008d4e3e0de2aaa",
+  "actual_CLI_exit": 0,
+  "actual_optimizer_updates": 16000,
+  "actual_public_predict_phase": "ac289b74d90080ab0ae30956fd1ec0e2c2454b851ead01f67d095481f8e011d0",
+  "bounded_tests": {
+    "passed": 31,
+    "production": 19,
+    "reference": 12
+  },
+  "complete_CPU_payload_construction_in_public_predict_time": true,
+  "completed_official_ordered_pools": 22,
+  "completed_scene_method_results": 286,
+  "conditional_profile": "4d2ac966dbf0aa5000813779fa0d08d78ad5ffdfa6a86a767da3245c692874b8",
+  "contract_requirement_groups": [
+    {
+      "contract": "CODEX_FINAL_EXECUTION_EN.md sections0-2",
+      "evidence": [
+        "original_pack_files",
+        "source_binding.json",
+        "dependency_manifest.json"
+      ],
+      "requirement": "Original16-file pack and fixed protocol; task-owned worktree/modules; parents preserved"
+    },
+    {
+      "contract": "DATA_AND_SPLITS.md sections1-3",
+      "evidence": [
+        "split_manifest.json",
+        "class_split.json",
+        "data_profile.json",
+        "holdout_data_profile.json"
+      ],
+      "requirement": "24/4/4 disjoint new families,160/40 class split, actual sufficient original-object counts"
+    },
+    {
+      "contract": "DATA_AND_SPLITS.md sections4-7",
+      "evidence": [
+        "data_profile.json",
+        "features/train-dev.json",
+        "features/holdout.json",
+        "features/regression.json",
+        "engineering/receipt.json",
+        "bounded production camera/sampling/supervision tests"
+      ],
+      "requirement": "Calibrated new RGB-D, declared static proposal conditions, common views/sites, frozen FP32 feature identities"
+    },
+    {
+      "contract": "MODEL_AND_TRAINING_CONTRACT.md sections1-4",
+      "evidence": [
+        "d202bd53a2c4e7ad1ca5543b05958300a8d6eeef3623a5f1398cc488059416dc",
+        "frozen_numerical_sources_unchanged",
+        "bounded production model/group/auxiliary tests"
+      ],
+      "requirement": "Actual upstream MA arithmetic/gradient parity and differentiable frozen projection; matched VIEW/SURFACE/AUX"
+    },
+    {
+      "contract": "MODEL_AND_TRAINING_CONTRACT.md section5",
+      "evidence": [
+        "d202bd53a2c4e7ad1ca5543b05958300a8d6eeef3623a5f1398cc488059416dc",
+        "37252af0ef291deceaf16522089a7f9eb2ef9bebc16d4cee4c53cc193cb6b309"
+      ],
+      "requirement": "Discarded engineering20, actual scientific16000 and256000 item draws; frozen backbone and exact optimizer/resume states"
+    },
+    {
+      "contract": "EVALUATION_AND_RELEASE.md sections2-3",
+      "evidence": [
+        "f0e9df5a41e2142cea5cad6d697bb399932968ac4666e8c7d42e58aa1496e56a",
+        "8c560f7f7bc728e913a3efc8f770f599850953918e89d56adcb34afd804a4f62",
+        "1097f7364e267939184d61717a517573f5df692641a971dd7008d4e3e0de2aaa"
+      ],
+      "requirement": "Both DEV-only nominations before H, full200-class recognition, original versus correlated condition denominators"
+    },
+    {
+      "contract": "MODEL_AND_TRAINING_CONTRACT.md section6; EVALUATION_AND_RELEASE.md section4",
+      "evidence": [
+        "output_checks/summary.json",
+        "review/all286_prediction_lock_verification.json",
+        "all26 actual evaluation registry_checks"
+      ],
+      "requirement": "Historical F replacement only, fixed G1 geometry/owners/recovered labels, complete current-class ranks and semantic denominators"
+    },
+    {
+      "contract": "EVALUATION_AND_RELEASE.md sections4-6",
+      "evidence": [
+        "64b8c93c6ca8aae15f54f785e04692b253ad0d2580d308a2bb3a00cc6720fc19",
+        "19a4875d55adca5b4c6920f95e36b07815babd4c1cff4a4e01f9d624c8472db6",
+        "all26 diagnostics receipts"
+      ],
+      "requirement": "286 logical results,22 ordered released pools, actual runtime overlaps, exact gates and post-lock object diagnostics"
+    },
+    {
+      "contract": "EVALUATION_AND_RELEASE.md sections7-8",
+      "evidence": [
+        "tables/",
+        "runtime_profile/receipt.json",
+        "publication/package.json"
+      ],
+      "requirement": "Three main table families, separate seed29 supplement, actual stage costs/encodes/updates; missing clocks null"
+    },
+    {
+      "contract": "EVALUATION_AND_RELEASE.md section9",
+      "evidence": [
+        "6246dc55f66b979a1fe1daec8a25804e29f1486fa4640f608e43d461c7083f27",
+        "artifact file scan",
+        "four LEARNED_OBJECT reports"
+      ],
+      "requirement": "Six exact selected small FP32 heads, compact manifests/results/decisions, four reports; no raw scans/GT/dense/backbone"
+    },
+    {
+      "contract": "CODEX_FINAL_EXECUTION_EN.md sections5-6",
+      "evidence": [
+        "c7adf8b7e55d1cf68e703b1b58ad66c75dea32ca5192d190279004ec7f3be15c",
+        "410c1fc5ac011b09005a76a6d19a1132f982a91d970c6a8dfdad3995ba63d7dd"
+      ],
+      "requirement": "Actual complete public all/resume CLI exit0 and finite production/reference validation"
+    }
+  ],
+  "deployment": "N0_UNCHANGED",
+  "four_reports": true,
+  "frozen_numerical_sources_unchanged": true,
+  "identity": "9e1b3d7c268424fb531764a837abc28408a9dd37236ef038a103fdeba00314dc",
+  "observed_execution": "c7adf8b7e55d1cf68e703b1b58ad66c75dea32ca5192d190279004ec7f3be15c",
+  "original_missing_resource_clocks_explicit_null": true,
+  "original_pack_files": [
+    {
+      "file": "CODEX_FINAL_EXECUTION_EN.md",
+      "reviewed": true,
+      "sha256": "306a1caff8f241a077df825faf43a1b8aee60fae4c785249da96d8cad96ccf07"
+    },
+    {
+      "file": "CODE_REVIEW_AND_PLAN_ZH.md",
+      "reviewed": true,
+      "sha256": "a81ae70aeddb0a4cc4f70f9e1afa6c5cbdda80ac66f2e092f1062f2bfea2d078"
+    },
+    {
+      "file": "DATA_AND_SPLITS.md",
+      "reviewed": true,
+      "sha256": "e5a95ac62446de97404b569de7487ff64ee9f368f877f2e8055d3eb77c4fef01"
+    },
+    {
+      "file": "EVALUATION_AND_RELEASE.md",
+      "reviewed": true,
+      "sha256": "50e8438a81b65939e6a551b6ac3fde45748d9292400e85addb0a4789802f73d7"
+    },
+    {
+      "file": "EXPERIMENT_MATRIX.csv",
+      "reviewed": true,
+      "sha256": "685c617f3bac7d5e39cfeb84c426d0e2d3ecb3502379fc5b89eabdd8b168d559"
+    },
+    {
+      "file": "FILES_SHA256.json",
+      "reviewed": true,
+      "sha256": "17e18ad4aa150dc384cbcfe682bf50eee813feab5e113ff98c2ac7ebf2e26653"
+    },
+    {
+      "file": "MODEL_AND_TRAINING_CONTRACT.md",
+      "reviewed": true,
+      "sha256": "1752ba2e835153859e5a7b0e5db34f3cff0cb5e415902000e31fe59d3331c1b0"
+    },
+    {
+      "file": "PROTOCOL_SPEC.json",
+      "reviewed": true,
+      "sha256": "edc8f926dcfb625dd9fe1a704dae58038bd099cf02c774e683c86e7319dee549"
+    },
+    {
+      "file": "README.md",
+      "reviewed": true,
+      "sha256": "9c2cf48b4a5c08d3c87544957620da36ebbe4c9d61e04bb54e4dde4c0900e825"
+    },
+    {
+      "file": "SOURCE_EVIDENCE.md",
+      "reviewed": true,
+      "sha256": "5cbcb75b0b4c47584b58cab5cedd47a9271111d405bdeac6c3b65ca42d6b361e"
+    },
+    {
+      "file": "audit/AUDIT_REPORT.json",
+      "reviewed": true,
+      "sha256": "60dc7df6f878125ebf0e9fb2ce22cf4ba2eb68add2f43cabb26f43a0a1077324"
+    },
+    {
+      "file": "audit/REFERENCE_TEST_LOG.txt",
+      "reviewed": true,
+      "sha256": "7d88c15025f6bc7478108eb8cefc93b9f1fe575935c217ec23451e22afc9993a"
+    },
+    {
+      "file": "audit/REVIEW_NOTES.md",
+      "reviewed": true,
+      "sha256": "2d8b5620529f735cc223667f7c220151453965b33a79fbce67750ac7187b7be2"
+    },
+    {
+      "file": "audit/check_pack.py",
+      "reviewed": true,
+      "sha256": "d6b7e8316af2849f8d695b8f0d700c8b55f3a7d6b96ceccb655e06f2f4629442"
+    },
+    {
+      "file": "reference/reference_kernels.py",
+      "reviewed": true,
+      "sha256": "c184a26177fcf9c90551abab60e28dfcaad7fa535471e931f5694d19475ee75c"
+    },
+    {
+      "file": "reference/test_reference.py",
+      "reviewed": true,
+      "sha256": "e337adbc5871df8ef2e1407ebe7c8aaf17b46dcb442b640d4cc9fffc286726c3"
+    }
+  ],
+  "original_pack_files_checked": 16,
+  "protocol_unchanged": true,
+  "remaining_release_step": "Normal Git commit/push and external exact local/remote SHA receipt",
+  "research_retained": "LR01_G1",
+  "result_store": "9537aa7ff39395b561361055c90d09b262d33fdee72b19f85144b13230fabb5b",
+  "seed29_separate": true,
+  "selected_heads": "6246dc55f66b979a1fe1daec8a25804e29f1486fa4640f608e43d461c7083f27",
+  "selected_weights_exactly_match_six_DEV_checkpoints": true,
+  "status": "SCIENCE_AND_PACKAGE_REVIEW_PASS",
+  "target_met": false,
+  "three_main_table_families": true,
+  "training_primary_review": "37252af0ef291deceaf16522089a7f9eb2ef9bebc16d4cee4c53cc193cb6b309"
+}

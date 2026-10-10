@@ -1,0 +1,10 @@
+method_id,role,max_views,trained,grouping,auxiliary_losses,main_seed,actual_integration
+LR00_D2,parent,0,False,NONE,False,deterministic,PARENT
+LR01_G1,parent,0,False,NONE,False,deterministic,PARENT
+LR02_FC_2,ordinary_pooling,2,False,NONE,False,deterministic,REPLACE_F_WITH_NQ_PRESERVED
+LR03_FC_4,ordinary_pooling,4,False,NONE,False,deterministic,REPLACE_F_WITH_NQ_PRESERVED
+LR04_FC_8,ordinary_pooling,8,False,NONE,False,deterministic,REPLACE_F_WITH_NQ_PRESERVED
+LR05_MA_8,mask_adapter_retrained,8,True,NONE,False,17,REPLACE_F_WITH_NQ_PRESERVED
+LR06_MV_VIEW,hierarchical_readout,8,True,VIEW,False,17,REPLACE_F_WITH_NQ_PRESERVED
+LR07_MV_SURFACE,hierarchical_readout,8,True,SURFACE,False,17,REPLACE_F_WITH_NQ_PRESERVED
+LR08_MV_AUX,hierarchical_readout,8,True,SURFACE,True,17,REPLACE_F_WITH_NQ_PRESERVED

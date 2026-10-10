@@ -1,0 +1,156 @@
+{
+  "heads": {
+    "LR05_MA_8": {
+      "config": {
+        "frozen_backbone_included": false,
+        "grouping": "NONE",
+        "local_hidden": 128,
+        "mask_in_chans": 16,
+        "num_channels": 256,
+        "num_output_maps": 4,
+        "object_queries": 4,
+        "projected_channels": 768,
+        "raw_channels": 1536,
+        "trained_category_parameters": 0
+      },
+      "selected_checkpoint": {
+        "bytes": 22020510,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/selected.pt",
+        "sha256": "6f336eac9abc4faf88fc050661049a839bdcc46b636ebf65c615ef86bb2d6355"
+      },
+      "selected_step": 500,
+      "weights": {
+        "bytes": 7332979,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/artifacts/static_ovmap/learned_object_readout_v1/weights/LR05_MA_8.pt",
+        "sha256": "5c677fdcda71353dc0504c37e203763c70c507e63c055d9930991ed8e8db3f91"
+      }
+    },
+    "LR06_MV_VIEW": {
+      "config": {
+        "frozen_backbone_included": false,
+        "grouping": "VIEW",
+        "local_hidden": 128,
+        "mask_in_chans": 16,
+        "num_channels": 256,
+        "num_output_maps": 4,
+        "object_queries": 4,
+        "projected_channels": 768,
+        "raw_channels": 1536,
+        "trained_category_parameters": 0
+      },
+      "selected_checkpoint": {
+        "bytes": 25624198,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/selected.pt",
+        "sha256": "27a608e409167e743272b41542e8cb3bba5d69d8c60004959872dd60f21e07c5"
+      },
+      "selected_step": 500,
+      "weights": {
+        "bytes": 8532842,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/artifacts/static_ovmap/learned_object_readout_v1/weights/LR06_MV_VIEW.pt",
+        "sha256": "536ee870e215dfab32e1f391da3a713629adf91bb24e6f6d48ce314ae1c1d945"
+      }
+    },
+    "LR07_MV_SURFACE": {
+      "config": {
+        "frozen_backbone_included": false,
+        "grouping": "SURFACE",
+        "local_hidden": 128,
+        "mask_in_chans": 16,
+        "num_channels": 256,
+        "num_output_maps": 4,
+        "object_queries": 4,
+        "projected_channels": 768,
+        "raw_channels": 1536,
+        "trained_category_parameters": 0
+      },
+      "selected_checkpoint": {
+        "bytes": 25624518,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/selected.pt",
+        "sha256": "e27c73893fb1feec0abaa046c10b35a9c579e60c404e71186c3201e022142f5a"
+      },
+      "selected_step": 1500,
+      "weights": {
+        "bytes": 8533046,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/artifacts/static_ovmap/learned_object_readout_v1/weights/LR07_MV_SURFACE.pt",
+        "sha256": "7e560900050931c6233db1b77f5e07d82e3d8a95c295623035e3f7abf9341672"
+      }
+    },
+    "LR08_MV_AUX": {
+      "config": {
+        "frozen_backbone_included": false,
+        "grouping": "SURFACE",
+        "local_hidden": 128,
+        "mask_in_chans": 16,
+        "num_channels": 256,
+        "num_output_maps": 4,
+        "object_queries": 4,
+        "projected_channels": 768,
+        "raw_channels": 1536,
+        "trained_category_parameters": 0
+      },
+      "selected_checkpoint": {
+        "bytes": 25624198,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/selected.pt",
+        "sha256": "9ac40bdffd82f721062e00a048e8ebdbf1e39219a228fe89ab16c80cb046d680"
+      },
+      "selected_step": 500,
+      "weights": {
+        "bytes": 8532774,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/artifacts/static_ovmap/learned_object_readout_v1/weights/LR08_MV_AUX.pt",
+        "sha256": "448ebccf0f00c87b6d41b0b96045bc9df503e590db694ccab1d85cfadbb30d10"
+      }
+    },
+    "R29_LR05_MA_8": {
+      "config": {
+        "frozen_backbone_included": false,
+        "grouping": "NONE",
+        "local_hidden": 128,
+        "mask_in_chans": 16,
+        "num_channels": 256,
+        "num_output_maps": 4,
+        "object_queries": 4,
+        "projected_channels": 768,
+        "raw_channels": 1536,
+        "trained_category_parameters": 0
+      },
+      "selected_checkpoint": {
+        "bytes": 22020510,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR05_MA_8/selected.pt",
+        "sha256": "1efaffa0e35aa73e05e38a22b3fb84f77af8d29c4ecb6049deb9e5b166f2252d"
+      },
+      "selected_step": 500,
+      "weights": {
+        "bytes": 7333231,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/artifacts/static_ovmap/learned_object_readout_v1/weights/R29_LR05_MA_8.pt",
+        "sha256": "908a88b90395fb61a8ee5454193bf185058f1b1f94ccfbefe71c4fe8f7e197b8"
+      }
+    },
+    "R29_LR08_MV_AUX": {
+      "config": {
+        "frozen_backbone_included": false,
+        "grouping": "SURFACE",
+        "local_hidden": 128,
+        "mask_in_chans": 16,
+        "num_channels": 256,
+        "num_output_maps": 4,
+        "object_queries": 4,
+        "projected_channels": 768,
+        "raw_channels": 1536,
+        "trained_category_parameters": 0
+      },
+      "selected_checkpoint": {
+        "bytes": 25624326,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed29/LR08_MV_AUX/selected.pt",
+        "sha256": "851d1876ea77686e4354eaab103386c0cf3af41c31cfca5d1ca96db3efdab63b"
+      },
+      "selected_step": 1000,
+      "weights": {
+        "bytes": 8533046,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/artifacts/static_ovmap/learned_object_readout_v1/weights/R29_LR08_MV_AUX.pt",
+        "sha256": "a1e1c6e7e612e16d1163dd19652bdde672d77f7cb79b9df97cf50510a7ab6dfb"
+      }
+    }
+  },
+  "identity": "6246dc55f66b979a1fe1daec8a25804e29f1486fa4640f608e43d461c7083f27",
+  "status": "COMPLETE"
+}

@@ -1,0 +1,25 @@
+{
+  "CPU": "Intel(R) Xeon(R) Silver 4314 CPU @ 2.40GHz",
+  "FC_python": "/home/ww/miniconda3/envs/oviovo-radseg/bin/python",
+  "GPU_inventory": [
+    "0, NVIDIA A40, GPU-03bdcf8a-2211-c497-06f1-6fa2e0b4ce40, 595.71.05, 46068",
+    "1, NVIDIA A40, GPU-7432ef4c-50a1-f860-4edd-bcda281170fb, 595.71.05, 46068",
+    "2, NVIDIA A40, GPU-41ba4cb6-edfe-ed30-c047-a19d9f23d0a8, 595.71.05, 46068"
+  ],
+  "cuda_build": "12.1",
+  "identity": "afd91f9e94cddcb55919cc4cbf66681bd17887882f9095fb2ca420181c488a7d",
+  "new_GPU_inference_for_environment_check": 0,
+  "numerical_options_from_verified_source": true,
+  "packages": {
+    "einops": "0.8.2",
+    "numpy": "2.4.6",
+    "open3d": "0.19.0",
+    "open_clip_torch": "3.3.0",
+    "scipy": "1.17.1",
+    "timm": "1.0.19",
+    "torch": "2.4.0"
+  },
+  "protocol_precision": "FP32; no autocast or TF32",
+  "python": "3.11.15",
+  "status": "OBSERVED"
+}

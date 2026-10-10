@@ -1,0 +1,78 @@
+{
+  "FC8_reference_identity": "a5c8b346a8e85f841a97d1e24b790df1cd7373ac06633b1082a2253e587fc7d0",
+  "checkpoints": {
+    "LR05_MA_8": {
+      "bytes": 22020510,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/selected.pt",
+      "sha256": "6f336eac9abc4faf88fc050661049a839bdcc46b636ebf65c615ef86bb2d6355"
+    },
+    "LR06_MV_VIEW": {
+      "bytes": 25624198,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/selected.pt",
+      "sha256": "27a608e409167e743272b41542e8cb3bba5d69d8c60004959872dd60f21e07c5"
+    },
+    "LR07_MV_SURFACE": {
+      "bytes": 25624518,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/selected.pt",
+      "sha256": "e27c73893fb1feec0abaa046c10b35a9c579e60c404e71186c3201e022142f5a"
+    },
+    "LR08_MV_AUX": {
+      "bytes": 25624198,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/selected.pt",
+      "sha256": "9ac40bdffd82f721062e00a048e8ebdbf1e39219a228fe89ab16c80cb046d680"
+    }
+  },
+  "classes": "5fe3b8d50d3149e9eebb6874d27c558121b7c83381e037178e3c7a486fbdccad",
+  "data": "6f5fe1ae98059e7064d2d4b658139608a7b545f3fed882f692795fe988c6b664",
+  "descriptive_DEV_criterion_margin_vs_FC8": 0.11195036687885107,
+  "descriptive_DEV_criterion_margin_vs_MA": 0.1371861429728245,
+  "holdout_annotation_reads": 0,
+  "identity": "f0e9df5a41e2142cea5cad6d697bb399932968ac4666e8c7d42e58aa1496e56a",
+  "proposed_architecture": "LR08_MV_AUX",
+  "ranking": [
+    {
+      "DEV_criterion": 3.9546688472783122,
+      "branch": "LR08_MV_AUX",
+      "checkpoint": {
+        "bytes": 25624198,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR08_MV_AUX/selected.pt",
+        "sha256": "9ac40bdffd82f721062e00a048e8ebdbf1e39219a228fe89ab16c80cb046d680"
+      },
+      "selected_step": 500
+    },
+    {
+      "DEV_criterion": 3.9624561290247273,
+      "branch": "LR07_MV_SURFACE",
+      "checkpoint": {
+        "bytes": 25624518,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR07_MV_SURFACE/selected.pt",
+        "sha256": "e27c73893fb1feec0abaa046c10b35a9c579e60c404e71186c3201e022142f5a"
+      },
+      "selected_step": 1500
+    },
+    {
+      "DEV_criterion": 3.9942876758047623,
+      "branch": "LR06_MV_VIEW",
+      "checkpoint": {
+        "bytes": 25624198,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR06_MV_VIEW/selected.pt",
+        "sha256": "27a608e409167e743272b41542e8cb3bba5d69d8c60004959872dd60f21e07c5"
+      },
+      "selected_step": 500
+    },
+    {
+      "DEV_criterion": 4.091854990251137,
+      "branch": "LR05_MA_8",
+      "checkpoint": {
+        "bytes": 22020510,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/training/seed17/LR05_MA_8/selected.pt",
+        "sha256": "6f336eac9abc4faf88fc050661049a839bdcc46b636ebf65c615ef86bb2d6355"
+      },
+      "selected_step": 500
+    }
+  ],
+  "seed": 17,
+  "selection_uses_benchmark_AP": false,
+  "selection_uses_runtime": false,
+  "status": "NOMINATED"
+}
