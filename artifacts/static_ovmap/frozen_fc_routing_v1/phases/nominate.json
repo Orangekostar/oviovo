@@ -1,0 +1,171 @@
+{
+  "any_qualified": true,
+  "arms": {
+    "FG1_VIEW": {
+      "A": 0.42535774410774413,
+      "C": 0.46363636363636357,
+      "CE": 3.9119817213980035,
+      "M": 0.5842983405483405,
+      "NLL": 4.139906388591436,
+      "categories": 28,
+      "corrections": 22,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 15,
+      "net_corrections": 7,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG1_VIEW/dev_0500.json",
+      "per_family_A": {
+        "scene0105": 0.43939393939393945,
+        "scene0143": 0.6111111111111112,
+        "scene0211": 0.39166666666666666,
+        "scene0620": 0.25925925925925924
+      },
+      "recognition": "14d56d351bf69e5b1ddae20ba98a37d20857f72e22ad96ebf46b3dac9ec5df1e",
+      "step": 500,
+      "variant_records": 276
+    },
+    "FG2_SURFACE": {
+      "A": 0.46071127946127943,
+      "C": 0.4801136363636363,
+      "CE": 3.949017267634069,
+      "M": 0.58866341991342,
+      "NLL": 4.176042225753719,
+      "categories": 28,
+      "corrections": 24,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 9,
+      "net_corrections": 15,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG2_SURFACE/dev_1000.json",
+      "per_family_A": {
+        "scene0105": 0.46969696969696967,
+        "scene0143": 0.6481481481481481,
+        "scene0211": 0.39166666666666666,
+        "scene0620": 0.33333333333333326
+      },
+      "recognition": "cdab0d89d191c6ede818fb5efbc52690fe940786563cbc135479f5efa963001e",
+      "step": 1000,
+      "variant_records": 276
+    },
+    "FG3_AUX": {
+      "A": 0.45315656565656565,
+      "C": 0.45233585858585856,
+      "CE": 3.951118274875963,
+      "M": 0.5807269119769121,
+      "NLL": 4.178064118827432,
+      "categories": 28,
+      "corrections": 23,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 9,
+      "net_corrections": 14,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG3_AUX/dev_1000.json",
+      "per_family_A": {
+        "scene0105": 0.4848484848484848,
+        "scene0143": 0.6111111111111112,
+        "scene0211": 0.3833333333333333,
+        "scene0620": 0.33333333333333326
+      },
+      "recognition": "c10b9fa1b525f7b0eb39e5651a6b0dfe6db5afee6286755981a61979f5d0d886",
+      "step": 1000,
+      "variant_records": 276
+    },
+    "FG4_ROUTE": {
+      "A": 0.444760101010101,
+      "C": 0.4245580808080808,
+      "CE": 3.936417636039481,
+      "M": 0.5731872294372293,
+      "NLL": 4.163035146049177,
+      "categories": 28,
+      "corrections": 23,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 10,
+      "net_corrections": 13,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG4_ROUTE/dev_1500.json",
+      "per_family_A": {
+        "scene0105": 0.5151515151515151,
+        "scene0143": 0.6111111111111112,
+        "scene0211": 0.375,
+        "scene0620": 0.2777777777777778
+      },
+      "recognition": "bfca7799b8f21c18ba5da212f3c2261266979d35b05490b3a2198df5a62e3b09",
+      "step": 1500,
+      "variant_records": 276
+    }
+  },
+  "attempt": "1791695872788404205",
+  "checkpoints": {
+    "FG1_VIEW": {
+      "bytes": 2498352,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG1_VIEW/selected.pt",
+      "sha256": "ef36d035384c5f39a49066ce8bd8001c18576831be6165cf9b13759659dc4532"
+    },
+    "FG2_SURFACE": {
+      "bytes": 2498800,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG2_SURFACE/selected.pt",
+      "sha256": "2d0358a9ad6c3703b85415d27d4a9c2754d6612d86f4c012dea3529122282539"
+    },
+    "FG3_AUX": {
+      "bytes": 2635196,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG3_AUX/selected.pt",
+      "sha256": "10c3f473071f380bf74b48af4881eab39f7d99bb6c8637b2faabedc4063eb8b9"
+    },
+    "FG4_ROUTE": {
+      "bytes": 2635644,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG4_ROUTE/selected.pt",
+      "sha256": "8a45fd4b57305a31a260121c8f93170c1573ddcef0e706dbd01e82496fe031a3"
+    }
+  },
+  "identity": "3fc44096666836663c07f24f02a8070336e7a4469bc9d1f33f936aaf7cc3412c",
+  "nominee": "FG2_SURFACE",
+  "phase": "nominate",
+  "qualified": {
+    "FG1_VIEW": true,
+    "FG2_SURFACE": true,
+    "FG3_AUX": true,
+    "FG4_ROUTE": true
+  },
+  "same_nominee_qualified": false,
+  "seed": 17,
+  "selection_only_DEV_base": true,
+  "selection_uses_runtime": false,
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "stage_elapsed_seconds": 0.0127400909550488,
+  "status": "COMPLETE",
+  "winner": {
+    "A": 0.46071127946127943,
+    "C": 0.4801136363636363,
+    "CE": 3.949017267634069,
+    "M": 0.58866341991342,
+    "NLL": 4.176042225753719,
+    "branch": "FG2_SURFACE",
+    "categories": 28,
+    "checkpoint": {
+      "bytes": 2498800,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG2_SURFACE/selected.pt",
+      "sha256": "2d0358a9ad6c3703b85415d27d4a9c2754d6612d86f4c012dea3529122282539"
+    },
+    "corrections": 24,
+    "families": 4,
+    "full200_competitors": true,
+    "harm": 9,
+    "net_corrections": 15,
+    "order": 1,
+    "original_objects": 69,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG2_SURFACE/dev_1000.json",
+    "per_family_A": {
+      "scene0105": 0.46969696969696967,
+      "scene0143": 0.6481481481481481,
+      "scene0211": 0.39166666666666666,
+      "scene0620": 0.33333333333333326
+    },
+    "recognition": "cdab0d89d191c6ede818fb5efbc52690fe940786563cbc135479f5efa963001e",
+    "step": 1000,
+    "variant_records": 276
+  }
+}

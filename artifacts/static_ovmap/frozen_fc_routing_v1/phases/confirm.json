@@ -1,0 +1,29 @@
+{
+  "attempt": "1791695872788404205",
+  "errors": {},
+  "identity": "b8efec727ed87d13b7d23c7ce6343505ca8366329f50b2f11df0ed3d31859e62",
+  "phase": "confirm",
+  "predictor_lock": "4d2484fff8cd770307c7dce57a77e86bb2436b9072d17348eb521955180d7946",
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "stage_elapsed_seconds": 1245.9560545471031,
+  "stages": {
+    "H2": "8222b8d5b401f26cb9db4b193dd9895e6dd87d7ec42d41166b7dd55d7129aa70",
+    "REAL": "bafab9f47573a0d454447e1fac53b66ec8f43905afdcc79c16a2c6bf07c285da"
+  },
+  "status": "COMPLETE",
+  "used_for_selection": false,
+  "worker_cost": {
+    "FP32": true,
+    "GPU": "NVIDIA A40",
+    "TF32": false,
+    "loader_workload": {
+      "local_phi_calls": 0,
+      "local_phi_vectors": 0,
+      "ordinary_FC_view_readouts": 0,
+      "parent_loader_calls": 0
+    },
+    "physical_image_encodings": 277,
+    "sparse_hits": 0,
+    "sparse_misses": 0
+  }
+}

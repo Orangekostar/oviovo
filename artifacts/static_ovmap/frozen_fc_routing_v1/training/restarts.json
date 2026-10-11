@@ -1,0 +1,31 @@
+{
+  "attempts": [
+    {
+      "branch": "FG1_VIEW",
+      "checkpoint_resume_step": 0,
+      "completed_updates": 3,
+      "historical_failure_seconds": null,
+      "observed_attempt": "c8fe0284b5e2f232478d5bf750bb1f0b04e48d9ce58b9d01c1eb6c277b73119e",
+      "old_last_checkpoint": {
+        "bytes": 886033,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/history/resume_boundary_fix/FG1_VIEW/last.pt",
+        "sha256": "def9a3e560cfd47d486517ccdc8f02032dcade7eba20c106f4788ea54db41bee"
+      },
+      "reason": "Fix pending DEV validation and final-step gradient-stat resume before continuing",
+      "replay_from_identical_seed_and_draws": true,
+      "seed": 17,
+      "source": {
+        "bytes": 10726,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/history/resume_boundary_fix/training_before_fix.py",
+        "sha256": "d96838d40980fbd041c90af2ff8c10ae05f4f84db7487c9c09c3c47f8a591b8f"
+      },
+      "updates_ledger": {
+        "bytes": 1957,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/history/resume_boundary_fix/FG1_VIEW/updates.jsonl",
+        "sha256": "beaacd3e870e4bf082eb021ad5f6dae59c5f4336dcc23654e30aa78352399972"
+      }
+    }
+  ],
+  "identity": "af10cf686614bb3e5ea2a7f4053d9caeec4a1792e72fcf136bea6cb58e480760",
+  "status": "PRESERVED_TECHNICAL_RESTART"
+}

@@ -1,0 +1,974 @@
+{
+  "FP32": true,
+  "argv": [
+    "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/envs/sam2/bin/python",
+    "-u",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/preservation_routing/sam2_worker.py",
+    "--job",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/generator_job.json"
+  ],
+  "checkpoint": {
+    "bytes": 898083611,
+    "license_refs": [
+      "licenses/sam2-LICENSE.txt",
+      "licenses/SAM-V-NOTICE.txt"
+    ],
+    "path": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/sam2/sam2.1_hiera_large.pt",
+    "sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+    "source": {
+      "filename": "sam2.1_hiera_large.pt",
+      "kind": "author_public_file",
+      "url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt"
+    }
+  },
+  "counts": {
+    "image_encoder_calls": 8,
+    "mask_decoder_batches": 32
+  },
+  "elapsed_seconds": 17.670751329977065,
+  "frames": {
+    "scene0105_00:0": {
+      "arrays": {
+        "bytes": 10671,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0105_00_0.npz",
+        "sha256": "48d928fcc580a14f3599d0ec21af0f87dd8fc08fde01cbd4bc3f6367ee1d8224"
+      },
+      "elapsed_seconds": 7.547836090205237,
+      "generated": 20,
+      "metadata": [
+        {
+          "bbox": [
+            455.0,
+            3.0,
+            137.0,
+            475.0
+          ],
+          "digest": "f2192c722f5199af8a68985798ff641c1ef2e9d44ac33bdcf28df97295c4073b",
+          "pixels": 41352,
+          "predicted_iou": 0.9847502708435059,
+          "stability": 0.9631900191307068
+        },
+        {
+          "bbox": [
+            15.0,
+            181.0,
+            91.0,
+            115.0
+          ],
+          "digest": "71f80b0ef2281bc741e879cb61d2c2e09b5428c0e75adfa96b8e125f9c59a054",
+          "pixels": 9662,
+          "predicted_iou": 0.9678318500518799,
+          "stability": 0.970737636089325
+        },
+        {
+          "bbox": [
+            10.0,
+            387.0,
+            110.0,
+            90.0
+          ],
+          "digest": "4e1d28302d04e5b7efed02fdc9e304762a773eb95b5f940f665258ca8fddbe16",
+          "pixels": 8376,
+          "predicted_iou": 0.9660325050354004,
+          "stability": 0.9754572510719299
+        },
+        {
+          "bbox": [
+            104.0,
+            179.0,
+            117.0,
+            101.0
+          ],
+          "digest": "4a0f9c0aa3799725016e50dbe9b75ac9fb055aa4ffd80ca9f9761a39cd7e78d9",
+          "pixels": 10771,
+          "predicted_iou": 0.9650436043739319,
+          "stability": 0.9728146195411682
+        },
+        {
+          "bbox": [
+            20.0,
+            65.0,
+            144.0,
+            114.0
+          ],
+          "digest": "1152e2e51a3f656733f360012a3def18359bd0bb845d98ec29781d2999f96244",
+          "pixels": 14781,
+          "predicted_iou": 0.9590518474578857,
+          "stability": 0.9688729047775269
+        },
+        {
+          "bbox": [
+            38.0,
+            250.0,
+            158.0,
+            150.0
+          ],
+          "digest": "137d6c00e4daaf545fec2f556983a87427f7bf03e32417c79153a3559481f7b3",
+          "pixels": 13209,
+          "predicted_iou": 0.9581785798072815,
+          "stability": 0.9738591313362122
+        },
+        {
+          "bbox": [
+            229.0,
+            330.0,
+            82.0,
+            97.0
+          ],
+          "digest": "14273f96731a94ed7bc291346c02dac889936d9fc17ff6140c082fa2151cd180",
+          "pixels": 6030,
+          "predicted_iou": 0.9567942023277283,
+          "stability": 0.951683759689331
+        },
+        {
+          "bbox": [
+            117.0,
+            357.0,
+            144.0,
+            119.0
+          ],
+          "digest": "5b9e89164933febd57ee0a2b321803b2243dc1960e9f380d6353ef877ff060f8",
+          "pixels": 9769,
+          "predicted_iou": 0.9564090371131897,
+          "stability": 0.9574829936027527
+        },
+        {
+          "bbox": [
+            11.0,
+            297.0,
+            31.0,
+            115.0
+          ],
+          "digest": "92dc2bbc7b1b66f019773339be5a477a5c28aa7b7c6dcbb2f8aa28c4bc28ee80",
+          "pixels": 3007,
+          "predicted_iou": 0.9549771547317505,
+          "stability": 0.971466064453125
+        },
+        {
+          "bbox": [
+            174.0,
+            262.0,
+            96.0,
+            101.0
+          ],
+          "digest": "a2d6538db3d388a659ada4426d6e14714682b050d84e99a2f185ebea8e01489b",
+          "pixels": 8127,
+          "predicted_iou": 0.9546038508415222,
+          "stability": 0.9776155948638916
+        },
+        {
+          "bbox": [
+            151.0,
+            1.0,
+            66.0,
+            81.0
+          ],
+          "digest": "e0a398175e4fb319bbccd50a8e9785c57a9cb7900feda0f42fc872cb1acc3d76",
+          "pixels": 4848,
+          "predicted_iou": 0.9542009830474854,
+          "stability": 0.9630153775215149
+        },
+        {
+          "bbox": [
+            162.0,
+            80.0,
+            134.0,
+            97.0
+          ],
+          "digest": "7992367e6625ba8a323c158c35654efab069d6129ec4fc9bf3129271747a29ff",
+          "pixels": 9100,
+          "predicted_iou": 0.951797366142273,
+          "stability": 0.9687736630439758
+        },
+        {
+          "bbox": [
+            221.0,
+            177.0,
+            85.0,
+            85.0
+          ],
+          "digest": "d67c1b08d4074a6ed978b51d2ccdc695ea2826a3562682ada27116bb9ec2822d",
+          "pixels": 6752,
+          "predicted_iou": 0.9495958089828491,
+          "stability": 0.9673231244087219
+        },
+        {
+          "bbox": [
+            11.0,
+            184.0,
+            31.0,
+            228.0
+          ],
+          "digest": "b83f6452e539f47810ff3bbb6aae50501ad7a4dd4a2259614152c23bb3438e41",
+          "pixels": 3026,
+          "predicted_iou": 0.9473593831062317,
+          "stability": 0.9719595909118652
+        },
+        {
+          "bbox": [
+            311.0,
+            318.0,
+            46.0,
+            80.0
+          ],
+          "digest": "af35644fb4c61f8e0a06873ee6fb11c384928517ebb5b6b44f1092db4969c74c",
+          "pixels": 3106,
+          "predicted_iou": 0.9458246827125549,
+          "stability": 0.9597357511520386
+        },
+        {
+          "bbox": [
+            276.0,
+            390.0,
+            71.0,
+            87.0
+          ],
+          "digest": "10a47ecfc0ca0a47c5c42331d0095a77b5fcea60b6d3bc4b0b51feed92fea626",
+          "pixels": 4777,
+          "predicted_iou": 0.9278919100761414,
+          "stability": 0.9523809552192688
+        }
+      ],
+      "retained": 16
+    },
+    "scene0105_00:515": {
+      "arrays": {
+        "bytes": 10579,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0105_00_515.npz",
+        "sha256": "f5c129020569b0353f0feca328a5f816a88d7dd32cdad10db3c8f5f34aff2af6"
+      },
+      "elapsed_seconds": 0.630299482960254,
+      "generated": 9,
+      "metadata": [
+        {
+          "bbox": [
+            354.0,
+            5.0,
+            234.0,
+            239.0
+          ],
+          "digest": "c2a3c6325dd007a07b269bce6a5848e4f69bc305dea5e6ac59662503ddf35f91",
+          "pixels": 22692,
+          "predicted_iou": 0.9841399192810059,
+          "stability": 0.9704615473747253
+        },
+        {
+          "bbox": [
+            300.0,
+            250.0,
+            315.0,
+            228.0
+          ],
+          "digest": "3a5efe904f97e11c8e79f94b1b92e9a3057fa819faadd74836f635f8bbf721ce",
+          "pixels": 38547,
+          "predicted_iou": 0.9703326225280762,
+          "stability": 0.9633764028549194
+        },
+        {
+          "bbox": [
+            537.0,
+            45.0,
+            102.0,
+            257.0
+          ],
+          "digest": "6b44f0b7b912d523020cb7f0dcec1da8bb41d70a1c53a3f9df7dea03ca9d30c1",
+          "pixels": 13608,
+          "predicted_iou": 0.9703180193901062,
+          "stability": 0.9722543954849243
+        },
+        {
+          "bbox": [
+            539.0,
+            313.0,
+            100.0,
+            165.0
+          ],
+          "digest": "a165250cdf74a347d5928988a3c35a5ab78df4cfb983590bf0b8530939559624",
+          "pixels": 10359,
+          "predicted_iou": 0.9658243060112,
+          "stability": 0.9662014842033386
+        },
+        {
+          "bbox": [
+            16.0,
+            2.0,
+            55.0,
+            88.0
+          ],
+          "digest": "d830be2444c1ec1120d72d184dbffad692c6c68516d980dbddd4d6adca97a6b1",
+          "pixels": 2891,
+          "predicted_iou": 0.957471489906311,
+          "stability": 0.9626612067222595
+        },
+        {
+          "bbox": [
+            143.0,
+            2.0,
+            111.0,
+            92.0
+          ],
+          "digest": "0897b8336eb2816fe8ac49c5e76daf91b505305ece095dca7625b8776d14431a",
+          "pixels": 6636,
+          "predicted_iou": 0.9341854453086853,
+          "stability": 0.9506027698516846
+        },
+        {
+          "bbox": [
+            101.0,
+            221.0,
+            219.0,
+            190.0
+          ],
+          "digest": "753d74acf2bcdac4e860278a6d8935e0e25902e8b50168e49d91e6a85df5dcb6",
+          "pixels": 19392,
+          "predicted_iou": 0.9262721538543701,
+          "stability": 0.9549604058265686
+        },
+        {
+          "bbox": [
+            17.0,
+            1.0,
+            57.0,
+            26.0
+          ],
+          "digest": "5f8d2e7153e454ea418dcf964d04cf8105a3862644102673b0923051d2a50d9d",
+          "pixels": 865,
+          "predicted_iou": 0.916247546672821,
+          "stability": 0.9573991298675537
+        },
+        {
+          "bbox": [
+            10.0,
+            15.0,
+            379.0,
+            460.0
+          ],
+          "digest": "eb16e57add05dbc1aea25aab65e91511a05ce39934b845f77db3be632664b859",
+          "pixels": 101704,
+          "predicted_iou": 0.8598757982254028,
+          "stability": 0.9507902264595032
+        }
+      ],
+      "retained": 9
+    },
+    "scene0143_00:0": {
+      "arrays": {
+        "bytes": 8125,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0143_00_0.npz",
+        "sha256": "c7be7739a22dc01cd41169589981518941366854f081a01c7688d371296b1951"
+      },
+      "elapsed_seconds": 0.6134360670112073,
+      "generated": 8,
+      "metadata": [
+        {
+          "bbox": [
+            3.0,
+            106.0,
+            636.0,
+            371.0
+          ],
+          "digest": "9c4b52a35dc5f9fd1273c8a015fdda74ba0211dbb3cc82b9cb5b1278339aa6e6",
+          "pixels": 116538,
+          "predicted_iou": 0.9850651621818542,
+          "stability": 0.9533452987670898
+        },
+        {
+          "bbox": [
+            296.0,
+            6.0,
+            267.0,
+            174.0
+          ],
+          "digest": "ba3850406be0fb6a7bebcb3861fdff9f8d4df39ad623ea45827164cc365f1711",
+          "pixels": 25352,
+          "predicted_iou": 0.9736912250518799,
+          "stability": 0.970221221446991
+        },
+        {
+          "bbox": [
+            6.0,
+            423.0,
+            90.0,
+            55.0
+          ],
+          "digest": "0409cb2ae5dd5de0785963532170bdf9b319195718ff920a857d16ec4a47759d",
+          "pixels": 2099,
+          "predicted_iou": 0.9624006152153015,
+          "stability": 0.9783121347427368
+        },
+        {
+          "bbox": [
+            301.0,
+            221.0,
+            125.0,
+            153.0
+          ],
+          "digest": "a93d61d3511acfc55f0880e6358b59b45caa5e24a1423bdc3d9ad92cfe49a83b",
+          "pixels": 13769,
+          "predicted_iou": 0.9596796631813049,
+          "stability": 0.9611518979072571
+        },
+        {
+          "bbox": [
+            340.0,
+            1.0,
+            52.0,
+            26.0
+          ],
+          "digest": "4e75018d494fa4fb9516ec2ffaa2b7b1daf9743471feba627d0b927df9f45b28",
+          "pixels": 1226,
+          "predicted_iou": 0.9517236948013306,
+          "stability": 0.9734085202217102
+        },
+        {
+          "bbox": [
+            364.0,
+            144.0,
+            88.0,
+            64.0
+          ],
+          "digest": "8f0ca4c421ba4bd23f54f3e47b285e203007d415dc4ca0bdaa7bbfa7bd77577d",
+          "pixels": 3077,
+          "predicted_iou": 0.901153028011322,
+          "stability": 0.9658147096633911
+        },
+        {
+          "bbox": [
+            574.0,
+            387.0,
+            65.0,
+            60.0
+          ],
+          "digest": "8f79abd7f5805db6492870dab7d027fd57fa3f2bea3f592f7833058c48bbc343",
+          "pixels": 1540,
+          "predicted_iou": 0.8805936574935913,
+          "stability": 0.9544304013252258
+        },
+        {
+          "bbox": [
+            530.0,
+            2.0,
+            106.0,
+            210.0
+          ],
+          "digest": "d80a8a1360e87dce4295b9c15ddd119d83316475d3f025e6cb034c5e89dbd79c",
+          "pixels": 7728,
+          "predicted_iou": 0.8061976432800293,
+          "stability": 0.9502336978912354
+        }
+      ],
+      "retained": 8
+    },
+    "scene0143_00:88": {
+      "arrays": {
+        "bytes": 4213,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0143_00_88.npz",
+        "sha256": "352f60257eb4c9ca88b52256163077ca2e92797706a335ba6c7c120fac3fd53c"
+      },
+      "elapsed_seconds": 0.5630976830143481,
+      "generated": 3,
+      "metadata": [
+        {
+          "bbox": [
+            315.0,
+            174.0,
+            303.0,
+            299.0
+          ],
+          "digest": "0f18296551e98dfa24d566c552f1c22464a10ba4c9b1c1e5ccb6d0a6efdb7298",
+          "pixels": 59600,
+          "predicted_iou": 0.9725233316421509,
+          "stability": 0.9520736932754517
+        },
+        {
+          "bbox": [
+            329.0,
+            406.0,
+            250.0,
+            72.0
+          ],
+          "digest": "2db374ec05a383a8ace6fc095282dd153854e09bd90c5a7cc1347ea8297b0610",
+          "pixels": 13400,
+          "predicted_iou": 0.96906977891922,
+          "stability": 0.955717146396637
+        },
+        {
+          "bbox": [
+            4.0,
+            166.0,
+            81.0,
+            311.0
+          ],
+          "digest": "d5ed10ddf4fed83aaac3594bb026f99875f284f0107c66c71212c4ea416fbfe7",
+          "pixels": 14022,
+          "predicted_iou": 0.9389705657958984,
+          "stability": 0.9636973142623901
+        }
+      ],
+      "retained": 3
+    },
+    "scene0211_00:0": {
+      "arrays": {
+        "bytes": 3679,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0211_00_0.npz",
+        "sha256": "44fad0d8b97f9c7611ec3c4a2ad638296eb8868c959b9c800bb15ac335a0e359"
+      },
+      "elapsed_seconds": 0.5591855710372329,
+      "generated": 5,
+      "metadata": [
+        {
+          "bbox": [
+            23.0,
+            4.0,
+            387.0,
+            174.0
+          ],
+          "digest": "268f2ed3266b64f95dd8166079aa25725f0eea8a06bc2b53934b0c39b6fe8b49",
+          "pixels": 30572,
+          "predicted_iou": 0.9648165106773376,
+          "stability": 0.958120584487915
+        },
+        {
+          "bbox": [
+            395.0,
+            406.0,
+            43.0,
+            38.0
+          ],
+          "digest": "c361c8d88f7f518909819f0e587a034c565463edae38178a52a733a0b0d3f913",
+          "pixels": 1123,
+          "predicted_iou": 0.9350460767745972,
+          "stability": 0.969298243522644
+        },
+        {
+          "bbox": [
+            368.0,
+            59.0,
+            25.0,
+            43.0
+          ],
+          "digest": "ea3a1d49b455b3f8935ef5f8abb75126bbad671aba4e2fa2a2d843265c56c43c",
+          "pixels": 974,
+          "predicted_iou": 0.9134761095046997,
+          "stability": 0.9578313231468201
+        },
+        {
+          "bbox": [
+            202.0,
+            128.0,
+            140.0,
+            50.0
+          ],
+          "digest": "6842aff96a65d2a87f3ecf96f5bc0af2731883181c7828be4630567b2995d363",
+          "pixels": 2704,
+          "predicted_iou": 0.8964436054229736,
+          "stability": 0.9536305069923401
+        },
+        {
+          "bbox": [
+            38.0,
+            465.0,
+            49.0,
+            11.0
+          ],
+          "digest": "9303861a8898043505871cb31a5e9655be69806cbab1944e836ff07363239824",
+          "pixels": 413,
+          "predicted_iou": 0.8686045408248901,
+          "stability": 0.9529411792755127
+        }
+      ],
+      "retained": 5
+    },
+    "scene0211_00:1161": {
+      "arrays": {
+        "bytes": 12782,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0211_00_1161.npz",
+        "sha256": "45e24bdff9bc09934e5da7b1d80d0d83c9a27ab2422b1c90a8ac2d7b12f9f829"
+      },
+      "elapsed_seconds": 0.6456306418403983,
+      "generated": 15,
+      "metadata": [
+        {
+          "bbox": [
+            70.0,
+            313.0,
+            566.0,
+            163.0
+          ],
+          "digest": "2bdda195453887c2327c29eeeb2810e457b5568600536b14d80c84a4c765562d",
+          "pixels": 38821,
+          "predicted_iou": 0.9894652366638184,
+          "stability": 0.9579198956489563
+        },
+        {
+          "bbox": [
+            20.0,
+            106.0,
+            109.0,
+            204.0
+          ],
+          "digest": "919ff8a341628cd353b1c00ca1586e1b8e79cbae8755f3416344c90b4738afcf",
+          "pixels": 15008,
+          "predicted_iou": 0.9784435033798218,
+          "stability": 0.9690526127815247
+        },
+        {
+          "bbox": [
+            21.0,
+            308.0,
+            82.0,
+            168.0
+          ],
+          "digest": "3d27b08a17329eef42559fac69485a38c7588b3b016005afb3a97aaf1f134e44",
+          "pixels": 9220,
+          "predicted_iou": 0.9747465252876282,
+          "stability": 0.9846187233924866
+        },
+        {
+          "bbox": [
+            533.0,
+            3.0,
+            103.0,
+            315.0
+          ],
+          "digest": "c682d86e5229203e0febd05f5de5b5f6ce18fa0a6d847b422e603037948446fd",
+          "pixels": 21167,
+          "predicted_iou": 0.9730077385902405,
+          "stability": 0.95268315076828
+        },
+        {
+          "bbox": [
+            412.0,
+            169.0,
+            141.0,
+            100.0
+          ],
+          "digest": "089f7805ef028c7618ce620f7e6017c7e39fdaca34777418cf331315e275e5dc",
+          "pixels": 11926,
+          "predicted_iou": 0.9678395390510559,
+          "stability": 0.9705566763877869
+        },
+        {
+          "bbox": [
+            425.0,
+            59.0,
+            155.0,
+            114.0
+          ],
+          "digest": "7d32a5f2f88b9d533d027b4b2b98d60e506d37512394ab018d6c1bc00f381e03",
+          "pixels": 14875,
+          "predicted_iou": 0.9638786315917969,
+          "stability": 0.9728779792785645
+        },
+        {
+          "bbox": [
+            388.0,
+            346.0,
+            128.0,
+            83.0
+          ],
+          "digest": "b35475549a898c37bcc4bb6559af09f01064f29e6561c24b854fac5e8d7d49f2",
+          "pixels": 8760,
+          "predicted_iou": 0.9637405872344971,
+          "stability": 0.9597623944282532
+        },
+        {
+          "bbox": [
+            437.0,
+            3.0,
+            159.0,
+            58.0
+          ],
+          "digest": "beacd7325724fd093d0401a99b5e22bdaa7fcb07458e64f3257b0febe325ed4e",
+          "pixels": 8116,
+          "predicted_iou": 0.9637119770050049,
+          "stability": 0.9606918096542358
+        },
+        {
+          "bbox": [
+            402.0,
+            263.0,
+            129.0,
+            91.0
+          ],
+          "digest": "cbb361c63af6c87d4b9a7d78aa842f93d7a9f94478e0621800e358f7aa58f4f3",
+          "pixels": 9776,
+          "predicted_iou": 0.9542620182037354,
+          "stability": 0.9632567167282104
+        },
+        {
+          "bbox": [
+            389.0,
+            3.0,
+            209.0,
+            426.0
+          ],
+          "digest": "9f5b0a8584bc422afbac472879689e44bc9e4ad23dce5ac460783e28fda27d3f",
+          "pixels": 58578,
+          "predicted_iou": 0.9466671347618103,
+          "stability": 0.9554226398468018
+        },
+        {
+          "bbox": [
+            3.0,
+            308.0,
+            263.0,
+            168.0
+          ],
+          "digest": "0f18ad2c1a28a0b0a63c3d8904f26167c22b40082749379f277bff694866f555",
+          "pixels": 9216,
+          "predicted_iou": 0.9337610602378845,
+          "stability": 0.9644669890403748
+        },
+        {
+          "bbox": [
+            244.0,
+            283.0,
+            99.0,
+            104.0
+          ],
+          "digest": "a03707f0f6c101bbca27913484d21d09474648a04f3ea9ae39945b7b10e942ae",
+          "pixels": 4823,
+          "predicted_iou": 0.8775674700737,
+          "stability": 0.9502729177474976
+        },
+        {
+          "bbox": [
+            244.0,
+            327.0,
+            98.0,
+            60.0
+          ],
+          "digest": "cc67f2a000976d38ae2dc31c69988932c7f7ecbac46ac36cdc50449163487aeb",
+          "pixels": 4814,
+          "predicted_iou": 0.8759579062461853,
+          "stability": 0.962614893913269
+        },
+        {
+          "bbox": [
+            495.0,
+            10.0,
+            45.0,
+            8.0
+          ],
+          "digest": "0d1ff28b85704c71b3a5150a2e41c026a4a08df2c1a00f9322244a83fe88b6e9",
+          "pixels": 339,
+          "predicted_iou": 0.8359883427619934,
+          "stability": 0.9567723274230957
+        },
+        {
+          "bbox": [
+            467.0,
+            185.0,
+            35.0,
+            19.0
+          ],
+          "digest": "3d933a7b75ede3379af44dd7832a744df264d37c3a1f22e5de62fe03ffc5b6c3",
+          "pixels": 626,
+          "predicted_iou": 0.8041633367538452,
+          "stability": 0.9593750238418579
+        }
+      ],
+      "retained": 15
+    },
+    "scene0620_00:0": {
+      "arrays": {
+        "bytes": 6205,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0620_00_0.npz",
+        "sha256": "64b929517e01495c92073874d422d9e45ab95684962bf1114cc6f61fe8216193"
+      },
+      "elapsed_seconds": 0.6081363700795919,
+      "generated": 4,
+      "metadata": [
+        {
+          "bbox": [
+            186.0,
+            119.0,
+            444.0,
+            356.0
+          ],
+          "digest": "dd2aa3e5d7925c4adb05b01bc7342ce6e8157b0256538514d6d42fd445ce2d14",
+          "pixels": 99450,
+          "predicted_iou": 0.9763873815536499,
+          "stability": 0.9709160923957825
+        },
+        {
+          "bbox": [
+            16.0,
+            6.0,
+            168.0,
+            468.0
+          ],
+          "digest": "7122deaa3e01ea40fa09b87f02efa33f66a0e396ffb2e765c2407da1c118c42d",
+          "pixels": 45084,
+          "predicted_iou": 0.9739705920219421,
+          "stability": 0.9564222693443298
+        },
+        {
+          "bbox": [
+            105.0,
+            8.0,
+            524.0,
+            90.0
+          ],
+          "digest": "2afa6f39cf261343e90579b8e589543e0c427e4f42f0a62ac46ef0e7e1ce0091",
+          "pixels": 34719,
+          "predicted_iou": 0.9571928977966309,
+          "stability": 0.9513571262359619
+        },
+        {
+          "bbox": [
+            592.0,
+            135.0,
+            32.0,
+            131.0
+          ],
+          "digest": "e35d141d05563d7d5611bc1bf5279c568804b7c5ebe1c347fe9b3f1d8e1e07fc",
+          "pixels": 2272,
+          "predicted_iou": 0.9384123682975769,
+          "stability": 0.9551917314529419
+        }
+      ],
+      "retained": 4
+    },
+    "scene0620_00:349": {
+      "arrays": {
+        "bytes": 6965,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/real_proposals/masks/scene0620_00_349.npz",
+        "sha256": "ebf2a6dd91a71df4db117f7ee2a599142018612c1a119ad2d715ae4e343ef5ea"
+      },
+      "elapsed_seconds": 0.6027601689565927,
+      "generated": 8,
+      "metadata": [
+        {
+          "bbox": [
+            8.0,
+            117.0,
+            483.0,
+            271.0
+          ],
+          "digest": "eb90d46b9f96be40e3cfc97a4386e0a1bf2cf2db11967eec954b1cbc815145ab",
+          "pixels": 87671,
+          "predicted_iou": 0.9886094331741333,
+          "stability": 0.9629911184310913
+        },
+        {
+          "bbox": [
+            8.0,
+            4.0,
+            531.0,
+            184.0
+          ],
+          "digest": "008299fded13791e63fb7291a9d75ece9a9e2b44466464171ee9906d40290383",
+          "pixels": 66652,
+          "predicted_iou": 0.9810580015182495,
+          "stability": 0.9686976671218872
+        },
+        {
+          "bbox": [
+            424.0,
+            263.0,
+            207.0,
+            119.0
+          ],
+          "digest": "2d3f1366fce2199dba1bb1b71befd2982bc4d4b913c17572e9716f2b410e7d67",
+          "pixels": 14591,
+          "predicted_iou": 0.9685693979263306,
+          "stability": 0.9602280259132385
+        },
+        {
+          "bbox": [
+            552.0,
+            111.0,
+            72.0,
+            135.0
+          ],
+          "digest": "4c0c2f14a97985eaf23f16d325b2c813c75c2329a8d7c504386f5ddfbdb96ec1",
+          "pixels": 8177,
+          "predicted_iou": 0.9632012248039246,
+          "stability": 0.9645219445228577
+        },
+        {
+          "bbox": [
+            566.0,
+            6.0,
+            57.0,
+            89.0
+          ],
+          "digest": "f01eed9830081e0d0f8fd33dcf32dfa8d46db07fbb0dd478cf3f2fb45e869db6",
+          "pixels": 4787,
+          "predicted_iou": 0.9627515077590942,
+          "stability": 0.9705640077590942
+        },
+        {
+          "bbox": [
+            8.0,
+            385.0,
+            131.0,
+            88.0
+          ],
+          "digest": "21be2d32c72a1e9f0566e5ca42fdc7e83993ac6f4cf6aa2f09dc39e35324f196",
+          "pixels": 5946,
+          "predicted_iou": 0.9593665599822998,
+          "stability": 0.9771970510482788
+        },
+        {
+          "bbox": [
+            146.0,
+            361.0,
+            77.0,
+            113.0
+          ],
+          "digest": "4f01882648f1842157c60a4ba21f85a9de4c5fabbb423e1f781fbc5ae780ae14",
+          "pixels": 6861,
+          "predicted_iou": 0.8609336018562317,
+          "stability": 0.9541375637054443
+        },
+        {
+          "bbox": [
+            543.0,
+            98.0,
+            82.0,
+            12.0
+          ],
+          "digest": "7807aa288f377ba5853fc8e3cc491322ecf77bd4d651b1c007dc1511c62821be",
+          "pixels": 710,
+          "predicted_iou": 0.8400657176971436,
+          "stability": 0.9628610610961914
+        }
+      ],
+      "retained": 8
+    }
+  },
+  "identity": "d8d1bd8720c60b33886225acbd623606fff6b6d03b4ffc5270ef93de1867b979",
+  "image_count": 8,
+  "inputs_locked_before_GT_matching": true,
+  "job": "58570136bd98587ce0d7fc8aa26ddc9f162bfcd61d97b0d1c28ab35b6cc70a22",
+  "no_GT_prompts": true,
+  "peak_allocated_bytes": 3258174464,
+  "peak_reserved_bytes": 5140119552,
+  "repo_HEAD": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+  "settings": {
+    "box_nms_thresh": 0.7,
+    "crop_n_layers": 0,
+    "crop_n_points_downscale_factor": 1,
+    "crop_nms_thresh": 0.7,
+    "crop_overlap_ratio": 0.3413333333333333,
+    "mask_threshold": 0.0,
+    "min_mask_region_area": 0,
+    "multimask_output": true,
+    "output_mode": "binary_mask",
+    "points_per_batch": 64,
+    "points_per_side": 16,
+    "pred_iou_thresh": 0.8,
+    "stability_score_offset": 1.0,
+    "stability_score_thresh": 0.95,
+    "use_m2m": false
+  },
+  "status": "COMPLETE",
+  "tracked_sources_clean": true,
+  "worker_library_isolation": {
+    "CUDA_resolution": "isolated_torch_wheel_RPATH",
+    "LD_LIBRARY_PATH_removed": true
+  }
+}

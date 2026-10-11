@@ -1,0 +1,185 @@
+{
+  "any_qualified": true,
+  "arms": {
+    "FG1_VIEW": {
+      "A": 0.4043560606060606,
+      "C": 0.42960858585858586,
+      "CE": 3.945074573379976,
+      "M": 0.5609848484848484,
+      "NLL": 4.172773031591867,
+      "categories": 28,
+      "corrections": 16,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 13,
+      "net_corrections": 3,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/dev_0250.json",
+      "per_family_A": {
+        "scene0105": 0.4090909090909091,
+        "scene0143": 0.5925925925925926,
+        "scene0211": 0.37499999999999994,
+        "scene0620": 0.24074074074074078
+      },
+      "recognition": "7fe1b565e994fc1e8cdfa2e2bc07c95ead7b0daad658dd6a7d1b5c98271ea815",
+      "step": 250,
+      "variant_records": 276
+    },
+    "FG2_SURFACE": {
+      "A": 0.4689078282828283,
+      "C": 0.4851641414141414,
+      "CE": 3.945984286744687,
+      "M": 0.5932269119769119,
+      "NLL": 4.1727258175636575,
+      "categories": 28,
+      "corrections": 26,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 9,
+      "net_corrections": 17,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG2_SURFACE/dev_2000.json",
+      "per_family_A": {
+        "scene0105": 0.4242424242424242,
+        "scene0143": 0.6481481481481481,
+        "scene0211": 0.39583333333333337,
+        "scene0620": 0.4074074074074074
+      },
+      "recognition": "2011d9573933d352e46aa8f536f3362146de480b9e8a3664820dd2d5c36ef5fa",
+      "step": 2000,
+      "variant_records": 276
+    },
+    "FG3_AUX": {
+      "A": 0.468287037037037,
+      "C": 0.4801136363636363,
+      "CE": 3.942229408078423,
+      "M": 0.595806277056277,
+      "NLL": 4.169162786739443,
+      "categories": 28,
+      "corrections": 26,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 9,
+      "net_corrections": 17,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG3_AUX/dev_1000.json",
+      "per_family_A": {
+        "scene0105": 0.5,
+        "scene0143": 0.6481481481481481,
+        "scene0211": 0.3916666666666666,
+        "scene0620": 0.33333333333333326
+      },
+      "recognition": "9876cf83b6c2509ffbdd78971580eac32edcead99eea852b2ef9fe3bc8a282c3",
+      "step": 1000,
+      "variant_records": 276
+    },
+    "FG4_ROUTE": {
+      "A": 0.46724537037037034,
+      "C": 0.4863636363636364,
+      "CE": 3.934707764714254,
+      "M": 0.5851911976911978,
+      "NLL": 4.161238418670014,
+      "categories": 28,
+      "corrections": 21,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 7,
+      "net_corrections": 14,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG4_ROUTE/dev_2000.json",
+      "per_family_A": {
+        "scene0105": 0.5,
+        "scene0143": 0.5925925925925926,
+        "scene0211": 0.3875,
+        "scene0620": 0.38888888888888884
+      },
+      "recognition": "6972158861d807065370e9de23d604ad3e41dd87dc2e87048b89272ef8d60719",
+      "step": 2000,
+      "variant_records": 276
+    }
+  },
+  "attempt": "1791682758539983264",
+  "checkpoints": {
+    "FG1_VIEW": {
+      "bytes": 2497904,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/selected.pt",
+      "sha256": "1700780222a0d209205a17d045fe7de6ff2d38a91f3ea5711c269a45fdd3a87c"
+    },
+    "FG2_SURFACE": {
+      "bytes": 2499568,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG2_SURFACE/selected.pt",
+      "sha256": "e69531a46ec749d0306665f387048a39ea6ce8ab30e049370b4d1a7cd8c03e47"
+    },
+    "FG3_AUX": {
+      "bytes": 2635196,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG3_AUX/selected.pt",
+      "sha256": "6cea2d02b8ac3529bc0f6e9f73adb3f6b5f0e08956a2f9faf7723af6cce3c767"
+    },
+    "FG4_ROUTE": {
+      "bytes": 2636028,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG4_ROUTE/selected.pt",
+      "sha256": "32d2e3c63e9b36f191901eedea429c47dc03d4a42e7f3c03d878e7928a713ff9"
+    }
+  },
+  "identity": "0bcb968a005fb9391d3c73369746995cc51a265eee04f7eec5f718f250f13176",
+  "nominee": "FG2_SURFACE",
+  "phase": "repeat",
+  "qualified": {
+    "FG1_VIEW": true,
+    "FG2_SURFACE": true,
+    "FG3_AUX": true,
+    "FG4_ROUTE": true
+  },
+  "same_nominee_qualified": true,
+  "seed": 29,
+  "selection_only_DEV_base": true,
+  "selection_uses_runtime": false,
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "stage_elapsed_seconds": 4113.931314378977,
+  "status": "COMPLETE",
+  "winner": {
+    "A": 0.4689078282828283,
+    "C": 0.4851641414141414,
+    "CE": 3.945984286744687,
+    "M": 0.5932269119769119,
+    "NLL": 4.1727258175636575,
+    "branch": "FG2_SURFACE",
+    "categories": 28,
+    "checkpoint": {
+      "bytes": 2499568,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG2_SURFACE/selected.pt",
+      "sha256": "e69531a46ec749d0306665f387048a39ea6ce8ab30e049370b4d1a7cd8c03e47"
+    },
+    "corrections": 26,
+    "families": 4,
+    "full200_competitors": true,
+    "harm": 9,
+    "net_corrections": 17,
+    "order": 1,
+    "original_objects": 69,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG2_SURFACE/dev_2000.json",
+    "per_family_A": {
+      "scene0105": 0.4242424242424242,
+      "scene0143": 0.6481481481481481,
+      "scene0211": 0.39583333333333337,
+      "scene0620": 0.4074074074074074
+    },
+    "recognition": "2011d9573933d352e46aa8f536f3362146de480b9e8a3664820dd2d5c36ef5fa",
+    "step": 2000,
+    "variant_records": 276
+  },
+  "worker_cost": {
+    "FP32": true,
+    "GPU": "NVIDIA A40",
+    "TF32": false,
+    "loader_workload": {
+      "local_phi_calls": 1593,
+      "local_phi_vectors": 101952,
+      "ordinary_FC_view_readouts": 1593,
+      "parent_loader_calls": 219
+    },
+    "physical_image_encodings": 0,
+    "sparse_hits": 262405,
+    "sparse_misses": 219
+  }
+}

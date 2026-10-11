@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/preservation_routing/sam2_worker.py", line 10, in <module>
+    import torch
+  File "/mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/envs/sam2/lib/python3.10/site-packages/torch/__init__.py", line 367, in <module>
+    from torch._C import *  # noqa: F403
+ImportError: /mnt/shared/capacity/node101/ww/ovimap-samv-local-probe-v1/envs/sam2/lib/python3.10/site-packages/torch/lib/../../nvidia/cusparse/lib/libcusparse.so.12: undefined symbol: __nvJitLinkComplete_12_4, version libnvJitLink.so.12

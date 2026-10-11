@@ -1,0 +1,101 @@
+{
+  "GT_targets_forward": false,
+  "identity": "7cd9ba8aa06d25eeec4e04221088cf6d2b5342b5f88c8aa51f6a51f448639dc7",
+  "mass_means": {
+    "delta_norm": 0.207798987078379,
+    "group_norm_proxy": 0.2842155704159511,
+    "local_mass": 0.7466637061558442,
+    "negative_mass": 0.1566952963021322,
+    "null_mass": 0.25333629314335854,
+    "positive_mass": 0.5899684082158831,
+    "unknown_mass": 0.0
+  },
+  "membership": {
+    "AUROC": 0.5,
+    "Brier": 0.25,
+    "accuracy": 0.7855763130066972,
+    "bins": [
+      {
+        "lower": 0.0,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.1
+      },
+      {
+        "lower": 0.1,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.2
+      },
+      {
+        "lower": 0.2,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.3
+      },
+      {
+        "lower": 0.3,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.4
+      },
+      {
+        "lower": 0.4,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.5
+      },
+      {
+        "lower": 0.5,
+        "mean_probability": 0.5,
+        "n": 70925,
+        "target_frequency": 0.7855763130066972,
+        "upper": 0.6
+      },
+      {
+        "lower": 0.6,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.7
+      },
+      {
+        "lower": 0.7,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.8
+      },
+      {
+        "lower": 0.8,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.9
+      },
+      {
+        "lower": 0.9,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 1.0
+      }
+    ],
+    "known": 70925,
+    "negative": 15208,
+    "positive": 55717,
+    "status": "DEFINED"
+  },
+  "method": "S29_FG2_SURFACE",
+  "original_objects": 101,
+  "role": "old_H",
+  "status": "COMPLETE",
+  "summary": [],
+  "used_for_selection": false,
+  "variant_records": 404
+}

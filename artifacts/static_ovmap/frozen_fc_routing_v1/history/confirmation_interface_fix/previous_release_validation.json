@@ -1,0 +1,139 @@
+{
+  "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=.:src:/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001/tooling/test_dependencies /home/ww/miniconda3/envs/oviovo-radseg/bin/python -m pytest -q tests/test_frozen_fc_routing.py",
+  "cwd": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree",
+  "full_repository_suite": false,
+  "identity": "70ade9489e02649d6be2516919d4e04abe05c86827e1a4539f7def6305e24b33",
+  "observed_UTC": "2026-10-11T04:12:23.723149+00:00",
+  "observed_exit_code": 0,
+  "source_files": [
+    {
+      "bytes": 70,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/__init__.py",
+      "sha256": "74fb8a570163b04312c2cb825900cd698fa2da1619eceb188cce66202393ae13"
+    },
+    {
+      "bytes": 8274,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/binding.py",
+      "sha256": "20bfa73fc0cf6ed503ce50aab4fc69dd19c77a66922aa3b6823e8333e4920fb2"
+    },
+    {
+      "bytes": 1246,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/common.py",
+      "sha256": "13c23093459f069634c7e5cb14e149576fa36f6cb9156881b3a7ee161c04aecb"
+    },
+    {
+      "bytes": 1038,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/confirmation.py",
+      "sha256": "7927521f5eec352f2b8e3363d383aeb878e210faf9528a22a3fa122316a799b4"
+    },
+    {
+      "bytes": 7611,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/data.py",
+      "sha256": "ae830860bf02541d2163376f5a791728987978f0406ba09ef48a1af6daee0e8c"
+    },
+    {
+      "bytes": 7624,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/diagnostics.py",
+      "sha256": "a8fe1bd9bc2f49c2236e852c57258a0cb0bddfbcb940286ae2536c690a0fd2c4"
+    },
+    {
+      "bytes": 6950,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/engineering.py",
+      "sha256": "8ed73f42131a202fe1bd31d24c9df0e2e38ee0b87c353bd4eab97dd0560cc879"
+    },
+    {
+      "bytes": 10933,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/evaluation.py",
+      "sha256": "76fd18fae292d7df1e44d75a6475040f8a9b002ad9bfe73d14226e4fc4abdb92"
+    },
+    {
+      "bytes": 3938,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/export.py",
+      "sha256": "8637d05395dd623d4cc11cb1e5f7d552f9e223abe415a21096c60f7a763f3bff"
+    },
+    {
+      "bytes": 7123,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/holdout2.py",
+      "sha256": "372d98ec3488f7c1391b882b66fd62ca28e2927fe7e3f1816b4cfbb6a9e423e6"
+    },
+    {
+      "bytes": 4085,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/integration.py",
+      "sha256": "294fd4946a024502504bd3bf4387ad8f3a81701be946a827cd436ddf958afd1c"
+    },
+    {
+      "bytes": 1652,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/losses.py",
+      "sha256": "aaf1e1d598d4f754707416f6354394d8c05dc703a75f826eae7b02ad430deb8d"
+    },
+    {
+      "bytes": 9138,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/mechanisms.py",
+      "sha256": "d432c9fa03af93c22168b0025d9fc283183e623c7acc9e4372c16562997b7a32"
+    },
+    {
+      "bytes": 7407,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/models.py",
+      "sha256": "585394271a31a22599d43c749e3dd5c8ab56dd655fc0f25788f218388d4a38fe"
+    },
+    {
+      "bytes": 10183,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/prediction.py",
+      "sha256": "fb760597238bedc71fdebf79258ddbfd211fee36c07bf16bed48bc96cd143a3d"
+    },
+    {
+      "bytes": 5262,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/prior_audit.py",
+      "sha256": "25c52c91637d55dfd50272f8bc737f5b74a8a52f2ba45f7b0305526914b733b0"
+    },
+    {
+      "bytes": 18684,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/real_proposals.py",
+      "sha256": "feb6d88283876a0dc36f17b3161aa761e8f962892add98ae8f1533a5f127d0c2"
+    },
+    {
+      "bytes": 3995,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/recognition.py",
+      "sha256": "d39bc3465f003da678c6b913b1ef181837d4c321d66bfdba86cb9b5acc6deb13"
+    },
+    {
+      "bytes": 30621,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/reporting.py",
+      "sha256": "a8d3910429a927e7e7e31984cd3cdae4cc2385326b5acada85b0e9d8a11a5f6a"
+    },
+    {
+      "bytes": 397,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/resources.py",
+      "sha256": "5b5df0f8a1eb70a9996b18e28bd789b9850712439b9492ff32dbad41eea31e2e"
+    },
+    {
+      "bytes": 8756,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/runner.py",
+      "sha256": "1736efbed4efaf56483d56a2e4602c66492dbcea8cae50b96922f5daed3ec64a"
+    },
+    {
+      "bytes": 1475,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/selection.py",
+      "sha256": "89880899aba4f1e637ad869666c2f9584678d3e0595c9078d8194e5e0281b587"
+    },
+    {
+      "bytes": 11938,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/training.py",
+      "sha256": "e643a3ea4bc9ad8fe668a50e3998fbba20d8c55d9ced818bb313b0c8658057d6"
+    },
+    {
+      "bytes": 5889,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/transfer.py",
+      "sha256": "5da9e612fb4d801402f66b30bc1a92eb6233f12cbf2c87512773fc3189c4e2a4"
+    }
+  ],
+  "status": "COMPLETE",
+  "stdout": "12 passed in 2.17s",
+  "test_groups": 12,
+  "test_source": {
+    "bytes": 9843,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/tests/test_frozen_fc_routing.py",
+    "sha256": "138dc9feba3dbdf77f3d78e15a4b74a01c45b8d2df3fa3264d85eabda21d4b50"
+  },
+  "tool_session_id": 73997
+}

@@ -1,0 +1,39 @@
+{
+  "all_four_mandatory": true,
+  "arm_receipts": {
+    "FG1_VIEW": "2d9524341a742281f57ba40797f2830e6eb6b9b49d4b25d7b6c1b397b13ae8aa",
+    "FG2_SURFACE": "ec32ad3ab15a5acc94f9e81e215879ca06571678e98f3e0a4aa74c99b58b0680",
+    "FG3_AUX": "a508e1d2a4a917e448d2730295b1985ad9ca50d34ed3e9979302921887733aac",
+    "FG4_ROUTE": "74315bde92c5522c34eea629de0aa673acd71941b2792e4df842b777845e346d"
+  },
+  "arms": [
+    "FG1_VIEW",
+    "FG2_SURFACE",
+    "FG3_AUX",
+    "FG4_ROUTE"
+  ],
+  "attempt": "1791695872788404205",
+  "frozen_after": "4bfc559a3f3bbbe1adc3318fc8abed99384d5585c3d9efccac351eb4ca68b057",
+  "frozen_before": "4bfc559a3f3bbbe1adc3318fc8abed99384d5585c3d9efccac351eb4ca68b057",
+  "identity": "f4afeb46b1276696b5bc94d642f781ceb129950a236c933d30f5d9a6b240fc62",
+  "phase": "train",
+  "scientific_updates": 8000,
+  "seed": 17,
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "stage_elapsed_seconds": 20.270484675187618,
+  "status": "COMPLETE",
+  "worker_cost": {
+    "FP32": true,
+    "GPU": "NVIDIA A40",
+    "TF32": false,
+    "loader_workload": {
+      "local_phi_calls": 0,
+      "local_phi_vectors": 0,
+      "ordinary_FC_view_readouts": 0,
+      "parent_loader_calls": 0
+    },
+    "physical_image_encodings": 0,
+    "sparse_hits": 0,
+    "sparse_misses": 0
+  }
+}

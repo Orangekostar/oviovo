@@ -1,0 +1,104 @@
+{
+  "columns": [
+    "cohort",
+    "method",
+    "seed",
+    "status",
+    "APall_pct",
+    "AP50_pct",
+    "AP25_pct",
+    "mIoU_pct",
+    "mAcc_pct"
+  ],
+  "identity": "28cc3ce551d8fdf3988f33611782936cc177f5c19f521a12dcf84dfef6f68eab",
+  "rows": [
+    {
+      "AP25_pct": 38.85181809931575,
+      "AP50_pct": 23.343211700464206,
+      "APall_pct": 10.762189067799776,
+      "cohort": "replica8",
+      "mAcc_pct": 37.13539318716632,
+      "mIoU_pct": 29.83165743606282,
+      "method": "S29_FG1_VIEW",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    },
+    {
+      "AP25_pct": 41.24931937565474,
+      "AP50_pct": 25.274704204873377,
+      "APall_pct": 11.057021764252841,
+      "cohort": "replica8",
+      "mAcc_pct": 38.71902656002745,
+      "mIoU_pct": 31.312066491604057,
+      "method": "S29_FG2_SURFACE",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    },
+    {
+      "AP25_pct": 43.249966247463895,
+      "AP50_pct": 26.64760984861236,
+      "APall_pct": 11.85076441563438,
+      "cohort": "replica8",
+      "mAcc_pct": 40.21378428537146,
+      "mIoU_pct": 32.433654649215185,
+      "method": "S29_FG3_AUX",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    },
+    {
+      "AP25_pct": 40.64579958079723,
+      "AP50_pct": 24.564276515279023,
+      "APall_pct": 10.924838489708455,
+      "cohort": "replica8",
+      "mAcc_pct": 38.468053341893345,
+      "mIoU_pct": 31.03119507029402,
+      "method": "S29_FG4_ROUTE",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    },
+    {
+      "AP25_pct": 25.525092457217845,
+      "AP50_pct": 17.698515905081578,
+      "APall_pct": 8.086072047426827,
+      "cohort": "scannet_cf18",
+      "mAcc_pct": 29.449987947658723,
+      "mIoU_pct": 20.227601086447415,
+      "method": "S29_FG1_VIEW",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    },
+    {
+      "AP25_pct": 26.695682185784175,
+      "AP50_pct": 18.255522406564005,
+      "APall_pct": 8.263285246997901,
+      "cohort": "scannet_cf18",
+      "mAcc_pct": 29.86092805410999,
+      "mIoU_pct": 20.76068399160518,
+      "method": "S29_FG2_SURFACE",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    },
+    {
+      "AP25_pct": 26.153916298789476,
+      "AP50_pct": 17.83652100443763,
+      "APall_pct": 8.137104750590934,
+      "cohort": "scannet_cf18",
+      "mAcc_pct": 29.62468803008847,
+      "mIoU_pct": 20.540458601421623,
+      "method": "S29_FG3_AUX",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    },
+    {
+      "AP25_pct": 26.319802661366193,
+      "AP50_pct": 17.834556246345716,
+      "APall_pct": 8.13549460282846,
+      "cohort": "scannet_cf18",
+      "mAcc_pct": 29.606399806459038,
+      "mIoU_pct": 20.520004358454923,
+      "method": "S29_FG4_ROUTE",
+      "seed": 29,
+      "status": "MEASURED_OFFICIAL_ORDERED_POOL"
+    }
+  ]
+}

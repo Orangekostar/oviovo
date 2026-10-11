@@ -1,0 +1,215 @@
+{
+  "DEV_NOMINEE": "FG2_SURFACE",
+  "EXPOSED_BENCHMARK_CANDIDATE": null,
+  "benchmark_selection_exploratory": true,
+  "deployment": "N0_UNCHANGED",
+  "gates": {
+    "FG1_VIEW": {
+      "CF_APall_gain_fraction": -0.001508933548497432,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": true,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    },
+    "FG2_SURFACE": {
+      "CF_APall_gain_fraction": -0.0012163131182456044,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": false,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    },
+    "FG3_AUX": {
+      "CF_APall_gain_fraction": -0.000887060831628983,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": false,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    },
+    "FG4_ROUTE": {
+      "CF_APall_gain_fraction": -0.001002079202586048,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": false,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    },
+    "S29_FG1_VIEW": {
+      "CF_APall_gain_fraction": -0.0022311313520523013,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": false,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": false,
+          "ap50": false,
+          "apall": false,
+          "macc": false,
+          "miou": false
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    },
+    "S29_FG2_SURFACE": {
+      "CF_APall_gain_fraction": -0.0004589993563415551,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": true,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": true,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    },
+    "S29_FG3_AUX": {
+      "CF_APall_gain_fraction": -0.0017208043204112178,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": false,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    },
+    "S29_FG4_ROUTE": {
+      "CF_APall_gain_fraction": -0.0017369057980359537,
+      "checks": {
+        "CF_vs_D2": {
+          "AP50_ge": false,
+          "APall_gt": false
+        },
+        "replica8": {
+          "ap25": true,
+          "ap50": false,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        },
+        "scannet_cf18": {
+          "ap25": true,
+          "ap50": true,
+          "apall": false,
+          "macc": true,
+          "miou": true
+        }
+      },
+      "material_CF_gain": false,
+      "passed": false
+    }
+  },
+  "identity": "5a424467208020cdfdba60cab9a3b6c2b762f6ad677b341a3551e0d8567f81d9",
+  "latency_gate": false,
+  "repeat_map_pass": null,
+  "research_retained": "REF_G1",
+  "same_architecture_repeat": null,
+  "scientific_status": "COMPLETE_NO_TARGET_GAIN",
+  "status": "COMPLETE_NO_TARGET_GAIN"
+}

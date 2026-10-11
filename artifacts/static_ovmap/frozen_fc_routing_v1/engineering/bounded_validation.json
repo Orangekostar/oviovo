@@ -1,0 +1,30 @@
+{
+  "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=.:src:/mnt/shared/ww/ovimap-learned-object-readout-v1/attempt_001/tooling/test_dependencies /home/ww/miniconda3/envs/oviovo-radseg/bin/python -m pytest -q tests/test_frozen_fc_routing.py",
+  "full_repo_suite": false,
+  "groups": [
+    "lineage_and_split",
+    "ordinary_FC_identity",
+    "frozen_phi_input_gradient",
+    "eta_zero_missing_local_rho_zero",
+    "grouping_masking_permutation",
+    "matched_initialization_and_draws",
+    "BCE_gradient_isolation",
+    "mass_and_norm_interventions",
+    "DEV_selection_state_graph",
+    "actual_map_registry_rank_and_two_scene_scorer_parity",
+    "checkpoint_resume",
+    "strict_export_and_coverage"
+  ],
+  "identity": "0fd01256d503a79d5d718eb72dcc9453a4d55a791979791530eab3bd672c4087",
+  "observed_by": "PRIMARY_AGENT_TOOL_EXECUTION",
+  "observed_exit_code": 0,
+  "observed_stdout": "12 passed in 2.67s",
+  "passed": 12,
+  "production_test_groups": 12,
+  "status": "COMPLETE",
+  "test_source": {
+    "bytes": 9843,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/tests/test_frozen_fc_routing.py",
+    "sha256": "138dc9feba3dbdf77f3d78e15a4b74a01c45b8d2df3fa3264d85eabda21d4b50"
+  }
+}

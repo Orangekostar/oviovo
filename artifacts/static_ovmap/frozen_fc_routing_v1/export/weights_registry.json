@@ -1,0 +1,250 @@
+{
+  "FC_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+  "FC_reference": {
+    "model_root": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/model",
+    "operator_root": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/ovrcoat/code",
+    "python": "/home/ww/miniconda3/envs/oviovo-radseg/bin/python",
+    "receipt": "/mnt/shared/ww/ovimap-a7-evidence-upgrade-wave1/assets/fc_frozen/download_receipt.json"
+  },
+  "FP32": true,
+  "MA_dependency": false,
+  "R_dependency": false,
+  "frozen_FC_parameters": 351772609,
+  "frozen_backbone_included": false,
+  "frozen_text_elements": 153600,
+  "heads": {
+    "FG1_VIEW": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "VIEW",
+        "membership_loss": false
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 199553,
+      "observed_nonzero_gradient_parameters_at_last_update": 199553,
+      "seed": 17,
+      "selected_step": 500,
+      "training_checkpoint": {
+        "bytes": 2498352,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG1_VIEW/selected.pt",
+        "sha256": "ef36d035384c5f39a49066ce8bd8001c18576831be6165cf9b13759659dc4532"
+      },
+      "unused_membership_parameters": 16641,
+      "weights": {
+        "bytes": 871856,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/FG1_VIEW.pt",
+        "relative_path": "weights/FG1_VIEW.pt",
+        "sha256": "82bf24eae1ba3b6421ec881256f7e9cf71f612f2dbda9732e3000d16ae4b138d"
+      }
+    },
+    "FG2_SURFACE": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": false
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 199553,
+      "observed_nonzero_gradient_parameters_at_last_update": 199553,
+      "seed": 17,
+      "selected_step": 1000,
+      "training_checkpoint": {
+        "bytes": 2498800,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG2_SURFACE/selected.pt",
+        "sha256": "2d0358a9ad6c3703b85415d27d4a9c2754d6612d86f4c012dea3529122282539"
+      },
+      "unused_membership_parameters": 16641,
+      "weights": {
+        "bytes": 871995,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/FG2_SURFACE.pt",
+        "relative_path": "weights/FG2_SURFACE.pt",
+        "sha256": "de7fc82edba5440d9c338f5253ecd3600a340271089600c9ff2d286e2711d963"
+      }
+    },
+    "FG3_AUX": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 216194,
+      "observed_nonzero_gradient_parameters_at_last_update": 216194,
+      "seed": 17,
+      "selected_step": 1000,
+      "training_checkpoint": {
+        "bytes": 2635196,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG3_AUX/selected.pt",
+        "sha256": "10c3f473071f380bf74b48af4881eab39f7d99bb6c8637b2faabedc4063eb8b9"
+      },
+      "unused_membership_parameters": 0,
+      "weights": {
+        "bytes": 871319,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/FG3_AUX.pt",
+        "relative_path": "weights/FG3_AUX.pt",
+        "sha256": "0d6ef12a8171c9285f4eb7d0a6417d81423f710061b316fa33299346a80f6f59"
+      }
+    },
+    "FG4_ROUTE": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": true,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 216194,
+      "observed_nonzero_gradient_parameters_at_last_update": 216194,
+      "seed": 17,
+      "selected_step": 1500,
+      "training_checkpoint": {
+        "bytes": 2635644,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG4_ROUTE/selected.pt",
+        "sha256": "8a45fd4b57305a31a260121c8f93170c1573ddcef0e706dbd01e82496fe031a3"
+      },
+      "unused_membership_parameters": 0,
+      "weights": {
+        "bytes": 871945,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/FG4_ROUTE.pt",
+        "relative_path": "weights/FG4_ROUTE.pt",
+        "sha256": "971335c8bb5d7d0218815bd2073e82bb13e062185f3099177acc4c82f4ef080f"
+      }
+    },
+    "S29_FG1_VIEW": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "VIEW",
+        "membership_loss": false
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 199553,
+      "observed_nonzero_gradient_parameters_at_last_update": 199553,
+      "seed": 29,
+      "selected_step": 250,
+      "training_checkpoint": {
+        "bytes": 2497904,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/selected.pt",
+        "sha256": "1700780222a0d209205a17d045fe7de6ff2d38a91f3ea5711c269a45fdd3a87c"
+      },
+      "unused_membership_parameters": 16641,
+      "weights": {
+        "bytes": 872020,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/S29_FG1_VIEW.pt",
+        "relative_path": "weights/S29_FG1_VIEW.pt",
+        "sha256": "2fe92884aa4eba511b8b267de23e2054723f0d1a7387850939b8efc7773a2104"
+      }
+    },
+    "S29_FG2_SURFACE": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": false
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 199553,
+      "observed_nonzero_gradient_parameters_at_last_update": 199553,
+      "seed": 29,
+      "selected_step": 2000,
+      "training_checkpoint": {
+        "bytes": 2499568,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG2_SURFACE/selected.pt",
+        "sha256": "e69531a46ec749d0306665f387048a39ea6ce8ab30e049370b4d1a7cd8c03e47"
+      },
+      "unused_membership_parameters": 16641,
+      "weights": {
+        "bytes": 872095,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/S29_FG2_SURFACE.pt",
+        "relative_path": "weights/S29_FG2_SURFACE.pt",
+        "sha256": "501a6ad010fd2951c93a7638fce94c599b994c7fe9215adad82054919a84ea77"
+      }
+    },
+    "S29_FG3_AUX": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 216194,
+      "observed_nonzero_gradient_parameters_at_last_update": 216194,
+      "seed": 29,
+      "selected_step": 1000,
+      "training_checkpoint": {
+        "bytes": 2635196,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG3_AUX/selected.pt",
+        "sha256": "6cea2d02b8ac3529bc0f6e9f73adb3f6b5f0e08956a2f9faf7723af6cce3c767"
+      },
+      "unused_membership_parameters": 0,
+      "weights": {
+        "bytes": 871995,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/S29_FG3_AUX.pt",
+        "relative_path": "weights/S29_FG3_AUX.pt",
+        "sha256": "0380e85548d434ab57e8508851976351c26554d56a24ac5e1b5c28ef8bcf9c0a"
+      }
+    },
+    "S29_FG4_ROUTE": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": true,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 216194,
+      "observed_nonzero_gradient_parameters_at_last_update": 216194,
+      "seed": 29,
+      "selected_step": 2000,
+      "training_checkpoint": {
+        "bytes": 2636028,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG4_ROUTE/selected.pt",
+        "sha256": "32d2e3c63e9b36f191901eedea429c47dc03d4a42e7f3c03d878e7928a713ff9"
+      },
+      "unused_membership_parameters": 0,
+      "weights": {
+        "bytes": 872045,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/export/weights/S29_FG4_ROUTE.pt",
+        "relative_path": "weights/S29_FG4_ROUTE.pt",
+        "sha256": "2203a7c87738dd1e4ee66e89178c6a6165c37d3afbe7ef4a74052cea208394e2"
+      }
+    }
+  },
+  "identity": "2f2e343faaf8830188b46ecb4893b65a3c0d7fa2f7263ec99f313a7fe8f91eb9",
+  "loader": "static_ovmap.frozen_fc_routing.export.load_exported",
+  "predictor_lock": "4d2484fff8cd770307c7dce57a77e86bb2436b9072d17348eb521955180d7946",
+  "status": "COMPLETE",
+  "text_identity": {
+    "bytes": 669136,
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+    "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+  }
+}

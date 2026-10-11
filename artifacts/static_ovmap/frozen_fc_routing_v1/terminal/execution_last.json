@@ -1,0 +1,41 @@
+{
+  "argv": [
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/scripts/evaluation/run_ovimap_frozen_fc_routing.py",
+    "--spec",
+    "configs/static_ovmap/frozen_fc_routing_v1.json",
+    "--parent-root",
+    "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+    "--gpu",
+    "0",
+    "--phase",
+    "all",
+    "--resume"
+  ],
+  "attempt": "1791695872788404205",
+  "deployment": "N0_UNCHANGED",
+  "elapsed_seconds": 1412.7108584819362,
+  "exit_code": 0,
+  "failed_phases": [],
+  "identity": "a2496db9c51911aeea07e66d1df15217c1f833b03fb91a1edcbd1f368ed75674",
+  "phase": "all",
+  "phases": {
+    "bind": "da865a2c58b2bd77ec5b693f0f7fc8a48f20d87b21f7bcfc253399e9bdaa5a2f",
+    "confirm": "b8efec727ed87d13b7d23c7ce6343505ca8366329f50b2f11df0ed3d31859e62",
+    "diagnose": "d4e2180909cbf1153be487c75e2c9d1c480edcf21657c8c78de2a887553e3062",
+    "diagnostic_D1": "11c75a556c0ccd5901263486aab05c38cdeb7e552be8a67dd4e0cb485ac4f459",
+    "engineer": "dcbd7c67e5a78ceaaa966a1ac358d906f688b4e4809600fca180b410c3f9965d",
+    "evaluate": "4eb878714e8771e209ca39bdb9923897d9d67c355c22c526c8251baab6773218",
+    "lock": "1a3af806ffa1eb9f646111b06abbffe9839a42de17e8b4cacb62e2317f47818d",
+    "nominate": "3fc44096666836663c07f24f02a8070336e7a4469bc9d1f33f936aaf7cc3412c",
+    "predict": "5b4d5941bb05299229ba6c2731082a6e42ed1fc4a47e4d6850a63b561210cca0",
+    "prepare": "b467fa85c7ab7b0228390a8d646ece0688be86936bfd09d42df194dae0c8b850",
+    "prior_audit": "77a79751f2a5aa1995f4142ce819240d5d04e1babb2a5969acc9b0135aa4d3fd",
+    "repeat": "977f95edbc02468e9745672d7fe8a41d63fd568380cadd5045d5165c6f053cfd",
+    "report": "c6a28b750c9c95590494831392f466887c57c92e915a7e49f868c8da9d8aff77",
+    "train": "f4afeb46b1276696b5bc94d642f781ceb129950a236c933d30f5d9a6b240fc62"
+  },
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "status": "COMPLETE_NO_TARGET_GAIN"
+}

@@ -1,0 +1,101 @@
+{
+  "GT_targets_forward": false,
+  "identity": "1fa9cda9b49e243fbdfc84ff5df1fe8cb74ef84578757747755e4b43152bdce4",
+  "mass_means": {
+    "delta_norm": 0.19651412155414646,
+    "group_norm_proxy": 0.27007749476608367,
+    "local_mass": 0.7124590939187473,
+    "negative_mass": 0.16131105378526897,
+    "null_mass": 0.28754090925328213,
+    "positive_mass": 0.5511480375794731,
+    "unknown_mass": 0.0
+  },
+  "membership": {
+    "AUROC": 0.9043459557263048,
+    "Brier": 0.0837609607782475,
+    "accuracy": 0.8969897779344378,
+    "bins": [
+      {
+        "lower": 0.0,
+        "mean_probability": 0.06748991059616556,
+        "n": 5738,
+        "target_frequency": 0.1307075636110143,
+        "upper": 0.1
+      },
+      {
+        "lower": 0.1,
+        "mean_probability": 0.1428852693639534,
+        "n": 4792,
+        "target_frequency": 0.2251669449081803,
+        "upper": 0.2
+      },
+      {
+        "lower": 0.2,
+        "mean_probability": 0.24471045834721153,
+        "n": 2344,
+        "target_frequency": 0.3378839590443686,
+        "upper": 0.3
+      },
+      {
+        "lower": 0.3,
+        "mean_probability": 0.3460386941685926,
+        "n": 1376,
+        "target_frequency": 0.40261627906976744,
+        "upper": 0.4
+      },
+      {
+        "lower": 0.4,
+        "mean_probability": 0.4479701956668934,
+        "n": 858,
+        "target_frequency": 0.4988344988344988,
+        "upper": 0.5
+      },
+      {
+        "lower": 0.5,
+        "mean_probability": 0.5508763279094071,
+        "n": 610,
+        "target_frequency": 0.6475409836065574,
+        "upper": 0.6
+      },
+      {
+        "lower": 0.6,
+        "mean_probability": 0.6519062691165093,
+        "n": 665,
+        "target_frequency": 0.7518796992481203,
+        "upper": 0.7
+      },
+      {
+        "lower": 0.7,
+        "mean_probability": 0.7558145403862,
+        "n": 1140,
+        "target_frequency": 0.7947368421052632,
+        "upper": 0.8
+      },
+      {
+        "lower": 0.8,
+        "mean_probability": 0.8635230710731278,
+        "n": 4231,
+        "target_frequency": 0.8588986055306074,
+        "upper": 0.9
+      },
+      {
+        "lower": 0.9,
+        "mean_probability": 0.9648360422058022,
+        "n": 49171,
+        "target_frequency": 0.9493197209737447,
+        "upper": 1.0
+      }
+    ],
+    "known": 70925,
+    "negative": 15208,
+    "positive": 55717,
+    "status": "DEFINED"
+  },
+  "method": "S29_FG3_AUX",
+  "original_objects": 101,
+  "role": "old_H",
+  "status": "COMPLETE",
+  "summary": [],
+  "used_for_selection": false,
+  "variant_records": 404
+}

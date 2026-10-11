@@ -1,0 +1,206 @@
+{
+  "DEV_nominee": "FG2_SURFACE",
+  "H2_plan": "b039887060370dd4250503c7494b60ff0001ae9931023793410be347f4132818",
+  "MA_dependency": false,
+  "R_dependency": false,
+  "activated_full_path": true,
+  "deployment": "N0_UNCHANGED",
+  "enabled_diagnostics": {
+    "D0": "PARENT_R1_R3_VS_FC_ERRORS_AND_MARGINS_NO_NEW_WEIGHTS",
+    "D1": {
+      "all": "ALL_VALID_OBSERVED_SITES",
+      "base_only": true,
+      "conditions": 4,
+      "filtered": "ONLY_KNOWN_TARGET_SITES",
+      "grouping": "SURFACE_EQUAL_OBSERVATION_AND_GROUP_WEIGHTS",
+      "local_mass": 0.25,
+      "no_target": "FC8_FALLBACK_REPORTED_SEPARATELY",
+      "prefix": 8,
+      "roles": [
+        "train",
+        "dev"
+      ],
+      "selects_methods": false,
+      "uses_GT": true
+    },
+    "GT_membership_never_forward_except_D1": true,
+    "intervention_model": "FG4_ROUTE_SELECTED_PER_SEED",
+    "interventions": [
+      "MATCHED_MASS",
+      "MATCHED_MASS_AND_DELTA_NORM",
+      "ALL_RHO_ONE",
+      "ALL_RHO_ZERO"
+    ],
+    "no_diagnostic_full_map_methods": true,
+    "norm_match_eps": 1e-12,
+    "norm_match_zero_unmatched": "UNDEFINED_PAIRED_CELL_NO_SILENT_FALLBACK",
+    "post_lock_scopes": [
+      "TRAIN_BASE",
+      "DEV_BASE",
+      "OLD_H_ALL",
+      "H2_IF_ACTIVE",
+      "REAL_IF_ACTIVE"
+    ],
+    "selection_allowed": false
+  },
+  "heads": {
+    "FG1_VIEW": {
+      "branch": "FG1_VIEW",
+      "checkpoint": {
+        "bytes": 2498352,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG1_VIEW/selected.pt",
+        "sha256": "ef36d035384c5f39a49066ce8bd8001c18576831be6165cf9b13759659dc4532"
+      },
+      "config": {
+        "direct_routing": false,
+        "grouping": "VIEW",
+        "membership_loss": false
+      },
+      "qualified": true,
+      "scientific_input_identity": "10bef526451cd0809772da198742c8f97344b2e807ea3131aa96896c638d0ae7",
+      "seed": 17,
+      "selected_step": 500
+    },
+    "FG2_SURFACE": {
+      "branch": "FG2_SURFACE",
+      "checkpoint": {
+        "bytes": 2498800,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG2_SURFACE/selected.pt",
+        "sha256": "2d0358a9ad6c3703b85415d27d4a9c2754d6612d86f4c012dea3529122282539"
+      },
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": false
+      },
+      "qualified": true,
+      "scientific_input_identity": "8854dd543e9583b1c5750373c2fe3de8dbf807add6d666bfee2cb7d57e4efcb9",
+      "seed": 17,
+      "selected_step": 1000
+    },
+    "FG3_AUX": {
+      "branch": "FG3_AUX",
+      "checkpoint": {
+        "bytes": 2635196,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG3_AUX/selected.pt",
+        "sha256": "10c3f473071f380bf74b48af4881eab39f7d99bb6c8637b2faabedc4063eb8b9"
+      },
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "qualified": true,
+      "scientific_input_identity": "968b9276162ef9248492d6b4557610cf87b7ee312d9779d0497899e5034d9008",
+      "seed": 17,
+      "selected_step": 1000
+    },
+    "FG4_ROUTE": {
+      "branch": "FG4_ROUTE",
+      "checkpoint": {
+        "bytes": 2635644,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG4_ROUTE/selected.pt",
+        "sha256": "8a45fd4b57305a31a260121c8f93170c1573ddcef0e706dbd01e82496fe031a3"
+      },
+      "config": {
+        "direct_routing": true,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "qualified": true,
+      "scientific_input_identity": "1af322bf262d454ede8e328e77263c59e374193448bb25af5e37edca6391d2fa",
+      "seed": 17,
+      "selected_step": 1500
+    },
+    "S29_FG1_VIEW": {
+      "branch": "FG1_VIEW",
+      "checkpoint": {
+        "bytes": 2497904,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/selected.pt",
+        "sha256": "1700780222a0d209205a17d045fe7de6ff2d38a91f3ea5711c269a45fdd3a87c"
+      },
+      "config": {
+        "direct_routing": false,
+        "grouping": "VIEW",
+        "membership_loss": false
+      },
+      "qualified": true,
+      "scientific_input_identity": "a2e0373b553050bd52998bf5cbb7ea571f207e8d10fdc518e374786658ca51a7",
+      "seed": 29,
+      "selected_step": 250
+    },
+    "S29_FG2_SURFACE": {
+      "branch": "FG2_SURFACE",
+      "checkpoint": {
+        "bytes": 2499568,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG2_SURFACE/selected.pt",
+        "sha256": "e69531a46ec749d0306665f387048a39ea6ce8ab30e049370b4d1a7cd8c03e47"
+      },
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": false
+      },
+      "qualified": true,
+      "scientific_input_identity": "55ba54486fff2712de80a0605d48a4b8c484f9611e7e4843ed317ddad2d63913",
+      "seed": 29,
+      "selected_step": 2000
+    },
+    "S29_FG3_AUX": {
+      "branch": "FG3_AUX",
+      "checkpoint": {
+        "bytes": 2635196,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG3_AUX/selected.pt",
+        "sha256": "6cea2d02b8ac3529bc0f6e9f73adb3f6b5f0e08956a2f9faf7723af6cce3c767"
+      },
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "qualified": true,
+      "scientific_input_identity": "5056d8291ec78515181298ed70607750de69aec2ba80513831451d2cea5d3f59",
+      "seed": 29,
+      "selected_step": 1000
+    },
+    "S29_FG4_ROUTE": {
+      "branch": "FG4_ROUTE",
+      "checkpoint": {
+        "bytes": 2636028,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG4_ROUTE/selected.pt",
+        "sha256": "32d2e3c63e9b36f191901eedea429c47dc03d4a42e7f3c03d878e7928a713ff9"
+      },
+      "config": {
+        "direct_routing": true,
+        "grouping": "SURFACE",
+        "membership_loss": true
+      },
+      "qualified": true,
+      "scientific_input_identity": "73b231dd5793635448b0c3e526d81862e2976a5d804b4ac53e4d599935f1add5",
+      "seed": 29,
+      "selected_step": 2000
+    }
+  },
+  "identity": "4d2484fff8cd770307c7dce57a77e86bb2436b9072d17348eb521955180d7946",
+  "map_heads": {
+    "FG1_VIEW": "FG1_VIEW",
+    "FG2_SURFACE": "FG2_SURFACE",
+    "FG3_AUX": "FG3_AUX",
+    "FG4_ROUTE": "FG4_ROUTE",
+    "S29_FG1_VIEW": "S29_FG1_VIEW",
+    "S29_FG2_SURFACE": "S29_FG2_SURFACE",
+    "S29_FG3_AUX": "S29_FG3_AUX",
+    "S29_FG4_ROUTE": "S29_FG4_ROUTE"
+  },
+  "new_maps_expected": 286,
+  "new_pools_expected": 22,
+  "nominations": {
+    "17": "c3723f65ea3f841e80f04539cac0e33c429f0c846a6a438fb16f2dc1e081b5a5",
+    "29": "de35bf64a7c5b59ffe0311e5d9d1114d2d7de04c9216253a37444cc6784a6405"
+  },
+  "old_H_role": "EXPOSED_POST_NOMINATION_REGRESSION_ONLY",
+  "repeat_activated": true,
+  "scientific_updates_expected": 16000,
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "status": "PREDICTORS_LOCKED"
+}

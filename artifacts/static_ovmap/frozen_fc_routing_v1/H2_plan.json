@@ -1,0 +1,575 @@
+{
+  "annotations_parsed": 0,
+  "exclusions": [
+    "scene0011",
+    "scene0027",
+    "scene0037",
+    "scene0047",
+    "scene0050",
+    "scene0056",
+    "scene0064",
+    "scene0084",
+    "scene0102",
+    "scene0105",
+    "scene0106",
+    "scene0107",
+    "scene0110",
+    "scene0132",
+    "scene0143",
+    "scene0162",
+    "scene0168",
+    "scene0194",
+    "scene0202",
+    "scene0211",
+    "scene0231",
+    "scene0326",
+    "scene0345",
+    "scene0363",
+    "scene0368",
+    "scene0369",
+    "scene0378",
+    "scene0393",
+    "scene0394",
+    "scene0403",
+    "scene0413",
+    "scene0424",
+    "scene0434",
+    "scene0436",
+    "scene0445",
+    "scene0481",
+    "scene0518",
+    "scene0519",
+    "scene0522",
+    "scene0534",
+    "scene0538",
+    "scene0543",
+    "scene0547",
+    "scene0553",
+    "scene0561",
+    "scene0571",
+    "scene0603",
+    "scene0620",
+    "scene0626",
+    "scene0634",
+    "scene0635",
+    "scene0639",
+    "scene0662"
+  ],
+  "exposure_sources": [
+    "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data_inventory.json",
+    "/mnt/shared/ww/ovimap-module-validation-v1/data/scannet/acquisition_lock.json"
+  ],
+  "identity": "b039887060370dd4250503c7494b60ff0001ae9931023793410be347f4132818",
+  "official_train": {
+    "bytes": 15613,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/external/upstream_sources/ScanNet/Tasks/Benchmark/scannetv2_train.txt",
+    "sha256": "96acca299b7855f02824c496b19077904d80996e7ced1bb9f0dac98f7dd4d0c8"
+  },
+  "real_proposal_frames": {
+    "scene0105_00": [
+      {
+        "arrays": {
+          "bytes": 169002,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0105_00/frames/000000.npz",
+          "sha256": "4f1d8b32ebcf74c87abf6b395d39a1dbcc3ae31db8bdebfd2043007e3756c35f"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 0,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            577.87060546875,
+            0.0,
+            319.5
+          ],
+          [
+            0.0,
+            577.87060546875,
+            239.5
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            0.567126989364624,
+            -0.12322419136762619,
+            0.8143604397773743,
+            0.24956125020980835
+          ],
+          [
+            -0.8235564231872559,
+            -0.07156797498464584,
+            0.5627016425132751,
+            0.9674092531204224
+          ],
+          [
+            -0.011056344956159592,
+            -0.9897947907447815,
+            -0.14207014441490173,
+            1.634127140045166
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 478102,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0105_00/frames/000000.png",
+          "sha256": "97d7f782ac66d14dcaf4a2a7547bf441fa4792c83ff0d3d6c8c7a42fc0ec1d2d"
+        }
+      },
+      {
+        "arrays": {
+          "bytes": 186522,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0105_00/frames/000515.npz",
+          "sha256": "375a7ad4e1b6b370f03b418eb2cd04a50be59bb29bae85aab29557b58558f155"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 515,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            577.87060546875,
+            0.0,
+            319.5
+          ],
+          [
+            0.0,
+            577.87060546875,
+            239.5
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            0.519173800945282,
+            -0.6666387915611267,
+            0.5348374843597412,
+            0.5888562202453613
+          ],
+          [
+            -0.8539974689483643,
+            -0.4294350743293762,
+            0.2937241196632385,
+            1.1495311260223389
+          ],
+          [
+            0.03387002646923065,
+            -0.6092437505722046,
+            -0.7922590970993042,
+            1.3501620292663574
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 390626,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0105_00/frames/000515.png",
+          "sha256": "b0960524a1bc980f0a86c3688456aee1c22af0d535ffd76ea594078e05c36744"
+        }
+      }
+    ],
+    "scene0143_00": [
+      {
+        "arrays": {
+          "bytes": 195639,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0143_00/frames/000000.npz",
+          "sha256": "11d0b0f0bba09748885ed5e5b1e3d4cc7e54125393c83b012cf82f982d0c5590"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 0,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            577.87060546875,
+            0.0,
+            319.5
+          ],
+          [
+            0.0,
+            577.87060546875,
+            239.5
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            -0.07991836965084076,
+            -0.6908711194992065,
+            0.7185473442077637,
+            1.1426581144332886
+          ],
+          [
+            -0.9968016743659973,
+            0.05532084032893181,
+            -0.05767650902271271,
+            0.9680784940719604
+          ],
+          [
+            9.632855653762817e-05,
+            -0.7208584547042847,
+            -0.6930823922157288,
+            1.385986566543579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 575354,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0143_00/frames/000000.png",
+          "sha256": "886a5e27424f086b05c13eba174bf70ce633076cdafb178c858c38be95e257fc"
+        }
+      },
+      {
+        "arrays": {
+          "bytes": 196024,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0143_00/frames/000088.npz",
+          "sha256": "f0cc56d0fdaa137cff9482727b5c777bcdf1c387171c582b69a218707bea86aa"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 88,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            577.87060546875,
+            0.0,
+            319.5
+          ],
+          [
+            0.0,
+            577.87060546875,
+            239.5
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            0.5983843803405762,
+            -0.3249276876449585,
+            0.7323646545410156,
+            1.7037649154663086
+          ],
+          [
+            -0.8012048602104187,
+            -0.24574556946754456,
+            0.5456008315086365,
+            0.8662518262863159
+          ],
+          [
+            0.0026946067810058594,
+            -0.9132530689239502,
+            -0.40738385915756226,
+            1.5224497318267822
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 371537,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0143_00/frames/000088.png",
+          "sha256": "f51ad0a4886571c47b07f406de54d52d39a287f1c5cf7525beccf3bce5819d06"
+        }
+      }
+    ],
+    "scene0211_00": [
+      {
+        "arrays": {
+          "bytes": 368095,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0211_00/frames/000000.npz",
+          "sha256": "fdb6eac7c2808703b6f8cef6d96974f15f6d0e854a34eb3f1eb7ce7fe9dce122"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 0,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            574.540771484375,
+            0.0,
+            322.5228271484375
+          ],
+          [
+            0.0,
+            577.583740234375,
+            238.55885314941406
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            0.6255649328231812,
+            -0.36413806676864624,
+            0.6899799108505249,
+            1.840036153793335
+          ],
+          [
+            -0.7797274589538574,
+            -0.26195046305656433,
+            0.5686890482902527,
+            1.7907497882843018
+          ],
+          [
+            -0.026340793818235397,
+            -0.8937480449676514,
+            -0.44779539108276367,
+            1.4250962734222412
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 476825,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0211_00/frames/000000.png",
+          "sha256": "db7a33724cffd48d8f1c692507288f3022527b5308b72feff4293b25b24ef626"
+        }
+      },
+      {
+        "arrays": {
+          "bytes": 425618,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0211_00/frames/001161.npz",
+          "sha256": "807ff38e82972751fd5e96c6d6e821bf1c66b5e1da61bb7d5e0f4be5ba47255d"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 1161,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            574.540771484375,
+            0.0,
+            322.5228271484375
+          ],
+          [
+            0.0,
+            577.583740234375,
+            238.55885314941406
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            0.027212917804718018,
+            0.41692042350769043,
+            -0.9085357785224915,
+            2.425492525100708
+          ],
+          [
+            0.9995919466018677,
+            -0.0034401118755340576,
+            0.02836175262928009,
+            1.2015225887298584
+          ],
+          [
+            0.008699178695678711,
+            -0.908936619758606,
+            -0.41684380173683167,
+            1.3912672996520996
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 461930,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0211_00/frames/001161.png",
+          "sha256": "9fd55fa18e41dbcddb74961b9d0ac4da6c63ddf5a359f89017999f22b83c9802"
+        }
+      }
+    ],
+    "scene0620_00": [
+      {
+        "arrays": {
+          "bytes": 344811,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0620_00/frames/000000.npz",
+          "sha256": "3da2362ec48e325a9527bdb0d7ab768c6e993ab229ddde40ab82d95f1a777272"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 0,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            575.6326293945312,
+            0.0,
+            322.5598449707031
+          ],
+          [
+            0.0,
+            577.8505859375,
+            237.28927612304688
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            -0.6249955892562866,
+            -0.5032082200050354,
+            0.5967929363250732,
+            1.413653016090393
+          ],
+          [
+            -0.7803658843040466,
+            0.4225689470767975,
+            -0.4609389901161194,
+            3.941171169281006
+          ],
+          [
+            -0.020237892866134644,
+            -0.7538016438484192,
+            -0.6567903161048889,
+            1.4107215404510498
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 507720,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0620_00/frames/000000.png",
+          "sha256": "36f97106f4be5883d74237ddac114699901d299530011af73d5da4cc8c2aa231"
+        }
+      },
+      {
+        "arrays": {
+          "bytes": 422525,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0620_00/frames/000349.npz",
+          "sha256": "18c13a1445fcc1477935a2eea21dd9f8be35fd48ddc071fdde8f903088b7b280"
+        },
+        "convention": "DEPTH_GRID_RGB_REGISTERED_E_DEPTH_TO_COLOR",
+        "frame_id": 349,
+        "image_size_hw": [
+          480,
+          640
+        ],
+        "intrinsics": [
+          [
+            575.6326293945312,
+            0.0,
+            322.5598449707031
+          ],
+          [
+            0.0,
+            577.8505859375,
+            237.28927612304688
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "pose_c2w": [
+          [
+            0.141314297914505,
+            -0.34263738989830017,
+            0.9287784099578857,
+            0.6613261699676514
+          ],
+          [
+            -0.9898571968078613,
+            -0.03507310152053833,
+            0.13766852021217346,
+            1.540557861328125
+          ],
+          [
+            -0.014595210552215576,
+            -0.9388127326965332,
+            -0.3441186249256134,
+            1.4897558689117432
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "rgb": {
+          "bytes": 371669,
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/generated/scene0620_00/frames/000349.png",
+          "sha256": "0286c6711cc00caa2791ebeb4cc7f2e9b0928b2b3403f82086e51c969db87ad7"
+        }
+      }
+    ]
+  },
+  "replacement_after_outcomes": false,
+  "selected": [
+    "scene0632_00",
+    "scene0320_00",
+    "scene0127_00",
+    "scene0022_00"
+  ],
+  "selection_depends_on_semantics": false,
+  "status": "NAMES_LOCKED_BEFORE_SCIENTIFIC_TRAINING"
+}

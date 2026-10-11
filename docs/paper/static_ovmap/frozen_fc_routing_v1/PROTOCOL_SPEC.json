@@ -1,0 +1,528 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-11",
+  "task_id": "ovimap-frozen-fc-routing-v1",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "76db115aa7df652a0b2dc4575df52e6a74a63549",
+  "branch": "research/ovimap-frozen-fc-routing-v1",
+  "module": "src/static_ovmap/frozen_fc_routing",
+  "entrypoint": "scripts/evaluation/run_ovimap_frozen_fc_routing.py",
+  "config_path": "configs/static_ovmap/frozen_fc_routing_v1.json",
+  "artifact_root": "artifacts/static_ovmap/frozen_fc_routing_v1",
+  "prompt_destination": "docs/paper/static_ovmap/frozen_fc_routing_v1",
+  "parent_root": "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001",
+  "output_root": "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+  "controller_python_hint": "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+  "deployment": "N0_UNCHANGED",
+  "accuracy_priority": true,
+  "latency_gate": false,
+  "lineage": {
+    "pr_commit": "76db115aa7df652a0b2dc4575df52e6a74a63549",
+    "lr_commit": "6767eb90c2fd6999621b356b87269c012821713a",
+    "pr_terminal": "COMPLETE_NO_2D_FOUNDATION",
+    "pr_optimizer_updates": 8000,
+    "lr_optimizer_updates": 16000,
+    "lr_scene_rows": 286,
+    "lr_pools": 22,
+    "lr_parent_field": "lr_parent_root",
+    "source_update_field": "lr_source_root",
+    "parent_split_identity": "0c1209d9d3887f317251fd7909393329ce804cfa1d42294936addd22d1d56fda",
+    "no_required_R_qualification": true,
+    "old_task_binders_and_trainers_called": false
+  },
+  "cohorts": {
+    "replica8": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet_cf18": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0168_00",
+      "scene0168_01",
+      "scene0168_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "map_baselines": {
+    "REF_D2": "LR00_D2",
+    "REF_G1": "LR01_G1",
+    "FG0_FC8": "LR04_FC_8"
+  },
+  "methods": [
+    {
+      "id": "FG1_VIEW",
+      "grouping": "VIEW",
+      "membership_loss": false,
+      "direct_routing": false
+    },
+    {
+      "id": "FG2_SURFACE",
+      "grouping": "SURFACE",
+      "membership_loss": false,
+      "direct_routing": false
+    },
+    {
+      "id": "FG3_AUX",
+      "grouping": "SURFACE",
+      "membership_loss": true,
+      "direct_routing": false
+    },
+    {
+      "id": "FG4_ROUTE",
+      "grouping": "SURFACE",
+      "membership_loss": true,
+      "direct_routing": true
+    }
+  ],
+  "seeds": [
+    17,
+    29
+  ],
+  "data": {
+    "roles": {
+      "train": [
+        "scene0561_00",
+        "scene0413_00",
+        "scene0110_00",
+        "scene0424_00",
+        "scene0194_00",
+        "scene0662_00",
+        "scene0603_00",
+        "scene0436_00",
+        "scene0047_00",
+        "scene0345_00",
+        "scene0543_00",
+        "scene0519_00",
+        "scene0403_00",
+        "scene0369_00",
+        "scene0162_00",
+        "scene0481_00",
+        "scene0393_00",
+        "scene0132_00",
+        "scene0522_00",
+        "scene0363_00",
+        "scene0102_00",
+        "scene0326_00",
+        "scene0634_00",
+        "scene0394_00"
+      ],
+      "dev": [
+        "scene0105_00",
+        "scene0143_00",
+        "scene0211_00",
+        "scene0620_00"
+      ],
+      "old_H": [
+        "scene0202_00",
+        "scene0368_00",
+        "scene0037_00",
+        "scene0635_00"
+      ]
+    },
+    "train_originals": 785,
+    "train_base_originals": 622,
+    "train_positive_categories": 74,
+    "dev_originals": 87,
+    "dev_base_originals": 69,
+    "dev_base_categories": 28,
+    "old_H_originals": 101,
+    "base_classes": 160,
+    "adapter_heldout_classes": 40,
+    "class_ids": "COPY_EXACT_LR_class_split.json_NO_REHASH",
+    "proposal_conditions": [
+      "clean",
+      "truncate",
+      "append",
+      "truncate_append"
+    ],
+    "new_training_families": 0,
+    "train_and_dev_inputs": "EXACT_LR_GT_DERIVED_PROPOSALS_AND_VIEW_BANKS",
+    "old_H": "EXPOSED_POST_SELECTION_REGRESSION",
+    "h2": {
+      "plan": "COPY_EXACT_PR_H2_plan.json",
+      "replace_names": false,
+      "annotations_before_predictor_lock": false,
+      "families": 4,
+      "max_frames_per_family": 96,
+      "max_objects_per_family": 64,
+      "max_FC_images": 384,
+      "minimum_total_originals": 32,
+      "novel_support_min_objects": 20,
+      "novel_support_min_families": 2,
+      "record_exposure_conflicts": true,
+      "whole_map_confirmation": false,
+      "activate": "SAME_DEV_NOMINEE_QUALIFIES_IN_BOTH_SEEDS"
+    },
+    "real_proposals": {
+      "activate": "SAME_DEV_NOMINEE_QUALIFIES_IN_BOTH_SEEDS",
+      "frames": "EXACT_PR_H2_plan.real_proposal_frames",
+      "families": 4,
+      "max_AMG_images": 8,
+      "max_retained_masks_per_image": 16,
+      "max_retained_masks": 128,
+      "sam2_commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+      "settings": "COPY_EXACT_PR_spec.data.real_proposal_AND_BOUND_SAM2_ASSETS",
+      "label_IoU_strict": 0.25,
+      "high_quality_IoU_strict": 0.5,
+      "min_GT_vertices": 100,
+      "max_context_FC_images": 384,
+      "use_for_training_or_selection": false,
+      "raw_generated_masks_are_not_capped_by_retained_limit": true
+    }
+  },
+  "inputs": {
+    "maximum_views": 8,
+    "train_prefixes": [
+      2,
+      4,
+      8
+    ],
+    "selection_prefix": 8,
+    "local_sites": 64,
+    "raw_channels": 1536,
+    "projected_channels": 768,
+    "metadata_scalars": 8,
+    "metadata": [
+      "occupancy",
+      "clipped_depth_residual",
+      "direction_x",
+      "direction_y",
+      "direction_z",
+      "centered_x",
+      "centered_y",
+      "centered_z"
+    ],
+    "minimum_qualified_views": 2,
+    "site_banks": "EXACT_PARENT_NO_RESAMPLING",
+    "coordinate_and_visibility": "EXACT_PARENT",
+    "FC_region_operator": "cvpr_compact.area_fallback.region_vector",
+    "phi": "FrozenFC.phi",
+    "pool_then_phi": true,
+    "phi_parameters_frozen": true,
+    "phi_input_autograd_required": true,
+    "allowed_forward_keys": [
+      "fc_vectors",
+      "view_valid",
+      "frame_ids",
+      "local_raw",
+      "local_unit",
+      "metadata",
+      "local_valid"
+    ],
+    "forbidden_forward_keys": [
+      "class_id",
+      "base",
+      "family",
+      "scene",
+      "owner",
+      "membership_target",
+      "corruption_type"
+    ],
+    "raw_dense_may_be_loaded_by_legacy_loader_but_not_consumed_by_new_head": true
+  },
+  "model": {
+    "hidden": 128,
+    "group_ff_hidden": 256,
+    "queries": 4,
+    "num_metadata": 8,
+    "expected_trainable_architecture_parameters": 216194,
+    "learned_768x768_value_transform": false,
+    "trainable_MaskAdapter": false,
+    "frozen_initial_MaskAdapter": false,
+    "learned_text": false,
+    "membership_initialization": "ALL_ARMS_FINAL_LINEAR_WEIGHT_AND_BIAS_ZERO_RHO_HALF",
+    "other_initialization": "PARENT_LAYER_TYPES_DEFAULT_UNDER_SEED_PLUS_1009_QUERIES_NORMAL_0_0.02",
+    "energy_bound": 4.0,
+    "null_logit": 0.0,
+    "divide_by_group_count": true,
+    "route": "exp(e)*rho/J versus null exp(0)",
+    "rho": "UNWEIGHTED_MEAN_SIGMOID_OF_VALID_MEMBERS",
+    "eta_max": 0.5,
+    "eta_ramp_updates": 200,
+    "inference_eta": 0.5,
+    "value": "UNIT_PHI_WEIGHTED_RAW_MINUS_FC8",
+    "free_value_map": false,
+    "final": "UNIT(FC8 + eta * QUERY_MEAN(SUM(alpha*value)))",
+    "no_local_support": "EXACT_FC8_WITH_REASON",
+    "all_rho_zero": "EXACT_FC8",
+    "quality_and_membership_separate": true
+  },
+  "loss": {
+    "training_competitors": 160,
+    "training_temperature": 0.07,
+    "clean_CE": 0.5,
+    "corrupt_CE": 0.5,
+    "student_clean_consistency": 0.1,
+    "membership_BCE": 0.1,
+    "preservation": 0.0,
+    "correspondence": 0.0,
+    "same_class_other_instance_is_membership_negative_only": true,
+    "unknown_membership_ignore": true,
+    "object_mean_before_batch_mean": true,
+    "loss_counts_reported": true
+  },
+  "training": {
+    "updates_per_arm": 2000,
+    "effective_batch": 16,
+    "microbatch": 1,
+    "accumulation": 16,
+    "optimizer": "AdamW",
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.01,
+    "grad_clip": 1.0,
+    "schedule": "EXACT_learned_object_readout.training.learning_rate",
+    "linear_warmup_updates": 100,
+    "cosine_final_lr": 1e-05,
+    "draw_schedule": "EXACT_learned_object_readout.training.draw_schedule",
+    "uniform_present_class_then_original_object": true,
+    "same_draws_all_arms": true,
+    "new_model_init_seed_offset": 1009,
+    "FP32": true,
+    "autocast": false,
+    "TF32": false,
+    "checkpoints": [
+      250,
+      500,
+      1000,
+      1500,
+      2000
+    ],
+    "diagnostic_step0_eta": 0.0,
+    "step0_nominatable": false,
+    "resume_every_updates": 100,
+    "publish_component_curve_interval": 1,
+    "main_updates": 8000,
+    "repeat_updates": 8000,
+    "max_scientific_updates": 16000,
+    "discarded_engineering_updates": 20,
+    "all_four_main_mandatory": true,
+    "same_nominee_repeat_required_for_transfers": true
+  },
+  "selection": {
+    "tol": 1e-10,
+    "A_definition": "EQUAL_FAMILY_MEAN_OF_0.5_CLEAN_PLUS_CORRUPT_SUM_DIV6",
+    "M_definition": "EQUAL_BASE_CLASS_MEAN_OF_SAME_CONDITION_WEIGHTED_CORRECTNESS",
+    "C_definition": "EQUAL_FAMILY_CLEAN_TOP1",
+    "competitors": 200,
+    "uses_only_DEV_base_labels": true,
+    "A_gain_min_fraction": 0.005,
+    "M_nondecrease": true,
+    "C_nondecrease": true,
+    "positive_net_corrections": true,
+    "rank": [
+      "A_DESC",
+      "M_DESC",
+      "C_DESC",
+      "CE_BASE_ASC",
+      "STEP_ASC",
+      "METHOD_ORDER_ASC"
+    ],
+    "checkpoint_choose": "BEST_QUALIFIED_ELSE_BEST_DIAGNOSTIC",
+    "method_order": [
+      "FG1_VIEW",
+      "FG2_SURFACE",
+      "FG3_AUX",
+      "FG4_ROUTE"
+    ],
+    "repeat_trigger": "ANY_SEED17_QUALIFIED_METHOD",
+    "repeat_arms": "ALL_FOUR",
+    "repeat_nominee": "SAME_SEED17_ARCHITECTURE_NO_SWITCH",
+    "transfer_trigger": "PRENOMINEE_QUALIFIES_SEED29",
+    "exposed_old_H_uses_labels_for_selection": false,
+    "maps_use_labels_for_checkpoint_selection": false
+  },
+  "diagnostics": {
+    "D0": "PARENT_R1_R3_VS_FC_ERRORS_AND_MARGINS_NO_NEW_WEIGHTS",
+    "D1": {
+      "roles": [
+        "train",
+        "dev"
+      ],
+      "base_only": true,
+      "prefix": 8,
+      "conditions": 4,
+      "grouping": "SURFACE_EQUAL_OBSERVATION_AND_GROUP_WEIGHTS",
+      "local_mass": 0.25,
+      "all": "ALL_VALID_OBSERVED_SITES",
+      "filtered": "ONLY_KNOWN_TARGET_SITES",
+      "no_target": "FC8_FALLBACK_REPORTED_SEPARATELY",
+      "uses_GT": true,
+      "selects_methods": false
+    },
+    "interventions": [
+      "MATCHED_MASS",
+      "MATCHED_MASS_AND_DELTA_NORM",
+      "ALL_RHO_ONE",
+      "ALL_RHO_ZERO"
+    ],
+    "intervention_model": "FG4_ROUTE_SELECTED_PER_SEED",
+    "selection_allowed": false,
+    "norm_match_eps": 1e-12,
+    "norm_match_zero_unmatched": "UNDEFINED_PAIRED_CELL_NO_SILENT_FALLBACK",
+    "post_lock_scopes": [
+      "TRAIN_BASE",
+      "DEV_BASE",
+      "OLD_H_ALL",
+      "H2_IF_ACTIVE",
+      "REAL_IF_ACTIVE"
+    ],
+    "GT_membership_never_forward_except_D1": true,
+    "no_diagnostic_full_map_methods": true
+  },
+  "whole_map": {
+    "activate": "PRENOMINEE_QUALIFIES_SEED29",
+    "same_geometry": "G1",
+    "replace_historical_F_only": true,
+    "D2_grouping": "EXACT_PE_D2_GROUPED",
+    "new_temperature": false,
+    "recovered_labels_fixed": true,
+    "common_eligibility": "EXACT_LR_regression_manifest",
+    "no_per_method_veto": true,
+    "official_ranks_recomputed": true,
+    "main_methods": [
+      "REF_D2",
+      "REF_G1",
+      "FG0_FC8",
+      "FG1_VIEW",
+      "FG2_SURFACE",
+      "FG3_AUX",
+      "FG4_ROUTE"
+    ],
+    "repeat_methods": [
+      "S29_FG1_VIEW",
+      "S29_FG2_SURFACE",
+      "S29_FG3_AUX",
+      "S29_FG4_ROUTE"
+    ],
+    "main_scene_rows": 182,
+    "main_pools": 14,
+    "repeat_scene_rows": 104,
+    "repeat_pools": 8,
+    "total_scene_rows": 286,
+    "total_pools": 22,
+    "evaluation_processes": 3,
+    "strict_gate": "BOTH_COHORTS_ALL5_GE_G1_AND_CF_APALL_GT_D2_AND_AP50_GE_D2",
+    "strict_APall_gt": "candidate > D2 + 1e-10",
+    "material_CF_APall_delta_fraction": 0.001,
+    "benchmark_nomination": "EXPOSED_RESEARCH_ONLY_KEEP_DEV_NOMINEE_SEPARATE",
+    "no_seed_ensemble": true,
+    "no_hybrid_per_dataset_model": true
+  },
+  "resources": {
+    "new_maps": 0,
+    "new_NQ": 0,
+    "new_AnyUp": 0,
+    "new_SAMV": 0,
+    "new_MA_training": 0,
+    "cold_timing_grid": 0,
+    "max_new_H2_FC_images": 384,
+    "max_new_real_context_FC_images": 384,
+    "missing_parent_cache": "RESTORE_EXACT_DEPENDENCY_OR_RECOMPUTE_SAME_INPUT_AND_REPORT",
+    "GPU": "ONE_BOUND_A40",
+    "NVML_failure_not_science_block_if_torch_CUDA_valid": true,
+    "large_benchmark_scan_rebuild": false
+  },
+  "phases": [
+    "bind",
+    "prepare",
+    "prior_audit",
+    "engineer",
+    "diagnostic_D1",
+    "train",
+    "nominate",
+    "repeat",
+    "lock",
+    "diagnose",
+    "predict",
+    "evaluate",
+    "confirm",
+    "report",
+    "all"
+  ],
+  "statuses": {
+    "no_main_signal": {
+      "name": "COMPLETE_NO_FG_SIGNAL",
+      "exit": 0,
+      "updates": 8000,
+      "new_map_rows": 0
+    },
+    "not_repeated": {
+      "name": "COMPLETE_FG_NOT_REPEATED",
+      "exit": 0,
+      "updates": 16000,
+      "new_map_rows": 0
+    },
+    "full_no_gain": {
+      "name": "COMPLETE_NO_TARGET_GAIN",
+      "exit": 0,
+      "updates": 16000,
+      "new_map_rows": 286
+    },
+    "full_gain": {
+      "name": "TARGET_MET_RESEARCH_ONLY",
+      "exit": 0,
+      "updates": 16000,
+      "new_map_rows": 286
+    },
+    "partial": {
+      "name": "PARTIAL_ACTIVE_STAGE",
+      "exit": 1
+    },
+    "blocked": {
+      "name": "BLOCKED_DEPENDENCY_OR_RUNTIME",
+      "exit": 1
+    }
+  },
+  "publication": {
+    "reports": [
+      "FROZEN_FC_ROUTING_RESULTS.md",
+      "FROZEN_FC_ROUTING_HANDOFF.md",
+      "FROZEN_FC_ROUTING_SELECTION.md",
+      "FROZEN_FC_ROUTING_CLAIMS.md"
+    ],
+    "real_CLI_exit_observed": true,
+    "normal_push_only": true,
+    "verify_full_local_remote_SHA": true,
+    "external_receipt": "publication/final.json",
+    "include_learned_heads_and_curves": true,
+    "exclude": [
+      "licensed_scans",
+      "GT_maps",
+      "full_dense_features",
+      "frozen_backbone_weights",
+      "secrets"
+    ],
+    "do_not_embed_own_future_commit_SHA": true
+  },
+  "finite_validation": {
+    "max_groups": 12,
+    "full_repo_suite": false,
+    "thousands_of_requirement_checks": false,
+    "mandatory_actual_scoring_pilots": 2,
+    "early_engineering_not_scientific_result": true
+  }
+}

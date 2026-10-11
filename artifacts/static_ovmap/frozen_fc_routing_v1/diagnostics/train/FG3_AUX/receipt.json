@@ -1,0 +1,101 @@
+{
+  "GT_targets_forward": false,
+  "identity": "8c6f8fcb5c5a23ccb8f57a09f3da96c95e906ce77950c9b5b7b66ca0b5dc7f02",
+  "mass_means": {
+    "delta_norm": 0.1946838698314332,
+    "group_norm_proxy": 0.27505793773653014,
+    "local_mass": 0.7629024445085256,
+    "negative_mass": 0.15631533384601373,
+    "null_mass": 0.23709755557532336,
+    "positive_mass": 0.6065871118070217,
+    "unknown_mass": 0.0
+  },
+  "membership": {
+    "AUROC": 0.9026582378902328,
+    "Brier": 0.08888346981803844,
+    "accuracy": 0.8928834780187631,
+    "bins": [
+      {
+        "lower": 0.0,
+        "mean_probability": 0.06549637386428583,
+        "n": 44498,
+        "target_frequency": 0.11079149624702234,
+        "upper": 0.1
+      },
+      {
+        "lower": 0.1,
+        "mean_probability": 0.14319953324109613,
+        "n": 32889,
+        "target_frequency": 0.19222232357323119,
+        "upper": 0.2
+      },
+      {
+        "lower": 0.2,
+        "mean_probability": 0.24401413818715834,
+        "n": 15381,
+        "target_frequency": 0.26981340615044536,
+        "upper": 0.3
+      },
+      {
+        "lower": 0.3,
+        "mean_probability": 0.3451659398884619,
+        "n": 8330,
+        "target_frequency": 0.34705882352941175,
+        "upper": 0.4
+      },
+      {
+        "lower": 0.4,
+        "mean_probability": 0.4476209537568472,
+        "n": 5413,
+        "target_frequency": 0.4701644189913172,
+        "upper": 0.5
+      },
+      {
+        "lower": 0.5,
+        "mean_probability": 0.550073085187338,
+        "n": 4526,
+        "target_frequency": 0.6027397260273972,
+        "upper": 0.6
+      },
+      {
+        "lower": 0.6,
+        "mean_probability": 0.6528587518659837,
+        "n": 5542,
+        "target_frequency": 0.7223024178996752,
+        "upper": 0.7
+      },
+      {
+        "lower": 0.7,
+        "mean_probability": 0.756667513163279,
+        "n": 10184,
+        "target_frequency": 0.8000785545954439,
+        "upper": 0.8
+      },
+      {
+        "lower": 0.8,
+        "mean_probability": 0.8622078912644646,
+        "n": 33021,
+        "target_frequency": 0.8510039066048878,
+        "upper": 0.9
+      },
+      {
+        "lower": 0.9,
+        "mean_probability": 0.9641639024334305,
+        "n": 299949,
+        "target_frequency": 0.9396097336547213,
+        "upper": 1.0
+      }
+    ],
+    "known": 459733,
+    "negative": 114080,
+    "positive": 345653,
+    "status": "DEFINED"
+  },
+  "method": "FG3_AUX",
+  "original_objects": 622,
+  "role": "train",
+  "status": "COMPLETE",
+  "summary": [],
+  "used_for_selection": false,
+  "variant_records": 2488
+}

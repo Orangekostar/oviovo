@@ -1,0 +1,12 @@
+PHASE diagnostic_D1
+WAIT_GPU_LOCK /mnt/shared/ww/ovimap-module-validation-v1/.visual-gpu-0.lock
+GPU_LOCK_ACQUIRED
+/home/ww/miniconda3/envs/oviovo-radseg/lib/python3.11/site-packages/torch/cuda/__init__.py:654: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+WARNING:root:No pretrained weights loaded for model 'convnext_large_d_320'. Model initialized randomly.
+D1 train 100 / 622
+D1 train 200 / 622
+D1 train 300 / 622
+D1 train 400 / 622
+D1 train 500 / 622
+D1 train 600 / 622

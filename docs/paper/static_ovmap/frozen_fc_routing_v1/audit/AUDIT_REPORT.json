@@ -1,0 +1,175 @@
+{
+  "status": "PASSED",
+  "scope": "EXECUTION_PACK_STATIC_AND_SYNTHETIC_MATH_ONLY",
+  "date": "2026-10-11",
+  "checks": [
+    {
+      "check": "required_files_present",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "anchor_and_branch",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "R_prerequisite_removed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "exact_four_arms",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "matched_pair_axes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "no_MA_or_free_value_transform",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "pool_phi_autograd_contract",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "eta_and_energy_contract",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "parameter_count_matches_reference",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "fixed_data_roles",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "map_families_disjoint_from_learning",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "cohort_counts",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "supervision_scope",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "H2_real_lock",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "training_count",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "training_batch_draw_scope",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "no_extra_losses",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "checkpoint_selection",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "repeat_same_nominee",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "D1_cannot_select",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "two_matched_controls",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "map_coverage",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "whole_map_frozen_contract",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "negative_statuses_valid",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "runtime_not_gate",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "normal_push_actual_exit",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "finite_validation",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "matrix_matches_spec",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "syntax_parses",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "reference_tests_passed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "no_unresolved_design_placeholders",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "check": "essential_semantic_warnings",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "check_count": 32,
+  "reference_unittest_count": 12,
+  "production_GPU_training_run": false,
+  "production_FC_or_SAM2_loaded": false,
+  "server_data_revalidated": false,
+  "remote_repository_modified": false,
+  "base_commit": "76db115aa7df652a0b2dc4575df52e6a74a63549",
+  "reference_log_sha256": "ecbdf1e24a1535ff479628874cc39458bffe2f0cb86745f23b3afd7fd67a59fd"
+}

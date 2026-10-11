@@ -1,0 +1,318 @@
+{
+  "artifact_index": "631b779f6ddddb2b03ebc4d14d156660819c49908790a1c6559a2896577d8271",
+  "artifact_root": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1",
+  "attempt": "1791682758539983264",
+  "claims": "cf958d7020c22f739b9a36f4fb9b2ec548e4d8e33991039c28e09087a8bca377",
+  "deployment": "N0_UNCHANGED",
+  "elapsed_seconds": 44.700511764967814,
+  "engineering_discarded_updates": 20,
+  "full_cohort_pool_coverage": 22,
+  "identity": "d4322ea3f3e1b8b92ac5eb751f385465ed4354b2651f2609aaa65036b70c8d55",
+  "metric_unit": "RAW_FRACTIONS_DISPLAY_PERCENTAGES_WITH_EXPLICIT_SUFFIX",
+  "missing_active_requirements": [
+    "holdout2/receipt.json",
+    "real_proposals/receipt.json",
+    "confirmation/receipt.json"
+  ],
+  "parent": "a14646174a0349f44d578d052da8a41f049f18c1a9ac05fc48e78fb4cc4ebc37",
+  "phase": "report",
+  "predictor_lock": "4d2484fff8cd770307c7dce57a77e86bb2436b9072d17348eb521955180d7946",
+  "raw_scans_GT_dense_and_foundation_weights_included": false,
+  "replayed_optimizer_updates": 3,
+  "roundtrip": "a465d443aa081262839dccccba9fe2d87cfa9d1d4ec6066146fcf6544b5c54b5",
+  "scene_method_coverage": 286,
+  "scientific_optimizer_updates": 16000,
+  "selected_heads": 8,
+  "selection": "f0c0a1a4352d661be49b3f7702e3b9b8f67ddcdb93acc7aa90173742f530f415",
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "stage_elapsed_seconds": 44.75992386508733,
+  "status": "PARTIAL_ACTIVE_STAGE",
+  "tables": {
+    "table1_whole_map": {
+      "csv": {
+        "bytes": 2126,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map.csv",
+        "sha256": "67352265d047956e012f72373b691942586c699a45c8e0ee42828b320ec9b65d"
+      },
+      "json": {
+        "bytes": 4838,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map.json",
+        "sha256": "e15bb926703c37cabf4c502dfc77827376179372abce0ce90463191154d4f4c6"
+      },
+      "md": {
+        "bytes": 1873,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map.md",
+        "sha256": "5f2a3b7f69f476e8aeea970d411a83707803e83bdff3d335653fa1976423c756"
+      },
+      "tex": {
+        "bytes": 1941,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map.tex",
+        "sha256": "61901863d55a248045b671889241fbcc0d39fa66c79642bb82ecd5f0ac64e261"
+      }
+    },
+    "table1_whole_map_repeat": {
+      "csv": {
+        "bytes": 1292,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map_repeat.csv",
+        "sha256": "d4b52142659d20862e3d84f9cc0f5a1043f5cf63a6616454134105028276b41d"
+      },
+      "json": {
+        "bytes": 2906,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map_repeat.json",
+        "sha256": "50b08d46e8b5ea9315dc886be2c8a10fc7a4384c6ad6f4c11374327dae2baa78"
+      },
+      "md": {
+        "bytes": 1174,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map_repeat.md",
+        "sha256": "327ed54ea0a37a3c0b0daa63b722880ff1c44f34b104bb60a91912caec2cfbe4"
+      },
+      "tex": {
+        "bytes": 1229,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map_repeat.tex",
+        "sha256": "eacd1c3bdfff0a496961a0aec935b36a79a0fffa56a7ccbe2093646f26d45146"
+      }
+    },
+    "table2_D0": {
+      "csv": {
+        "bytes": 19159,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D0.csv",
+        "sha256": "ac94aaa813ab566b06d09c20407eafd23f69d0ff15c51557a7bb5df6ae09833c"
+      },
+      "json": {
+        "bytes": 61294,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D0.json",
+        "sha256": "456732eb17937629d325f1a4a966ca12244d2c3b778d40b3d41d8514b66ee8ba"
+      },
+      "md": {
+        "bytes": 16763,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D0.md",
+        "sha256": "2c3febf8d0c8f2d53240056884e567c718ec1dea420564d6792f5c450879255f"
+      },
+      "tex": {
+        "bytes": 16904,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D0.tex",
+        "sha256": "7e9d9728d2aebd76788da16e46885b6f6cc4dff79c4afa9e7dc34654ed41493b"
+      }
+    },
+    "table2_D1": {
+      "csv": {
+        "bytes": 115392,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1.csv",
+        "sha256": "bb756db25e0de467ca08c13234a9f7b998e3c53fc7428f7e20e478e8f5ce8ec4"
+      },
+      "json": {
+        "bytes": 662677,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1.json",
+        "sha256": "6ba9a8acf698f1b96ed8904cebbe01e4dd7998e1f940d8ee2afc6e39deed298d"
+      },
+      "md": {
+        "bytes": 153402,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1.md",
+        "sha256": "8d156ac59aa41c58a8e91287a7912b7345c1e39ae0cd79b61ec1924179f21ad9"
+      },
+      "tex": {
+        "bytes": 153638,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1.tex",
+        "sha256": "44721a9973886781a0cf3062568eaa5af2259d0e5dde1b194689a42484851e5a"
+      }
+    },
+    "table2_D1_contrasts": {
+      "csv": {
+        "bytes": 29479,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1_contrasts.csv",
+        "sha256": "d5313055f4281c9fc299b21a82b6c8a82c27ed9f1a2854339e905f022988d848"
+      },
+      "json": {
+        "bytes": 98112,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1_contrasts.json",
+        "sha256": "9cbc49ed605a1bc2e91c16802a08202eeb1fcbc59e2c0abb7708264616907f79"
+      },
+      "md": {
+        "bytes": 32858,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1_contrasts.md",
+        "sha256": "ff2ce636ad57e7501b0376b227461681c6b9d9fbafa6f6d25af0d80ff8b2b503"
+      },
+      "tex": {
+        "bytes": 33161,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_D1_contrasts.tex",
+        "sha256": "4e2233050ecc3e206186edc1ae43d302631182f099255f0dfece270621f9a3c6"
+      }
+    },
+    "table2_DEV_selection": {
+      "csv": {
+        "bytes": 1333,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_DEV_selection.csv",
+        "sha256": "7f9af4eec62cf5b23e86817e880b4563e4b04e3ab5f8b6ed56cde0133e663278"
+      },
+      "json": {
+        "bytes": 4132,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_DEV_selection.json",
+        "sha256": "dfb68796644a5a75ed2516f1afddc4aeebf5abda5dd0527942e1630b99f5aca4"
+      },
+      "md": {
+        "bytes": 1330,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_DEV_selection.md",
+        "sha256": "8d72fec51a5e4ec09940699e7b54e327d5d7fc8d57f59c5e04dc2f2e07b24d99"
+      },
+      "tex": {
+        "bytes": 1327,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_DEV_selection.tex",
+        "sha256": "eaaf8a9bf53eb0ba6a6f135ff3f6449f3729f14a6f869fdd343f5355a13e4dd1"
+      }
+    },
+    "table2_intervention_contrasts": {
+      "csv": {
+        "bytes": 188519,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_intervention_contrasts.csv",
+        "sha256": "0371459fe1719810a0fdfcc6aab5dcf355f384c96854fbbd50eee0eaf81fa28d"
+      },
+      "json": {
+        "bytes": 560427,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_intervention_contrasts.json",
+        "sha256": "483c2d21c04f332cbdcf90b00a532315f8d682d9eda76a261c7fd38eb6e0ae88"
+      },
+      "md": {
+        "bytes": 205698,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_intervention_contrasts.md",
+        "sha256": "d77d9617ebf0b8a34f9f5d225efbd7f0bf521d227c4a4e9c9e13fbbd09a61d9f"
+      },
+      "tex": {
+        "bytes": 214432,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_intervention_contrasts.tex",
+        "sha256": "f84861e72c864ac342d43713df0d42bc121c661e53d8629ab28dac5674c911e2"
+      }
+    },
+    "table2_interventions": {
+      "csv": {
+        "bytes": 254037,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_interventions.csv",
+        "sha256": "f13eeec5255c749eff4f05be032ecab0b4f80f2268e798c412874af05b9b510e"
+      },
+      "json": {
+        "bytes": 936437,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_interventions.json",
+        "sha256": "8d2e891a880ef16677ae48581c5f8f80a2b5563a263aa43def10bccdbbae59d8"
+      },
+      "md": {
+        "bytes": 300512,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_interventions.md",
+        "sha256": "477d4262bc9e6538fe196f26b24be26bfdd2e75b5892b414063358c9ab441195"
+      },
+      "tex": {
+        "bytes": 310767,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_interventions.tex",
+        "sha256": "37b3e06ea3aec42e1ac8bef30e6648be0371a551d520c8593be43c07165091e1"
+      }
+    },
+    "table2_matched_contrasts": {
+      "csv": {
+        "bytes": 5168,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_matched_contrasts.csv",
+        "sha256": "a20719da67937123cf7eb0b34e422864a54f0f203de58ac3e872137316a093d1"
+      },
+      "json": {
+        "bytes": 14112,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_matched_contrasts.json",
+        "sha256": "9b8e7f56b8b12a855aee739cf53e200e12be06ddb7403e054f8ffd822b560c79"
+      },
+      "md": {
+        "bytes": 4701,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_matched_contrasts.md",
+        "sha256": "eb09ce9dfb4cc04045b37cd011cad10a76031933bbfd9af57af096ea3c62e660"
+      },
+      "tex": {
+        "bytes": 4824,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_matched_contrasts.tex",
+        "sha256": "043afc0fcc8489a5b759af6756fa60695f5e4abef6857fb39aebf1dcc7cb9ddd"
+      }
+    },
+    "table2_membership_and_mass": {
+      "csv": {
+        "bytes": 5252,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_membership_and_mass.csv",
+        "sha256": "58d9a937b42511f5868e34b3e6ced435de5d08e1b13990e94295fd37a08f6200"
+      },
+      "json": {
+        "bytes": 16002,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_membership_and_mass.json",
+        "sha256": "a35f170098219c3575d4ed6e54c85bf9f336b4af9f098f682876ddbf66cd33e6"
+      },
+      "md": {
+        "bytes": 4481,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_membership_and_mass.md",
+        "sha256": "91de337b94311311cf231eabb7a251027b6d34f8209dcc652bde5371bc0e8073"
+      },
+      "tex": {
+        "bytes": 4493,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_membership_and_mass.tex",
+        "sha256": "fb9bbc68f04c54e6e70f49e78d73db99e757565b7bbbc7cb7f1b702370ebd9a4"
+      }
+    },
+    "table2_recognition": {
+      "csv": {
+        "bytes": 152978,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_recognition.csv",
+        "sha256": "be9a7a703c145fc728203389e3dc7ca740dc6d6abd29f385a44c9feb77d48bb6"
+      },
+      "json": {
+        "bytes": 666116,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_recognition.json",
+        "sha256": "3b1d8f313fd2be37dde74ef5f63504590db6393882a2c0fad2d8ef9aca1ab225"
+      },
+      "md": {
+        "bytes": 186673,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_recognition.md",
+        "sha256": "05b9213b079959dea25b999a495f801b4918d03f5c4628bf18999b8fed98c957"
+      },
+      "tex": {
+        "bytes": 187602,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table2_recognition.tex",
+        "sha256": "489ed5471c35f9a6a36fd39b20b712cda39d0461c9948c7cca683f42b1fd18f3"
+      }
+    },
+    "table3_cost": {
+      "csv": {
+        "bytes": 4930,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_cost.csv",
+        "sha256": "51b99a91cb032f1475ae7ab6d3c23e98af9d5abf13c825f413691c4856919173"
+      },
+      "json": {
+        "bytes": 14523,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_cost.json",
+        "sha256": "de06156cc030389df9e8d69ae964bf889463c0f1d5e0fe92c94ce3df39703c02"
+      },
+      "md": {
+        "bytes": 5694,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_cost.md",
+        "sha256": "7b676b46021a70addd4e806c373c30e9369e1f2121a672055bff4e11d2d28c42"
+      },
+      "tex": {
+        "bytes": 6009,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_cost.tex",
+        "sha256": "90b89d5d1e1c4434a0a656abc3858f6f622ac422e08fe26616674a602b064de2"
+      }
+    },
+    "table3_coverage": {
+      "csv": {
+        "bytes": 6174,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_coverage.csv",
+        "sha256": "6cbb8a4fb6d7fee684bb23317bd00e41d735a1ed22d33fc16f9bf0a92d397e5f"
+      },
+      "json": {
+        "bytes": 66057,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_coverage.json",
+        "sha256": "316329b8c7ede073c174553b6ef6b700b2124b6952a257fc34d60a8f91682f70"
+      },
+      "md": {
+        "bytes": 12996,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_coverage.md",
+        "sha256": "2a48c67c397c5a595bf3b78f3454e7312b175b82d1a66a00ab60821f7c061038"
+      },
+      "tex": {
+        "bytes": 13088,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/tables/table3_coverage.tex",
+        "sha256": "fb978e01493e780ac87ffeca2d24eecd648880f50149882e795b38a253628697"
+      }
+    }
+  }
+}

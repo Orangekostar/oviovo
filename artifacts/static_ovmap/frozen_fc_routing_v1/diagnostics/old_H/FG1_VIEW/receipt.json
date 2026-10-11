@@ -1,0 +1,101 @@
+{
+  "GT_targets_forward": false,
+  "identity": "ca967b1194d4778ccf8702de48ca555dae6f01b6008fc1a3e1e74bc2899876ad",
+  "mass_means": {
+    "delta_norm": 0.2268046020981994,
+    "group_norm_proxy": 0.2958994837440919,
+    "local_mass": 0.8070764724017665,
+    "negative_mass": 0.18149987318841596,
+    "null_mass": 0.19292353023544395,
+    "positive_mass": 0.6255765960846871,
+    "unknown_mass": 0.0
+  },
+  "membership": {
+    "AUROC": 0.5,
+    "Brier": 0.25,
+    "accuracy": 0.7855763130066972,
+    "bins": [
+      {
+        "lower": 0.0,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.1
+      },
+      {
+        "lower": 0.1,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.2
+      },
+      {
+        "lower": 0.2,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.3
+      },
+      {
+        "lower": 0.3,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.4
+      },
+      {
+        "lower": 0.4,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.5
+      },
+      {
+        "lower": 0.5,
+        "mean_probability": 0.5,
+        "n": 70925,
+        "target_frequency": 0.7855763130066972,
+        "upper": 0.6
+      },
+      {
+        "lower": 0.6,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.7
+      },
+      {
+        "lower": 0.7,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.8
+      },
+      {
+        "lower": 0.8,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 0.9
+      },
+      {
+        "lower": 0.9,
+        "mean_probability": null,
+        "n": 0,
+        "target_frequency": null,
+        "upper": 1.0
+      }
+    ],
+    "known": 70925,
+    "negative": 15208,
+    "positive": 55717,
+    "status": "DEFINED"
+  },
+  "method": "FG1_VIEW",
+  "original_objects": 101,
+  "role": "old_H",
+  "status": "COMPLETE",
+  "summary": [],
+  "used_for_selection": false,
+  "variant_records": 404
+}

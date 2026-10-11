@@ -1,0 +1,100 @@
+{
+  "artifact_root": "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1",
+  "checked_count": 2233,
+  "curve_rows": [
+    {
+      "kind": "history",
+      "nonempty_rows": 3,
+      "relative_path": "history/resume_boundary_fix/FG1_VIEW/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed17/FG1_VIEW/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed17/FG2_SURFACE/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed17/FG3_AUX/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed17/FG4_ROUTE/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed29/FG1_VIEW/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed29/FG2_SURFACE/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed29/FG3_AUX/updates.jsonl.gz"
+    },
+    {
+      "kind": "formal",
+      "nonempty_rows": 2000,
+      "relative_path": "training/seed29/FG4_ROUTE/updates.jsonl.gz"
+    }
+  ],
+  "formal_curve_count": 8,
+  "formal_curves_all_2000": true,
+  "history_curve_rows": [
+    {
+      "kind": "history",
+      "nonempty_rows": 3,
+      "relative_path": "history/resume_boundary_fix/FG1_VIEW/updates.jsonl.gz"
+    }
+  ],
+  "index_identity": "721e6f7a8c6f1e25dc9b3c3ab98c97883ee8585bbff92feace47880e41e4e4e1",
+  "index_path": "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/artifact_index.json",
+  "mismatches": [],
+  "oversized": [],
+  "pt_files": [
+    {
+      "bytes": 871856,
+      "relative_path": "export/weights/FG1_VIEW.pt"
+    },
+    {
+      "bytes": 871995,
+      "relative_path": "export/weights/FG2_SURFACE.pt"
+    },
+    {
+      "bytes": 871319,
+      "relative_path": "export/weights/FG3_AUX.pt"
+    },
+    {
+      "bytes": 871945,
+      "relative_path": "export/weights/FG4_ROUTE.pt"
+    },
+    {
+      "bytes": 872020,
+      "relative_path": "export/weights/S29_FG1_VIEW.pt"
+    },
+    {
+      "bytes": 872095,
+      "relative_path": "export/weights/S29_FG2_SURFACE.pt"
+    },
+    {
+      "bytes": 871995,
+      "relative_path": "export/weights/S29_FG3_AUX.pt"
+    },
+    {
+      "bytes": 872045,
+      "relative_path": "export/weights/S29_FG4_ROUTE.pt"
+    }
+  ],
+  "status": "COMPLETE",
+  "total_bytes": 1231425546
+}

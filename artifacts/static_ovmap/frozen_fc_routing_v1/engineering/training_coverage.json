@@ -1,0 +1,110 @@
+{
+  "arms": [
+    {
+      "curve_rows": 2000,
+      "method": "FG1_VIEW",
+      "qualified": true,
+      "receipt": "2d9524341a742281f57ba40797f2830e6eb6b9b49d4b25d7b6c1b397b13ae8aa",
+      "replayed_updates": 3,
+      "seed": 17,
+      "selected_step": 500,
+      "updates": 2000
+    },
+    {
+      "curve_rows": 2000,
+      "method": "FG2_SURFACE",
+      "qualified": true,
+      "receipt": "ec32ad3ab15a5acc94f9e81e215879ca06571678e98f3e0a4aa74c99b58b0680",
+      "replayed_updates": 0,
+      "seed": 17,
+      "selected_step": 1000,
+      "updates": 2000
+    },
+    {
+      "curve_rows": 2000,
+      "method": "FG3_AUX",
+      "qualified": true,
+      "receipt": "a508e1d2a4a917e448d2730295b1985ad9ca50d34ed3e9979302921887733aac",
+      "replayed_updates": 0,
+      "seed": 17,
+      "selected_step": 1000,
+      "updates": 2000
+    },
+    {
+      "curve_rows": 2000,
+      "method": "FG4_ROUTE",
+      "qualified": true,
+      "receipt": "74315bde92c5522c34eea629de0aa673acd71941b2792e4df842b777845e346d",
+      "replayed_updates": 0,
+      "seed": 17,
+      "selected_step": 1500,
+      "updates": 2000
+    },
+    {
+      "curve_rows": 2000,
+      "method": "FG1_VIEW",
+      "qualified": true,
+      "receipt": "f7a208b5cf83f4be5fd9e4ac1f8707f1ab8075a6925a1767bba66ba5b817b78d",
+      "replayed_updates": 0,
+      "seed": 29,
+      "selected_step": 250,
+      "updates": 2000
+    },
+    {
+      "curve_rows": 2000,
+      "method": "FG2_SURFACE",
+      "qualified": true,
+      "receipt": "2077800402ace2a6169c8a58c0bccd15cbfeb478c7b40480bdd8cb2b36ff2ff8",
+      "replayed_updates": 0,
+      "seed": 29,
+      "selected_step": 2000,
+      "updates": 2000
+    },
+    {
+      "curve_rows": 2000,
+      "method": "FG3_AUX",
+      "qualified": true,
+      "receipt": "9973dd9b89d90c6b40249a4b8fdf6c520460491a3d673932a874e2dac95e8a85",
+      "replayed_updates": 0,
+      "seed": 29,
+      "selected_step": 1000,
+      "updates": 2000
+    },
+    {
+      "curve_rows": 2000,
+      "method": "FG4_ROUTE",
+      "qualified": true,
+      "receipt": "a4b4797b565a91974a87bdecc16984ef37f93e7d1ff3d14103997f6780e14550",
+      "replayed_updates": 0,
+      "seed": 29,
+      "selected_step": 2000,
+      "updates": 2000
+    }
+  ],
+  "identity": "d76362f0f00eebb9c78a223f7fafa6bfbc6a918879f4e825b5be75285f290e18",
+  "numerical_sources_unchanged": {
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/data.py": "ae830860bf02541d2163376f5a791728987978f0406ba09ef48a1af6daee0e8c",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/losses.py": "aaf1e1d598d4f754707416f6354394d8c05dc703a75f826eae7b02ad430deb8d",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/models.py": "585394271a31a22599d43c749e3dd5c8ab56dd655fc0f25788f218388d4a38fe",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/recognition.py": "d39bc3465f003da678c6b913b1ef181837d4c321d66bfdba86cb9b5acc6deb13",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/selection.py": "89880899aba4f1e637ad869666c2f9584678d3e0595c9078d8194e5e0281b587",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/training.py": "e643a3ea4bc9ad8fe668a50e3998fbba20d8c55d9ced818bb313b0c8658057d6"
+  },
+  "predictor_lock": "4d2484fff8cd770307c7dce57a77e86bb2436b9072d17348eb521955180d7946",
+  "replayed_first_three_scalar_rows_identical": true,
+  "replayed_updates": 3,
+  "scientific_updates": 16000,
+  "seeds": {
+    "17": {
+      "arms": 4,
+      "draws": "927c5e02df6e310a0527fad9a0c3636a7399fddfd1553e51406878096ab70d2b",
+      "initial_model_digest": "7355e19cf3bce6c77405a5b91e35202c71dbe6b4c7c8cf8eb1e0903008ab8b09"
+    },
+    "29": {
+      "arms": 4,
+      "draws": "0987bf8adebfa835a03123586e815ff99b562f53447a41a969ad443f966e8269",
+      "initial_model_digest": "1ed3688e311353bb2975dd46d7e95a33fe140d88fa06d8866bb2a4c89d4a1af0"
+    }
+  },
+  "status": "COMPLETE"
+}

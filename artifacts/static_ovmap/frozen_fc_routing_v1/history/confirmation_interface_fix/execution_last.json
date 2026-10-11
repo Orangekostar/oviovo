@@ -1,0 +1,43 @@
+{
+  "argv": [
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/scripts/evaluation/run_ovimap_frozen_fc_routing.py",
+    "--spec",
+    "configs/static_ovmap/frozen_fc_routing_v1.json",
+    "--parent-root",
+    "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+    "--gpu",
+    "0",
+    "--phase",
+    "all",
+    "--resume"
+  ],
+  "attempt": "1791682758539983264",
+  "deployment": "N0_UNCHANGED",
+  "elapsed_seconds": 12804.71669589309,
+  "exit_code": 1,
+  "failed_phases": [
+    "confirm"
+  ],
+  "identity": "5b39f06f4ede4d2273022a6efe5e14dd830bfcb52339954c9171dd392cbbb58a",
+  "phase": "all",
+  "phases": {
+    "bind": "fb708fba37cbd792bb02db21352f8dec6633dbf83d14959953220d490b297f65",
+    "confirm": "24a2ba8154f7987a7844c3289e5ca3d3f2b3a7dae05f16d680b86831abc75f1d",
+    "diagnose": "07fe7b4ee4a3b3d6506fd0bd1a65eb4e0d89e84055de93704e680245c462aca0",
+    "diagnostic_D1": "c1a6f6b33bf97a4f0037826613f658be651221192930cc69988092cbdfea03cb",
+    "engineer": "ece2da9a68c2d2ef6cc1af9c63db08b5877a5db19971293f2c1930bca8d8fae8",
+    "evaluate": "78558d1e901b9866194374756b1748c562390f076a7e6c0bd2412bd76843add3",
+    "lock": "3943d815f0a51e37e25eb401eb1c0a832887fa9fa2c3530f971d9f00b7467627",
+    "nominate": "0214f944b3eb5da1fc77a13297140727bd71ee41fc315ca630dbe3c453823e31",
+    "predict": "c1b9851ea449a53e7b65d9b03feb4cf0fed467b54f8d59a955b50cf1bf7adba4",
+    "prepare": "c5fdb242eb2b633812cb63dcc475fffd1fb0c08f1a601ff2a7b8309b479bee83",
+    "prior_audit": "6f12b935c9f6a6bef08211c0038ee71851fcafb2cfe65a473f8e145661e48693",
+    "repeat": "0bcb968a005fb9391d3c73369746995cc51a265eee04f7eec5f718f250f13176",
+    "report": "d4322ea3f3e1b8b92ac5eb751f385465ed4354b2651f2609aaa65036b70c8d55",
+    "train": "b518674d74779d57c77a5213164db71e423c6005aa33201429775476fbbc9d72"
+  },
+  "source_binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "status": "PARTIAL_ACTIVE_STAGE"
+}

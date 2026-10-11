@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "-u",
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/scripts/evaluation/run_ovimap_frozen_fc_routing.py",
+    "--spec",
+    "configs/static_ovmap/frozen_fc_routing_v1.json",
+    "--parent-root",
+    "/mnt/shared/ww/ovimap-preservation-routing-v1/attempt_001",
+    "--output-root",
+    "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+    "--gpu",
+    "0",
+    "--phase",
+    "all",
+    "--resume"
+  ],
+  "attempt": "1791682757746632734",
+  "elapsed_seconds": 12805.622199044097,
+  "exit_code": 1,
+  "identity": "aba97f8554bf7abf5f5f8eb5d6d7fabcc8288632e7fc2c78f2dd2374dfb3954b",
+  "observer_survives_tool_session": true,
+  "result_store_identity": "1e5f9d31df6c2bbca7cfa573a3b5ecf7bf9c30a15296427e487f6b38fe91c38b",
+  "scientific_status": "PARTIAL_ACTIVE_STAGE",
+  "started_UTC": "2026-10-11T01:39:17.746991+00:00",
+  "status": "OBSERVED_FAILURE",
+  "stdout": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/logs/all_1791682757746632734.log",
+  "terminal_identity": "5b39f06f4ede4d2273022a6efe5e14dd830bfcb52339954c9171dd392cbbb58a"
+}

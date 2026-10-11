@@ -1,0 +1,227 @@
+{
+  "architecture_parameters": 216194,
+  "branch": "FG1_VIEW",
+  "clean_corrupt_forward_calls": 64000,
+  "completed_steps": 2000,
+  "config": {
+    "direct_routing": false,
+    "grouping": "VIEW",
+    "membership_loss": false
+  },
+  "discarded_uncheckpointed_updates": 0,
+  "elapsed_seconds": 1101.1326313531026,
+  "identity": "f7a208b5cf83f4be5fd9e4ac1f8707f1ab8075a6925a1767bba66ba5b817b78d",
+  "initial_model_digest": "1ed3688e311353bb2975dd46d7e95a33fe140d88fa06d8866bb2a4c89d4a1af0",
+  "input_contract": {
+    "binding": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+    "branch": "FG1_VIEW",
+    "config": {
+      "direct_routing": false,
+      "grouping": "VIEW",
+      "membership_loss": false
+    },
+    "data": "111f1976ff412129cd3b1fedb67e7d2027879d06b52dacacb8437be252786130",
+    "declared_restart_history": [],
+    "draws": "0987bf8adebfa835a03123586e815ff99b562f53447a41a969ad443f966e8269",
+    "numerical_sources": [
+      {
+        "bytes": 7407,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/models.py",
+        "sha256": "585394271a31a22599d43c749e3dd5c8ab56dd655fc0f25788f218388d4a38fe"
+      },
+      {
+        "bytes": 1652,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/losses.py",
+        "sha256": "aaf1e1d598d4f754707416f6354394d8c05dc703a75f826eae7b02ad430deb8d"
+      },
+      {
+        "bytes": 11938,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/training.py",
+        "sha256": "e643a3ea4bc9ad8fe668a50e3998fbba20d8c55d9ced818bb313b0c8658057d6"
+      },
+      {
+        "bytes": 3995,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/recognition.py",
+        "sha256": "d39bc3465f003da678c6b913b1ef181837d4c321d66bfdba86cb9b5acc6deb13"
+      },
+      {
+        "bytes": 1475,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/selection.py",
+        "sha256": "89880899aba4f1e637ad869666c2f9584678d3e0595c9078d8194e5e0281b587"
+      },
+      {
+        "bytes": 7611,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/worktree/src/static_ovmap/frozen_fc_routing/data.py",
+        "sha256": "ae830860bf02541d2163376f5a791728987978f0406ba09ef48a1af6daee0e8c"
+      }
+    ],
+    "seed": 29
+  },
+  "input_identity": "a2e0373b553050bd52998bf5cbb7ea571f207e8d10fdc518e374786658ca51a7",
+  "last_checkpoint": {
+    "bytes": 2498936,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/last.pt",
+    "sha256": "41e48558842c7e2ab78cafe00525ee4153f1822fc8bef172ec0c91c20d1cbd18"
+  },
+  "loss_participating_parameters": 199553,
+  "observed_gradient_parameters_at_last_update": 199553,
+  "observed_nonzero_gradient_parameters_at_last_update": 199553,
+  "original_item_draws": 32000,
+  "peak_allocated_bytes": 1643724800,
+  "peak_reserved_bytes": 1778384896,
+  "qualified": true,
+  "seed": 29,
+  "selected_checkpoint": {
+    "bytes": 2497904,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/selected.pt",
+    "sha256": "1700780222a0d209205a17d045fe7de6ff2d38a91f3ea5711c269a45fdd3a87c"
+  },
+  "selected_metrics": {
+    "A": 0.4043560606060606,
+    "C": 0.42960858585858586,
+    "CE": 3.945074573379976,
+    "M": 0.5609848484848484,
+    "NLL": 4.172773031591867,
+    "categories": 28,
+    "corrections": 16,
+    "families": 4,
+    "full200_competitors": true,
+    "harm": 13,
+    "net_corrections": 3,
+    "original_objects": 69,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/dev_0250.json",
+    "per_family_A": {
+      "scene0105": 0.4090909090909091,
+      "scene0143": 0.5925925925925926,
+      "scene0211": 0.37499999999999994,
+      "scene0620": 0.24074074074074078
+    },
+    "recognition": "7fe1b565e994fc1e8cdfa2e2bc07c95ead7b0daad658dd6a7d1b5c98271ea815",
+    "step": 250,
+    "variant_records": 276
+  },
+  "selected_step": 250,
+  "status": "COMPLETE",
+  "validations": [
+    {
+      "A": 0.4043560606060606,
+      "C": 0.42960858585858586,
+      "CE": 3.945074573379976,
+      "M": 0.5609848484848484,
+      "NLL": 4.172773031591867,
+      "categories": 28,
+      "corrections": 16,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 13,
+      "net_corrections": 3,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/dev_0250.json",
+      "per_family_A": {
+        "scene0105": 0.4090909090909091,
+        "scene0143": 0.5925925925925926,
+        "scene0211": 0.37499999999999994,
+        "scene0620": 0.24074074074074078
+      },
+      "recognition": "7fe1b565e994fc1e8cdfa2e2bc07c95ead7b0daad658dd6a7d1b5c98271ea815",
+      "step": 250,
+      "variant_records": 276
+    },
+    {
+      "A": 0.3906460437710437,
+      "C": 0.40688131313131315,
+      "CE": 3.931319598427124,
+      "M": 0.5438221500721501,
+      "NLL": 4.159366300391026,
+      "categories": 28,
+      "corrections": 19,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 15,
+      "net_corrections": 4,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/dev_0500.json",
+      "per_family_A": {
+        "scene0105": 0.37878787878787884,
+        "scene0143": 0.5185185185185185,
+        "scene0211": 0.38749999999999996,
+        "scene0620": 0.2777777777777778
+      },
+      "recognition": "2208f0d393161646bb7123990463de2cd60c057fd1b1fcbc4a8c9eedc0329f08",
+      "step": 500,
+      "variant_records": 276
+    },
+    {
+      "A": 0.3760732323232323,
+      "C": 0.3752525252525253,
+      "CE": 3.923835598612173,
+      "M": 0.551758658008658,
+      "NLL": 4.151832248385907,
+      "categories": 28,
+      "corrections": 24,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 18,
+      "net_corrections": 6,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/dev_1000.json",
+      "per_family_A": {
+        "scene0105": 0.4848484848484849,
+        "scene0143": 0.3333333333333333,
+        "scene0211": 0.4083333333333334,
+        "scene0620": 0.2777777777777778
+      },
+      "recognition": "2beac18d8c41be15b9748d6606cb8ec0f2d59636e4215b0a3bff85ba675320e7",
+      "step": 1000,
+      "variant_records": 276
+    },
+    {
+      "A": 0.3769149831649832,
+      "C": 0.403030303030303,
+      "CE": 3.9153988284519823,
+      "M": 0.547790404040404,
+      "NLL": 4.143384074755891,
+      "categories": 28,
+      "corrections": 23,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 19,
+      "net_corrections": 4,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/dev_1500.json",
+      "per_family_A": {
+        "scene0105": 0.46969696969696967,
+        "scene0143": 0.31481481481481477,
+        "scene0211": 0.4083333333333334,
+        "scene0620": 0.3148148148148148
+      },
+      "recognition": "0ee7b6b45d2eb0f6f08127b5e20705115e4e6c3ba2734696257c3ef9b86e8c26",
+      "step": 1500,
+      "variant_records": 276
+    },
+    {
+      "A": 0.36198442760942756,
+      "C": 0.3752525252525253,
+      "CE": 3.9192111699242984,
+      "M": 0.5451118326118326,
+      "NLL": 4.1472062442639865,
+      "categories": 28,
+      "corrections": 22,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 20,
+      "net_corrections": 2,
+      "original_objects": 69,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG1_VIEW/dev_2000.json",
+      "per_family_A": {
+        "scene0105": 0.46969696969696967,
+        "scene0143": 0.31481481481481477,
+        "scene0211": 0.4041666666666666,
+        "scene0620": 0.2592592592592593
+      },
+      "recognition": "9274774f944dfb79700d6f8c964bb21d686ccb0af5f52faa0dcc7391065a27fc",
+      "step": 2000,
+      "variant_records": 276
+    }
+  ]
+}
