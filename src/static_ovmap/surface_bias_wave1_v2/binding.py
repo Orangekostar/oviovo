@@ -5,6 +5,22 @@ import shutil
 import subprocess
 from .common import REPO, BASE, DependencyError, require, verified, write, read, PathResolver, ConsumptionIndex, digest_file
 
+def minimal_fc_dependencies(source,resolver):
+    """Follow the one context FrozenFC consumes; P3 contexts remain lazy."""
+    scene=source['cohorts']['scannet_cf18'][0]; context_path=Path(source['scenes'][scene]['context']['path'])
+    paths=[context_path,Path(source['FC_python'])]
+    execution=source['assets']['execution_config']; assets=Path(execution['assets_root']); operators=Path(execution['fc']['operator_root'])
+    paths.extend([assets/'ovrcoat/ovrcoat.pth',assets/'fc_frozen/model/open_clip_model.safetensors',operators/'ovrcoat/modeling/backbone/clip.py',operators/'ovrcoat/modeling/transformer_decoder/fcclip_transformer_decoder.py',operators/'ovrcoat/ovrcoat.py'])
+    if context_path.exists():
+        context=resolver.rewrite(verified(context_path))
+        paths.extend([Path(context['config']),Path(context['FC_text']['path'])])
+        model_root=context.get('FC_model_reference_root',context.get('fc_root'))
+        if model_root is None: raise ValueError('Frozen FC context lacks model reference')
+        receipt=Path(model_root)/'receipt.json'; paths.append(receipt)
+        if receipt.exists():
+            paths.extend(Path(resolver.resolve(row['path'])) for row in read(receipt)['inputs'] if '/assets/fc_frozen/' in row['path'])
+    return paths
+
 def preflight(spec,parent_root,output_root,path_map=None,gpu=None):
     root=Path(output_root).resolve(); mapping=read(path_map) if isinstance(path_map,(str,Path)) else (path_map or {})
     resolver=PathResolver(mapping); parent=Path(resolver.resolve(str(parent_root))).resolve()
@@ -39,13 +55,15 @@ def preflight(spec,parent_root,output_root,path_map=None,gpu=None):
         raise DependencyError(missing)
     split=verified(lr/'split_manifest.json'); classes=verified(lr/'class_split.json'); features=verified(lr/'features/train-dev.json')
     if len(classes['base_ids'])!=160 or len(classes['heldout_ids'])!=40: raise ValueError('Fixed class split changed')
-    objects=[]
+    objects=[]; manifest_identities={}
     for role,count in (('train',622),('dev',69)):
         rows=[]
         for scene in split['roles'][role]:
             manifest=lr/'data/generated'/scene/'manifest.json'; require([manifest]); value=verified(manifest)
+            manifest_identities[scene]=value['identity']
             rows.extend(resolver.rewrite(value['objects']))
         if sum(bool(o['base']) for o in rows)!=count: raise ValueError('Fixed original object coverage changed')
+        if len({o['family'] for o in rows if o['base']})!=(24 if role=='train' else 4): raise ValueError('Fixed physical-family coverage changed')
         objects.extend(rows)
     needed=[o['inputs']['path'] for o in objects if o['base']]
     frames=resolver.rewrite(features['frames'])
@@ -54,9 +72,8 @@ def preflight(spec,parent_root,output_root,path_map=None,gpu=None):
         needed += [frames[obj['scene']+':'+str(v['frame_id'])]['arrays']['path'] for v in obj['views'][:8]]
     for key in ('FC8','FG2_SURFACE','S29_FG2_SURFACE'):
         value=verified(parent/'recognition/dev'/f'{key}.json'); needed.append(resolver.rewrite(value['arrays'])['path'])
-    for row in source['scenes'].values(): needed.append(row['context']['path'])
-    # Only files consumed by this numerical path, not the full historical lineage.
-    needed += [source['assets']['checkpoint']['path']] if isinstance(source['assets'].get('checkpoint'),dict) else []
+    # AnyUp assets and the other25 map contexts are not consumed by P0–P2.
+    needed += minimal_fc_dependencies(source,resolver)
     missing=[str(p) for p in dict.fromkeys(needed) if not Path(p).exists()]
     weights={}
     for seed in (17,29):
@@ -68,7 +85,7 @@ def preflight(spec,parent_root,output_root,path_map=None,gpu=None):
         if digest_file(file)!=spec['heads'][str(seed)]['sha256'] or row['seed']!=seed or row['selected_step']!=spec['heads'][str(seed)]['selected_step']: raise ValueError('Fixed exported head identity changed')
         weights[key]=dict(row,weights=dict(item,path=str(file.resolve())))
     p3=[lr/'regression/manifest.json',lr/'features/regression.json',parent/'recognition/regression.json',parent/'evaluation/store.json']
-    write(root/'dependency_manifest.json',dict(status='BLOCKED_DEPENDENCY' if missing else 'COMPLETE',missing=missing,P3_top_level={str(p):p.exists() for p in p3},parent_identity=original['identity'],lr_root=str(lr),registry_identity=registered['identity'],pinned_registry=pinned))
+    write(root/'dependency_manifest.json',dict(status='BLOCKED_DEPENDENCY' if missing else 'COMPLETE',missing=missing,P3_top_level={str(p):p.exists() for p in p3},P3_contexts={key:Path(row['context']['path']).exists() for key,row in source['scenes'].items()},parent_identity=original['identity'],lr_root=str(lr),registry_identity=registered['identity'],pinned_registry=pinned))
     if missing: raise DependencyError(missing)
     for name in ('class_split.json','split_manifest.json','features/train-dev.json'):
         dest=root/name; dest.parent.mkdir(parents=True,exist_ok=True)
@@ -80,7 +97,7 @@ def preflight(spec,parent_root,output_root,path_map=None,gpu=None):
             if dest.resolve()!=target.resolve(): raise ValueError('Read-only dependency link changed')
         else: dest.symlink_to(target,target_is_directory=True)
     binding=copy.deepcopy(source); binding.pop('identity',None)
-    binding.update(task_id=spec['task_id'],new_spec=spec,fg_parent_root=str(parent),lr_parent_root=str(lr),output_root=str(root),path_map=mapping,gpu=str(source['gpu'] if gpu is None else gpu),parent_FG_identity=original['identity'],parent_registry_identity=registered['identity'],parent_registry_path=str(registry),export_heads=weights,base_commit=BASE)
+    binding.update(task_id=spec['task_id'],new_spec=spec,fg_parent_root=str(parent),lr_parent_root=str(lr),output_root=str(root),path_map=mapping,gpu=str(source['gpu'] if gpu is None else gpu),parent_FG_identity=original['identity'],parent_registry_identity=registered['identity'],parent_registry_path=str(registry),export_heads=weights,base_commit=BASE,consumed_manifest_identities=dict(split=split['identity'],classes=classes['identity'],features=features['identity'],objects=manifest_identities))
     if ',' in binding['gpu'] or not binding['gpu']: raise ValueError('One inherited GPU device required')
     result=write(root/'binding.json',binding); write(root/'preflight.json',dict(status='COMPLETE',binding_identity=result['identity'],P3_top_level_only=True,real_FC_forward_not_yet_run=True))
     index.write_memo(root/'input_verifications.json'); return result
@@ -104,4 +121,13 @@ def runtime_registry(binding,fc):
     return {seed:load_exported(root/'export/runtime_registry.json',spec['heads'][str(seed)]['registry_key'],fc.device,FC_identity=fc.model_key,text_identity=text) for seed in (17,29)}
 
 def load_binding(root):
-    require([Path(root)/'binding.json']); return verified(Path(root)/'binding.json')
+    require([Path(root)/'binding.json']); result=verified(Path(root)/'binding.json')
+    identities=result.get('consumed_manifest_identities')
+    if identities:
+        lr=Path(result['lr_parent_root']); parent=Path(result['fg_parent_root'])
+        expected={parent/'source_binding.json':result['parent_FG_identity'],lr/'split_manifest.json':identities['split'],lr/'class_split.json':identities['classes'],lr/'features/train-dev.json':identities['features']}
+        expected.update({lr/'data/generated'/scene/'manifest.json':identity for scene,identity in identities['objects'].items()})
+        require(expected)
+        for path,identity in expected.items():
+            if verified(path)['identity']!=identity: raise ValueError('Bound numerical manifest changed; rerun preflight before downstream phases: '+str(path))
+    return result

@@ -66,8 +66,26 @@ def observed_phase(args,phase):
 
 def controller(args,spec):
     from . import reporting,publication
+    resume_error=None
+    if args.phase=='all' and args.resume:
+        try:
+            released=publication.unchanged_release(args.output_root)
+            summary_path=args.output_root/'run_summary.json'
+            if released and summary_path.exists():
+                summary=verified(summary_path); deps=args.output_root/'dependency_manifest.json'
+                dependency=verified(deps) if deps.exists() else {}; missing=dependency.get('missing',[])
+                from .common import PathResolver
+                mapping=read(args.path_map) if args.path_map else {}
+                requested_parent=Path(PathResolver(mapping).resolve(str(args.parent_root))).resolve()
+                saved=load_binding(args.output_root) if (args.output_root/'binding.json').exists() else {}
+                same_runtime=str(requested_parent)==saved.get('fg_parent_root',dependency.get('checked_parent')) and mapping==saved.get('path_map',{}) and (args.gpu is None or not saved or args.gpu==saved['gpu'])
+                if same_runtime and (summary['execution_status']=='COMPLETE' or summary['execution_status']=='BLOCKED_DEPENDENCY' and any(not Path(p).exists() for p in missing)):
+                    print(json.dumps(dict(resumed_verified_release=released['C2'],execution_status=summary['execution_status'],science_status=summary['science_status'],no_new_workers_or_commits=True)),flush=True)
+                    return 0 if summary['execution_status']=='COMPLETE' else 1
+        except (DependencyError,RuntimeError,ValueError,OSError) as exc: resume_error=exc
     error=None; status=None; code=0
     try:
+        if resume_error is not None: raise resume_error
         if args.phase in ('all',*SCIENCE):
             phases=SCIENCE if args.phase=='all' else (args.phase,)
             for phase in phases: observed_phase(args,phase)
@@ -88,7 +106,7 @@ def controller(args,spec):
                 result=publication.run(args.output_root)
                 path=args.output_root/'run_summary.json'
                 if path.exists():
-                    summary=read(path); summary.pop('identity',None); summary.update(publication_status='PUSH_VERIFIED',publication=result); write(path,summary)
+                    summary=read(path); summary.pop('identity',None); summary.update(publication_status='PUSH_VERIFIED',publication_snapshot='VERIFIED_EXTERNAL_RECEIPT',publication=result); write(path,summary)
             except (RuntimeError,OSError,ValueError) as exc:
                 code=1; print('PUBLICATION_BLOCKED',str(exc),file=sys.stderr,flush=True)
     return code

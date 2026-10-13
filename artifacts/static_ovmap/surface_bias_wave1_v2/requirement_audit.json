@@ -1,0 +1,252 @@
+{
+  "checks": [
+    {
+      "evidence": "common.py / binding.py / frozen docs",
+      "prompt": "T0 / sections0\u20132",
+      "requirement": "Fixed BASE, isolated namespace, original package/config bytes",
+      "status": "CODE_REVIEWED"
+    },
+    {
+      "evidence": "binding.minimal_fc_dependencies / test05",
+      "prompt": "T0 / section2.2",
+      "requirement": "P0\u2013P2 exact parents; P3 prerequisites lazy; no AnyUp substitute",
+      "status": "SYNTHETIC_DEPENDENCY_SCOPE_VERIFIED"
+    },
+    {
+      "evidence": "binding.preflight / consumed_manifest_identities",
+      "prompt": "T0 / section2.3",
+      "requirement": "Verify parent before path rewrite; preserve inherited parent_root",
+      "status": "CODE_REVIEWED_REAL_BINDING_BLOCKED"
+    },
+    {
+      "evidence": "binding.runtime_registry",
+      "prompt": "T0 / section2.3",
+      "requirement": "Two fixed head SHAs/steps; FC/text bytes and class order",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "binding.py / runner.py",
+      "prompt": "T0 / sections2\u20133",
+      "requirement": "Read-only links and exact class_split copy; explicit CLI phases",
+      "status": "CODE_REVIEWED"
+    },
+    {
+      "evidence": "solver.py / original focused tests01\u201302",
+      "prompt": "T1 / section4",
+      "requirement": "Float64 fixed-scale Huber and zero-mean weighted graph KKT",
+      "status": "SYNTHETIC_SOLVER_VERIFIED"
+    },
+    {
+      "evidence": "solver.correction / selection.py",
+      "prompt": "T1 / section4",
+      "requirement": "C1 uses all valid views; C2 per-site Huber; fixed lambda grid",
+      "status": "CODE_REVIEWED"
+    },
+    {
+      "evidence": "adapter.py / parent-head focused test03",
+      "prompt": "T1 / section4",
+      "requirement": "Only local_raw changes; local_unit/query/quality/eta unchanged",
+      "status": "SYNTHETIC_PARENT_HEAD_VERIFIED"
+    },
+    {
+      "evidence": "adapter._adapt",
+      "prompt": "T1 / section4",
+      "requirement": "Original nonfinite error; only new numeric correction falls back",
+      "status": "CODE_REVIEWED"
+    },
+    {
+      "evidence": "adapter.py / prediction.parity",
+      "prompt": "T1 / sections4\u20135",
+      "requirement": "Same-seed lambda0 and geometric fallback; no FC8 fallback",
+      "status": "REAL_FC_PARITY_BLOCKED"
+    },
+    {
+      "evidence": "solver.py / test02 / CLAIMS",
+      "prompt": "T1 / section4",
+      "requirement": "Relative gauge, balanced-pool cancellation, shuffle degeneracy",
+      "status": "SYNTHETIC_BOUNDARY_VERIFIED"
+    },
+    {
+      "evidence": "prediction.parity / parity.json",
+      "prompt": "T1 / section5",
+      "requirement": "2 TRAIN \u00d72 seeds \u00d74 conditions \u00d72/4/8 real FC checks",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "prediction.compare_history",
+      "prompt": "T1 / section5",
+      "requirement": "69 base DEV keyed historical labels/AMC and embedding tolerance",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "binding.py / diagnostics.spatial_folds / test05",
+      "prompt": "T2 / section6.1",
+      "requirement": "622/69 base objects,24/4 families, four condition-specific positions",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "diagnostics.py / test05",
+      "prompt": "T2 / section6.1",
+      "requirement": "Four spatial folds and actual bilinear-donor global purge",
+      "status": "SYNTHETIC_ISOLATION_VERIFIED_REAL_DIAGNOSIS_BLOCKED"
+    },
+    {
+      "evidence": "diagnostics.diagnostic_metadata / data.ObjectLoader / test05",
+      "prompt": "T2 / section6.1",
+      "requirement": "Missing diagnostic metadata unsupported; no fabricated positions",
+      "status": "SYNTHETIC_PARENT_COMPATIBILITY_VERIFIED"
+    },
+    {
+      "evidence": "diagnostics.independent_bias",
+      "prompt": "T2 / section6.2",
+      "requirement": "Stable five null seeds; degenerate null separately labeled",
+      "status": "CODE_REVIEWED_REAL_DIAGNOSIS_BLOCKED"
+    },
+    {
+      "evidence": "diagnostics.aggregate / diagnostic_units compact archive",
+      "prompt": "T2 / section6.2",
+      "requirement": "Sum N/D before R; equal families; paired common support",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "diagnostics.run / selection.activate",
+      "prompt": "T2 / section6.2",
+      "requirement": "Signal coverage floors; signal never gates P2/P3",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "prediction.recognition / inherited summarize",
+      "prompt": "T3 / section6.3",
+      "requirement": "Full200 top1/NLL; inherited base-class CE at0.07; exact AMC",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "selection.lock_selection / test06",
+      "prompt": "T3 / section6.3",
+      "requirement": "All12 seed17 candidates; AMC/lambda tie rule; lock C_STAR",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "prediction.repeat / selection.activate / test06",
+      "prompt": "T4 / section6.4",
+      "requirement": "Seed29 locked repeats only; no champion replacement",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "selection.passes/activate / test06",
+      "prompt": "T4 / section6.4",
+      "requirement": "Exact pass thresholds and three activation branches",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "prediction.prefix / test05/07",
+      "prompt": "T4 / section6.5",
+      "requirement": "Both seeds, four conditions,2/4 prefixes; lambda0 aliases",
+      "status": "REAL_EXPERIMENT_BLOCKED"
+    },
+    {
+      "evidence": "adapter.py / prediction.recognition",
+      "prompt": "T4 / section6.5",
+      "requirement": "Group raw/phi/embedding/attention effect and harm audits",
+      "status": "CODE_REVIEWED_REAL_READOUT_BLOCKED"
+    },
+    {
+      "evidence": "prediction.predict / evaluation.run",
+      "prompt": "T5 / section7.1",
+      "requirement": "All26 scenes and all expanded arms locked before GT",
+      "status": "REAL_MAP_NOT_REACHED"
+    },
+    {
+      "evidence": "prediction.predict / unchanged build_payload",
+      "prompt": "T5 / section7.2",
+      "requirement": "Fixed G1 owner/support; replace F only; retain N/Q/temperature/D2",
+      "status": "CODE_REVIEWED_REAL_MAP_BLOCKED"
+    },
+    {
+      "evidence": "evaluation.py / compact per-class data",
+      "prompt": "T5 / section7.3",
+      "requirement": "Official ordered pools, null class, full200 base/novel, Replica N/A",
+      "status": "CODE_REVIEWED_REAL_MAP_BLOCKED"
+    },
+    {
+      "evidence": "evaluation.evaluate_scene / dynamic coverage",
+      "prompt": "T5 / section7.3",
+      "requirement": "Identity-proven aliases; exactly2 additional active-run scorer checks",
+      "status": "CODE_REVIEWED_REAL_MAP_BLOCKED"
+    },
+    {
+      "evidence": "evaluation.run / science_status",
+      "prompt": "T5 / section7.4",
+      "requirement": "Four-cell AP/mIoU map gate and M1 vs locked C_STAR",
+      "status": "CODE_REVIEWED_REAL_MAP_BLOCKED"
+    },
+    {
+      "evidence": "tests/test_surface_bias_wave1_v2.py / tests.json",
+      "prompt": "T6 / section8",
+      "requirement": "Exactly8 focused groups; real FC dependency skip is explicit",
+      "status": "FOCUSED_TESTS_RECORDED_REAL_FC_SKIP"
+    },
+    {
+      "evidence": "common.cached_unit / actual readout-loop test07",
+      "prompt": "T6 / section8",
+      "requirement": "Interrupted readout resumes without repeating completed head",
+      "status": "SYNTHETIC_INTERRUPTION_VERIFIED"
+    },
+    {
+      "evidence": "common.preserve_unit / test07",
+      "prompt": "T6 / section8",
+      "requirement": "Complete files verified; superseded identities/results retained",
+      "status": "SYNTHETIC_RECOVERY_VERIFIED"
+    },
+    {
+      "evidence": "runner.py / PrefixLoader / common.py / binding.py",
+      "prompt": "T6 / sections3,8",
+      "requirement": "One queued GPU; FP32;32GiB host budget;3 CPU scorers; space reserve",
+      "status": "CODE_REVIEWED_REAL_RESOURCE_MEASUREMENT_BLOCKED"
+    },
+    {
+      "evidence": "reporting.table / actual artifact files",
+      "prompt": "T7 / section9.1",
+      "requirement": "Five tables in MD/CSV/JSON; every finite candidate retained",
+      "status": "GENERATED_FROM_SEALED_JSON"
+    },
+    {
+      "evidence": "reporting.compact_results / compact_results_index.json",
+      "prompt": "T7 / section9.2",
+      "requirement": "Frozen artifact config; compact readouts, N/D, map/match/per-class data",
+      "status": "NO_NEW_SCIENTIFIC_OUTPUTS"
+    },
+    {
+      "evidence": "publication.check_files / artifact_index.json",
+      "prompt": "T7 / section9.2",
+      "requirement": "40/150MiB finite task paths; no RGB/GT/grids/base weights",
+      "status": "CHECKED_BEFORE_ACTUAL_C1"
+    },
+    {
+      "evidence": "publication.py / test08 / committed receipt",
+      "prompt": "T7 / section9.3",
+      "requirement": "Normal C1/C2 push, prior-release retention, unchanged resume reuse",
+      "status": "ACTUAL_NEW_C1_PENDING_AT_REPORT_SNAPSHOT"
+    },
+    {
+      "evidence": "runner.py / run_summary.json / stage_exits.json",
+      "prompt": "T7 / section9.4",
+      "requirement": "Three status axes; real worker exits; external observed all exit",
+      "status": "OBSERVED_SCIENTIFIC_FAILURE_RETAINED"
+    },
+    {
+      "evidence": "CLAIMS.md / RESULTS.md",
+      "prompt": "T7 / section10",
+      "requirement": "No unsupported mechanism/map/instance/onlineFPS/OVI-MAP claim",
+      "status": "EVIDENCE_BOUNDARIES_REVIEWED"
+    }
+  ],
+  "execution_status": "BLOCKED_DEPENDENCY",
+  "identity": "55daccb4a351aab0c33a466519802a16bbc9528656bce55c07bf1107810b3b3d",
+  "remaining_required_real_experiments": [
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/source_binding.json"
+  ],
+  "review_owner": "PRIMARY_AGENT",
+  "science_status": "UNASSESSED_DEPENDENCY",
+  "scientific_source_digest": "7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc"
+}

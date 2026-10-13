@@ -1,5 +1,6 @@
 """Tables come from sealed observations; missing science stays null."""
 import csv
+import gzip
 import io
 import json
 from pathlib import Path
@@ -31,12 +32,75 @@ def science_status(diagnostic,activation,evaluation):
     if activation['expanded']: return 'READOUT_GAIN_MAP_UNCONFIRMED'
     return 'SIGNAL_ONLY_NO_READOUT_GAIN' if diagnostic and diagnostic.get('mechanism_signal') else 'NO_HELDOUT_SIGNAL'
 
+def execution_complete(*,parity,diagnostic,selection,repeat,prefix,activation,evaluation):
+    if not all(value and value.get('status')=='COMPLETE' for value in (parity,diagnostic,selection,repeat,prefix,activation)):
+        return False
+    return bool(evaluation and evaluation.get('status')==('EVALUATION_COMPLETE' if activation['expanded'] else 'NOT_ACTIVATED_BY_FIXED_RULE'))
+
+def compact_results(root,art,evaluation):
+    """Publish readouts and sufficient statistics, never grids, GT or point maps."""
+    root=Path(root); art=Path(art); folder=art/'compact'; folder.mkdir(parents=True,exist_ok=True)
+    files=[]; external=[]
+    def compressed(name,value):
+        dest=folder/name; dest.parent.mkdir(parents=True,exist_ok=True)
+        raw=json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
+        temporary=dest.with_name(dest.name+'.tmp'); temporary.write_bytes(gzip.compress(raw,mtime=0)); temporary.replace(dest)
+        files.append(str(dest.relative_to(art)))
+    for source in sorted((root/'recognition').glob('*.json')):
+        value=verified(source)
+        if value.get('status')!='COMPLETE' or 'arrays' not in value: continue
+        array=value['arrays']; actual=Path(array['path'])
+        if not actual.exists(): raise ValueError('Compact recognition output is missing: '+str(actual))
+        if digest_file(actual)!=array['sha256']: raise ValueError('Compact recognition bytes changed')
+        destination=folder/'readouts'/actual.name; destination.parent.mkdir(parents=True,exist_ok=True); shutil.copyfile(actual,destination)
+        value=dict(value,runtime_receipt_identity=value['identity'],arrays=dict(array,path=str(destination.relative_to(art))))
+        value.pop('identity',None); write(destination.with_suffix('.json'),value)
+        files.extend([str(destination.relative_to(art)),str(destination.with_suffix('.json').relative_to(art))])
+        external.append(dict(array,regenerate_phase='parity/select/repeat/prefix',kind='READOUT_ARRAY'))
+    readout_units=[]
+    for schema in sorted((root/'recognition/units').iterdir()) if (root/'recognition/units').exists() else []:
+        if not schema.is_dir(): continue
+        for path in sorted(schema.glob('*.json')):
+            unit=verified(path)
+            readout_units.append(dict(schema=schema.name,key=path.stem,record=unit))
+            if unit.get('arrays'): external.append(dict(unit['arrays'],regenerate_phase='parity/select/repeat/prefix',kind='CONDITION_READOUT_ARRAY',input_identity=unit.get('input_identity')))
+    diagnostic_units=[]
+    for role in ('train','dev'):
+        diagnostic_units.extend(verified(p) for p in sorted((root/'diagnostics'/role).glob('*.json')))
+    if diagnostic_units: compressed('diagnostic_units.json.gz',diagnostic_units)
+    if readout_units: compressed('readout_units.json.gz',readout_units)
+    # Preserve partial prediction traces too, while keeping partial maps out of
+    # formal cohort pools. Each trace is output scores/labels, not raw inputs.
+    for scene in sorted((root/'decisions').iterdir()) if (root/'decisions').exists() else []:
+        if not scene.is_dir(): continue
+        for path in sorted(scene.glob('*.json')): compressed('decisions/'+scene.name+'/'+path.name+'.gz',verified(path))
+    if evaluation:
+        write(folder/'map_summary.json',evaluation); files.append('compact/map_summary.json')
+        unique={}
+        for row in evaluation.get('scene_metrics',[]):
+            source=Path(row['evaluation_receipt']); key=row['evaluation_identity']
+            if key in unique: continue
+            score=read(source)
+            if score['status']!='COMPLETE' or score['identity']!=key: raise ValueError('Compact scoring receipt differs')
+            compressed('scores/'+key+'.json.gz',score)
+            matches=source.with_name('matches.json.gz')
+            if not matches.exists(): raise ValueError('Official AP sufficient statistics missing: '+str(matches))
+            dest=folder/'scores'/(key+'_matches.json.gz'); shutil.copyfile(matches,dest); files.append(str(dest.relative_to(art)))
+            unique[key]=dict(scene=row['scene'],receipt='compact/scores/'+key+'.json.gz',matches=str(dest.relative_to(art)),source_sha256=digest_file(matches))
+        if unique:
+            write(folder/'scorer_index.json',dict(status='COMPLETE',scene_inputs=unique,regenerate='trace_released_matches on the archived matches; sum archived confusion in official scene order; evaluator code is fixed by each context')); files.append('compact/scorer_index.json')
+        for cohort,methods in evaluation.get('pooled_metrics',{}).items():
+            for method,pool in methods.items():
+                if pool.get('per_class_receipt'): compressed('per_class/'+cohort+'/'+method+'.json.gz',verified(pool['per_class_receipt']))
+    if external: compressed('external_intermediates.json.gz',external)
+    write(art/'compact_results_index.json',dict(status='MEASURED_COMPACT_OUTPUTS' if files else 'NO_NEW_SCIENTIFIC_OUTPUTS',published_files=files,external_intermediate_count=len(external),external_intermediates='compact/external_intermediates.json.gz' if external else None,excluded='RAW_RGB_DEPTH_GT_POINT_MAPS_DENSE_GRIDS_AND_FOUNDATION_WEIGHTS',recompute_tables='Use archived sealed summary/table JSON; use diagnostic units to sum N/D and readout records to summarize AMC; runtime report regenerates all table formats'))
+
 def run(root,*,execution_status=None,error=None):
     root=Path(root); art=REPO/ART; docs=REPO/DOC; art.mkdir(parents=True,exist_ok=True); docs.mkdir(parents=True,exist_ok=True)
     parity=optional(root,'parity.json'); diagnostic=optional(root,'diagnostic_summary.json'); selection=optional(root,'selection_seed17.json'); repeat=optional(root,'repeat_seed29.json'); prefix=optional(root,'prefix.json'); activation=optional(root,'activation.json'); evaluation=optional(root,'evaluation/store.json'); deps=optional(root,'dependency_manifest.json'); stages=optional(root,'stage_exits.json'); publication=optional(root,'publication/final.json')
-    if execution_status is None: execution_status='COMPLETE' if all((parity,diagnostic,selection,repeat,prefix,activation,evaluation)) else 'BLOCKED_DEPENDENCY' if deps and deps.get('missing') else 'PARTIAL_ENGINEERING'
+    if execution_status is None: execution_status='COMPLETE' if execution_complete(parity=parity,diagnostic=diagnostic,selection=selection,repeat=repeat,prefix=prefix,activation=activation,evaluation=evaluation) else 'BLOCKED_DEPENDENCY' if deps and deps.get('missing') else 'PARTIAL_ENGINEERING'
     science=science_status(diagnostic,activation,evaluation)
-    publication_status='PUSH_VERIFIED' if publication and publication.get('status')=='PUSH_VERIFIED' else 'PUBLICATION_BLOCKED'
+    publication_status='PUSH_VERIFIED' if publication and publication.get('status')=='PUSH_VERIFIED' and publication.get('release_identity',{}).get('scientific_source_digest')==source_digest() else 'PUBLICATION_BLOCKED'
     summary=dict(execution_status=execution_status,science_status=science,publication_status=publication_status,publication_snapshot='NOT_ATTEMPTED_OR_BLOCKED_AT_REPORT_SNAPSHOT' if publication_status!='PUSH_VERIFIED' else 'VERIFIED_EXTERNAL_RECEIPT',task_id='fg2-surface-bias-wave1-v2',BASE=BASE,scientific_source_digest=source_digest(),mechanism_signal=diagnostic.get('mechanism_signal') if diagnostic else None,pass_both=activation.get('pass_both') if activation else None,expanded=activation.get('expanded') if activation else None,map_gains=evaluation.get('map_gains') if evaluation else None,missing=deps.get('missing',[]) if deps else [],error=error,new_optimizer_updates=0,new_rgb_encodings=0,new_sam_proposals=0,deployment='N0_UNCHANGED')
     write(root/'run_summary.json',summary); write(art/'run_summary.json',summary)
     rows=[dict(test='REAL_FC_PARITY',status=parity['status'] if parity else 'NOT_RUN',original_objects=parity.get('dev_originals') if parity else None,reason='Exact parent FG/LR dependencies unavailable' if parity is None else None)]
@@ -72,13 +136,17 @@ def run(root,*,execution_status=None,error=None):
         if source.exists(): shutil.copyfile(source,art/name)
         elif name not in ('tests.json','storage_preflight.json'): write(art/name,dict(status='NOT_RUN_DEPENDENCY',reason='Exact numerical prerequisites unavailable',numeric_values=None))
     spec=read(REPO/'configs/static_ovmap/surface_bias_wave1_v2.json')
+    shutil.copyfile(REPO/'configs/static_ovmap/surface_bias_wave1_v2.json',art/'surface_bias_wave1_v2.json')
     registry=dict(status='LOCKED_CALIBRATION' if selection else 'NO_SELECTED_MODEL',BASE=BASE,parent_heads=spec['heads'],no_new_weights=True,lambdas={m:selection['selected'][m]['lambda_'] for m in METHODS} if selection else None,solver_schema=2,scientific_source_digest=source_digest())
     write(art/'selected_model_registry.json',registry)
     write(art/'resources.json',dict(actual_phase_resources=resources,new_optimizer_updates=0,new_rgb_encodings=0,new_sam_proposals=0,online_FPS=None,nested_timers_not_additive=True))
+    compact_results(root,art,evaluation)
     # Published parent values are context, never observations from this task.
     parent_table=REPO/'artifacts/static_ovmap/frozen_fc_routing_v1/tables/table1_whole_map.json'
     inherited=read(parent_table); write(art/'inherited_FG_results.json',dict(status='INHERITED_PUBLISHED_CONTEXT_ONLY',BASE=BASE,source_path=str(parent_table.relative_to(REPO)),source_sha256=digest_file(parent_table),table=inherited,new_measurement=False))
     reason='; '.join(summary['missing']) or error or 'See formal phase records'
+    bound=optional(root,'binding.json') or {}; actual_parent=bound.get('fg_parent_root',(deps or {}).get('checked_parent','/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001'))
+    gpu=bound.get('gpu','0')
     table_links='\n'.join(f'- [Table {i}]({(Path("../../../")/ART/"tables"/name).as_posix()}.md)' for i,name in enumerate(('table1_baseline_checks','table2_diagnostics','table3_selection_repeat','table4_whole_map','table5_cost_scope'),1))
     # Links from this nested docs directory need four levels to repository root.
     table_links=table_links.replace('../../../artifacts/','../../../../artifacts/')
@@ -115,6 +183,10 @@ Original seed17 step1000 and seed29 step2000 heads are referenced by the [select
 Use the existing controller environment and FC_python from the verified binding. Inherit one GPU string; the FC worker uses execution_config(binding)['gpu_lock'] and queued_gpu_lock. All writes belong to OUT; parent caches and upstream sources are read-only. Run from the worktree:
 
 ```bash
+PY_CTRL=/home/ww/miniconda3/envs/ovimap-map/bin/python
+FG_ROOT={actual_parent}
+OUT={root}
+GPU={gpu}
 "$PY_CTRL" -u scripts/evaluation/run_fg2_surface_bias_wave1_v2.py --spec configs/static_ovmap/surface_bias_wave1_v2.json --parent-root "$FG_ROOT" --output-root "$OUT" --gpu "$GPU" --phase all --resume
 PYTHONPATH=src "$PY_CTRL" -m pytest -q tests/test_surface_bias_wave1_v2.py
 "$PY_CTRL" scripts/evaluation/run_fg2_surface_bias_wave1_v2.py --spec configs/static_ovmap/surface_bias_wave1_v2.json --parent-root "$FG_ROOT" --output-root "$OUT" --phase report --resume
@@ -126,8 +198,52 @@ Recovery point: restore the exact missing parent manifests, referenced grids, FC
 
 Results: [RESULTS](RESULTS.md). Limits and supported claims: [CLAIMS](CLAIMS.md). Requirement audit: [REVIEW](REVIEW.md). Large runtime arrays stay in OUT; Git contains compact tables and summaries. Cached replay performance is not online FPS.
 ''')
-    checks=[('Frozen spec and isolated files','IMPLEMENTED'),('Relative Huber/KKT and strong simple controls','IMPLEMENTED_SYNTHETIC_TESTS'),('Seven-key raw-only adapter and same-seed fallback','IMPLEMENTED_PARENT_HEAD_SYNTHETIC_INPUTS'),('Real FC parity /69 original historical alignment','MEASURED' if parity else 'BLOCKED_NOT_VERIFIED'),('Donor-purged cross-fit diagnosis','MEASURED' if diagnostic else 'IMPLEMENTED_NOT_MEASURED'),('Full finite lambda selection / seed29 lock','MEASURED' if repeat else 'IMPLEMENTED_NOT_MEASURED'),('Prefix2/4 / condition isolation','MEASURED' if prefix else 'IMPLEMENTED_NOT_MEASURED'),('Fixed-owner original N/Q/F and official pools','MEASURED' if evaluation and evaluation.get('status')=='EVALUATION_COMPLETE' else 'IMPLEMENTED_NOT_VERIFIED_ON_REAL_MAP'),('Zero training/RGB/SAM','NO_NEW_SCIENTIFIC_RUNS' if not resources else 'ACTUAL_COUNTERS_RECORDED'),('Two normal publication commits','ACTUAL_PUBLICATION_PENDING_AT_C1_REPORT_SNAPSHOT')]
-    atomic_text(docs/'REVIEW.md','# Primary-agent requirement audit\n\n'+''.join(f'- {name}: {status}.\n' for name,status in checks)+'\nThe full prompt was checked against implemented code and actual scope. Synthetic tests do not verify the real FC operator or restore missing dependencies. No missing numerical stage is marked complete; the new mechanism remains unassessed. Publication is proven only by actual C1/C2 remote SHA checks; see committed C1 receipt and external C2 final receipt.\n')
+    measured=lambda value: 'MEASURED' if value and value.get('status')=='COMPLETE' else 'REAL_EXPERIMENT_BLOCKED'
+    checks=[
+        ('T0 / sections0–2','Fixed BASE, isolated namespace, original package/config bytes','common.py / binding.py / frozen docs','CODE_REVIEWED'),
+        ('T0 / section2.2','P0–P2 exact parents; P3 prerequisites lazy; no AnyUp substitute','binding.minimal_fc_dependencies / test05','SYNTHETIC_DEPENDENCY_SCOPE_VERIFIED'),
+        ('T0 / section2.3','Verify parent before path rewrite; preserve inherited parent_root','binding.preflight / consumed_manifest_identities','CODE_REVIEWED_REAL_BINDING_BLOCKED'),
+        ('T0 / section2.3','Two fixed head SHAs/steps; FC/text bytes and class order','binding.runtime_registry','REAL_EXPERIMENT_BLOCKED'),
+        ('T0 / sections2–3','Read-only links and exact class_split copy; explicit CLI phases','binding.py / runner.py','CODE_REVIEWED'),
+        ('T1 / section4','Float64 fixed-scale Huber and zero-mean weighted graph KKT','solver.py / original focused tests01–02','SYNTHETIC_SOLVER_VERIFIED'),
+        ('T1 / section4','C1 uses all valid views; C2 per-site Huber; fixed lambda grid','solver.correction / selection.py','CODE_REVIEWED'),
+        ('T1 / section4','Only local_raw changes; local_unit/query/quality/eta unchanged','adapter.py / parent-head focused test03','SYNTHETIC_PARENT_HEAD_VERIFIED'),
+        ('T1 / section4','Original nonfinite error; only new numeric correction falls back','adapter._adapt','CODE_REVIEWED'),
+        ('T1 / sections4–5','Same-seed lambda0 and geometric fallback; no FC8 fallback','adapter.py / prediction.parity','REAL_FC_PARITY_BLOCKED'),
+        ('T1 / section4','Relative gauge, balanced-pool cancellation, shuffle degeneracy','solver.py / test02 / CLAIMS','SYNTHETIC_BOUNDARY_VERIFIED'),
+        ('T1 / section5','2 TRAIN ×2 seeds ×4 conditions ×2/4/8 real FC checks','prediction.parity / parity.json',measured(parity)),
+        ('T1 / section5','69 base DEV keyed historical labels/AMC and embedding tolerance','prediction.compare_history',measured(parity)),
+        ('T2 / section6.1','622/69 base objects,24/4 families, four condition-specific positions','binding.py / diagnostics.spatial_folds / test05',measured(diagnostic)),
+        ('T2 / section6.1','Four spatial folds and actual bilinear-donor global purge','diagnostics.py / test05','SYNTHETIC_ISOLATION_VERIFIED_REAL_DIAGNOSIS_BLOCKED' if not diagnostic else measured(diagnostic)),
+        ('T2 / section6.1','Missing diagnostic metadata unsupported; no fabricated positions','diagnostics.diagnostic_metadata / data.ObjectLoader / test05','SYNTHETIC_PARENT_COMPATIBILITY_VERIFIED'),
+        ('T2 / section6.2','Stable five null seeds; degenerate null separately labeled','diagnostics.independent_bias','CODE_REVIEWED_REAL_DIAGNOSIS_BLOCKED' if not diagnostic else measured(diagnostic)),
+        ('T2 / section6.2','Sum N/D before R; equal families; paired common support','diagnostics.aggregate / diagnostic_units compact archive',measured(diagnostic)),
+        ('T2 / section6.2','Signal coverage floors; signal never gates P2/P3','diagnostics.run / selection.activate',measured(diagnostic)),
+        ('T3 / section6.3','Full200 top1/NLL; inherited base-class CE at0.07; exact AMC','prediction.recognition / inherited summarize',measured(selection)),
+        ('T3 / section6.3','All12 seed17 candidates; AMC/lambda tie rule; lock C_STAR','selection.lock_selection / test06',measured(selection)),
+        ('T4 / section6.4','Seed29 locked repeats only; no champion replacement','prediction.repeat / selection.activate / test06',measured(repeat)),
+        ('T4 / section6.4','Exact pass thresholds and three activation branches','selection.passes/activate / test06',measured(activation)),
+        ('T4 / section6.5','Both seeds, four conditions,2/4 prefixes; lambda0 aliases','prediction.prefix / test05/07',measured(prefix)),
+        ('T4 / section6.5','Group raw/phi/embedding/attention effect and harm audits','adapter.py / prediction.recognition','CODE_REVIEWED_REAL_READOUT_BLOCKED' if not selection else measured(selection)),
+        ('T5 / section7.1','All26 scenes and all expanded arms locked before GT','prediction.predict / evaluation.run','REAL_MAP_NOT_REACHED' if not evaluation else evaluation['status']),
+        ('T5 / section7.2','Fixed G1 owner/support; replace F only; retain N/Q/temperature/D2','prediction.predict / unchanged build_payload','CODE_REVIEWED_REAL_MAP_BLOCKED'),
+        ('T5 / section7.3','Official ordered pools, null class, full200 base/novel, Replica N/A','evaluation.py / compact per-class data','CODE_REVIEWED_REAL_MAP_BLOCKED'),
+        ('T5 / section7.3','Identity-proven aliases; exactly2 additional active-run scorer checks','evaluation.evaluate_scene / dynamic coverage','CODE_REVIEWED_REAL_MAP_BLOCKED'),
+        ('T5 / section7.4','Four-cell AP/mIoU map gate and M1 vs locked C_STAR','evaluation.run / science_status','CODE_REVIEWED_REAL_MAP_BLOCKED'),
+        ('T6 / section8','Exactly8 focused groups; real FC dependency skip is explicit','tests/test_surface_bias_wave1_v2.py / tests.json','FOCUSED_TESTS_RECORDED_REAL_FC_SKIP'),
+        ('T6 / section8','Interrupted readout resumes without repeating completed head','common.cached_unit / actual readout-loop test07','SYNTHETIC_INTERRUPTION_VERIFIED'),
+        ('T6 / section8','Complete files verified; superseded identities/results retained','common.preserve_unit / test07','SYNTHETIC_RECOVERY_VERIFIED'),
+        ('T6 / sections3,8','One queued GPU; FP32;32GiB host budget;3 CPU scorers; space reserve','runner.py / PrefixLoader / common.py / binding.py','CODE_REVIEWED_REAL_RESOURCE_MEASUREMENT_BLOCKED'),
+        ('T7 / section9.1','Five tables in MD/CSV/JSON; every finite candidate retained','reporting.table / actual artifact files','GENERATED_FROM_SEALED_JSON'),
+        ('T7 / section9.2','Frozen artifact config; compact readouts, N/D, map/match/per-class data','reporting.compact_results / compact_results_index.json','NO_NEW_SCIENTIFIC_OUTPUTS' if not selection and not diagnostic and not evaluation else 'COMPACT_OUTPUTS_ARCHIVED'),
+        ('T7 / section9.2','40/150MiB finite task paths; no RGB/GT/grids/base weights','publication.check_files / artifact_index.json','CHECKED_BEFORE_ACTUAL_C1'),
+        ('T7 / section9.3','Normal C1/C2 push, prior-release retention, unchanged resume reuse','publication.py / test08 / committed receipt','ACTUAL_NEW_C1_PENDING_AT_REPORT_SNAPSHOT'),
+        ('T7 / section9.4','Three status axes; real worker exits; external observed all exit','runner.py / run_summary.json / stage_exits.json','OBSERVED_SCIENTIFIC_FAILURE_RETAINED' if execution_status!='COMPLETE' else 'FORMAL_PHASE_STATUSES_COMPLETE'),
+        ('T7 / section10','No unsupported mechanism/map/instance/onlineFPS/OVI-MAP claim','CLAIMS.md / RESULTS.md','EVIDENCE_BOUNDARIES_REVIEWED'),
+    ]
+    audit=[dict(prompt=section,requirement=requirement,evidence=evidence,status=status) for section,requirement,evidence,status in checks]
+    write(art/'requirement_audit.json',dict(review_owner='PRIMARY_AGENT',scientific_source_digest=source_digest(),execution_status=execution_status,science_status=science,checks=audit,remaining_required_real_experiments=summary['missing']))
+    atomic_text(docs/'REVIEW.md','# Primary-agent requirement audit\n\n'+f'Execution: **{execution_status}**. Science: **{science}**. The full approved prompt remains the acceptance contract.\n\n| Prompt | Requirement | Evidence | Actual status |\n| --- | --- | --- | --- |\n'+''.join(f'| {section} | {requirement} | {evidence} | {status} |\n' for section,requirement,evidence,status in checks)+'\nThe targeted repair preserves the original published release and the frozen scientific spec. Diagnostic-only field compatibility calls the original parent kernels; it does not invent UV, grids or positions. Missing forward observations still require the exact original tensors or caches. Synthetic tests verify engineering behavior and cannot establish FC parity or new scientific gains.\n\nNo new science phase is marked complete. Actual publication is proven by the committed C1 receipt and external C2 final receipt; this C1 report never predeclares its future push.\n')
     inventory=[]
     for p in sorted(art.rglob('*')):
         if p.is_file() and p.name not in ('artifact_index.json','PUBLICATION_RECEIPT.json'): inventory.append(dict(path=str(p.relative_to(REPO)),bytes=p.stat().st_size,sha256=digest_file(p)))

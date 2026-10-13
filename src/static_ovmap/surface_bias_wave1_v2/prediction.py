@@ -9,10 +9,12 @@ from .selection import summarize, lock_selection, activate
 
 class PrefixLoader:
     def __init__(self,fc,features):
-        from static_ovmap.frozen_fc_routing.data import ObjectLoader
+        from .data import ObjectLoader
         self.parent=ObjectLoader(fc,features,maximum_GiB=30); self.fc=fc; self.features=features['identity']; self.cache=OrderedDict(); self.bytes=0; self.limit=2*2**30; self.seconds=0.; self.calls=0
 
     def load(self,obj,condition=0,requested_views=8):
+        if requested_views not in (2,4,8): raise ValueError('Only frozen2/4/8 prefixes are supported')
+        self.fc.index.identity(obj['inputs']['path'],obj['inputs'])
         identity=canonical_digest(dict(inputs=obj['inputs']['sha256'],FC=self.fc.model_key,features=self.features,condition=condition,prefix=requested_views))
         start=time.perf_counter(); self.calls+=1
         if identity in self.cache:
@@ -37,7 +39,9 @@ def recognition(binding,fc,loader,head,seed,method,strength=0,prefix=8,reference
     root=Path(binding['output_root']); schema=f'{method}_s{seed}_l{strength:g}_p{prefix}'
     path=root/'recognition'/f'{schema}.json'; identity=unit_identity(binding,'recognition',method=method,seed=seed,lambda_=strength,prefix=prefix,features=loader.features)
     cached=cached_unit(path,identity)
-    if cached is not None: return cached
+    if cached is not None:
+        for obj in items(binding): fc.index.identity(obj['inputs']['path'],obj['inputs'])
+        return cached
     rows=[]; zs=[]; ss=[]; numeric=0; started=time.perf_counter()
     sample_keys={}
     for obj in items(binding): sample_keys.setdefault(obj['family'],obj['key'])
@@ -134,7 +138,7 @@ def prefix(binding,fc,loader,heads):
             original=baseline(binding,fc,loader,heads,seed,number); rows.append(dict(original['metrics'],method='FG2',seed=seed,prefix=number))
             for method in (METHODS[2],lock['C_STAR']):
                 strength=lock['selected'][method]['lambda_']
-                row=recognition(binding,fc,loader,heads[seed],seed,method,strength,number,original['records'])
+                row=recognition(binding,fc,loader,heads[seed],seed,method,strength,number,original['records']) if strength else dict(metrics={**summarize(original['records'],original['records']),'method':method,'lambda_':0,'numeric_fallback_rate':0,'baseline_alias':original['identity']})
                 rows.append(dict(row['metrics'],seed=seed,prefix=number))
     return write(root/'prefix.json',dict(status='COMPLETE',selection_identity=lock['identity'],rows=rows,conditions=4,reselected=False))
 

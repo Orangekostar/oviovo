@@ -3,6 +3,22 @@ from pathlib import Path
 import subprocess
 from .common import REPO, write, read, digest_file, source_digest, atomic_text
 
+def release_paths():
+    paths=[]
+    for folder in ('src/static_ovmap/surface_bias_wave1_v2','docs/paper/static_ovmap/surface_bias_wave1_v2','artifacts/static_ovmap/surface_bias_wave1_v2'):
+        paths += [str(p.relative_to(REPO)) for p in (REPO/folder).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.name!='PUBLICATION_RECEIPT.json']
+    paths += ['scripts/evaluation/run_fg2_surface_bias_wave1_v2.py','configs/static_ovmap/surface_bias_wave1_v2.json','tests/test_surface_bias_wave1_v2.py','docs/superpowers/plans/2026-10-13-fg2-surface-bias-wave1-v2.md']
+    return paths
+
+def unchanged_release(root):
+    final=Path(root)/'publication/final.json'
+    if not final.exists(): return None
+    old=read(final)
+    if old.get('status')!='PUSH_VERIFIED': return None
+    if git(REPO,'rev-parse','HEAD')!=old['C2'] or git(REPO,'status','--porcelain','--',*release_paths(),old['C1_receipt']): return None
+    if remote_head(REPO,old['branch'])!=old['C2']: raise ValueError('Published remote changed; terminal release is no longer identical')
+    return old
+
 def git(repo,*args):
     result=subprocess.run(['git',*args],cwd=repo,text=True,capture_output=True)
     if result.returncode: raise RuntimeError('git '+args[0]+' failed: '+(result.stderr+result.stdout)[-3000:])
@@ -38,11 +54,20 @@ def check_files(repo,files):
 
 def publish_local_protocol(repo,out,files,branch,*,receipt,handoff,release_identity=None):
     repo=Path(repo); out=Path(out); out.mkdir(parents=True,exist_ok=True); final=out/'publication/final.json'
+    transaction=out/'publication/transaction.json'; previous_release=None
     if final.exists():
         old=read(final)
-        if old.get('status')=='PUSH_VERIFIED' and git(repo,'rev-parse','HEAD')==old['C2'] and remote_head(repo,old['branch'])==old['C2'] and not git(repo,'status','--porcelain','--',*files): return old
-        raise ValueError('Existing publication differs; preserve its immutable release')
-    transaction=out/'publication/transaction.json'
+        if old.get('status')!='PUSH_VERIFIED' or git(repo,'rev-parse','HEAD')!=old['C2'] or remote_head(repo,old['branch'])!=old['C2']:
+            raise ValueError('Existing publication head/remote differs; preserve its immutable release')
+        if not git(repo,'status','--porcelain','--',*files,receipt): return old
+        if git(repo,'status','--porcelain','--',receipt): raise ValueError('Published C1 receipt was altered; preserve the actual proof')
+        # Genuine code/results changes get a new normal C1/C2 release. Preserve
+        # the earlier proof; an unchanged resume never reaches this branch.
+        previous_release=old['C2']; history=out/'publication/history'; history.mkdir(parents=True,exist_ok=True)
+        write(out/'publication/revision.json',dict(previous_release=previous_release,prior_branch=old['branch']))
+        final.replace(history/(previous_release+'_final.json'))
+        if transaction.exists(): transaction.replace(history/(previous_release+'_transaction.json'))
+    elif (out/'publication/revision.json').exists(): previous_release=read(out/'publication/revision.json')['previous_release']
     if transaction.exists():
         state=read(transaction); state.pop('identity',None); branch=state['branch']; checked=state['file_inventory']
         if state.get('release_identity')!=release_identity: raise ValueError('Publication source/spec/artifact identity changed')
@@ -62,7 +87,7 @@ def publish_local_protocol(repo,out,files,branch,*,receipt,handoff,release_ident
         staged=[p for p in git(repo,'diff','--cached','--name-only','-z').split('\0') if p]
         if not set(staged)<=set(files): raise ValueError('Unrelated staged files must not enter task commit')
         if staged: git(repo,'commit','-m','Implement frozen FG2 surface bias calibration and report measured scope')
-        state=dict(stage='C1_LOCAL',branch=branch,C1=git(repo,'rev-parse','HEAD'),file_inventory=checked,release_identity=release_identity); write(transaction,state)
+        state=dict(stage='C1_LOCAL',branch=branch,C1=git(repo,'rev-parse','HEAD'),file_inventory=checked,release_identity=release_identity,previous_release=previous_release); write(transaction,state)
     C1=state['C1']
     if state['stage']=='C1_LOCAL':
         first=push_verified(repo,branch,C1); state.update(stage='C1_PUSH_VERIFIED',first_push=first); write(transaction,state)
@@ -74,14 +99,13 @@ def publish_local_protocol(repo,out,files,branch,*,receipt,handoff,release_ident
         if {p for p in git(repo,'diff','--cached','--name-only','-z').split('\0') if p}!={receipt,handoff}: raise ValueError('C2 may contain only C1 receipt and handoff')
         git(repo,'commit','-m','Record verified FG2 calibration C1 publication and handoff'); state.update(stage='C2_LOCAL',C2=git(repo,'rev-parse','HEAD')); write(transaction,state)
     C2=state['C2']; second=push_verified(repo,branch,C2)
-    result=dict(status='PUSH_VERIFIED',branch=branch,C1=C1,C2=C2,local_HEAD=C2,remote_HEAD=second['remote_SHA'],C1_receipt=receipt,commit2_scope='COMMIT1_PUSH_RECEIPT_AND_HANDOFF_ONLY')
-    write(final,result); return result
+    result=dict(status='PUSH_VERIFIED',branch=branch,C1=C1,C2=C2,local_HEAD=C2,remote_HEAD=second['remote_SHA'],C1_receipt=receipt,commit2_scope='COMMIT1_PUSH_RECEIPT_AND_HANDOFF_ONLY',release_identity=release_identity,previous_release=state.get('previous_release'))
+    write(final,result)
+    if (out/'publication/revision.json').exists(): (out/'publication/revision.json').unlink()
+    return result
 
 def run(root):
-    root=Path(root); paths=[]
-    for folder in ('src/static_ovmap/surface_bias_wave1_v2','docs/paper/static_ovmap/surface_bias_wave1_v2','artifacts/static_ovmap/surface_bias_wave1_v2'):
-        paths += [str(p.relative_to(REPO)) for p in (REPO/folder).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.name!='PUBLICATION_RECEIPT.json']
-    paths += ['scripts/evaluation/run_fg2_surface_bias_wave1_v2.py','configs/static_ovmap/surface_bias_wave1_v2.json','tests/test_surface_bias_wave1_v2.py','docs/superpowers/plans/2026-10-13-fg2-surface-bias-wave1-v2.md']
+    root=Path(root); paths=release_paths()
     try:
         identities=dict(scientific_source_digest=source_digest(),spec_sha256=digest_file(REPO/'configs/static_ovmap/surface_bias_wave1_v2.json'),artifact_index_sha256=digest_file(REPO/'artifacts/static_ovmap/surface_bias_wave1_v2/artifact_index.json'))
         result=publish_local_protocol(REPO,root,paths,git(REPO,'branch','--show-current'),receipt='artifacts/static_ovmap/surface_bias_wave1_v2/PUBLICATION_RECEIPT.json',handoff='docs/paper/static_ovmap/surface_bias_wave1_v2/HANDOFF.md',release_identity=identities)

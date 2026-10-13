@@ -8,13 +8,14 @@
   },
   "focused_groups": 8,
   "full_repo_suite_run": false,
-  "identity": "56fc1d5d367db1a8425df1561599c059b1b20831d3d541b63672a31fe8a5782f",
+  "identity": "18ff33876c11c9e908dcd47fd7b6eec069b61ff611bc76277a7a21006cf7ef32",
   "main_run": {
     "exit_code": 0,
     "passed": 7,
     "skipped": 1,
     "stdout": "...s.... [100%] 7 passed, 1 skipped in 1.05s"
   },
+  "original_full_run_release": "b8722a986533d364f971b65e9e5b3759010fa94e",
   "publication_unicode_and_resume_validation": {
     "actual_bare_git_remote": true,
     "deselected": 7,
@@ -23,5 +24,37 @@
     "passed": 1
   },
   "skip_reason": "Original parent FG/LR manifest and feature caches unavailable",
-  "status": "PASSED_WITH_REAL_FC_GROUP_SKIPPED"
+  "status": "PASSED_WITH_REAL_FC_GROUP_SKIPPED",
+  "targeted_engineering_revision": {
+    "failure_reason": "Test used nonexistent torch.flatnonzero; corrected to torch.nonzero, then group5 passed",
+    "final_controller_resume_group7": {
+      "deselected": 7,
+      "exit_code": 0,
+      "passed": 1,
+      "seconds": 0.69
+    },
+    "final_donor_compatibility_group5": {
+      "deselected": 7,
+      "exit_code": 0,
+      "passed": 1,
+      "seconds": 0.78
+    },
+    "group8_publication_passed_in_last_mixed_run": true,
+    "groups": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "mixed_run_exit_code": 1,
+    "mixed_run_failed_group": 5,
+    "real_FC_regression": "BLOCKED_EXACT_PARENT_DEPENDENCIES",
+    "scientific_source_digest": "7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc",
+    "state_machine_run": {
+      "deselected": 4,
+      "exit_code": 0,
+      "passed": 4,
+      "seconds": 1.46
+    }
+  }
 }

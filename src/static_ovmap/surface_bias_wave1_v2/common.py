@@ -31,13 +31,64 @@ def source_digest():
     return canonical_digest({str(p.relative_to(REPO)):digest_file(p) for p in files})
 
 def cached_unit(path,identity):
-    if not Path(path).exists(): return None
+    path=Path(path)
+    if not path.exists(): return None
     old=verified(path)
-    if old.get('input_identity')!=identity: raise ValueError('Preserve exposed unit; input/code identity changed: '+str(path))
-    return old if old['status']=='COMPLETE' else None
+    if old.get('input_identity')!=identity:
+        # A source repair invalidates this unit only; preserve its exposed JSON
+        # and its local array output before the replacement can be computed.
+        preserve_unit(path,old,identity,'INPUT_OR_ENGINEERING_IDENTITY_CHANGED')
+        return None
+    if old['status'] not in ('COMPLETE','UNSUPPORTED_STRICT_DIAGNOSTIC'): return None
+    descriptors=[]
+    def visit(value):
+        if isinstance(value,dict):
+            if {'path','bytes','sha256'}<=set(value): descriptors.append(value)
+            else:
+                for child in value.values(): visit(child)
+        elif isinstance(value,list):
+            for child in value: visit(child)
+    visit(old)
+    if any(not Path(row['path']).is_file() for row in descriptors): return None
+    index=ConsumptionIndex()
+    for row in descriptors: index.identity(row['path'],row)
+    # Prediction/evaluation receipts refer to further sealed records, which
+    # must exist as well; a receipt alone is not a complete cached result.
+    def records(value):
+        if isinstance(value,dict):
+            for key,child in value.items():
+                if key in ('manifest','evaluation_receipt','per_class_receipt') and isinstance(child,str):
+                    if not Path(child).is_file(): return False
+                    if key=='evaluation_receipt':
+                        score=read(child)
+                        if score.get('status')!='COMPLETE' or value.get('evaluation_identity',score.get('identity'))!=score.get('identity'): return False
+                    elif key=='per_class_receipt': verified(child)
+                    elif value.get('prediction_key'):
+                        from static_ovmap.module_validation.scannet_study import load_prediction
+                        payload=load_prediction(child)
+                        if payload.prediction_key!=value['prediction_key']: return False
+                elif isinstance(child,(dict,list)) and not records(child): return False
+        elif isinstance(value,list):
+            return all(records(child) for child in value)
+        return True
+    return old if records(old) else None
+
+def preserve_unit(path,old,new_identity,reason):
+    import shutil
+    path=Path(path); folder=path.parent/'superseded'; folder.mkdir(parents=True,exist_ok=True)
+    token=old.get('input_identity',old['identity']); saved=folder/(path.stem+'_'+token+'.json')
+    if saved.exists() and saved.read_bytes()!=path.read_bytes(): raise ValueError('Superseded exposure identity collision')
+    if not saved.exists(): shutil.copyfile(path,saved)
+    array=old.get('arrays'); mapping={}
+    if array and Path(array['path']).is_file() and Path(array['path']).resolve().parent==path.parent.resolve():
+        original=Path(array['path']); destination=folder/(path.stem+'_'+token+original.suffix)
+        if not destination.exists(): shutil.copyfile(original,destination)
+        mapping[str(original)]=str(destination)
+    write(folder/(path.stem+'_'+token+'_invalidation.json'),dict(reason=reason,old_input_identity=old.get('input_identity'),new_input_identity=new_identity,original_receipt=str(path),preserved_receipt=str(saved),preserved_arrays=mapping))
+    path.unlink()
 
 def unit_identity(binding,phase,**extra):
-    names={'diagnose':('common','binding','solver','diagnostics'), 'recognition':('common','binding','prediction'), 'readout':('common','binding','prediction'), 'map_predict':('common','binding','prediction','solver','adapter'), 'evaluate_scene':('common','binding','evaluation')}.get(phase,('common','binding','solver','adapter','prediction','selection','diagnostics','evaluation'))
+    names={'diagnose':('common','binding','data','solver','diagnostics'), 'recognition':('common','binding','data','prediction'), 'readout':('common','binding','data','prediction'), 'map_predict':('common','binding','data','prediction','solver','adapter'), 'evaluate_scene':('common','binding','evaluation')}.get(phase,('common','binding','data','solver','adapter','prediction','selection','diagnostics','evaluation'))
     if phase in ('recognition','readout') and extra.get('method') not in ('FG2','FC8'): names=(*names,'solver','adapter')
     codes={name:digest_file(REPO/'src/static_ovmap/surface_bias_wave1_v2'/(name+'.py')) for name in names}
     return canonical_digest(dict(binding=binding['identity'],numerical_sources=codes,phase=phase,**extra))

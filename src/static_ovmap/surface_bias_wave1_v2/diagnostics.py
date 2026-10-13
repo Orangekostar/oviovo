@@ -9,6 +9,14 @@ from .solver import _validate, estimate_view_bias, center_bias, huber_location, 
 
 NULL_SEEDS=(101,211,307,401,503)
 
+def diagnostic_metadata(arrays,grids,condition,prefix):
+    fields=set(arrays.files) if hasattr(arrays,'files') else set(arrays)
+    required={'site_xyz','site_available','uv'}
+    grid_fields={'original_hw','resized_hw','padded_hw','raw_hw'}
+    if not required<=fields or len(grids)!=prefix or any(not grid_fields<=set(g) for g in grids):
+        return None,'MISSING_DIAGNOSTIC_METADATA'
+    return dict(xyz=arrays['site_xyz'][condition].copy(),available=arrays['site_available'][condition].copy(),uv=arrays['uv'][condition,:prefix].copy()),None
+
 def spatial_folds(xyz,available):
     xyz=np.asarray(xyz); sites=np.flatnonzero(available)
     if not len(sites): return [np.empty(0,int) for _ in range(4)]
@@ -109,15 +117,16 @@ def run(binding,fc,loader):
             for condition in range(4):
                 path=root/'diagnostics'/role/(obj['key'].replace(':','_')+f'_c{condition}.json')
                 identity=unit_identity(binding,'diagnose',inputs=obj['inputs']['sha256'],features=features['identity'],condition=condition,prefix=8)
+                fc.index.identity(obj['inputs']['path'],obj['inputs'])
                 row=cached_unit(path,identity)
                 if row is None:
-                    x,_,_=loader.load(obj,condition,8); raw=x['local_raw'].cpu().numpy(); valid=(x['local_valid']&x['view_valid'][:,None]).cpu().numpy()
+                    grids=[features['frames'].get(obj['scene']+':'+str(v['frame_id']),{}) for v in obj['views'][:8]]
                     with np.load(obj['inputs']['path'],allow_pickle=False) as arrays:
-                        needed={'site_xyz','site_available','uv'}
-                        if not needed<=set(arrays.files): row=dict(status='UNSUPPORTED_STRICT_DIAGNOSTIC',reason='MISSING_DIAGNOSTIC_METADATA',folds=[])
-                        else:
-                            grids=[features['frames'][obj['scene']+':'+str(v['frame_id'])] for v in obj['views'][:8]]
-                            row=diagnostic_unit(raw,valid,arrays['site_xyz'][condition],arrays['site_available'][condition],arrays['uv'][condition,:8],grids,obj['key'],condition)
+                        metadata,reason=diagnostic_metadata(arrays,grids,condition,len(grids))
+                    if metadata is None: row=dict(status='UNSUPPORTED_STRICT_DIAGNOSTIC',reason=reason,folds=[])
+                    else:
+                        x,_,_=loader.load(obj,condition,8); raw=x['local_raw'].cpu().numpy(); valid=(x['local_valid']&x['view_valid'][:,None]).cpu().numpy()
+                        row=diagnostic_unit(raw,valid,metadata['xyz'],metadata['available'],metadata['uv'],grids,obj['key'],condition)
                     row=write(path,dict(row,input_identity=identity,family=obj['family'],key=obj['key'],condition=condition,role=role))
                 results.append(row)
     summary={}; signal=True

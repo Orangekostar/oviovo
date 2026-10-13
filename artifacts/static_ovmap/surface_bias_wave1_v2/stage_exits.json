@@ -1,6 +1,6 @@
 {
   "actual_exits_only": true,
-  "identity": "7abe1b2de7dc449e52eeb4f6dba91697a0c9270d337689e2b81c1f7de948ac13",
+  "identity": "c911fad7cf85ddc253e502b24c49139d7e0a479395eb1dda817235cc412259eb",
   "records": [
     {
       "command": [
@@ -101,6 +101,31 @@
       "phase": "preflight",
       "scientific_source_digest": "6f1a5d6bc6dcbec380d8da0bb120b307e737184841c346bcaf3b94cda5f49675",
       "wall_seconds": 0.8601557369984221
+    },
+    {
+      "command": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "-u",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/scripts/evaluation/run_fg2_surface_bias_wave1_v2.py",
+        "--spec",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/configs/static_ovmap/surface_bias_wave1_v2.json",
+        "--parent-root",
+        "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+        "--output-root",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001",
+        "--phase",
+        "preflight",
+        "--worker",
+        "--gpu",
+        "0",
+        "--resume"
+      ],
+      "exit_code": 1,
+      "log": "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001/logs/preflight.log",
+      "observed_by": "CONTROL_SUBPROCESS_RUN_AFTER_WAIT",
+      "phase": "preflight",
+      "scientific_source_digest": "7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc",
+      "wall_seconds": 0.8552499969955534
     }
   ]
 }

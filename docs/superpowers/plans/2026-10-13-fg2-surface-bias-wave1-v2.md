@@ -9,3 +9,14 @@ BASE: bec4176d9a6784a89ea293a9803e5cf6fab178ec. Protocol: docs/paper/static_ovma
 5. Review the full prompt against implementation and measured scope; publish code/reports in C1, then only its verified push receipt and handoff in C2. Keep final C2 receipt external.
 
 Scientific decisions and core implementation/review stay with the primary agent. No delegation is needed for the current bounded edits. New optimizer updates, RGB encodings and SAM proposals remain zero. Deployment N0_UNCHANGED.
+
+## Targeted engineering correction after the blocked release
+
+The original two-commit release remains immutable. Fix missing diagnostic-only
+fields without changing the parent forward kernels; check complete output files
+before cache reuse and preserve superseded units. Make an unchanged terminal
+resume reuse the verified release without rewriting reports. Genuine code or
+result changes may create a new normal two-commit release, preserving the prior
+external receipts. Also publish the frozen artifact config and compact result
+statistics, and require real phase statuses for COMPLETE. Validate only the
+affected existing test groups, then perform one prompt-to-evidence audit.
