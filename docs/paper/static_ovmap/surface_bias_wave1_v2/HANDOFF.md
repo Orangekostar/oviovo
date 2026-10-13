@@ -23,3 +23,7 @@ Table Markdown/CSV/JSON come from sealed runtime JSON; the report phase regenera
 Recovery point: restore the exact missing parent manifests, referenced grids, FC/text and input arrays; rerun identical spec/paths. Different scientific parameters require a new version. Do not recompute RGB, train, select another checkpoint, use similar caches or shrink cohorts. Blocked dependency: /mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/source_binding.json.
 
 Results: [RESULTS](RESULTS.md). Limits and supported claims: [CLAIMS](CLAIMS.md). Requirement audit: [REVIEW](REVIEW.md). Large runtime arrays stay in OUT; Git contains compact tables and summaries. Cached replay performance is not online FPS.
+
+Verified result commit C1: `8d45f425074e3680a302a76e0f95f06d12a4997d`. [Immutable results](https://github.com/Orangekostar/oviovo/blob/8d45f425074e3680a302a76e0f95f06d12a4997d/docs/paper/static_ovmap/surface_bias_wave1_v2/RESULTS.md).
+
+Publication of C1 was verified; the committed receipt proves C1 only. The final C2/local/remote equality receipt is external at OUT/publication/final.json.
