@@ -1,0 +1,17 @@
+| method | seed | lambda_ | status | A_pct | M_pct | C_pct | net_corrections | numeric_fallback_rate | selected |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| C1_FULL_VIEW_CENTER | 17 | 0 | NOT_RUN | — | — | — | — | — | — |
+| C1_FULL_VIEW_CENTER | 17 | 0.125 | NOT_RUN | — | — | — | — | — | — |
+| C1_FULL_VIEW_CENTER | 17 | 0.25 | NOT_RUN | — | — | — | — | — | — |
+| C1_FULL_VIEW_CENTER | 17 | 0.5 | NOT_RUN | — | — | — | — | — | — |
+| C1_FULL_VIEW_CENTER | 29 | — | NOT_RUN_NOT_LOCKED | — | — | — | — | — | — |
+| C2_SITE_HUBER_CONSENSUS | 17 | 0 | NOT_RUN | — | — | — | — | — | — |
+| C2_SITE_HUBER_CONSENSUS | 17 | 0.125 | NOT_RUN | — | — | — | — | — | — |
+| C2_SITE_HUBER_CONSENSUS | 17 | 0.25 | NOT_RUN | — | — | — | — | — | — |
+| C2_SITE_HUBER_CONSENSUS | 17 | 0.5 | NOT_RUN | — | — | — | — | — | — |
+| C2_SITE_HUBER_CONSENSUS | 29 | — | NOT_RUN_NOT_LOCKED | — | — | — | — | — | — |
+| M1_CORRESPONDENCE_GRAPH | 17 | 0 | NOT_RUN | — | — | — | — | — | — |
+| M1_CORRESPONDENCE_GRAPH | 17 | 0.125 | NOT_RUN | — | — | — | — | — | — |
+| M1_CORRESPONDENCE_GRAPH | 17 | 0.25 | NOT_RUN | — | — | — | — | — | — |
+| M1_CORRESPONDENCE_GRAPH | 17 | 0.5 | NOT_RUN | — | — | — | — | — | — |
+| M1_CORRESPONDENCE_GRAPH | 29 | — | NOT_RUN_NOT_LOCKED | — | — | — | — | — | — |

@@ -1,0 +1,22 @@
+{
+  "status": "SYNTHETIC_SELF_TESTS_PASSED",
+  "count": 12,
+  "tests": [
+    "known_relative_bias_recovery",
+    "additive_model_correction",
+    "heldout_sites_not_used_for_fit",
+    "common_absolute_bias_remains_unidentified",
+    "lambda_zero_exact_identity",
+    "disconnected_graph_exact_fallback",
+    "connected_missing_visibility",
+    "invalid_padding_excluded",
+    "valid_nonfinite_rejected",
+    "balanced_pooling_cancellation_is_expected",
+    "mean_difference_pair_shuffle_equivalence_is_expected",
+    "synthetic_outlier_sanity_not_real_data_evidence"
+  ],
+  "real_FC_used": false,
+  "repository_integration_tested": false,
+  "real_data_evaluated": false,
+  "optimizer_updates": 0
+}

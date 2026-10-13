@@ -1,0 +1,228 @@
+{
+  "schema_version": 2,
+  "date": "2026-10-13",
+  "task_id": "fg2-surface-bias-wave1-v2",
+  "status": "INSTRUCTIONS_AUDITED_REAL_EXPERIMENTS_NOT_RUN",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "bec4176d9a6784a89ea293a9803e5cf6fab178ec",
+  "branch": "research/fg2-surface-bias-wave1-v2",
+  "paths": {
+    "module": "src/static_ovmap/surface_bias_wave1_v2",
+    "entrypoint": "scripts/evaluation/run_fg2_surface_bias_wave1_v2.py",
+    "config": "configs/static_ovmap/surface_bias_wave1_v2.json",
+    "docs": "docs/paper/static_ovmap/surface_bias_wave1_v2",
+    "artifacts": "artifacts/static_ovmap/surface_bias_wave1_v2"
+  },
+  "phases": [
+    "preflight",
+    "parity",
+    "diagnose",
+    "select",
+    "repeat",
+    "prefix",
+    "predict",
+    "evaluate",
+    "report",
+    "publish"
+  ],
+  "execution": {
+    "new_optimizer_updates": 0,
+    "new_rgb_encodings": 0,
+    "new_sam_proposals": 0,
+    "max_concurrent_gpus": 1,
+    "cpu_workers_max": 3,
+    "blas_threads": 1,
+    "host_cache_max_GiB": 32,
+    "new_tensor_LRU_max_GiB": 2,
+    "initial_free_space_min_GiB": 10,
+    "stop_new_large_writes_free_GiB": 5,
+    "auto_push": true,
+    "keep_deployment": "N0_UNCHANGED",
+    "environment_upgrade": false,
+    "max_test_groups": 8,
+    "max_new_map_logical_rows": 104,
+    "max_new_map_pools": 8,
+    "additional_baseline_scorer_checks": 2,
+    "network_retries": 1
+  },
+  "heads": {
+    "17": {
+      "registry_key": "FG2_SURFACE",
+      "selected_step": 1000,
+      "sha256": "de7fc82edba5440d9c338f5253ecd3600a340271089600c9ff2d286e2711d963"
+    },
+    "29": {
+      "registry_key": "S29_FG2_SURFACE",
+      "selected_step": 2000,
+      "sha256": "501a6ad010fd2951c93a7638fce94c599b994c7fe9215adad82054919a84ea77"
+    }
+  },
+  "frozen_fc_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+  "frozen_text_sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4",
+  "frozen_text_bytes": 669136,
+  "parent_root_candidates": [
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+    "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/attempt_001"
+  ],
+  "data": {
+    "train_base_originals": 622,
+    "train_families": 24,
+    "dev_base_originals": 69,
+    "dev_families": 4,
+    "base_classes": 160,
+    "heldout_classes": 40,
+    "conditions": [
+      "clean",
+      "truncate",
+      "append",
+      "truncate_append"
+    ],
+    "primary_prefix": 8,
+    "secondary_prefixes": [
+      2,
+      4
+    ],
+    "max_views": 8,
+    "max_sites": 64,
+    "raw_channels": 1536,
+    "projected_channels": 768,
+    "site_correspondence_scope": "SAME_OBJECT_SAME_CONDITION_ACROSS_VIEWS_ONLY",
+    "map_cohorts": "COPY_PARENT_ORDER_EXACTLY",
+    "map_total_scenes": 26,
+    "CF18_families": 7
+  },
+  "adapter": {
+    "branch": "RAW_VALUE_ONLY",
+    "wrapper": "COPY_INPUT_DICT_REPLACE_local_raw_CALL_PARENT_FGHead",
+    "fixed_parent_eta": 0.5,
+    "zero_lambda_or_unsupported": "EXACT_ORIGINAL_SAME_SEED_FG2",
+    "recompute_local_unit": false,
+    "new_trainable_parameters": 0,
+    "allowed_forward_keys": [
+      "fc_vectors",
+      "view_valid",
+      "frame_ids",
+      "local_raw",
+      "local_unit",
+      "metadata",
+      "local_valid"
+    ],
+    "solver_dtype": "CPU_FLOAT64",
+    "parent_dtype": "FP32_NO_TF32"
+  },
+  "solver": {
+    "min_shared_fit_sites": 8,
+    "huber_delta": 1.345,
+    "max_iter": 10,
+    "tolerance": 1e-08,
+    "epsilon_scale": 1e-12,
+    "scale_rule": "max(median_norm_residual_at_coordinatewise_median,1e-12*max(1,norm(initial_median)))",
+    "edge_weight": "COMMON_FIT_SITE_COUNT",
+    "gauge": "EQUAL_ACTIVE_VIEW_ZERO_MEAN",
+    "disconnected": "WHOLE_OBJECT_FG2_FALLBACK"
+  },
+  "diagnostics": {
+    "folds": 4,
+    "block_rule": "LONGEST_AXIS_THEN_X_Y_Z_SITEINDEX_NP_ARRAY_SPLIT",
+    "min_heldout_shared_sites": 4,
+    "purge_bilinear_donors": true,
+    "missing_diagnostic_metadata": "UNSUPPORTED_STRICT_DIAGNOSTIC_P2_CONTINUES",
+    "null_seeds": [
+      101,
+      211,
+      307,
+      401,
+      503
+    ],
+    "null": "INDEPENDENT_VALID_FIT_SETS_MATCHED_EDGE_COUNT",
+    "zero_denominator_eps": 1e-20,
+    "aggregation": "SUM_N_D_PER_OBJECT_CONDITION_THEN_FAMILY_EQUAL_MEAN_R",
+    "signal_floor": {
+      "train_originals": 50,
+      "train_families": 8,
+      "dev_originals": 20,
+      "dev_families": 3
+    },
+    "signal_requires": "TRAIN_AND_DEV_CLEAN_FAMILY_MEAN_R_POSITIVE",
+    "signal_is_map_activation_gate": false
+  },
+  "selection": {
+    "candidates": [
+      "C1_FULL_VIEW_CENTER",
+      "C2_SITE_HUBER_CONSENSUS",
+      "M1_CORRESPONDENCE_GRAPH"
+    ],
+    "lambdas": [
+      0,
+      0.125,
+      0.25,
+      0.5
+    ],
+    "selection_seed": 17,
+    "repeat_seed": 29,
+    "repeat_all_three_locked_methods": true,
+    "ranking": [
+      "A_DESC",
+      "M_DESC",
+      "C_DESC",
+      "LAMBDA_ASC"
+    ],
+    "simple_tie_order": [
+      "C1_FULL_VIEW_CENTER",
+      "C2_SITE_HUBER_CONSENSUS"
+    ],
+    "tolerance": 1e-10,
+    "gate_baseline": "SAME_SEED_ORIGINAL_FG2",
+    "gain_min_fraction": {
+      "A": 0.005,
+      "M": -0.005,
+      "C": -0.005
+    },
+    "net_corrections_min_exclusive": 0,
+    "max_numeric_fallback_rate": 0.01,
+    "require_positive_lambda": true,
+    "repeat_reselect": false,
+    "map_reselect": false,
+    "activation_rule": "IF_M1_PASS_BOTH_EXPAND_M1_AND_CSTAR_ELSE_IF_CSTAR_PASS_BOTH_EXPAND_CSTAR_ELSE_EMPTY"
+  },
+  "map": {
+    "new_method_seed_arms_max": 4,
+    "references": [
+      "REF_D2",
+      "REF_G1",
+      "FC8",
+      "FG2_seed17",
+      "FG2_seed29"
+    ],
+    "global_lock_all_arms_before_scoring": true,
+    "fixed_geometry": "G1",
+    "fixed_owner_partition": "G1_EXACT",
+    "only_replace_F": true,
+    "fusion": "ORIGINAL_PE_D2_GROUPED_WITH_ORIGINAL_N_Q_AND_TEMPERATURES",
+    "ranks": "ORIGINAL_CURRENT_CLASS_RANK_FUNCTION",
+    "official_pooled_AP": true,
+    "reuse_exact_alias": true,
+    "gain_label_requires_all_four_cells": {
+      "APall_gain_gt": 1e-10,
+      "mIoU_gain_ge": -0.005
+    }
+  },
+  "publication": {
+    "required_for_negative_and_blocked_science": true,
+    "force_push": false,
+    "commit1": "CODE_REPORTS_RESULTS",
+    "commit2": "COMMIT1_PUSH_RECEIPT_AND_HANDOFF_ONLY",
+    "final_commit2_receipt": "OUT/publication/final.json_EXTERNAL_NO_SELF_REFERENCE",
+    "max_file_MiB": 40,
+    "max_new_git_artifacts_MiB": 150,
+    "formats": [
+      "md",
+      "csv",
+      "json"
+    ],
+    "no_new_weight_claim": true
+  },
+  "future_training": {
+    "enabled": false
+  }
+}

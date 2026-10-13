@@ -1,0 +1,111 @@
+{
+  "status": "INSTRUCTION_CONSISTENCY_CHECKS_PASSED",
+  "scope": "Prompt/config/source-binding review; NOT real project integration or experiment execution",
+  "checks_passed": 23,
+  "checks": [
+    {
+      "check": "base_commit_and_branch_bound",
+      "passed": true
+    },
+    {
+      "check": "all_new_paths_in_master",
+      "passed": true
+    },
+    {
+      "check": "no_new_training_or_encoding",
+      "passed": true
+    },
+    {
+      "check": "explicit_normal_publication",
+      "passed": true
+    },
+    {
+      "check": "exact_head_keys_steps_sha",
+      "passed": true
+    },
+    {
+      "check": "fc_text_identity_bound",
+      "passed": true
+    },
+    {
+      "check": "seven_inputs_unique",
+      "passed": true
+    },
+    {
+      "check": "fixed_grid_seed_no_reselection",
+      "passed": true
+    },
+    {
+      "check": "map_dynamic_counts",
+      "passed": true
+    },
+    {
+      "check": "minimal_checks_limit",
+      "passed": true
+    },
+    {
+      "check": "28_unique_source_files",
+      "passed": true
+    },
+    {
+      "check": "all_sources_have_real_format_refs",
+      "passed": true
+    },
+    {
+      "check": "phase_contract_complete",
+      "passed": true
+    },
+    {
+      "check": "numerical_and_condition_boundaries",
+      "passed": true
+    },
+    {
+      "check": "no_obsolete_science_status_token",
+      "passed": true
+    },
+    {
+      "check": "audit_review_limits_true",
+      "passed": true
+    },
+    {
+      "check": "activation_truth_table",
+      "passed": true
+    },
+    {
+      "check": "lambda_zero_wins_tie",
+      "passed": true
+    },
+    {
+      "check": "simple_order_tie_defined",
+      "passed": true
+    },
+    {
+      "check": "A_priority_respects_protocol",
+      "passed": true
+    },
+    {
+      "check": "actual_reference_selftests_only",
+      "passed": true
+    },
+    {
+      "check": "reference_not_modified",
+      "passed": true
+    },
+    {
+      "check": "all_markdown_fences_balanced",
+      "passed": true
+    }
+  ],
+  "audited_files": {
+    "reference_bias_solver.py": "71d7b0595ce7dc70dd5f74f43927a9c84d737e521162828aa198b01f5b4497c9",
+    "02_发布前审核报告.md": "d756801838aab4b59aff05ac236ffc55a2483048249f39885b69fdcdb2e9ce70",
+    "00_给Codex的最终执行指令.md": "88798bf0ee1fe87698c6229a5086cc6704d8a16f0d369e9244e78e3baebe58c7",
+    "01_源码证据与任务绑定.md": "adad46c32b9f460f66422b5b973ab5b04b7cba1040f61bea45811335ab8efb79",
+    "surface_bias_wave1_v2.json": "d262c3896c38402e1c1356a4396f866c201f7c4439051cbd053e36856d121c6f",
+    "source_evidence_manifest.json": "2aa15227392c1a0a942274196849c22aae2e149172063d64d046abd6743370a9",
+    "reference_selftest.json": "7e0e6b3912a0ec0e5d0757c8d8846dbc897e62dc4993d390d0f0c5df06bbe3ec"
+  },
+  "real_server_access": false,
+  "real_FC_experiment_executed": false,
+  "github_mutation_performed": false
+}

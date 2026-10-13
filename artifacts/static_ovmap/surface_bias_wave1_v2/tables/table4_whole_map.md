@@ -1,0 +1,3 @@
+| status | APall_pct | AP50_pct | AP25_pct | mIoU_pct | mAcc_pct | reason |
+| --- | --- | --- | --- | --- | --- | --- |
+| NOT_RUN_DEPENDENCY | — | — | — | — | — | P3 not assessed |

@@ -1,0 +1,106 @@
+{
+  "actual_exits_only": true,
+  "identity": "7abe1b2de7dc449e52eeb4f6dba91697a0c9270d337689e2b81c1f7de948ac13",
+  "records": [
+    {
+      "command": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "-u",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/scripts/evaluation/run_fg2_surface_bias_wave1_v2.py",
+        "--spec",
+        "configs/static_ovmap/surface_bias_wave1_v2.json",
+        "--parent-root",
+        "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+        "--output-root",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001",
+        "--phase",
+        "preflight",
+        "--worker",
+        "--gpu",
+        "0",
+        "--resume"
+      ],
+      "exit_code": 1,
+      "log": "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001/logs/preflight.log",
+      "observed_by": "CONTROL_SUBPROCESS_RUN_AFTER_WAIT",
+      "phase": "preflight",
+      "scientific_source_digest": "06e74dcb9894566e5c51f76f378fa56117ff23446c485012567fcb79194ad783",
+      "wall_seconds": 0.9014310060010757
+    },
+    {
+      "command": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "-u",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/scripts/evaluation/run_fg2_surface_bias_wave1_v2.py",
+        "--spec",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/configs/static_ovmap/surface_bias_wave1_v2.json",
+        "--parent-root",
+        "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+        "--output-root",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001",
+        "--phase",
+        "preflight",
+        "--worker",
+        "--gpu",
+        "0",
+        "--resume"
+      ],
+      "exit_code": 1,
+      "log": "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001/logs/preflight.log",
+      "observed_by": "CONTROL_SUBPROCESS_RUN_AFTER_WAIT",
+      "phase": "preflight",
+      "scientific_source_digest": "5a7520e2ae8d03b066abfd03904d88e83737d4ba320f5f30280e52708619500c",
+      "wall_seconds": 0.8550915109954076
+    },
+    {
+      "command": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "-u",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/scripts/evaluation/run_fg2_surface_bias_wave1_v2.py",
+        "--spec",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/configs/static_ovmap/surface_bias_wave1_v2.json",
+        "--parent-root",
+        "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+        "--output-root",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001",
+        "--phase",
+        "preflight",
+        "--worker",
+        "--gpu",
+        "0",
+        "--resume"
+      ],
+      "exit_code": 1,
+      "log": "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001/logs/preflight.log",
+      "observed_by": "CONTROL_SUBPROCESS_RUN_AFTER_WAIT",
+      "phase": "preflight",
+      "scientific_source_digest": "0c42a5d5ebb97a682c620e250e53b9191705b7a7ef2c9b1f54713ca2a5896da5",
+      "wall_seconds": 0.8275463760001003
+    },
+    {
+      "command": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "-u",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/scripts/evaluation/run_fg2_surface_bias_wave1_v2.py",
+        "--spec",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/configs/static_ovmap/surface_bias_wave1_v2.json",
+        "--parent-root",
+        "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+        "--output-root",
+        "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001",
+        "--phase",
+        "preflight",
+        "--worker",
+        "--gpu",
+        "0",
+        "--resume"
+      ],
+      "exit_code": 1,
+      "log": "/home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001/logs/preflight.log",
+      "observed_by": "CONTROL_SUBPROCESS_RUN_AFTER_WAIT",
+      "phase": "preflight",
+      "scientific_source_digest": "6f1a5d6bc6dcbec380d8da0bb120b307e737184841c346bcaf3b94cda5f49675",
+      "wall_seconds": 0.8601557369984221
+    }
+  ]
+}
