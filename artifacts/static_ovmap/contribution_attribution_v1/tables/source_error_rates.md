@@ -1,0 +1,10 @@
+| cohort | stratum | objects | NQ_common_errors | F_corrects_NQ | F_corrects_NQ_fraction | fusion_corrected | fusion_harmed |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| replica8 | ALL_AGREE | 88 | 36 | 0 | 0.000000 | 0 | 0 |
+| replica8 | NQ_AGREE_F_DIFF | 47 | 34 | 21 | 0.617647 | 3 | 0 |
+| replica8 | OTHER_DISAGREEMENT | 22 | 0 | 0 | — | 1 | 2 |
+| replica8 | ALL | 157 | 70 | 21 | 0.300000 | 4 | 2 |
+| scannet_cf18 | ALL_AGREE | 82 | 24 | 0 | 0.000000 | 0 | 0 |
+| scannet_cf18 | NQ_AGREE_F_DIFF | 89 | 48 | 22 | 0.458333 | 4 | 3 |
+| scannet_cf18 | OTHER_DISAGREEMENT | 79 | 0 | 0 | — | 6 | 1 |
+| scannet_cf18 | ALL | 250 | 72 | 22 | 0.305556 | 10 | 4 |

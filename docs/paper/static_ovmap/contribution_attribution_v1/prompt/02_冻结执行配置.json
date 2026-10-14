@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "task_id": "ovmap-contribution-attribution-final-v1",
+  "date": "2026-10-14",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "f4245ec0654577634fefb60f3344c6ca9c9335e8",
+  "fg_science_commit": "bec4176d9a6784a89ea293a9803e5cf6fab178ec",
+  "branch": "research/ovmap-contribution-attribution-v1",
+  "namespace": "src/static_ovmap/contribution_attribution_v1",
+  "entrypoint": "scripts/evaluation/run_ovmap_contribution_attribution_v1.py",
+  "cohorts": {
+    "replica8": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet_cf18": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0168_00",
+      "scene0168_01",
+      "scene0168_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "fusion_dev": [
+    "scene0056_00",
+    "scene0534_00",
+    "scene0445_00",
+    "scene0626_00"
+  ],
+  "recognition": {
+    "train_base_originals": 622,
+    "dev_base_originals": 69,
+    "train_families": 24,
+    "dev_families": 4,
+    "base_classes": 160,
+    "heldout_classes": 40,
+    "same_step": 1000,
+    "conditions": [
+      "clean",
+      "truncate",
+      "append",
+      "truncate_append"
+    ],
+    "seeds": [
+      17,
+      29
+    ],
+    "shuffle_seeds": [
+      101,
+      211,
+      307,
+      401,
+      503
+    ],
+    "shuffle_prefix": 8,
+    "new_train_inference": false
+  },
+  "new_main_methods": [
+    {
+      "id": "E0",
+      "sources": [
+        "N"
+      ],
+      "operator": "EQUAL_AVAILABLE",
+      "empty_policy": "UNKNOWN"
+    },
+    {
+      "id": "E1",
+      "sources": [
+        "Q"
+      ],
+      "operator": "EQUAL_AVAILABLE",
+      "empty_policy": "UNKNOWN"
+    },
+    {
+      "id": "E2",
+      "sources": [
+        "F"
+      ],
+      "operator": "EQUAL_AVAILABLE",
+      "empty_policy": "UNKNOWN"
+    },
+    {
+      "id": "E3",
+      "sources": [
+        "N",
+        "Q"
+      ],
+      "operator": "EQUAL_AVAILABLE",
+      "empty_policy": "UNKNOWN"
+    },
+    {
+      "id": "E4",
+      "sources": [
+        "N",
+        "F"
+      ],
+      "operator": "EQUAL_AVAILABLE",
+      "empty_policy": "UNKNOWN"
+    },
+    {
+      "id": "E5",
+      "sources": [
+        "Q",
+        "F"
+      ],
+      "operator": "EQUAL_AVAILABLE",
+      "empty_policy": "UNKNOWN"
+    },
+    {
+      "id": "E6",
+      "sources": [
+        "N",
+        "Q",
+        "F"
+      ],
+      "operator": "EQUAL_AVAILABLE",
+      "empty_policy": "UNKNOWN"
+    },
+    {
+      "id": "E7",
+      "sources": [
+        "N",
+        "Q",
+        "F"
+      ],
+      "operator": "PARENT_D2",
+      "empty_policy": "PARENT_NATIVE_LABEL"
+    },
+    {
+      "id": "E8",
+      "sources": [
+        "N",
+        "Q",
+        "F"
+      ],
+      "operator": "DEV_SELECTED_WEIGHT",
+      "empty_policy": "UNKNOWN",
+      "conditional": "ALL_FOUR_FUSION_DEV_AVAILABLE"
+    },
+    {
+      "id": "J0_FC8_FONLY",
+      "seed": null,
+      "operator": "ELIGIBLE_FC8_ONLY_ON_FIXED_G1"
+    },
+    {
+      "id": "J1_FG2_S17_FONLY",
+      "seed": 17,
+      "operator": "ELIGIBLE_FG2_ONLY_ON_FIXED_G1"
+    },
+    {
+      "id": "J2_FG2_S29_FONLY",
+      "seed": 29,
+      "operator": "ELIGIBLE_FG2_ONLY_ON_FIXED_G1"
+    }
+  ],
+  "weights": {
+    "grid": [
+      [
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.25,
+        0.75
+      ],
+      [
+        0.0,
+        0.5,
+        0.5
+      ],
+      [
+        0.0,
+        0.75,
+        0.25
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.25,
+        0.0,
+        0.75
+      ],
+      [
+        0.25,
+        0.25,
+        0.5
+      ],
+      [
+        0.25,
+        0.5,
+        0.25
+      ],
+      [
+        0.25,
+        0.75,
+        0.0
+      ],
+      [
+        0.5,
+        0.0,
+        0.5
+      ],
+      [
+        0.5,
+        0.25,
+        0.25
+      ],
+      [
+        0.5,
+        0.5,
+        0.0
+      ],
+      [
+        0.75,
+        0.0,
+        0.25
+      ],
+      [
+        0.75,
+        0.25,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "selection_order": [
+      "apall_desc",
+      "miou_desc",
+      "positive_source_count_asc",
+      "l1_to_quarter_quarter_half_asc",
+      "tuple_N_Q_F_lex_asc"
+    ],
+    "selection_tolerance": 1e-10,
+    "allow_partial_dev": false,
+    "fallback": "NOT_SELECTED_NO_FUSION_DEV"
+  },
+  "rank_pairs": [
+    [
+      "E6",
+      "E7"
+    ],
+    [
+      "FG0_FC8",
+      "FG2_SURFACE"
+    ]
+  ],
+  "statistics": {
+    "lfo_pairs": [
+      [
+        "A0",
+        "A1"
+      ],
+      [
+        "A1",
+        "A3"
+      ],
+      [
+        "E6",
+        "E7"
+      ],
+      [
+        "FG0_FC8",
+        "FG2_SURFACE"
+      ],
+      [
+        "FG0_FC8",
+        "S29_FG2_SURFACE"
+      ]
+    ],
+    "bootstrap_pairs": [
+      [
+        "E6",
+        "E7"
+      ],
+      [
+        "FG0_FC8",
+        "FG2_SURFACE"
+      ]
+    ],
+    "bootstrap_draws": 2000,
+    "seed": 4314,
+    "unit": "PHYSICAL_FAMILY",
+    "scope": "EXPOSED_EXPLORATORY_NOT_CONFIRMATORY"
+  },
+  "limits": {
+    "new_optimizer_updates": 0,
+    "new_rgb_encodings": 0,
+    "new_sam_proposals": 0,
+    "new_map_construction": 0,
+    "max_main_new_configs": 12,
+    "max_main_scene_rows": 312,
+    "max_main_pools": 24,
+    "weight_dev_configs": 15,
+    "weight_dev_scene_rows": 60,
+    "weight_dev_pools": 15,
+    "rank_pairs": 2,
+    "max_rank_new_offdiagonal_rows": 104,
+    "max_engineering_scene_scores": 2,
+    "max_frozen_head_forwards": 4000,
+    "gpu_workers": 1,
+    "cpu_score_workers": 3,
+    "host_cache_GiB": 32,
+    "initial_free_GiB": 10,
+    "reserve_free_GiB": 5,
+    "max_new_git_file_MiB": 40,
+    "max_new_git_total_MiB": 150,
+    "max_qualitative_cases": 12,
+    "focused_test_groups": 4
+  },
+  "confirmation": {
+    "execute": false,
+    "nominate_family_count": 12,
+    "nomination_only_existing_official_queue": true,
+    "independence_claim": "NOT_USED_IN_CURRENT_ROUND_UNLESS_FULL_LINEAGE_PROVEN",
+    "new_data_or_models": false
+  },
+  "selection": {
+    "fixed_primary_pairs": {
+      "E_SOURCE": [
+        "A0",
+        "A1"
+      ],
+      "E_GROUP": [
+        "E6",
+        "E7"
+      ],
+      "R": [
+        "A1",
+        "A3"
+      ],
+      "S17": [
+        "FG0_FC8",
+        "FG2_SURFACE"
+      ],
+      "S29": [
+        "FG0_FC8",
+        "S29_FG2_SURFACE"
+      ]
+    },
+    "mechanism_control_order": {
+      "E_GROUP": [
+        "E8",
+        "E6"
+      ],
+      "R": [
+        "A4",
+        "U2"
+      ],
+      "S": [
+        "FG1_VIEW_same_step1000",
+        "FG1_VIEW_selected"
+      ]
+    },
+    "max_shortlist": 2,
+    "shortlist_order": [
+      "specific_positive_cells_desc",
+      "primary_positive_cells_desc",
+      "lfo_positive_fraction_desc",
+      "mean_primary_delta_apall_desc",
+      "E_GROUP_S_R_E_SOURCE_order"
+    ],
+    "no_automatic_core_or_novelty_claim": true
+  },
+  "phases": [
+    "preflight",
+    "inventory",
+    "history",
+    "fusion_dev_predict",
+    "fusion_dev_score",
+    "freeze",
+    "main_predict",
+    "main_score",
+    "surface",
+    "attribute",
+    "rank",
+    "stability",
+    "qualitative",
+    "nominate",
+    "report",
+    "publish",
+    "all"
+  ]
+}

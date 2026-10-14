@@ -1,0 +1,21 @@
+{
+  "case_policy": "MEDIAN_EFFECT_FIXED_TIES_FAMILY_DIVERSITY",
+  "claim": "Quantitative attribution and inspectable examples on exposed data",
+  "formats": [
+    "PNG",
+    "PDF",
+    "SVG"
+  ],
+  "identity": "1df32999ce0105c66d3190f9876475e1dc98194083e81611330985cb56402499",
+  "palette": "OKABE_ITO_WITH_HATCH_AND_DIRECT_LABELS",
+  "raw_RGB_or_GT_images": false,
+  "source_data": [
+    "history.json",
+    "attribute.json",
+    "surface.json",
+    "rank.json",
+    "stability.json"
+  ],
+  "statistics": "ORIGINAL_METRICS_FAMILY_LFO_BOOTSTRAP",
+  "target": "CVPR_evidence_package"
+}

@@ -1,0 +1,14 @@
+| method | seed | selected_step | intervention | A | M | C | net_corrections |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| FG2_SURFACE | 17 | 1000 | ORIGINAL | 46.07 | 58.87 | 48.01 | 15 |
+| FG2_SURFACE | 17 | 1000 | SHUFFLE_101 | 43.29 | 57.41 | 45.86 | 9 |
+| FG2_SURFACE | 17 | 1000 | SHUFFLE_211 | 41.30 | 55.42 | 42.96 | 6 |
+| FG2_SURFACE | 17 | 1000 | SHUFFLE_307 | 41.08 | 56.12 | 43.08 | 7 |
+| FG2_SURFACE | 17 | 1000 | SHUFFLE_401 | 39.95 | 56.37 | 42.46 | 5 |
+| FG2_SURFACE | 17 | 1000 | SHUFFLE_503 | 44.22 | 57.56 | 48.64 | 9 |
+| S29_FG2_SURFACE | 29 | 2000 | ORIGINAL | 46.89 | 59.32 | 48.52 | 17 |
+| S29_FG2_SURFACE | 29 | 2000 | SHUFFLE_101 | 43.78 | 56.15 | 48.52 | 7 |
+| S29_FG2_SURFACE | 29 | 2000 | SHUFFLE_211 | 43.84 | 56.44 | 49.14 | 9 |
+| S29_FG2_SURFACE | 29 | 2000 | SHUFFLE_307 | 44.83 | 56.70 | 46.87 | 12 |
+| S29_FG2_SURFACE | 29 | 2000 | SHUFFLE_401 | 43.55 | 56.83 | 48.52 | 9 |
+| S29_FG2_SURFACE | 29 | 2000 | SHUFFLE_503 | 42.30 | 53.56 | 44.60 | 8 |

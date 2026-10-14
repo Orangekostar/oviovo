@@ -1,0 +1,55 @@
+{
+  "status": "PASSED",
+  "test_groups": [
+    {
+      "group": "T1_SPEC_PROBABILITY",
+      "status": "PASSED",
+      "checks": [
+        "full-source equivalence",
+        "missing-source difference",
+        "empty-source semantics",
+        "eight availability patterns"
+      ]
+    },
+    {
+      "group": "T2_SPEC_ATTRIBUTION_AND_BUDGET",
+      "status": "PASSED",
+      "checks": [
+        "factorial closure",
+        "12x26=312",
+        "rank 104",
+        "head bound",
+        "CF family count"
+      ]
+    },
+    {
+      "group": "T3_SPEC_SELECTION_AND_SCOPE",
+      "status": "PASSED",
+      "checks": [
+        "15 fixed weights",
+        "development role isolation",
+        "no training/new encoding",
+        "confirmation plan only"
+      ]
+    },
+    {
+      "group": "T4_PACKAGE_CROSS_REFERENCES",
+      "status": "PASSED",
+      "checks": [
+        "files exist",
+        "sources pinned",
+        "required ambiguity resolutions",
+        "source reference integrity"
+      ]
+    }
+  ],
+  "number_of_groups": 4,
+  "scope": "PACKAGE_CONTRACT_ONLY_NOT_PROJECT_IMPLEMENTATION",
+  "actual_repository_integration": false,
+  "actual_FC_inference": false,
+  "actual_metric_reproduction": false,
+  "actual_GitHub_push": false,
+  "new_training": 0,
+  "new_rgb_encodings": 0,
+  "new_sam_proposals": 0
+}

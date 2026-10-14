@@ -1,0 +1,105 @@
+{
+  "columns": [
+    "operation",
+    "actual",
+    "limit",
+    "scope",
+    "evidence_status"
+  ],
+  "identity": "8339e225522d72f31206acd6b3b30303e8e78163f7a4ed9bbc9dec68d6c6a398",
+  "metric_unit": "FRACTION;DISPLAY_PERCENT",
+  "rows": [
+    {
+      "actual": 3324,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 4000,
+      "operation": "head_calls",
+      "scope": "NEW_THIS_TASK"
+    },
+    {
+      "actual": 0,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 0,
+      "operation": "RGB_encodings",
+      "scope": "NEW_THIS_TASK"
+    },
+    {
+      "actual": 0,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 0,
+      "operation": "optimizer_updates",
+      "scope": "NEW_THIS_TASK"
+    },
+    {
+      "actual": 0,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 0,
+      "operation": "SAM_proposals",
+      "scope": "NEW_THIS_TASK"
+    },
+    {
+      "actual": 0,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 0,
+      "operation": "map_construction",
+      "scope": "NEW_THIS_TASK"
+    },
+    {
+      "actual": 312,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 312,
+      "operation": "main_scene_rows",
+      "scope": "LOGICAL_CONFIG_ROWS"
+    },
+    {
+      "actual": 24,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 24,
+      "operation": "main_pools",
+      "scope": "LOGICAL_ORDERED_POOLS"
+    },
+    {
+      "actual": 100,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 104,
+      "operation": "rank_off_diagonal_assigns",
+      "scope": "DIAGNOSTIC"
+    },
+    {
+      "actual": 8000,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": 8000,
+      "operation": "bootstrap_draw_pairs",
+      "scope": "MATCHES_ONLY_EXPOSED_EXPLORATORY"
+    },
+    {
+      "actual": 0,
+      "evidence_status": "NOT_RUN_BY_CONTRACT",
+      "limit": null,
+      "operation": "confirmation_families_evaluated",
+      "scope": "NOT_RUN_BY_CONTRACT"
+    },
+    {
+      "actual": 5265,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": null,
+      "operation": "phi_calls",
+      "scope": "NEW_FROZEN_FEATURE_REPOOLING"
+    },
+    {
+      "actual": 1941,
+      "evidence_status": "TECHNICAL_COST_OF_EXPOSED_ANALYSIS",
+      "limit": null,
+      "operation": "ordinary_FC_region_readouts",
+      "scope": "FROM_CACHED_GRIDS_NO_RGB_ENCODING"
+    },
+    {
+      "actual": null,
+      "evidence_status": "NOT_RUN_BY_CONTRACT",
+      "limit": null,
+      "operation": "confirmation_APall",
+      "scope": "NOT_RUN_BY_CONTRACT"
+    }
+  ],
+  "status": "COMPLETE"
+}

@@ -1,0 +1,282 @@
+{
+  "F_correction_denominator": "NQ_common_errors",
+  "identity": "49120090a225e93714ae623d32973573d99d0b05db79e274fa14a577a1a35e9c",
+  "rows": [
+    {
+      "F_corrects_NQ": 0,
+      "F_corrects_NQ_fraction": 0.0,
+      "NQ_common_error_fraction": 0.4090909090909091,
+      "NQ_common_errors": 36,
+      "cohort": "replica8",
+      "families": 8,
+      "fusion_corrected": 0,
+      "fusion_corrected_fraction": 0.0,
+      "fusion_harmed": 0,
+      "fusion_harmed_fraction": 0.0,
+      "objects": 88,
+      "source_means": {
+        "F": {
+          "Brier": 0.5271893573750814,
+          "NLL": 1.1792707521006067,
+          "correct": 0.5909090909090909,
+          "margin": 0.2058205123171856
+        },
+        "N": {
+          "Brier": 0.5726902570357532,
+          "NLL": 1.2751323031283943,
+          "correct": 0.5909090909090909,
+          "margin": 0.15324123353769326
+        },
+        "Q": {
+          "Brier": 0.5798542966912137,
+          "NLL": 1.3096442934342474,
+          "correct": 0.5909090909090909,
+          "margin": 0.13813771107752712
+        }
+      },
+      "stratum": "ALL_AGREE"
+    },
+    {
+      "F_corrects_NQ": 21,
+      "F_corrects_NQ_fraction": 0.6176470588235294,
+      "NQ_common_error_fraction": 0.723404255319149,
+      "NQ_common_errors": 34,
+      "cohort": "replica8",
+      "families": 8,
+      "fusion_corrected": 3,
+      "fusion_corrected_fraction": 0.06382978723404255,
+      "fusion_harmed": 0,
+      "fusion_harmed_fraction": 0.0,
+      "objects": 47,
+      "source_means": {
+        "F": {
+          "Brier": 0.6503813312896543,
+          "NLL": 1.6489327904876723,
+          "correct": 0.44680851063829785,
+          "margin": 0.08999783526400605
+        },
+        "N": {
+          "Brier": 0.8457017047764522,
+          "NLL": 2.3467278836890126,
+          "correct": 0.2765957446808511,
+          "margin": -0.13430395095959513
+        },
+        "Q": {
+          "Brier": 0.8039877582566006,
+          "NLL": 2.241308761363318,
+          "correct": 0.2765957446808511,
+          "margin": -0.09308878120954686
+        }
+      },
+      "stratum": "NQ_AGREE_F_DIFF"
+    },
+    {
+      "F_corrects_NQ": 0,
+      "F_corrects_NQ_fraction": null,
+      "NQ_common_error_fraction": 0.0,
+      "NQ_common_errors": 0,
+      "cohort": "replica8",
+      "families": 7,
+      "fusion_corrected": 1,
+      "fusion_corrected_fraction": 0.045454545454545456,
+      "fusion_harmed": 2,
+      "fusion_harmed_fraction": 0.09090909090909091,
+      "objects": 22,
+      "source_means": {
+        "F": {
+          "Brier": 0.6521660854331959,
+          "NLL": 1.6864829459816664,
+          "correct": 0.4090909090909091,
+          "margin": 0.05785100256646886
+        },
+        "N": {
+          "Brier": 0.7964472637852765,
+          "NLL": 2.059498482084201,
+          "correct": 0.3181818181818182,
+          "margin": -0.11541223611113122
+        },
+        "Q": {
+          "Brier": 0.7612991334625971,
+          "NLL": 2.070007385216516,
+          "correct": 0.3181818181818182,
+          "margin": -0.06604035521328341
+        }
+      },
+      "stratum": "OTHER_DISAGREEMENT"
+    },
+    {
+      "F_corrects_NQ": 21,
+      "F_corrects_NQ_fraction": 0.3,
+      "NQ_common_error_fraction": 0.445859872611465,
+      "NQ_common_errors": 70,
+      "cohort": "replica8",
+      "families": 8,
+      "fusion_corrected": 4,
+      "fusion_corrected_fraction": 0.025477707006369428,
+      "fusion_harmed": 2,
+      "fusion_harmed_fraction": 0.012738853503184714,
+      "objects": 157,
+      "source_means": {
+        "F": {
+          "Brier": 0.5815811458544664,
+          "NLL": 1.3909445359832526,
+          "correct": 0.5222929936305732,
+          "margin": 0.15041290062282123
+        },
+        "N": {
+          "Brier": 0.6857742837383161,
+          "NLL": 1.7058396166530874,
+          "correct": 0.4585987261146497,
+          "margin": 0.029515118864784404
+        },
+        "Q": {
+          "Brier": 0.6723769661341668,
+          "NLL": 1.6950979113442872,
+          "correct": 0.4585987261146497,
+          "margin": 0.040306102186506036
+        }
+      },
+      "stratum": "ALL"
+    },
+    {
+      "F_corrects_NQ": 0,
+      "F_corrects_NQ_fraction": 0.0,
+      "NQ_common_error_fraction": 0.2926829268292683,
+      "NQ_common_errors": 24,
+      "cohort": "scannet_cf18",
+      "families": 7,
+      "fusion_corrected": 0,
+      "fusion_corrected_fraction": 0.0,
+      "fusion_harmed": 0,
+      "fusion_harmed_fraction": 0.0,
+      "objects": 82,
+      "source_means": {
+        "F": {
+          "Brier": 0.5363805148116776,
+          "NLL": 1.4622381562545808,
+          "correct": 0.7073170731707317,
+          "margin": 0.19810973478829574
+        },
+        "N": {
+          "Brier": 0.49356572044292846,
+          "NLL": 1.2639566925655101,
+          "correct": 0.7073170731707317,
+          "margin": 0.25491040742826865
+        },
+        "Q": {
+          "Brier": 0.5027447522444748,
+          "NLL": 1.2717915169732588,
+          "correct": 0.7073170731707317,
+          "margin": 0.2525825170229991
+        }
+      },
+      "stratum": "ALL_AGREE"
+    },
+    {
+      "F_corrects_NQ": 22,
+      "F_corrects_NQ_fraction": 0.4583333333333333,
+      "NQ_common_error_fraction": 0.5393258426966292,
+      "NQ_common_errors": 48,
+      "cohort": "scannet_cf18",
+      "families": 7,
+      "fusion_corrected": 4,
+      "fusion_corrected_fraction": 0.0449438202247191,
+      "fusion_harmed": 3,
+      "fusion_harmed_fraction": 0.033707865168539325,
+      "objects": 89,
+      "source_means": {
+        "F": {
+          "Brier": 0.8173465454159664,
+          "NLL": 2.4746986269467333,
+          "correct": 0.24719101123595505,
+          "margin": -0.05971678142513774
+        },
+        "N": {
+          "Brier": 0.6813365808266469,
+          "NLL": 2.4964277502659247,
+          "correct": 0.4606741573033708,
+          "margin": 0.048813711720316816
+        },
+        "Q": {
+          "Brier": 0.7227095095407772,
+          "NLL": 2.77388169899094,
+          "correct": 0.4606741573033708,
+          "margin": 0.01895314257548423
+        }
+      },
+      "stratum": "NQ_AGREE_F_DIFF"
+    },
+    {
+      "F_corrects_NQ": 0,
+      "F_corrects_NQ_fraction": null,
+      "NQ_common_error_fraction": 0.0,
+      "NQ_common_errors": 0,
+      "cohort": "scannet_cf18",
+      "families": 7,
+      "fusion_corrected": 6,
+      "fusion_corrected_fraction": 0.0759493670886076,
+      "fusion_harmed": 1,
+      "fusion_harmed_fraction": 0.012658227848101266,
+      "objects": 79,
+      "source_means": {
+        "F": {
+          "Brier": 0.7937526458238947,
+          "NLL": 2.7267379970645518,
+          "correct": 0.379746835443038,
+          "margin": -0.008669436048804905
+        },
+        "N": {
+          "Brier": 0.8303263007702523,
+          "NLL": 2.765775027195699,
+          "correct": 0.27848101265822783,
+          "margin": -0.06693103061871163
+        },
+        "Q": {
+          "Brier": 0.9367807197736577,
+          "NLL": 3.5450701474856356,
+          "correct": 0.16455696202531644,
+          "margin": -0.1465694127987004
+        }
+      },
+      "stratum": "OTHER_DISAGREEMENT"
+    },
+    {
+      "F_corrects_NQ": 22,
+      "F_corrects_NQ_fraction": 0.3055555555555556,
+      "NQ_common_error_fraction": 0.288,
+      "NQ_common_errors": 72,
+      "cohort": "scannet_cf18",
+      "families": 7,
+      "fusion_corrected": 10,
+      "fusion_corrected_fraction": 0.04,
+      "fusion_harmed": 4,
+      "fusion_harmed_fraction": 0.016,
+      "objects": 250,
+      "source_means": {
+        "F": {
+          "Brier": 0.7177340151066651,
+          "NLL": 2.2222560335169375,
+          "correct": 0.44,
+          "margin": 0.0409812770317896
+        },
+        "N": {
+          "Brier": 0.6668284901229665,
+          "NLL": 2.1772909828499976,
+          "correct": 0.484,
+          "margin": 0.07983808933339204
+        },
+        "Q": {
+          "Brier": 0.7182075715811802,
+          "NLL": 2.5248916690134644,
+          "correct": 0.448,
+          "margin": 0.043278449896026784
+        }
+      },
+      "stratum": "ALL"
+    }
+  ],
+  "source_attribute": "6f56c82603b0721fcff34bf66d1c2737b4dc9565f952219e19ac37daa5576e19",
+  "status": "COMPLETE",
+  "support": "SAME_ALL_THREE_AVAILABLE_AND_DESCRIPTIVE_IOU>0.5",
+  "zero_denominator": null
+}
