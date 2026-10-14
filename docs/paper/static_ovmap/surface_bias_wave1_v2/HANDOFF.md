@@ -2,7 +2,7 @@
 
 BASE: `bec4176d9a6784a89ea293a9803e5cf6fab178ec`. Branch: `research/fg2-surface-bias-wave1-v2` (actual publication branch is in PUBLICATION_RECEIPT).
 Execution: COMPLETE; science: NO_HELDOUT_SIGNAL; deployment: N0_UNCHANGED.
-Scientific source digest: `7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc`.
+Scientific source digest: `e962bab08cdf67cf71f35972cc82af824747f6ecbaf29c075b4871bcced5b698`.
 
 Original seed17 step1000 and seed29 step2000 heads are referenced by the [selected model registry](../../../../artifacts/static_ovmap/surface_bias_wave1_v2/selected_model_registry.json); no head was trained here. Lambda lock: {"C1_FULL_VIEW_CENTER": 0.125, "C2_SITE_HUBER_CONSENSUS": 0, "M1_CORRESPONDENCE_GRAPH": 0}. The full parent source binding is verified before any in-memory path migration; parent_root keeps its inherited meaning. FG_ROOT is the CLI parent-root, LR_ROOT comes from that binding. Dependencies: see [dependency manifest](../../../../artifacts/static_ovmap/surface_bias_wave1_v2/dependency_manifest.json).
 
@@ -24,6 +24,4 @@ Recovery point: restore the exact missing parent manifests, referenced grids, FC
 
 Results: [RESULTS](RESULTS.md). Limits and supported claims: [CLAIMS](CLAIMS.md). Requirement audit: [REVIEW](REVIEW.md). Large runtime arrays stay in OUT; Git contains compact tables and summaries. Cached replay performance is not online FPS.
 
-Verified result commit C1: `7c5aa3cd00f29c2308e8d78d8ae02f117054bd05`. [Immutable results](https://github.com/Orangekostar/oviovo/blob/7c5aa3cd00f29c2308e8d78d8ae02f117054bd05/docs/paper/static_ovmap/surface_bias_wave1_v2/RESULTS.md).
-
-Publication of C1 was verified; the committed receipt proves C1 only. The final C2/local/remote equality receipt is external at OUT/publication/final.json.
+Cache recovery: [CACHE_RECOVERY](CACHE_RECOVERY.md). Original dependencies are now accessible and real parity is complete. C1_FULL_VIEW_CENTER is locked at lambda 0.125; C2_SITE_HUBER_CONSENSUS and M1_CORRESPONDENCE_GRAPH are locked at lambda 0. All pass_both flags are false; P3 is NOT_ACTIVATED_BY_FIXED_RULE. Do not expand the map cohort or select another strength to avoid this negative result. Scientific worker provenance and the report-only revision are recorded in primary_review.json; original observed all exit code 0 is retained outside Git in OUT/execution_observed.json.

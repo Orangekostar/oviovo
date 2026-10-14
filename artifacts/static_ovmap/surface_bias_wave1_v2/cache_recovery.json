@@ -1,0 +1,29 @@
+{
+  "actual_reboot_test": false,
+  "cause": "Boot ordering cycle: nested capacity automount units require the network parent mount while ordering themselves before local-fs.target. On 2026-10-13 04:04:25 systemd cancelled all five capacity automount start jobs.",
+  "identity": "a32ddc50916658a412605f97ba407f13bad5c6d35ba379c17f6ce9e970136572",
+  "missing_dependencies": [],
+  "mount_configuration_verification_exit_code": 0,
+  "no_cache_reencoding_or_substitution": true,
+  "numerical_results_C1": "7c5aa3cd00f29c2308e8d78d8ae02f117054bd05",
+  "original_all_exit_code": 0,
+  "preflight_status": "COMPLETE",
+  "primary_review_identity": "2176b223b7cee362101942e79680f07ce2526ef2d353ebe87861903a8ab05578",
+  "status": "RESTORED_ORIGINAL_CACHES",
+  "verified_manifests": [
+    {
+      "reference_path": "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/artifacts/static_ovmap/frozen_fc_routing_v1/source_binding.json",
+      "reference_sha256": "cd5e8113e3831c92a58eb7b713b7d33b91b67b00018313874552229eb14665f7",
+      "runtime_path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/source_binding.json",
+      "runtime_sha256": "cd5e8113e3831c92a58eb7b713b7d33b91b67b00018313874552229eb14665f7",
+      "same_bytes": true
+    },
+    {
+      "reference_path": "/home/ww/crove/fg2-surface-bias-wave1-v2/worktree/artifacts/static_ovmap/learned_object_readout_v1/split_manifest.json",
+      "reference_sha256": "a0ab1c1c2bf73fb457e177fd977e164cbacdd5cc2aeec25702a12bcdc3348769",
+      "runtime_path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/split_manifest.json",
+      "runtime_sha256": "a0ab1c1c2bf73fb457e177fd977e164cbacdd5cc2aeec25702a12bcdc3348769",
+      "same_bytes": true
+    }
+  ]
+}

@@ -156,7 +156,7 @@ Execution: **{execution_status}**. Science: **{science}**. Deployment: N0_UNCHAN
 
 {reason}
 
-New optimizer updates / RGB encodings / SAM proposals: **0 / 0 / 0**. Missing experiment metrics remain null. Existing FG2 results are separately identified as inherited published context; they do not establish a gain for this new calibration. Neither offline cached replay nor these blocked phases establish online 30 FPS or an efficiency advantage over OVI-MAP.
+New optimizer updates / RGB encodings / SAM proposals: **0 / 0 / 0**. Missing experiment metrics remain null. Existing FG2 results are separately identified as inherited published context; they do not establish a gain for this new calibration. Cached-grid replay does not establish online 30 FPS or an efficiency advantage over OVI-MAP.
 
 {table_links}
 
@@ -170,7 +170,7 @@ Implemented hypothesis: estimate per-view relative raw-feature offsets from matc
 
 Allowed claims require measured evidence. A positive held-out residual statistic alone is neither statistical significance nor a causal demonstration. Map gains require both cohorts and both locked seeds; superiority over C_STAR requires its full map comparison. Fixed-owner semantic improvements do not establish better instance boundaries.
 
-No claim of improved FG2 calibration, overall superiority to OVI-MAP, first-ever multi-view consistency, zero-shot training, independent full ScanNet200 validation, online30FPS, or new trained weights is supported by blocked experiments. C1/C2 gains without M1 superiority support routine calibration only.
+Improved FG2 calibration requires measured gains against the same-seed parent. This benchmark protocol does not establish overall superiority to OVI-MAP, first-ever multi-view consistency, zero-shot training, independent full ScanNet200 validation, online30FPS, or new trained weights. C1/C2 gains without M1 superiority support routine calibration only.
 ''')
     atomic_text(docs/'HANDOFF.md',f'''# FG2 calibration handoff
 
@@ -243,7 +243,7 @@ Results: [RESULTS](RESULTS.md). Limits and supported claims: [CLAIMS](CLAIMS.md)
     ]
     audit=[dict(prompt=section,requirement=requirement,evidence=evidence,status=status) for section,requirement,evidence,status in checks]
     write(art/'requirement_audit.json',dict(review_owner='PRIMARY_AGENT',scientific_source_digest=source_digest(),execution_status=execution_status,science_status=science,checks=audit,remaining_required_real_experiments=summary['missing']))
-    atomic_text(docs/'REVIEW.md','# Primary-agent requirement audit\n\n'+f'Execution: **{execution_status}**. Science: **{science}**. The full approved prompt remains the acceptance contract.\n\n| Prompt | Requirement | Evidence | Actual status |\n| --- | --- | --- | --- |\n'+''.join(f'| {section} | {requirement} | {evidence} | {status} |\n' for section,requirement,evidence,status in checks)+'\nThe targeted repair preserves the original published release and the frozen scientific spec. Diagnostic-only field compatibility calls the original parent kernels; it does not invent UV, grids or positions. Missing forward observations still require the exact original tensors or caches. Synthetic tests verify engineering behavior and cannot establish FC parity or new scientific gains.\n\nNo new science phase is marked complete. Actual publication is proven by the committed C1 receipt and external C2 final receipt; this C1 report never predeclares its future push.\n')
+    atomic_text(docs/'REVIEW.md','# Primary-agent requirement audit\n\n'+f'Execution: **{execution_status}**. Science: **{science}**. The full approved prompt remains the acceptance contract.\n\n| Prompt | Requirement | Evidence | Actual status |\n| --- | --- | --- | --- |\n'+''.join(f'| {section} | {requirement} | {evidence} | {status} |\n' for section,requirement,evidence,status in checks)+'\nThe targeted repair preserves the original published release and the frozen scientific spec. Diagnostic-only field compatibility calls the original parent kernels; it does not invent UV, grids or positions. Missing forward observations still require the exact original tensors or caches. Synthetic tests verify engineering behavior and cannot establish FC parity or new scientific gains.\n\nPhase completion follows the formal receipts above. Actual publication is proven by the committed C1 receipt and external C2 final receipt; this C1 report never predeclares its future push.\n')
     inventory=[]
     for p in sorted(art.rglob('*')):
         if p.is_file() and p.name not in ('artifact_index.json','PUBLICATION_RECEIPT.json'): inventory.append(dict(path=str(p.relative_to(REPO)),bytes=p.stat().st_size,sha256=digest_file(p)))

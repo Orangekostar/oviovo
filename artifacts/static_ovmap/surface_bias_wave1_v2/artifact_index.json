@@ -6,6 +6,11 @@
       "sha256": "e0bffbcbdea930f261a850746681a516703282c6f6e1a2f5483afb56c56f0dcd"
     },
     {
+      "bytes": 1751,
+      "path": "artifacts/static_ovmap/surface_bias_wave1_v2/cache_recovery.json",
+      "sha256": "5d4b26ffcb31c9d921be9ccf53e5bc31f316f486c6faaff3a857dd72f5f4394d"
+    },
+    {
       "bytes": 1104858,
       "path": "artifacts/static_ovmap/surface_bias_wave1_v2/compact/diagnostic_units.json.gz",
       "sha256": "cdf753a03d37ae3df622ba01aed86350e91766f2996f6c7b25696a459f432158"
@@ -266,6 +271,11 @@
       "sha256": "a1890a6fe994518af8a65d22a6d302f0ae5134d19d1d600712e1bdbe39ebf2ba"
     },
     {
+      "bytes": 1305,
+      "path": "artifacts/static_ovmap/surface_bias_wave1_v2/primary_review.json",
+      "sha256": "d0e96be70e319f098738dc4ce6e184aebd8e03fd3f6a87e16907a9e8b57d6f2a"
+    },
+    {
       "bytes": 2545,
       "path": "artifacts/static_ovmap/surface_bias_wave1_v2/repeat_seed29.json",
       "sha256": "914b8e732d69bee4d07451533cea5be240712aff7f76b13a259b00d6da37aa2d"
@@ -273,7 +283,7 @@
     {
       "bytes": 9682,
       "path": "artifacts/static_ovmap/surface_bias_wave1_v2/requirement_audit.json",
-      "sha256": "3f464e817ae358b1be4b5435e24c0250d83dfbfd34646a5820523ccb5ceebf74"
+      "sha256": "40730bc02ff481bcd45599a280580621dac4b8576b35a26d8e1cba4e1acd7231"
     },
     {
       "bytes": 5270,
@@ -281,14 +291,14 @@
       "sha256": "7ebf559acd727c883031f2b2f9fcc3b4630520742f8afa520fc9776a809aa2e7"
     },
     {
-      "bytes": 797,
+      "bytes": 821,
       "path": "artifacts/static_ovmap/surface_bias_wave1_v2/run_summary.json",
-      "sha256": "b08a1ce5b84eecca58bcd1cd720ddeefd13002bd137d9ae453297f7b661294b8"
+      "sha256": "4e719dbd4bbd4064839f2bf3c7a7185e3369160ae21ba6db8285fe8507935fef"
     },
     {
       "bytes": 804,
       "path": "artifacts/static_ovmap/surface_bias_wave1_v2/selected_model_registry.json",
-      "sha256": "617f5ec1ec373f3d7523a195f2d30fc51d546ab3aede226feea017fa8cf3211b"
+      "sha256": "fba7721c69086308d3cdb8b1749a74ac2364c3bf85bc27c69d9094699f6ae0c3"
     },
     {
       "bytes": 11986,
@@ -356,6 +366,21 @@
       "sha256": "483b1fcc93a3d3a80732e1982f157f022f7ffd8dfb3fbd144b2bcbfc18d95abd"
     },
     {
+      "bytes": 2314,
+      "path": "artifacts/static_ovmap/surface_bias_wave1_v2/tables/table2_paired_clean.csv",
+      "sha256": "b956f4907b3e57070b8cd31349e8a10d8a4f90bffc419f2e0f54eb4b90185760"
+    },
+    {
+      "bytes": 6824,
+      "path": "artifacts/static_ovmap/surface_bias_wave1_v2/tables/table2_paired_clean.json",
+      "sha256": "9b2f21fa10fcf24c81d0f0682f68293e1f63ba138b6090ed33e63920c58d72e9"
+    },
+    {
+      "bytes": 1392,
+      "path": "artifacts/static_ovmap/surface_bias_wave1_v2/tables/table2_paired_clean.md",
+      "sha256": "127f25244782d1ae4e4d1ca9bd8675a485251397fb52754c2f47ee0eae4c4ac1"
+    },
+    {
       "bytes": 1686,
       "path": "artifacts/static_ovmap/surface_bias_wave1_v2/tables/table3_selection_repeat.csv",
       "sha256": "538a6bd726bbc313846e256679f07d18f071588b4046fe078c00a2081ef6381c"
@@ -401,14 +426,14 @@
       "sha256": "dabace0b869402ce9aded8a18dfc66febce4c965d14f0e3dd338b464617a3f86"
     },
     {
-      "bytes": 2262,
+      "bytes": 2612,
       "path": "artifacts/static_ovmap/surface_bias_wave1_v2/tests.json",
-      "sha256": "d6d2983a7a3a0ba6ce0512a525ec2d5afb13ec92a4fa12106d1b9194449d2f5f"
+      "sha256": "ae7ec934768359962f01b4fa51ab159897c6dcc5ef395e42a47477a3287da307"
     }
   ],
-  "identity": "0e1d2f787a3675d6d2725955feb6f15f8ed5f9a2175737e95c9368757c56a8dd",
+  "identity": "94d2d1128deba35ef877dc2f62b3b284dc2823205be241ab17d4aa6d1cb5f97d",
   "large_runtime_arrays": "OUT_ONLY",
-  "regenerate": "entrypoint --phase report with original runtime arguments",
-  "scientific_source_digest": "7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc",
+  "regenerate": "entrypoint --phase report with original runtime arguments; final primary review and cache recovery notes are retained separately",
+  "scientific_source_digest": "e962bab08cdf67cf71f35972cc82af824747f6ecbaf29c075b4871bcced5b698",
   "scope": "C1_TASK_ARTIFACTS_EXCLUDING_INDEX_AND_FUTURE_PUBLICATION_RECEIPT"
 }

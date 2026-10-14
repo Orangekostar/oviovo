@@ -47,4 +47,8 @@ Execution: **COMPLETE**. Science: **NO_HELDOUT_SIGNAL**. The full approved promp
 
 The targeted repair preserves the original published release and the frozen scientific spec. Diagnostic-only field compatibility calls the original parent kernels; it does not invent UV, grids or positions. Missing forward observations still require the exact original tensors or caches. Synthetic tests verify engineering behavior and cannot establish FC parity or new scientific gains.
 
-No new science phase is marked complete. Actual publication is proven by the committed C1 receipt and external C2 final receipt; this C1 report never predeclares its future push.
+Phase completion follows the formal receipts above. Actual publication is proven by the committed C1 receipt and external C2 final receipt; this C1 report never predeclares its future push.
+
+Primary-agent final audit on 2026-10-14: independently recomputed 176 diagnostic statistics from 2,764 original unit receipts, including matched support, object/family coverage and N/D aggregation. All matched the formal summaries. Verified 12 seed17 candidates, three locked seed29 repeats and 12 prefix rows; no new map was activated. All eight tests passed with zero skips. [Audit receipt](../../../../artifacts/static_ovmap/surface_bias_wave1_v2/primary_review.json).
+
+Numerical workers used source digest 7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc, first published in 7c5aa3cd00f29c2308e8d78d8ae02f117054bd05. The later report correction changes string literals only; every other production file and the frozen configuration are byte-identical. Numerical phases were retained; report/publication were regenerated.

@@ -6,10 +6,26 @@
     "passed": 1,
     "stdout": ". [100%] 1 passed, 7 deselected in 1.09s"
   },
+  "current_report_source_digest": "e962bab08cdf67cf71f35972cc82af824747f6ecbaf29c075b4871bcced5b698",
   "focused_groups": 8,
   "full_repo_suite_run": false,
-  "identity": "71f4d654b5bbaa17572c3af607da384a81387cf0632fce55a2605999a42de7ec",
+  "identity": "88a9c3361bf4a166f7065326fc36806a559ac024768bca38ef0ae14d93d5b1bc",
   "main_run": {
+    "exit_code": 0,
+    "observed_by": "CODEX_EXEC_SESSION_70495_AFTER_PROCESS_EXIT",
+    "passed": 8,
+    "seconds": 1.41,
+    "skipped": 0,
+    "stdout": "........ [100%]\n8 passed in 1.41s\n"
+  },
+  "original_full_run_release": "b8722a986533d364f971b65e9e5b3759010fa94e",
+  "previous_full_run_before_cache_recovery": {
+    "exit_code": 0,
+    "passed": 7,
+    "skipped": 1,
+    "stdout": "...s.... [100%] 7 passed, 1 skipped in 1.05s"
+  },
+  "previous_full_run_before_report_text_fix": {
     "actual_command": "PYTHONPATH=src OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/test_surface_bias_wave1_v2.py",
     "exit_code": 0,
     "observed_by": "CODEX_EXEC_SESSION_84063_AFTER_PROCESS_EXIT",
@@ -18,13 +34,6 @@
     "seconds": 1.36,
     "skipped": 0,
     "stdout": "........ [100%]\n8 passed in 1.36s\n"
-  },
-  "original_full_run_release": "b8722a986533d364f971b65e9e5b3759010fa94e",
-  "previous_full_run_before_cache_recovery": {
-    "exit_code": 0,
-    "passed": 7,
-    "skipped": 1,
-    "stdout": "...s.... [100%] 7 passed, 1 skipped in 1.05s"
   },
   "publication_unicode_and_resume_validation": {
     "actual_bare_git_remote": true,
