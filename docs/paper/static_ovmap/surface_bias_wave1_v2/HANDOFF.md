@@ -23,3 +23,7 @@ Table Markdown/CSV/JSON come from sealed runtime JSON; the report phase regenera
 Recovery point: restore the exact missing parent manifests, referenced grids, FC/text and input arrays; rerun identical spec/paths. Different scientific parameters require a new version. Do not recompute RGB, train, select another checkpoint, use similar caches or shrink cohorts. Blocked dependency: See formal phase records.
 
 Results: [RESULTS](RESULTS.md). Limits and supported claims: [CLAIMS](CLAIMS.md). Requirement audit: [REVIEW](REVIEW.md). Large runtime arrays stay in OUT; Git contains compact tables and summaries. Cached replay performance is not online FPS.
+
+Verified result commit C1: `7c5aa3cd00f29c2308e8d78d8ae02f117054bd05`. [Immutable results](https://github.com/Orangekostar/oviovo/blob/7c5aa3cd00f29c2308e8d78d8ae02f117054bd05/docs/paper/static_ovmap/surface_bias_wave1_v2/RESULTS.md).
+
+Publication of C1 was verified; the committed receipt proves C1 only. The final C2/local/remote equality receipt is external at OUT/publication/final.json.
