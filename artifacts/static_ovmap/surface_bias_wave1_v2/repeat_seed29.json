@@ -1,6 +1,84 @@
 {
-  "identity": "7a0114be30e60220c495a08eb6426d15720be12cb8329ae15226a12918fd775f",
-  "numeric_values": null,
-  "reason": "Exact numerical prerequisites unavailable",
-  "status": "NOT_RUN_DEPENDENCY"
+  "identity": "3865268c460d7c2fb102976ecb8bf864246e86fbb7198d2bcdfca302147d85bc",
+  "reselected": false,
+  "rows": {
+    "C1_FULL_VIEW_CENTER": {
+      "A": 0.4781881313131313,
+      "C": 0.5078914141414141,
+      "CE": 3.9479738436087413,
+      "M": 0.5957070707070706,
+      "NLL": 4.174642646398007,
+      "categories": 28,
+      "corrections": 1,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 2,
+      "lambda_": 0.125,
+      "method": "C1_FULL_VIEW_CENTER",
+      "net_corrections": -1,
+      "numeric_fallback_rate": 0.0,
+      "original_objects": 69,
+      "per_family_A": {
+        "scene0105": 0.46969696969696967,
+        "scene0143": 0.6481481481481481,
+        "scene0211": 0.3875,
+        "scene0620": 0.4074074074074074
+      },
+      "prefix": 8,
+      "seed": 29,
+      "variant_records": 276
+    },
+    "C2_SITE_HUBER_CONSENSUS": {
+      "A": 0.4689078282828283,
+      "C": 0.4851641414141414,
+      "CE": 3.9459842867446877,
+      "M": 0.5932269119769119,
+      "NLL": 4.172725817563659,
+      "baseline_alias": "d7a8bd2184e1f7df639f818d5071789d891a5e1daf773c31ff104a357703b20e",
+      "categories": 28,
+      "corrections": 0,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 0,
+      "lambda_": 0,
+      "method": "C2_SITE_HUBER_CONSENSUS",
+      "net_corrections": 0,
+      "numeric_fallback_rate": 0,
+      "original_objects": 69,
+      "per_family_A": {
+        "scene0105": 0.4242424242424242,
+        "scene0143": 0.6481481481481481,
+        "scene0211": 0.39583333333333337,
+        "scene0620": 0.4074074074074074
+      },
+      "variant_records": 276
+    },
+    "M1_CORRESPONDENCE_GRAPH": {
+      "A": 0.4689078282828283,
+      "C": 0.4851641414141414,
+      "CE": 3.9459842867446877,
+      "M": 0.5932269119769119,
+      "NLL": 4.172725817563659,
+      "baseline_alias": "d7a8bd2184e1f7df639f818d5071789d891a5e1daf773c31ff104a357703b20e",
+      "categories": 28,
+      "corrections": 0,
+      "families": 4,
+      "full200_competitors": true,
+      "harm": 0,
+      "lambda_": 0,
+      "method": "M1_CORRESPONDENCE_GRAPH",
+      "net_corrections": 0,
+      "numeric_fallback_rate": 0,
+      "original_objects": 69,
+      "per_family_A": {
+        "scene0105": 0.4242424242424242,
+        "scene0143": 0.6481481481481481,
+        "scene0211": 0.39583333333333337,
+        "scene0620": 0.4074074074074074
+      },
+      "variant_records": 276
+    }
+  },
+  "selection_identity": "91b85457bb058e00bf77d731dec2a8b7eda3b4467aacfc7ad93ead44ccbcb25c",
+  "status": "COMPLETE"
 }

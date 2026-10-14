@@ -70,25 +70,25 @@
       "evidence": "prediction.parity / parity.json",
       "prompt": "T1 / section5",
       "requirement": "2 TRAIN \u00d72 seeds \u00d74 conditions \u00d72/4/8 real FC checks",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "prediction.compare_history",
       "prompt": "T1 / section5",
       "requirement": "69 base DEV keyed historical labels/AMC and embedding tolerance",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "binding.py / diagnostics.spatial_folds / test05",
       "prompt": "T2 / section6.1",
       "requirement": "622/69 base objects,24/4 families, four condition-specific positions",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "diagnostics.py / test05",
       "prompt": "T2 / section6.1",
       "requirement": "Four spatial folds and actual bilinear-donor global purge",
-      "status": "SYNTHETIC_ISOLATION_VERIFIED_REAL_DIAGNOSIS_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "diagnostics.diagnostic_metadata / data.ObjectLoader / test05",
@@ -100,61 +100,61 @@
       "evidence": "diagnostics.independent_bias",
       "prompt": "T2 / section6.2",
       "requirement": "Stable five null seeds; degenerate null separately labeled",
-      "status": "CODE_REVIEWED_REAL_DIAGNOSIS_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "diagnostics.aggregate / diagnostic_units compact archive",
       "prompt": "T2 / section6.2",
       "requirement": "Sum N/D before R; equal families; paired common support",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "diagnostics.run / selection.activate",
       "prompt": "T2 / section6.2",
       "requirement": "Signal coverage floors; signal never gates P2/P3",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "prediction.recognition / inherited summarize",
       "prompt": "T3 / section6.3",
       "requirement": "Full200 top1/NLL; inherited base-class CE at0.07; exact AMC",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "selection.lock_selection / test06",
       "prompt": "T3 / section6.3",
       "requirement": "All12 seed17 candidates; AMC/lambda tie rule; lock C_STAR",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "prediction.repeat / selection.activate / test06",
       "prompt": "T4 / section6.4",
       "requirement": "Seed29 locked repeats only; no champion replacement",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "selection.passes/activate / test06",
       "prompt": "T4 / section6.4",
       "requirement": "Exact pass thresholds and three activation branches",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "prediction.prefix / test05/07",
       "prompt": "T4 / section6.5",
       "requirement": "Both seeds, four conditions,2/4 prefixes; lambda0 aliases",
-      "status": "REAL_EXPERIMENT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "adapter.py / prediction.recognition",
       "prompt": "T4 / section6.5",
       "requirement": "Group raw/phi/embedding/attention effect and harm audits",
-      "status": "CODE_REVIEWED_REAL_READOUT_BLOCKED"
+      "status": "MEASURED"
     },
     {
       "evidence": "prediction.predict / evaluation.run",
       "prompt": "T5 / section7.1",
       "requirement": "All26 scenes and all expanded arms locked before GT",
-      "status": "REAL_MAP_NOT_REACHED"
+      "status": "NOT_ACTIVATED_BY_FIXED_RULE"
     },
     {
       "evidence": "prediction.predict / unchanged build_payload",
@@ -214,7 +214,7 @@
       "evidence": "reporting.compact_results / compact_results_index.json",
       "prompt": "T7 / section9.2",
       "requirement": "Frozen artifact config; compact readouts, N/D, map/match/per-class data",
-      "status": "NO_NEW_SCIENTIFIC_OUTPUTS"
+      "status": "COMPACT_OUTPUTS_ARCHIVED"
     },
     {
       "evidence": "publication.check_files / artifact_index.json",
@@ -232,7 +232,7 @@
       "evidence": "runner.py / run_summary.json / stage_exits.json",
       "prompt": "T7 / section9.4",
       "requirement": "Three status axes; real worker exits; external observed all exit",
-      "status": "OBSERVED_SCIENTIFIC_FAILURE_RETAINED"
+      "status": "FORMAL_PHASE_STATUSES_COMPLETE"
     },
     {
       "evidence": "CLAIMS.md / RESULTS.md",
@@ -241,12 +241,10 @@
       "status": "EVIDENCE_BOUNDARIES_REVIEWED"
     }
   ],
-  "execution_status": "BLOCKED_DEPENDENCY",
-  "identity": "55daccb4a351aab0c33a466519802a16bbc9528656bce55c07bf1107810b3b3d",
-  "remaining_required_real_experiments": [
-    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/source_binding.json"
-  ],
+  "execution_status": "COMPLETE",
+  "identity": "1790d3e85676cb7d1dc4668310b0e048eba9dae5f77e1be04658fe3bd9f4dd5f",
+  "remaining_required_real_experiments": [],
   "review_owner": "PRIMARY_AGENT",
-  "science_status": "UNASSESSED_DEPENDENCY",
+  "science_status": "NO_HELDOUT_SIGNAL",
   "scientific_source_digest": "7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc"
 }

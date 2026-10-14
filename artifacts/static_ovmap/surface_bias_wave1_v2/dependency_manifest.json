@@ -1,13 +1,43 @@
 {
-  "bounded_candidates": [
-    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
-    "/mnt/shared/ww/ovimap-frozen-fc-routing-v1/attempt_001"
-  ],
-  "checked_parent": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
-  "identity": "f8d9b068fe7ff3202244521000057aff2c9df79e689bdb9f3f41f46c900dc953",
-  "missing": [
-    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/source_binding.json"
-  ],
-  "no_substitutions": true,
-  "status": "BLOCKED_DEPENDENCY"
+  "P3_contexts": {
+    "office0": true,
+    "office1": true,
+    "office2": true,
+    "office3": true,
+    "office4": true,
+    "room0": true,
+    "room1": true,
+    "room2": true,
+    "scene0011_00": true,
+    "scene0011_01": true,
+    "scene0050_00": true,
+    "scene0050_01": true,
+    "scene0050_02": true,
+    "scene0084_00": true,
+    "scene0084_01": true,
+    "scene0084_02": true,
+    "scene0168_00": true,
+    "scene0168_01": true,
+    "scene0168_02": true,
+    "scene0231_00": true,
+    "scene0231_01": true,
+    "scene0231_02": true,
+    "scene0378_00": true,
+    "scene0378_01": true,
+    "scene0378_02": true,
+    "scene0518_00": true
+  },
+  "P3_top_level": {
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/evaluation/store.json": true,
+    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/recognition/regression.json": true,
+    "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/features/regression.json": true,
+    "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/regression/manifest.json": true
+  },
+  "identity": "d79b63dc6190b648c9270e163dcc61ddd7b00cf04e5210b72e112db81e1fb216",
+  "lr_root": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001",
+  "missing": [],
+  "parent_identity": "38d8b320d64ae9221829abb633f52d798a3e84b0ef8354ed6806d91dcac70582",
+  "pinned_registry": false,
+  "registry_identity": "2f2e343faaf8830188b46ecb4893b65a3c0d7fa2f7263ec99f313a7fe8f91eb9",
+  "status": "COMPLETE"
 }

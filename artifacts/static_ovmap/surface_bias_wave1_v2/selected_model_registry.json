@@ -1,7 +1,11 @@
 {
   "BASE": "bec4176d9a6784a89ea293a9803e5cf6fab178ec",
-  "identity": "8a1bcec385224b93077c5a15c7e021ecd1f4dfd623e67f18c67a1e571cc34f33",
-  "lambdas": null,
+  "identity": "0856f10fafaa598a1b7f5450b60f03a48acdfc7824141c20863228117b7c6eec",
+  "lambdas": {
+    "C1_FULL_VIEW_CENTER": 0.125,
+    "C2_SITE_HUBER_CONSENSUS": 0,
+    "M1_CORRESPONDENCE_GRAPH": 0
+  },
   "no_new_weights": true,
   "parent_heads": {
     "17": {
@@ -17,5 +21,5 @@
   },
   "scientific_source_digest": "7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc",
   "solver_schema": 2,
-  "status": "NO_SELECTED_MODEL"
+  "status": "LOCKED_CALIBRATION"
 }

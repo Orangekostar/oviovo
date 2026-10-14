@@ -1,0 +1,3769 @@
+{
+  "arrays": {
+    "bytes": 975835,
+    "path": "compact/readouts/FG2_s17_l0_p2.npz",
+    "sha256": "4d2f42a5954d6015bb6fd0b27255302f0d3ce4327bb36e7fd294564e2a2bfe26"
+  },
+  "elapsed_seconds": 14.471509734998108,
+  "identity": "c998f1af407bbdd6afdf8b76e088bdad54e16248298397b17ebf53e7533c42f3",
+  "input_identity": "6a93854b2e6d9ecb64b8f198a33ad2f30ac4caa95093ee9fdb82890aa54d3515",
+  "metrics": {
+    "A": 0.44722222222222213,
+    "C": 0.42960858585858586,
+    "CE": 3.9128216988811593,
+    "M": 0.5705086580086579,
+    "NLL": 4.139469782546514,
+    "categories": 28,
+    "corrections": 0,
+    "families": 4,
+    "full200_competitors": true,
+    "harm": 0,
+    "lambda_": 0,
+    "method": "FG2",
+    "net_corrections": 0,
+    "numeric_fallback_rate": 0.0,
+    "original_objects": 69,
+    "per_family_A": {
+      "scene0105": 0.5,
+      "scene0143": 0.5555555555555555,
+      "scene0211": 0.39999999999999997,
+      "scene0620": 0.3333333333333333
+    },
+    "prefix": 2,
+    "seed": 17,
+    "variant_records": 276
+  },
+  "new_rgb_encodings": 0,
+  "original_objects": 69,
+  "records": [
+    {
+      "CE": [
+        3.359544277191162,
+        3.358381748199463,
+        3.4120230674743652,
+        3.449317216873169
+      ],
+      "NLL": [
+        3.5727548599243164,
+        3.5696115493774414,
+        3.6258633136749268,
+        3.663360834121704
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 95,
+      "family": "scene0105",
+      "gaps": [
+        0.006204724311828613,
+        0.008806541562080383,
+        0.003368765115737915,
+        0.0017603486776351929
+      ],
+      "key": "scene0105_00:1",
+      "margins": [
+        0.006204724311828613,
+        0.008806541562080383,
+        0.003368765115737915,
+        0.0017603486776351929
+      ],
+      "predictions": [
+        95,
+        95,
+        95,
+        95
+      ]
+    },
+    {
+      "CE": [
+        4.598032474517822,
+        4.633241653442383,
+        4.717128276824951,
+        4.663497447967529
+      ],
+      "NLL": [
+        4.817807197570801,
+        4.852791786193848,
+        4.936378479003906,
+        4.8837103843688965
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0105",
+      "gaps": [
+        0.0020130574703216553,
+        0.00017811357975006104,
+        0.01805892586708069,
+        0.001135110855102539
+      ],
+      "key": "scene0105_00:10",
+      "margins": [
+        -0.016181573271751404,
+        -0.01706854999065399,
+        -0.04421710968017578,
+        -0.029039978981018066
+      ],
+      "predictions": [
+        26,
+        570,
+        26,
+        79
+      ]
+    },
+    {
+      "CE": [
+        4.324845314025879,
+        4.323086261749268,
+        4.370725631713867,
+        4.399221420288086
+      ],
+      "NLL": [
+        4.537799835205078,
+        4.535477161407471,
+        4.582827568054199,
+        4.611412048339844
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 15,
+      "family": "scene0105",
+      "gaps": [
+        0.006833776831626892,
+        0.011737421154975891,
+        0.00712236762046814,
+        0.010979428887367249
+      ],
+      "key": "scene0105_00:11",
+      "margins": [
+        -0.017387032508850098,
+        -0.016076669096946716,
+        -0.021655485033988953,
+        -0.020777419209480286
+      ],
+      "predictions": [
+        161,
+        161,
+        161,
+        161
+      ]
+    },
+    {
+      "CE": [
+        4.410074234008789,
+        4.429498672485352,
+        4.4703874588012695,
+        4.344427108764648
+      ],
+      "NLL": [
+        4.6391096115112305,
+        4.654499053955078,
+        4.696035385131836,
+        4.568464279174805
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0105",
+      "gaps": [
+        0.0013457834720611572,
+        0.005165606737136841,
+        0.00409814715385437,
+        0.0037416815757751465
+      ],
+      "key": "scene0105_00:12",
+      "margins": [
+        -0.022794216871261597,
+        -0.020241737365722656,
+        -0.03284326195716858,
+        -0.009723514318466187
+      ],
+      "predictions": [
+        1167,
+        125,
+        125,
+        125
+      ]
+    },
+    {
+      "CE": [
+        2.9493939876556396,
+        2.9773130416870117,
+        2.979891777038574,
+        3.0424509048461914
+      ],
+      "NLL": [
+        3.177281141281128,
+        3.2077062129974365,
+        3.2089345455169678,
+        3.2724087238311768
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 17,
+      "family": "scene0105",
+      "gaps": [
+        0.054336950182914734,
+        0.04700218141078949,
+        0.04784242808818817,
+        0.03584161400794983
+      ],
+      "key": "scene0105_00:13",
+      "margins": [
+        0.054336950182914734,
+        0.04700218141078949,
+        0.04784242808818817,
+        0.03584161400794983
+      ],
+      "predictions": [
+        17,
+        17,
+        17,
+        17
+      ]
+    },
+    {
+      "CE": [
+        5.107545375823975,
+        5.086270809173584,
+        5.07427978515625,
+        5.0954060554504395
+      ],
+      "NLL": [
+        5.34913444519043,
+        5.3211259841918945,
+        5.3144426345825195,
+        5.330482006072998
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0105",
+      "gaps": [
+        0.009054243564605713,
+        0.01680760085582733,
+        0.010551199316978455,
+        0.0213920921087265
+      ],
+      "key": "scene0105_00:14",
+      "margins": [
+        -0.10826318711042404,
+        -0.10487554967403412,
+        -0.10220948606729507,
+        -0.11108202487230301
+      ],
+      "predictions": [
+        1181,
+        1181,
+        1181,
+        1181
+      ]
+    },
+    {
+      "CE": [
+        3.5889079570770264,
+        3.8933725357055664,
+        3.6044111251831055,
+        3.648982286453247
+      ],
+      "NLL": [
+        3.831697463989258,
+        4.127038955688477,
+        3.844510793685913,
+        3.8908090591430664
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 42,
+      "family": "scene0105",
+      "gaps": [
+        0.02125757932662964,
+        0.01707838475704193,
+        0.019808799028396606,
+        0.020580410957336426
+      ],
+      "key": "scene0105_00:17",
+      "margins": [
+        0.02125757932662964,
+        0.01707838475704193,
+        0.019808799028396606,
+        0.020580410957336426
+      ],
+      "predictions": [
+        42,
+        42,
+        42,
+        42
+      ]
+    },
+    {
+      "CE": [
+        4.310599327087402,
+        4.168944835662842,
+        4.2857794761657715,
+        4.23917293548584
+      ],
+      "NLL": [
+        4.542458534240723,
+        4.395523548126221,
+        4.524409770965576,
+        4.472935199737549
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0105",
+      "gaps": [
+        0.0005387961864471436,
+        0.00287666916847229,
+        0.011863499879837036,
+        0.009063273668289185
+      ],
+      "key": "scene0105_00:18",
+      "margins": [
+        -0.04330921173095703,
+        -0.02510496973991394,
+        -0.05784270167350769,
+        -0.045725107192993164
+      ],
+      "predictions": [
+        125,
+        128,
+        128,
+        128
+      ]
+    },
+    {
+      "CE": [
+        3.608745574951172,
+        3.6386313438415527,
+        3.6357262134552,
+        3.729626417160034
+      ],
+      "NLL": [
+        3.8308475017547607,
+        3.8600564002990723,
+        3.8586888313293457,
+        3.953242301940918
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 56,
+      "family": "scene0105",
+      "gaps": [
+        0.005261406302452087,
+        0.00528968870639801,
+        0.005988806486129761,
+        0.005107417702674866
+      ],
+      "key": "scene0105_00:5",
+      "margins": [
+        0.005261406302452087,
+        0.00528968870639801,
+        0.005988806486129761,
+        0.005107417702674866
+      ],
+      "predictions": [
+        56,
+        56,
+        56,
+        56
+      ]
+    },
+    {
+      "CE": [
+        3.6390137672424316,
+        3.401951551437378,
+        3.38511323928833,
+        3.4603729248046875
+      ],
+      "NLL": [
+        3.8635828495025635,
+        3.628602981567383,
+        3.6096596717834473,
+        3.6856513023376465
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 55,
+      "family": "scene0105",
+      "gaps": [
+        0.0018700957298278809,
+        0.01126357913017273,
+        0.007903039455413818,
+        0.012734413146972656
+      ],
+      "key": "scene0105_00:6",
+      "margins": [
+        -0.0018700957298278809,
+        0.01126357913017273,
+        0.007903039455413818,
+        0.012734413146972656
+      ],
+      "predictions": [
+        21,
+        55,
+        55,
+        55
+      ]
+    },
+    {
+      "CE": [
+        3.0351340770721436,
+        3.0472970008850098,
+        3.064681053161621,
+        3.0586025714874268
+      ],
+      "NLL": [
+        3.2700510025024414,
+        3.281986713409424,
+        3.2990100383758545,
+        3.2936747074127197
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 49,
+      "family": "scene0105",
+      "gaps": [
+        0.007940441370010376,
+        0.010836005210876465,
+        0.0037179291248321533,
+        0.0019801855087280273
+      ],
+      "key": "scene0105_00:7",
+      "margins": [
+        0.007940441370010376,
+        0.010836005210876465,
+        0.0037179291248321533,
+        0.0019801855087280273
+      ],
+      "predictions": [
+        49,
+        49,
+        49,
+        49
+      ]
+    },
+    {
+      "CE": [
+        4.788250923156738,
+        4.925305366516113,
+        4.816994667053223,
+        4.885863304138184
+      ],
+      "NLL": [
+        5.006462097167969,
+        5.141057968139648,
+        5.035627365112305,
+        5.103662490844727
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 28,
+      "family": "scene0143",
+      "gaps": [
+        0.0013359785079956055,
+        0.006517946720123291,
+        0.0012181848287582397,
+        0.008844301104545593
+      ],
+      "key": "scene0143_00:11",
+      "margins": [
+        -0.020131155848503113,
+        -0.026138335466384888,
+        -0.02274368703365326,
+        -0.030002877116203308
+      ],
+      "predictions": [
+        32,
+        131,
+        131,
+        131
+      ]
+    },
+    {
+      "CE": [
+        3.592243194580078,
+        3.6934618949890137,
+        3.6623291969299316,
+        3.7681355476379395
+      ],
+      "NLL": [
+        3.80366849899292,
+        3.9055399894714355,
+        3.874678134918213,
+        3.9820353984832764
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 15,
+      "family": "scene0143",
+      "gaps": [
+        0.058340445160865784,
+        0.05571658909320831,
+        0.05101753771305084,
+        0.05209416151046753
+      ],
+      "key": "scene0143_00:14",
+      "margins": [
+        0.058340445160865784,
+        0.05571658909320831,
+        0.05101753771305084,
+        0.05209416151046753
+      ],
+      "predictions": [
+        15,
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "CE": [
+        3.7022037506103516,
+        3.665935516357422,
+        3.7389676570892334,
+        3.637529134750366
+      ],
+      "NLL": [
+        3.9130849838256836,
+        3.8733291625976562,
+        3.951655387878418,
+        3.8468422889709473
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 28,
+      "family": "scene0143",
+      "gaps": [
+        0.012061089277267456,
+        0.028682708740234375,
+        0.014288261532783508,
+        0.013797745108604431
+      ],
+      "key": "scene0143_00:15",
+      "margins": [
+        -0.012061089277267456,
+        0.028682708740234375,
+        -0.014288261532783508,
+        0.013797745108604431
+      ],
+      "predictions": [
+        300,
+        28,
+        300,
+        28
+      ]
+    },
+    {
+      "CE": [
+        3.6942555904388428,
+        3.5447864532470703,
+        3.8212051391601562,
+        3.6908411979675293
+      ],
+      "NLL": [
+        3.9309091567993164,
+        3.784836530685425,
+        4.0568623542785645,
+        3.929131269454956
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 32,
+      "family": "scene0143",
+      "gaps": [
+        0.029549553990364075,
+        0.03481961786746979,
+        0.025051340460777283,
+        0.028628289699554443
+      ],
+      "key": "scene0143_00:17",
+      "margins": [
+        0.029549553990364075,
+        0.03481961786746979,
+        0.025051340460777283,
+        0.028628289699554443
+      ],
+      "predictions": [
+        32,
+        32,
+        32,
+        32
+      ]
+    },
+    {
+      "CE": [
+        4.7164154052734375,
+        4.5965256690979,
+        4.718335151672363,
+        4.624762535095215
+      ],
+      "NLL": [
+        4.928455352783203,
+        4.809380531311035,
+        4.930561065673828,
+        4.836331367492676
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0143",
+      "gaps": [
+        0.0005747377872467041,
+        0.006852775812149048,
+        0.00559668242931366,
+        0.0005798935890197754
+      ],
+      "key": "scene0143_00:3",
+      "margins": [
+        -0.021934539079666138,
+        -0.0143355131149292,
+        -0.021917790174484253,
+        -0.011323481798171997
+      ],
+      "predictions": [
+        28,
+        191,
+        28,
+        191
+      ]
+    },
+    {
+      "CE": [
+        4.343474864959717,
+        4.174434185028076,
+        4.246181488037109,
+        4.173276901245117
+      ],
+      "NLL": [
+        4.567845344543457,
+        4.405674934387207,
+        4.472567558288574,
+        4.401608467102051
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 11,
+      "family": "scene0143",
+      "gaps": [
+        0.013368993997573853,
+        0.003098785877227783,
+        0.008581668138504028,
+        0.005594134330749512
+      ],
+      "key": "scene0143_00:4",
+      "margins": [
+        -0.013956591486930847,
+        -0.003098785877227783,
+        -0.008581668138504028,
+        -0.005938917398452759
+      ],
+      "predictions": [
+        79,
+        1191,
+        13,
+        13
+      ]
+    },
+    {
+      "CE": [
+        3.6428427696228027,
+        3.7062225341796875,
+        3.644144058227539,
+        3.5763256549835205
+      ],
+      "NLL": [
+        3.865462064743042,
+        3.932626962661743,
+        3.8667373657226562,
+        3.7980406284332275
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 21,
+      "family": "scene0143",
+      "gaps": [
+        0.007950901985168457,
+        0.004992246627807617,
+        0.004737824201583862,
+        0.01072034239768982
+      ],
+      "key": "scene0143_00:6",
+      "margins": [
+        0.007950901985168457,
+        -0.004992246627807617,
+        0.004737824201583862,
+        0.01072034239768982
+      ],
+      "predictions": [
+        21,
+        96,
+        21,
+        21
+      ]
+    },
+    {
+      "CE": [
+        3.9294025897979736,
+        3.4759609699249268,
+        4.044418811798096,
+        3.6845343112945557
+      ],
+      "NLL": [
+        4.150413990020752,
+        3.6890807151794434,
+        4.265361785888672,
+        3.9006447792053223
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 21,
+      "family": "scene0143",
+      "gaps": [
+        0.027129411697387695,
+        0.03596779704093933,
+        0.01972779631614685,
+        0.037177860736846924
+      ],
+      "key": "scene0143_00:7",
+      "margins": [
+        0.027129411697387695,
+        0.03596779704093933,
+        0.01972779631614685,
+        0.037177860736846924
+      ],
+      "predictions": [
+        21,
+        21,
+        21,
+        21
+      ]
+    },
+    {
+      "CE": [
+        3.724375009536743,
+        3.739346981048584,
+        3.873751401901245,
+        3.638338804244995
+      ],
+      "NLL": [
+        3.967742919921875,
+        3.9841673374176025,
+        4.113981246948242,
+        3.8808789253234863
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 34,
+      "family": "scene0143",
+      "gaps": [
+        0.010381877422332764,
+        0.0069037675857543945,
+        0.00489962100982666,
+        0.014100193977355957
+      ],
+      "key": "scene0143_00:9",
+      "margins": [
+        0.010381877422332764,
+        0.0069037675857543945,
+        -0.00489962100982666,
+        0.014100193977355957
+      ],
+      "predictions": [
+        34,
+        34,
+        26,
+        34
+      ]
+    },
+    {
+      "CE": [
+        4.441301345825195,
+        4.396618843078613,
+        4.461221694946289,
+        4.567458152770996
+      ],
+      "NLL": [
+        4.654909610748291,
+        4.6093430519104,
+        4.67765998840332,
+        4.7786865234375
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0211",
+      "gaps": [
+        0.020471185445785522,
+        0.033396363258361816,
+        0.027395784854888916,
+        0.0326535701751709
+      ],
+      "key": "scene0211_00:1",
+      "margins": [
+        -0.043953269720077515,
+        -0.03698134422302246,
+        -0.043567657470703125,
+        -0.05723881721496582
+      ],
+      "predictions": [
+        242,
+        52,
+        52,
+        52
+      ]
+    },
+    {
+      "CE": [
+        3.647561550140381,
+        3.638091802597046,
+        3.605691909790039,
+        3.5430092811584473
+      ],
+      "NLL": [
+        3.8866472244262695,
+        3.878774404525757,
+        3.843848705291748,
+        3.787588119506836
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 5,
+      "family": "scene0211",
+      "gaps": [
+        0.0032892823219299316,
+        0.0099373459815979,
+        0.009291350841522217,
+        0.015249311923980713
+      ],
+      "key": "scene0211_00:10",
+      "margins": [
+        -0.020401746034622192,
+        -0.02354055643081665,
+        -0.02429637312889099,
+        -0.02755919098854065
+      ],
+      "predictions": [
+        276,
+        276,
+        276,
+        276
+      ]
+    },
+    {
+      "CE": [
+        3.8686554431915283,
+        3.8720486164093018,
+        3.876028060913086,
+        3.844179153442383
+      ],
+      "NLL": [
+        4.107917785644531,
+        4.111847877502441,
+        4.113983154296875,
+        4.083530902862549
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 161,
+      "family": "scene0211",
+      "gaps": [
+        0.008273929357528687,
+        0.0068803876638412476,
+        0.006212890148162842,
+        0.006162106990814209
+      ],
+      "key": "scene0211_00:11",
+      "margins": [
+        -0.03326490521430969,
+        -0.032248884439468384,
+        -0.03154611587524414,
+        -0.03087666630744934
+      ],
+      "predictions": [
+        1167,
+        1167,
+        1167,
+        1167
+      ]
+    },
+    {
+      "CE": [
+        3.546180009841919,
+        3.5999996662139893,
+        3.550917863845825,
+        3.57283616065979
+      ],
+      "NLL": [
+        3.7909536361694336,
+        3.8433635234832764,
+        3.7935891151428223,
+        3.816058397293091
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 56,
+      "family": "scene0211",
+      "gaps": [
+        0.003272324800491333,
+        0.0035442113876342773,
+        0.0016966462135314941,
+        0.003024578094482422
+      ],
+      "key": "scene0211_00:12",
+      "margins": [
+        -0.017897605895996094,
+        -0.021537095308303833,
+        -0.017147362232208252,
+        -0.01909428834915161
+      ],
+      "predictions": [
+        66,
+        66,
+        66,
+        66
+      ]
+    },
+    {
+      "CE": [
+        3.280844211578369,
+        3.3049492835998535,
+        3.3010599613189697,
+        3.310485363006592
+      ],
+      "NLL": [
+        3.5130910873413086,
+        3.5372278690338135,
+        3.534601926803589,
+        3.544527053833008
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 56,
+      "family": "scene0211",
+      "gaps": [
+        0.0033868253231048584,
+        0.008116036653518677,
+        0.0048882365226745605,
+        0.008904457092285156
+      ],
+      "key": "scene0211_00:13",
+      "margins": [
+        -0.013194143772125244,
+        -0.01798778772354126,
+        -0.011723220348358154,
+        -0.015873968601226807
+      ],
+      "predictions": [
+        97,
+        97,
+        97,
+        97
+      ]
+    },
+    {
+      "CE": [
+        4.029796123504639,
+        4.144901752471924,
+        4.034770965576172,
+        4.143153667449951
+      ],
+      "NLL": [
+        4.25092887878418,
+        4.368110179901123,
+        4.255965709686279,
+        4.366424083709717
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.00502893328666687,
+        0.002675756812095642,
+        0.00472007691860199,
+        0.0027073174715042114
+      ],
+      "key": "scene0211_00:15",
+      "margins": [
+        0.00502893328666687,
+        0.002675756812095642,
+        0.00472007691860199,
+        0.0027073174715042114
+      ],
+      "predictions": [
+        22,
+        22,
+        22,
+        22
+      ]
+    },
+    {
+      "CE": [
+        4.41842794418335,
+        4.40534782409668,
+        4.413997650146484,
+        4.419354438781738
+      ],
+      "NLL": [
+        4.65991735458374,
+        4.647124767303467,
+        4.655915260314941,
+        4.660429954528809
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.03862598538398743,
+        0.037722766399383545,
+        0.03660956025123596,
+        0.03927835822105408
+      ],
+      "key": "scene0211_00:16",
+      "margins": [
+        -0.099036306142807,
+        -0.09746191650629044,
+        -0.09562832117080688,
+        -0.0997963547706604
+      ],
+      "predictions": [
+        79,
+        79,
+        79,
+        79
+      ]
+    },
+    {
+      "CE": [
+        3.363771677017212,
+        3.3422698974609375,
+        3.697685480117798,
+        3.4700584411621094
+      ],
+      "NLL": [
+        3.603062629699707,
+        3.5888216495513916,
+        3.9456064701080322,
+        3.7198126316070557
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 79,
+      "family": "scene0211",
+      "gaps": [
+        0.027104809880256653,
+        0.031407296657562256,
+        0.011082902550697327,
+        0.016815781593322754
+      ],
+      "key": "scene0211_00:17",
+      "margins": [
+        0.027104809880256653,
+        0.031407296657562256,
+        -0.011082902550697327,
+        0.016815781593322754
+      ],
+      "predictions": [
+        79,
+        79,
+        9,
+        79
+      ]
+    },
+    {
+      "CE": [
+        3.4118127822875977,
+        3.3483331203460693,
+        3.314450263977051,
+        3.1869964599609375
+      ],
+      "NLL": [
+        3.6562118530273438,
+        3.5867509841918945,
+        3.5559744834899902,
+        3.4254133701324463
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 18,
+      "family": "scene0211",
+      "gaps": [
+        0.0007443726062774658,
+        0.0059792399406433105,
+        0.00921127200126648,
+        0.009939521551132202
+      ],
+      "key": "scene0211_00:18",
+      "margins": [
+        -0.0007443726062774658,
+        0.0059792399406433105,
+        0.00921127200126648,
+        0.009939521551132202
+      ],
+      "predictions": [
+        8,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.550236225128174,
+        3.5438952445983887,
+        3.482755184173584,
+        3.4271960258483887
+      ],
+      "NLL": [
+        3.8058114051818848,
+        3.8059327602386475,
+        3.740072727203369,
+        3.6855616569519043
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 18,
+      "family": "scene0211",
+      "gaps": [
+        0.01385912299156189,
+        0.009050518274307251,
+        0.011902064085006714,
+        0.004983454942703247
+      ],
+      "key": "scene0211_00:2",
+      "margins": [
+        -0.01385912299156189,
+        -0.009050518274307251,
+        -0.011902064085006714,
+        -0.004983454942703247
+      ],
+      "predictions": [
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "CE": [
+        3.252467155456543,
+        3.602128267288208,
+        3.256371021270752,
+        3.530393600463867
+      ],
+      "NLL": [
+        3.47633957862854,
+        3.8328073024749756,
+        3.480630397796631,
+        3.7604997158050537
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 26,
+      "family": "scene0211",
+      "gaps": [
+        0.05138552188873291,
+        0.01166604459285736,
+        0.053104594349861145,
+        0.019406303763389587
+      ],
+      "key": "scene0211_00:20",
+      "margins": [
+        0.05138552188873291,
+        0.01166604459285736,
+        0.053104594349861145,
+        0.019406303763389587
+      ],
+      "predictions": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    {
+      "CE": [
+        3.2040696144104004,
+        3.1907265186309814,
+        3.2040696144104004,
+        3.1907265186309814
+      ],
+      "NLL": [
+        3.42505145072937,
+        3.413923740386963,
+        3.42505145072937,
+        3.413923740386963
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 26,
+      "family": "scene0211",
+      "gaps": [
+        0.04749922454357147,
+        0.05025279521942139,
+        0.04749922454357147,
+        0.05025279521942139
+      ],
+      "key": "scene0211_00:21",
+      "margins": [
+        0.04749922454357147,
+        0.05025279521942139,
+        0.04749922454357147,
+        0.05025279521942139
+      ],
+      "predictions": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    {
+      "CE": [
+        3.342346668243408,
+        3.1565239429473877,
+        3.3935670852661133,
+        3.2521398067474365
+      ],
+      "NLL": [
+        3.5669476985931396,
+        3.372351884841919,
+        3.6190712451934814,
+        3.4707953929901123
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 26,
+      "family": "scene0211",
+      "gaps": [
+        0.05488187074661255,
+        0.06089182198047638,
+        0.05397850275039673,
+        0.05849699676036835
+      ],
+      "key": "scene0211_00:22",
+      "margins": [
+        0.05488187074661255,
+        0.06089182198047638,
+        0.05397850275039673,
+        0.05849699676036835
+      ],
+      "predictions": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    {
+      "CE": [
+        4.448610305786133,
+        4.442449569702148,
+        4.442310333251953,
+        4.457030296325684
+      ],
+      "NLL": [
+        4.6722941398620605,
+        4.67032527923584,
+        4.666536331176758,
+        4.692900657653809
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 2,
+      "family": "scene0211",
+      "gaps": [
+        0.004481270909309387,
+        0.00981023907661438,
+        0.0018576085567474365,
+        0.011999562382698059
+      ],
+      "key": "scene0211_00:24",
+      "margins": [
+        -0.004481270909309387,
+        -0.015877723693847656,
+        -0.0018576085567474365,
+        -0.013167738914489746
+      ],
+      "predictions": [
+        1163,
+        1163,
+        1163,
+        4
+      ]
+    },
+    {
+      "CE": [
+        3.367553949356079,
+        3.397904634475708,
+        3.318899631500244,
+        3.3806471824645996
+      ],
+      "NLL": [
+        3.5976176261901855,
+        3.6268422603607178,
+        3.545074939727783,
+        3.6101765632629395
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 2,
+      "family": "scene0211",
+      "gaps": [
+        0.0006164312362670898,
+        0.005961030721664429,
+        0.0051912665367126465,
+        0.007423043251037598
+      ],
+      "key": "scene0211_00:25",
+      "margins": [
+        -0.0006164312362670898,
+        -0.005961030721664429,
+        -0.0051912665367126465,
+        -0.007423043251037598
+      ],
+      "predictions": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "CE": [
+        3.3519816398620605,
+        3.309438943862915,
+        3.367396831512451,
+        3.37516713142395
+      ],
+      "NLL": [
+        3.5846729278564453,
+        3.544208526611328,
+        3.5986104011535645,
+        3.6099743843078613
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 2,
+      "family": "scene0211",
+      "gaps": [
+        0.003834635019302368,
+        0.003190279006958008,
+        0.007587790489196777,
+        0.0013285279273986816
+      ],
+      "key": "scene0211_00:26",
+      "margins": [
+        -0.003834635019302368,
+        0.003190279006958008,
+        -0.007587790489196777,
+        0.0013285279273986816
+      ],
+      "predictions": [
+        10,
+        2,
+        10,
+        2
+      ]
+    },
+    {
+      "CE": [
+        2.773500919342041,
+        2.7980129718780518,
+        2.8403728008270264,
+        2.914813280105591
+      ],
+      "NLL": [
+        2.9903295040130615,
+        3.0147275924682617,
+        3.0584535598754883,
+        3.1324360370635986
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 89,
+      "family": "scene0211",
+      "gaps": [
+        0.03421515226364136,
+        0.03157582879066467,
+        0.028965860605239868,
+        0.02442622184753418
+      ],
+      "key": "scene0211_00:28",
+      "margins": [
+        0.03421515226364136,
+        0.03157582879066467,
+        0.028965860605239868,
+        0.02442622184753418
+      ],
+      "predictions": [
+        89,
+        89,
+        89,
+        89
+      ]
+    },
+    {
+      "CE": [
+        4.5078630447387695,
+        4.561391830444336,
+        4.554098129272461,
+        4.361912727355957
+      ],
+      "NLL": [
+        4.717845916748047,
+        4.777124404907227,
+        4.764791488647461,
+        4.57615327835083
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0211",
+      "gaps": [
+        0.005022227764129639,
+        0.00027123093605041504,
+        0.007858455181121826,
+        0.012655377388000488
+      ],
+      "key": "scene0211_00:29",
+      "margins": [
+        -0.005865275859832764,
+        0.00027123093605041504,
+        -0.008093282580375671,
+        -0.012655377388000488
+      ],
+      "predictions": [
+        52,
+        1,
+        26,
+        103
+      ]
+    },
+    {
+      "CE": [
+        3.5270917415618896,
+        3.4820804595947266,
+        3.816728115081787,
+        3.5130131244659424
+      ],
+      "NLL": [
+        3.7453019618988037,
+        3.7054810523986816,
+        4.043490886688232,
+        3.734281539916992
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 9,
+      "family": "scene0211",
+      "gaps": [
+        0.04996578395366669,
+        0.04291260242462158,
+        0.03480994701385498,
+        0.04446493089199066
+      ],
+      "key": "scene0211_00:3",
+      "margins": [
+        0.04996578395366669,
+        0.04291260242462158,
+        0.03480994701385498,
+        0.04446493089199066
+      ],
+      "predictions": [
+        9,
+        9,
+        9,
+        9
+      ]
+    },
+    {
+      "CE": [
+        3.8788092136383057,
+        3.745251417160034,
+        3.7674262523651123,
+        3.6288814544677734
+      ],
+      "NLL": [
+        4.099182605743408,
+        3.968208074569702,
+        3.9899611473083496,
+        3.8545143604278564
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 26,
+      "family": "scene0211",
+      "gaps": [
+        0.024314716458320618,
+        0.022471725940704346,
+        0.01915830373764038,
+        0.019103199243545532
+      ],
+      "key": "scene0211_00:30",
+      "margins": [
+        0.024314716458320618,
+        0.022471725940704346,
+        0.01915830373764038,
+        0.019103199243545532
+      ],
+      "predictions": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    {
+      "CE": [
+        3.5737457275390625,
+        3.5776174068450928,
+        3.6545369625091553,
+        3.6802053451538086
+      ],
+      "NLL": [
+        3.7999825477600098,
+        3.8076460361480713,
+        3.8867177963256836,
+        3.914626121520996
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.023433953523635864,
+        0.020436763763427734,
+        0.020307928323745728,
+        0.01783168315887451
+      ],
+      "key": "scene0211_00:31",
+      "margins": [
+        -0.050607308745384216,
+        -0.05316326022148132,
+        -0.05812257528305054,
+        -0.06320981681346893
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.7761054039001465,
+        3.781816005706787,
+        3.8288984298706055,
+        3.8013885021209717
+      ],
+      "NLL": [
+        4.013778209686279,
+        4.018622398376465,
+        4.069233417510986,
+        4.040947914123535
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.01746511459350586,
+        0.016607969999313354,
+        0.01609012484550476,
+        0.014603033661842346
+      ],
+      "key": "scene0211_00:32",
+      "margins": [
+        -0.04842904210090637,
+        -0.043190374970436096,
+        -0.05353929102420807,
+        -0.048541292548179626
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.7413218021392822,
+        3.6330907344818115,
+        3.89058780670166,
+        3.7484683990478516
+      ],
+      "NLL": [
+        3.976243257522583,
+        3.8626632690429688,
+        4.135638236999512,
+        3.988806962966919
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.017100512981414795,
+        0.01819300651550293,
+        0.013100743293762207,
+        0.013982832431793213
+      ],
+      "key": "scene0211_00:33",
+      "margins": [
+        -0.05904728174209595,
+        -0.04992380738258362,
+        -0.074098140001297,
+        -0.06398919224739075
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.630293846130371,
+        3.551198720932007,
+        3.6625609397888184,
+        3.5805857181549072
+      ],
+      "NLL": [
+        3.8529086112976074,
+        3.7732443809509277,
+        3.8884291648864746,
+        3.8050196170806885
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.011167854070663452,
+        0.012125477194786072,
+        0.010938912630081177,
+        0.010317102074623108
+      ],
+      "key": "scene0211_00:34",
+      "margins": [
+        -0.024832159280776978,
+        -0.020305126905441284,
+        -0.02819061279296875,
+        -0.02256689965724945
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.5719199180603027,
+        3.5188634395599365,
+        3.533834934234619,
+        3.5236570835113525
+      ],
+      "NLL": [
+        3.7998929023742676,
+        3.745421886444092,
+        3.760770320892334,
+        3.751133680343628
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.01854945719242096,
+        0.018351584672927856,
+        0.018309473991394043,
+        0.018437057733535767
+      ],
+      "key": "scene0211_00:35",
+      "margins": [
+        -0.0349557101726532,
+        -0.026994839310646057,
+        -0.033008962869644165,
+        -0.03228005766868591
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.619236946105957,
+        3.6809470653533936,
+        3.688600540161133,
+        3.8748726844787598
+      ],
+      "NLL": [
+        3.852750778198242,
+        3.9091269969940186,
+        3.925053358078003,
+        4.114184379577637
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.010241299867630005,
+        0.011375218629837036,
+        0.007106482982635498,
+        0.00014722347259521484
+      ],
+      "key": "scene0211_00:36",
+      "margins": [
+        -0.03135812282562256,
+        -0.03644558787345886,
+        -0.03600496053695679,
+        -0.04508662223815918
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        8
+      ]
+    },
+    {
+      "CE": [
+        3.573643922805786,
+        3.6182124614715576,
+        3.6096534729003906,
+        3.6586408615112305
+      ],
+      "NLL": [
+        3.7945938110351562,
+        3.833484649658203,
+        3.833139419555664,
+        3.8788397312164307
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.019490182399749756,
+        0.006869122385978699,
+        0.02069695293903351,
+        0.021730497479438782
+      ],
+      "key": "scene0211_00:37",
+      "margins": [
+        -0.020772293210029602,
+        -0.006869122385978699,
+        -0.02869972586631775,
+        -0.023839741945266724
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.547555446624756,
+        3.5467264652252197,
+        3.616929769515991,
+        3.567668914794922
+      ],
+      "NLL": [
+        3.7700793743133545,
+        3.771078586578369,
+        3.8407397270202637,
+        3.7922911643981934
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.015152931213378906,
+        0.016280874609947205,
+        0.014019370079040527,
+        0.015893399715423584
+      ],
+      "key": "scene0211_00:38",
+      "margins": [
+        -0.026079192757606506,
+        -0.03191016614437103,
+        -0.02961316704750061,
+        -0.03207278251647949
+      ],
+      "predictions": [
+        18,
+        18,
+        18,
+        18
+      ]
+    },
+    {
+      "CE": [
+        3.453305244445801,
+        3.433657646179199,
+        3.699519395828247,
+        3.356841564178467
+      ],
+      "NLL": [
+        3.689913272857666,
+        3.668572425842285,
+        3.9354465007781982,
+        3.58939266204834
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 26,
+      "family": "scene0211",
+      "gaps": [
+        0.04478934407234192,
+        0.04434266686439514,
+        0.025489702820777893,
+        0.04955330491065979
+      ],
+      "key": "scene0211_00:39",
+      "margins": [
+        0.04478934407234192,
+        0.04434266686439514,
+        0.025489702820777893,
+        0.04955330491065979
+      ],
+      "predictions": [
+        26,
+        26,
+        26,
+        26
+      ]
+    },
+    {
+      "CE": [
+        3.5456326007843018,
+        3.63114595413208,
+        3.5634617805480957,
+        3.602762222290039
+      ],
+      "NLL": [
+        3.787320852279663,
+        3.8755571842193604,
+        3.8033759593963623,
+        3.8451077938079834
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 79,
+      "family": "scene0211",
+      "gaps": [
+        0.030857563018798828,
+        0.028394877910614014,
+        0.02829006314277649,
+        0.02923087775707245
+      ],
+      "key": "scene0211_00:40",
+      "margins": [
+        0.030857563018798828,
+        0.028394877910614014,
+        0.02829006314277649,
+        0.02923087775707245
+      ],
+      "predictions": [
+        79,
+        79,
+        79,
+        79
+      ]
+    },
+    {
+      "CE": [
+        3.0527384281158447,
+        3.0280346870422363,
+        3.102201223373413,
+        3.066046714782715
+      ],
+      "NLL": [
+        3.2913625240325928,
+        3.2652242183685303,
+        3.3423449993133545,
+        3.305330991744995
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 79,
+      "family": "scene0211",
+      "gaps": [
+        0.047939956188201904,
+        0.051989272236824036,
+        0.04170230031013489,
+        0.04605323076248169
+      ],
+      "key": "scene0211_00:41",
+      "margins": [
+        0.047939956188201904,
+        0.051989272236824036,
+        0.04170230031013489,
+        0.04605323076248169
+      ],
+      "predictions": [
+        79,
+        79,
+        79,
+        79
+      ]
+    },
+    {
+      "CE": [
+        3.4504923820495605,
+        3.500293016433716,
+        3.3485968112945557,
+        3.428957939147949
+      ],
+      "NLL": [
+        3.683576822280884,
+        3.731981039047241,
+        3.5829780101776123,
+        3.6622138023376465
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 79,
+      "family": "scene0211",
+      "gaps": [
+        0.02673231065273285,
+        0.02798764407634735,
+        0.026883065700531006,
+        0.027434468269348145
+      ],
+      "key": "scene0211_00:42",
+      "margins": [
+        0.02673231065273285,
+        0.02798764407634735,
+        0.026883065700531006,
+        0.027434468269348145
+      ],
+      "predictions": [
+        79,
+        79,
+        79,
+        79
+      ]
+    },
+    {
+      "CE": [
+        3.8457062244415283,
+        3.6106855869293213,
+        3.665469169616699,
+        3.6201484203338623
+      ],
+      "NLL": [
+        4.0618696212768555,
+        3.834294557571411,
+        3.892848014831543,
+        3.848696231842041
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 79,
+      "family": "scene0211",
+      "gaps": [
+        0.024644166231155396,
+        0.02717447280883789,
+        0.016852229833602905,
+        0.019235879182815552
+      ],
+      "key": "scene0211_00:43",
+      "margins": [
+        0.024644166231155396,
+        0.02717447280883789,
+        0.016852229833602905,
+        0.019235879182815552
+      ],
+      "predictions": [
+        79,
+        79,
+        79,
+        79
+      ]
+    },
+    {
+      "CE": [
+        3.5379016399383545,
+        3.5456206798553467,
+        3.575448513031006,
+        3.4956369400024414
+      ],
+      "NLL": [
+        3.7604260444641113,
+        3.7690248489379883,
+        3.798341989517212,
+        3.7193551063537598
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 22,
+      "family": "scene0211",
+      "gaps": [
+        0.01825311779975891,
+        0.018656611442565918,
+        0.018309906125068665,
+        0.020989179611206055
+      ],
+      "key": "scene0211_00:44",
+      "margins": [
+        -0.01825311779975891,
+        -0.018656611442565918,
+        -0.018309906125068665,
+        -0.020989179611206055
+      ],
+      "predictions": [
+        79,
+        79,
+        79,
+        79
+      ]
+    },
+    {
+      "CE": [
+        5.0660834312438965,
+        5.113838195800781,
+        5.120469093322754,
+        5.154516220092773
+      ],
+      "NLL": [
+        5.285613059997559,
+        5.331058502197266,
+        5.342145919799805,
+        5.374420642852783
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0211",
+      "gaps": [
+        0.002842128276824951,
+        0.00932261347770691,
+        0.00720427930355072,
+        0.00877678394317627
+      ],
+      "key": "scene0211_00:45",
+      "margins": [
+        -0.05798029899597168,
+        -0.0573093444108963,
+        -0.0708177387714386,
+        -0.07361631095409393
+      ],
+      "predictions": [
+        1163,
+        1163,
+        10,
+        10
+      ]
+    },
+    {
+      "CE": [
+        3.383531332015991,
+        3.407461166381836,
+        3.304084300994873,
+        3.371455669403076
+      ],
+      "NLL": [
+        3.592024803161621,
+        3.6162476539611816,
+        3.5106661319732666,
+        3.5787549018859863
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 19,
+      "family": "scene0211",
+      "gaps": [
+        0.04557347297668457,
+        0.045460671186447144,
+        0.04767856001853943,
+        0.0475182831287384
+      ],
+      "key": "scene0211_00:5",
+      "margins": [
+        0.04557347297668457,
+        0.045460671186447144,
+        0.04767856001853943,
+        0.0475182831287384
+      ],
+      "predictions": [
+        19,
+        19,
+        19,
+        19
+      ]
+    },
+    {
+      "CE": [
+        2.84098219871521,
+        2.939019203186035,
+        2.851665496826172,
+        3.097749948501587
+      ],
+      "NLL": [
+        3.046339750289917,
+        3.1464765071868896,
+        3.0572991371154785,
+        3.307072877883911
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 103,
+      "family": "scene0211",
+      "gaps": [
+        0.025068312883377075,
+        0.0227048397064209,
+        0.025500774383544922,
+        0.021355777978897095
+      ],
+      "key": "scene0211_00:6",
+      "margins": [
+        0.025068312883377075,
+        0.0227048397064209,
+        0.025500774383544922,
+        0.021355777978897095
+      ],
+      "predictions": [
+        103,
+        103,
+        103,
+        103
+      ]
+    },
+    {
+      "CE": [
+        4.821405410766602,
+        4.947092533111572,
+        4.132717132568359,
+        4.595982074737549
+      ],
+      "NLL": [
+        5.035319805145264,
+        5.162930011749268,
+        4.352977752685547,
+        4.816328525543213
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 41,
+      "family": "scene0211",
+      "gaps": [
+        0.051535576581954956,
+        0.03787428140640259,
+        0.004339545965194702,
+        0.02202916145324707
+      ],
+      "key": "scene0211_00:7",
+      "margins": [
+        -0.09441560506820679,
+        -0.08241094648838043,
+        0.004339545965194702,
+        -0.03820595145225525
+      ],
+      "predictions": [
+        26,
+        26,
+        41,
+        26
+      ]
+    },
+    {
+      "CE": [
+        4.094445705413818,
+        4.185232162475586,
+        4.249129295349121,
+        4.154648780822754
+      ],
+      "NLL": [
+        4.309901237487793,
+        4.400166988372803,
+        4.464207649230957,
+        4.37129545211792
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0211",
+      "gaps": [
+        0.013160273432731628,
+        0.004290178418159485,
+        0.002343475818634033,
+        0.0075761377811431885
+      ],
+      "key": "scene0211_00:8",
+      "margins": [
+        -0.018660977482795715,
+        -0.025151610374450684,
+        -0.026397645473480225,
+        -0.03217363357543945
+      ],
+      "predictions": [
+        1165,
+        1165,
+        1175,
+        1165
+      ]
+    },
+    {
+      "CE": [
+        4.645989418029785,
+        4.627899646759033,
+        4.634946346282959,
+        4.572183609008789
+      ],
+      "NLL": [
+        4.886807441711426,
+        4.864902496337891,
+        4.875638961791992,
+        4.811267852783203
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0211",
+      "gaps": [
+        0.019395768642425537,
+        0.022022634744644165,
+        0.0231073796749115,
+        0.024525851011276245
+      ],
+      "key": "scene0211_00:9",
+      "margins": [
+        -0.07932764291763306,
+        -0.07352855801582336,
+        -0.08034560084342957,
+        -0.07720568776130676
+      ],
+      "predictions": [
+        276,
+        276,
+        276,
+        276
+      ]
+    },
+    {
+      "CE": [
+        3.7759077548980713,
+        3.8180036544799805,
+        3.99629807472229,
+        3.6480631828308105
+      ],
+      "NLL": [
+        4.00377082824707,
+        4.045558929443359,
+        4.2277512550354,
+        3.874453544616699
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 10,
+      "family": "scene0620",
+      "gaps": [
+        0.001881241798400879,
+        0.002398967742919922,
+        0.0071668922901153564,
+        0.010249584913253784
+      ],
+      "key": "scene0620_00:1",
+      "margins": [
+        -0.001881241798400879,
+        0.002398967742919922,
+        0.0071668922901153564,
+        0.010249584913253784
+      ],
+      "predictions": [
+        2,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "CE": [
+        3.8051083087921143,
+        3.8520684242248535,
+        3.841278076171875,
+        3.787275791168213
+      ],
+      "NLL": [
+        4.035699844360352,
+        4.08453369140625,
+        4.073220252990723,
+        4.019376754760742
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 161,
+      "family": "scene0620",
+      "gaps": [
+        0.005791813135147095,
+        0.006978422403335571,
+        0.006040990352630615,
+        0.007663607597351074
+      ],
+      "key": "scene0620_00:10",
+      "margins": [
+        -0.02441045641899109,
+        -0.02767360210418701,
+        -0.02646102011203766,
+        -0.024726390838623047
+      ],
+      "predictions": [
+        276,
+        276,
+        276,
+        276
+      ]
+    },
+    {
+      "CE": [
+        4.224806785583496,
+        4.096993446350098,
+        4.321969985961914,
+        4.186358451843262
+      ],
+      "NLL": [
+        4.443260669708252,
+        4.312249183654785,
+        4.545010566711426,
+        4.410098075866699
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0620",
+      "gaps": [
+        0.00267636775970459,
+        0.012087494134902954,
+        0.0028105974197387695,
+        0.0019179880619049072
+      ],
+      "key": "scene0620_00:11",
+      "margins": [
+        0.00267636775970459,
+        0.012087494134902954,
+        -0.0038364827632904053,
+        -0.0019179880619049072
+      ],
+      "predictions": [
+        1,
+        1,
+        1165,
+        1165
+      ]
+    },
+    {
+      "CE": [
+        4.242307662963867,
+        4.266218185424805,
+        4.40141487121582,
+        4.365564346313477
+      ],
+      "NLL": [
+        4.455910682678223,
+        4.483080863952637,
+        4.619849681854248,
+        4.585721015930176
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0620",
+      "gaps": [
+        0.004543989896774292,
+        0.008662998676300049,
+        0.006204843521118164,
+        0.006354779005050659
+      ],
+      "key": "scene0620_00:12",
+      "margins": [
+        0.004543989896774292,
+        0.008662998676300049,
+        -0.006204843521118164,
+        -0.006354779005050659
+      ],
+      "predictions": [
+        1,
+        1,
+        748,
+        748
+      ]
+    },
+    {
+      "CE": [
+        3.8771536350250244,
+        4.020571708679199,
+        3.9092791080474854,
+        4.045109272003174
+      ],
+      "NLL": [
+        4.112642765045166,
+        4.243163585662842,
+        4.1421685218811035,
+        4.268664836883545
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 96,
+      "family": "scene0620",
+      "gaps": [
+        0.017191752791404724,
+        0.010676532983779907,
+        0.012661337852478027,
+        0.0018202364444732666
+      ],
+      "key": "scene0620_00:13",
+      "margins": [
+        0.017191752791404724,
+        0.010676532983779907,
+        0.012661337852478027,
+        0.0018202364444732666
+      ],
+      "predictions": [
+        96,
+        96,
+        96,
+        96
+      ]
+    },
+    {
+      "CE": [
+        3.7219228744506836,
+        3.6214730739593506,
+        3.755084276199341,
+        3.6695005893707275
+      ],
+      "NLL": [
+        3.9462661743164062,
+        3.8474955558776855,
+        3.9827003479003906,
+        3.898658037185669
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 5,
+      "family": "scene0620",
+      "gaps": [
+        0.006880998611450195,
+        0.004195749759674072,
+        0.011876612901687622,
+        0.007630109786987305
+      ],
+      "key": "scene0620_00:3",
+      "margins": [
+        -0.009756147861480713,
+        -0.006235241889953613,
+        -0.01830291748046875,
+        -0.017297029495239258
+      ],
+      "predictions": [
+        276,
+        276,
+        276,
+        276
+      ]
+    },
+    {
+      "CE": [
+        3.878073215484619,
+        4.027784824371338,
+        3.9918746948242188,
+        4.253186225891113
+      ],
+      "NLL": [
+        4.131661891937256,
+        4.286079406738281,
+        4.249776840209961,
+        4.515584945678711
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 9,
+      "family": "scene0620",
+      "gaps": [
+        0.004440963268280029,
+        0.003970161080360413,
+        0.0022764205932617188,
+        0.002894103527069092
+      ],
+      "key": "scene0620_00:4",
+      "margins": [
+        -0.004440963268280029,
+        -0.0202924907207489,
+        -0.012722611427307129,
+        -0.04097747802734375
+      ],
+      "predictions": [
+        75,
+        36,
+        36,
+        36
+      ]
+    },
+    {
+      "CE": [
+        4.1429595947265625,
+        4.3383612632751465,
+        4.17769718170166,
+        4.435783386230469
+      ],
+      "NLL": [
+        4.365242004394531,
+        4.552628517150879,
+        4.403000831604004,
+        4.6620893478393555
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 1,
+      "family": "scene0620",
+      "gaps": [
+        0.00722658634185791,
+        0.0009070634841918945,
+        0.0030189156532287598,
+        0.010222315788269043
+      ],
+      "key": "scene0620_00:5",
+      "margins": [
+        -0.00722658634185791,
+        0.0009070634841918945,
+        -0.009123176336288452,
+        -0.021941930055618286
+      ],
+      "predictions": [
+        1165,
+        1,
+        1165,
+        748
+      ]
+    },
+    {
+      "CE": [
+        4.287306785583496,
+        4.346013069152832,
+        4.688232898712158,
+        4.343611717224121
+      ],
+      "NLL": [
+        4.517916202545166,
+        4.578299522399902,
+        4.908616542816162,
+        4.574921607971191
+      ],
+      "audits": [
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        },
+        {
+          "numeric_fallback": false,
+          "status": "SAME_SEED_PARENT_FG2"
+        }
+      ],
+      "base": true,
+      "class_id": 11,
+      "family": "scene0620",
+      "gaps": [
+        0.006431788206100464,
+        0.0006815493106842041,
+        0.00125962495803833,
+        0.004380524158477783
+      ],
+      "key": "scene0620_00:6",
+      "margins": [
+        -0.02086848020553589,
+        -0.02072763442993164,
+        -0.02985498309135437,
+        -0.023947790265083313
+      ],
+      "predictions": [
+        1191,
+        193,
+        193,
+        193
+      ]
+    }
+  ],
+  "runtime_receipt_identity": "e481303765f8166c0aa4141c6b4299a9c3578316e8d684212e73cb8957bbe870",
+  "status": "COMPLETE",
+  "variant_records": 276
+}

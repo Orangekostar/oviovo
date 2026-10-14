@@ -1,8 +1,8 @@
 # FG2 surface bias wave1 v2 results
 
-Execution: **BLOCKED_DEPENDENCY**. Science: **UNASSESSED_DEPENDENCY**. Deployment: N0_UNCHANGED.
+Execution: **COMPLETE**. Science: **NO_HELDOUT_SIGNAL**. Deployment: N0_UNCHANGED.
 
-/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/source_binding.json
+See formal phase records
 
 New optimizer updates / RGB encodings / SAM proposals: **0 / 0 / 0**. Missing experiment metrics remain null. Existing FG2 results are separately identified as inherited published context; they do not establish a gain for this new calibration. Neither offline cached replay nor these blocked phases establish online 30 FPS or an efficiency advantage over OVI-MAP.
 

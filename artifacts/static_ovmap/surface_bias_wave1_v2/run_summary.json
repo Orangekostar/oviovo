@@ -1,22 +1,24 @@
 {
   "BASE": "bec4176d9a6784a89ea293a9803e5cf6fab178ec",
   "deployment": "N0_UNCHANGED",
-  "error": "preflight worker returned 1; see /home/ww/crove/fg2-surface-bias-wave1-v2/attempt_001/logs/preflight.log",
-  "execution_status": "BLOCKED_DEPENDENCY",
-  "expanded": null,
-  "identity": "f1ff1ae0fde889f56017b3779fda93303b5932520c1c29f54d0f5ace32219f34",
+  "error": null,
+  "execution_status": "COMPLETE",
+  "expanded": [],
+  "identity": "0cf7da2183be2419fdcf84d1b2aa8b08f99c4402aa9901b786a0d02d08f44dcc",
   "map_gains": null,
-  "mechanism_signal": null,
-  "missing": [
-    "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/source_binding.json"
-  ],
+  "mechanism_signal": false,
+  "missing": [],
   "new_optimizer_updates": 0,
   "new_rgb_encodings": 0,
   "new_sam_proposals": 0,
-  "pass_both": null,
-  "publication_snapshot": "NOT_ATTEMPTED_OR_BLOCKED_AT_REPORT_SNAPSHOT",
-  "publication_status": "PUBLICATION_BLOCKED",
-  "science_status": "UNASSESSED_DEPENDENCY",
+  "pass_both": {
+    "C1_FULL_VIEW_CENTER": false,
+    "C2_SITE_HUBER_CONSENSUS": false,
+    "M1_CORRESPONDENCE_GRAPH": false
+  },
+  "publication_snapshot": "VERIFIED_EXTERNAL_RECEIPT",
+  "publication_status": "PUSH_VERIFIED",
+  "science_status": "NO_HELDOUT_SIGNAL",
   "scientific_source_digest": "7e981eb15271e3fde205289d331745605dab733aaf787660dc4eac1cc608a0cc",
   "task_id": "fg2-surface-bias-wave1-v2"
 }

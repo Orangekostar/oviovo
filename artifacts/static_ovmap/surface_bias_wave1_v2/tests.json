@@ -1,5 +1,5 @@
 {
-  "actual_real_FC_test": false,
+  "actual_real_FC_test": true,
   "after_publication_recovery_fix": {
     "deselected": 7,
     "exit_code": 0,
@@ -8,14 +8,24 @@
   },
   "focused_groups": 8,
   "full_repo_suite_run": false,
-  "identity": "18ff33876c11c9e908dcd47fd7b6eec069b61ff611bc76277a7a21006cf7ef32",
+  "identity": "71f4d654b5bbaa17572c3af607da384a81387cf0632fce55a2605999a42de7ec",
   "main_run": {
+    "actual_command": "PYTHONPATH=src OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /home/ww/miniconda3/envs/ovimap-map/bin/python -m pytest -q tests/test_surface_bias_wave1_v2.py",
+    "exit_code": 0,
+    "observed_by": "CODEX_EXEC_SESSION_84063_AFTER_PROCESS_EXIT",
+    "observed_utc": "2026-10-14T02:19:51.908466+00:00",
+    "passed": 8,
+    "seconds": 1.36,
+    "skipped": 0,
+    "stdout": "........ [100%]\n8 passed in 1.36s\n"
+  },
+  "original_full_run_release": "b8722a986533d364f971b65e9e5b3759010fa94e",
+  "previous_full_run_before_cache_recovery": {
     "exit_code": 0,
     "passed": 7,
     "skipped": 1,
     "stdout": "...s.... [100%] 7 passed, 1 skipped in 1.05s"
   },
-  "original_full_run_release": "b8722a986533d364f971b65e9e5b3759010fa94e",
   "publication_unicode_and_resume_validation": {
     "actual_bare_git_remote": true,
     "deselected": 7,
@@ -23,8 +33,9 @@
     "no_simulated_GitHub_publication_claim": true,
     "passed": 1
   },
-  "skip_reason": "Original parent FG/LR manifest and feature caches unavailable",
-  "status": "PASSED_WITH_REAL_FC_GROUP_SKIPPED",
+  "real_FC_parity_identity": "19e566dbaf60a4508310c2cbc6bec2b33328052806ca1a1817f110a9552014d7",
+  "skip_reason": null,
+  "status": "PASSED",
   "targeted_engineering_revision": {
     "failure_reason": "Test used nonexistent torch.flatnonzero; corrected to torch.nonzero, then group5 passed",
     "final_controller_resume_group7": {
