@@ -1,0 +1,70 @@
+{
+  "FC_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+  "heads": {
+    "FG2_SURFACE": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": false
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 199553,
+      "observed_nonzero_gradient_parameters_at_last_update": 199553,
+      "seed": 17,
+      "selected_step": 1000,
+      "training_checkpoint": {
+        "bytes": 2498800,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed17/FG2_SURFACE/selected.pt",
+        "sha256": "2d0358a9ad6c3703b85415d27d4a9c2754d6612d86f4c012dea3529122282539"
+      },
+      "unused_membership_parameters": 16641,
+      "weights": {
+        "bytes": 871995,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/export/weights/FG2_SURFACE.pt",
+        "relative_path": "weights/FG2_SURFACE.pt",
+        "sha256": "de7fc82edba5440d9c338f5253ecd3600a340271089600c9ff2d286e2711d963"
+      }
+    },
+    "S29_FG2_SURFACE": {
+      "architecture_parameters": 216194,
+      "config": {
+        "direct_routing": false,
+        "grouping": "SURFACE",
+        "membership_loss": false
+      },
+      "dependencies": [
+        "FrozenFC",
+        "FrozenText"
+      ],
+      "loss_participating_parameters": 199553,
+      "observed_nonzero_gradient_parameters_at_last_update": 199553,
+      "seed": 29,
+      "selected_step": 2000,
+      "training_checkpoint": {
+        "bytes": 2499568,
+        "path": "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001/training/seed29/FG2_SURFACE/selected.pt",
+        "sha256": "e69531a46ec749d0306665f387048a39ea6ce8ab30e049370b4d1a7cd8c03e47"
+      },
+      "unused_membership_parameters": 16641,
+      "weights": {
+        "bytes": 872095,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/export/weights/S29_FG2_SURFACE.pt",
+        "relative_path": "weights/S29_FG2_SURFACE.pt",
+        "sha256": "501a6ad010fd2951c93a7638fce94c599b994c7fe9215adad82054919a84ea77"
+      }
+    }
+  },
+  "identity": "3eaaa53c4c4c43af84f6d4c71c81aaccd122f2ef222e127ee2b809b65d8bc8d8",
+  "no_new_weights": true,
+  "parent_registry_identity": "2f2e343faaf8830188b46ecb4893b65a3c0d7fa2f7263ec99f313a7fe8f91eb9",
+  "status": "COMPLETE",
+  "text_identity": {
+    "bytes": 669136,
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+    "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+  }
+}

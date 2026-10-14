@@ -1,0 +1,238 @@
+{
+  "arms": {
+    "17:WITHOUT_NEW_CORRESPONDENCE_STATS": {
+      "FC_loaded": false,
+      "FG2_loaded": false,
+      "arm": "WITHOUT_NEW_CORRESPONDENCE_STATS",
+      "checkpoints": {
+        "1000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITHOUT_NEW_CORRESPONDENCE_STATS/step1000.pt",
+          "sha256": "257001fb520b81e62554eb31ce8bd1df8360c11fbb6c9a132ce48432a62ae96c"
+        },
+        "1500": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITHOUT_NEW_CORRESPONDENCE_STATS/step1500.pt",
+          "sha256": "2ed16160a95e9c3a541314c016cb7cc583e2437ac6e2f640cbe05933b553f6dd"
+        },
+        "2000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITHOUT_NEW_CORRESPONDENCE_STATS/step2000.pt",
+          "sha256": "a4dd97dd4c1a9e323dc081559bf6ce88e7309411a610b75998339e5ab7505aef"
+        },
+        "500": {
+          "bytes": 8264,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITHOUT_NEW_CORRESPONDENCE_STATS/step500.pt",
+          "sha256": "bffafb1519f6b178c0438775ae7509aa1852afd7d3bb40ef2d7365be6ab36a7a"
+        }
+      },
+      "curve": {
+        "bytes": 313713,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITHOUT_NEW_CORRESPONDENCE_STATS/curve.jsonl",
+        "sha256": "a98e42749bc2318e9201434658f947b71bf9f562c852ec5e73d63b477e136446"
+      },
+      "draws": {
+        "bytes": 92567,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/draws.npz",
+        "sha256": "2d97ef4b53e8d95d22a5f18ff55c1900f820cedd27604d0c393eb1836d06b5fb"
+      },
+      "fp32": true,
+      "identity": "af31ab72f883ec1b18fd284db2a685714f59fbd6e868c07a06fc4403415b1151",
+      "initial_state": "abbd76a2ca7b2b62fcffe851118b3dde05e4ffb58dab012db3fd34d6a726eb3b",
+      "inputs": {
+        "data": "3ce3d5828299ba9f985724b11de59baca95e75b5e234e9f86be368fb93fcddd3",
+        "draws": "2d97ef4b53e8d95d22a5f18ff55c1900f820cedd27604d0c393eb1836d06b5fb",
+        "normalizer": "4932864b8a5f1d7f81263d4f5b12ee3de645c9000127e319fc4ca1c130a46bbe",
+        "seed": 17,
+        "sources": "4ffc4f110efecad58f1d940c1053c99ed073917261adb55f1684dddc36a53c11"
+      },
+      "normalizer": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/normalizer.json",
+      "parameters": 1345,
+      "resume": {
+        "bytes": 37764,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITHOUT_NEW_CORRESPONDENCE_STATS/resume.pt",
+        "sha256": "0fda422192121ee02ff257006f32e2cf09076adac5464d6cc347c236b5939a30"
+      },
+      "seed": 17,
+      "status": "COMPLETE",
+      "updates": 2000
+    },
+    "17:WITH_NEW_CORRESPONDENCE_STATS": {
+      "FC_loaded": false,
+      "FG2_loaded": false,
+      "arm": "WITH_NEW_CORRESPONDENCE_STATS",
+      "checkpoints": {
+        "1000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITH_NEW_CORRESPONDENCE_STATS/step1000.pt",
+          "sha256": "eedb7d14f09186368a30941380527a9a8386df3b9017d280da58090f8a39abc1"
+        },
+        "1500": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITH_NEW_CORRESPONDENCE_STATS/step1500.pt",
+          "sha256": "a0fc3ef4b18c6098c145b273c0c499bc22f786caee48a5d8454ad4a0da0331df"
+        },
+        "2000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITH_NEW_CORRESPONDENCE_STATS/step2000.pt",
+          "sha256": "353465dfba8d042b212e0f1b0bbad7f21d60066afb4314d3f37cf94b626445fe"
+        },
+        "500": {
+          "bytes": 8264,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITH_NEW_CORRESPONDENCE_STATS/step500.pt",
+          "sha256": "7bcc7c1297350b694b733eaaab513bd352012a623f453ee22c8d46010610315d"
+        }
+      },
+      "curve": {
+        "bytes": 313539,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITH_NEW_CORRESPONDENCE_STATS/curve.jsonl",
+        "sha256": "f41d9da5b6eefc5102def9be1a2bff52f6390543760eac46966effc8e30114e4"
+      },
+      "draws": {
+        "bytes": 92567,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/draws.npz",
+        "sha256": "2d97ef4b53e8d95d22a5f18ff55c1900f820cedd27604d0c393eb1836d06b5fb"
+      },
+      "fp32": true,
+      "identity": "be9239ab065f1b93035c36731d9a4b2212c5c6633aadc58da27d4f980242be46",
+      "initial_state": "abbd76a2ca7b2b62fcffe851118b3dde05e4ffb58dab012db3fd34d6a726eb3b",
+      "inputs": {
+        "data": "3ce3d5828299ba9f985724b11de59baca95e75b5e234e9f86be368fb93fcddd3",
+        "draws": "2d97ef4b53e8d95d22a5f18ff55c1900f820cedd27604d0c393eb1836d06b5fb",
+        "normalizer": "4932864b8a5f1d7f81263d4f5b12ee3de645c9000127e319fc4ca1c130a46bbe",
+        "seed": 17,
+        "sources": "4ffc4f110efecad58f1d940c1053c99ed073917261adb55f1684dddc36a53c11"
+      },
+      "normalizer": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/normalizer.json",
+      "parameters": 1345,
+      "resume": {
+        "bytes": 37764,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed17/WITH_NEW_CORRESPONDENCE_STATS/resume.pt",
+        "sha256": "62509cdd0689ef5c2c8c0faac239363f857c0304b1a2ee79da390e9e46c526df"
+      },
+      "seed": 17,
+      "status": "COMPLETE",
+      "updates": 2000
+    },
+    "29:WITHOUT_NEW_CORRESPONDENCE_STATS": {
+      "FC_loaded": false,
+      "FG2_loaded": false,
+      "arm": "WITHOUT_NEW_CORRESPONDENCE_STATS",
+      "checkpoints": {
+        "1000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITHOUT_NEW_CORRESPONDENCE_STATS/step1000.pt",
+          "sha256": "0a1fa20bccefd2e347f4f669365136f413d06ae2a0bf554c4d4d1156cc117916"
+        },
+        "1500": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITHOUT_NEW_CORRESPONDENCE_STATS/step1500.pt",
+          "sha256": "294301b9e404b639467b5b841aa3078ae51df2f681f28334167b7d85272ede8c"
+        },
+        "2000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITHOUT_NEW_CORRESPONDENCE_STATS/step2000.pt",
+          "sha256": "e36a5d44b7c5aabc2a2872fa205b00db7ed5aacf8031df0ba31acf90686d14a1"
+        },
+        "500": {
+          "bytes": 8264,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITHOUT_NEW_CORRESPONDENCE_STATS/step500.pt",
+          "sha256": "c87c32d99cac094e116e8059bba108974ae11bbd7f472108bcf7b0fb3a3e66fe"
+        }
+      },
+      "curve": {
+        "bytes": 313720,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITHOUT_NEW_CORRESPONDENCE_STATS/curve.jsonl",
+        "sha256": "efd0ffed310bba80d98ba8a415ee9b260018aecbe7a8d35749b520fb59b276f1"
+      },
+      "draws": {
+        "bytes": 92920,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/draws.npz",
+        "sha256": "5361946d78bfd4392571247a67ec0c2cd9febd8c1bf82e55790d5b26b7fa6ce3"
+      },
+      "fp32": true,
+      "identity": "bd1e8d94d4e4b54362a1e05e5b72c49fa05a1e17a2e37ef4617fd8b541c84c32",
+      "initial_state": "16213ec954dcb2c88be70f43f6bdcc5c5dfca88848a8d4cada9a3825296d2be6",
+      "inputs": {
+        "data": "3ce3d5828299ba9f985724b11de59baca95e75b5e234e9f86be368fb93fcddd3",
+        "draws": "5361946d78bfd4392571247a67ec0c2cd9febd8c1bf82e55790d5b26b7fa6ce3",
+        "normalizer": "d5776127b6353a95ac28d13e8748dc2e99697c9a9b36fdd7b5f6a16524cda49f",
+        "seed": 29,
+        "sources": "793e31136195663d8a946050a8a13e452a3f1fd213f2a876c1007dccb826391b"
+      },
+      "normalizer": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/normalizer.json",
+      "parameters": 1345,
+      "resume": {
+        "bytes": 37764,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITHOUT_NEW_CORRESPONDENCE_STATS/resume.pt",
+        "sha256": "f42a93934b3394d1f2d167c435dc49710801854de89e948fee846a3ac9be8672"
+      },
+      "seed": 29,
+      "status": "COMPLETE",
+      "updates": 2000
+    },
+    "29:WITH_NEW_CORRESPONDENCE_STATS": {
+      "FC_loaded": false,
+      "FG2_loaded": false,
+      "arm": "WITH_NEW_CORRESPONDENCE_STATS",
+      "checkpoints": {
+        "1000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITH_NEW_CORRESPONDENCE_STATS/step1000.pt",
+          "sha256": "9393245acdd324605ea020975623ef8ad7be916064a8eaf293bb2cbd36370406"
+        },
+        "1500": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITH_NEW_CORRESPONDENCE_STATS/step1500.pt",
+          "sha256": "da2386ed83bf8eec8d77122d9fa66d73d07fd41769ca81543499b4cfb6cf3d8f"
+        },
+        "2000": {
+          "bytes": 8594,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITH_NEW_CORRESPONDENCE_STATS/step2000.pt",
+          "sha256": "161f58ac2501db6d1d3928c4cb9ef6b621a5ada54b0b99d97e12b45ab1471fec"
+        },
+        "500": {
+          "bytes": 8264,
+          "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITH_NEW_CORRESPONDENCE_STATS/step500.pt",
+          "sha256": "2282d4a6122456c2c866f09cb5a87a15ab02596226d251777c9b62f763d444e0"
+        }
+      },
+      "curve": {
+        "bytes": 313611,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITH_NEW_CORRESPONDENCE_STATS/curve.jsonl",
+        "sha256": "1b814e21c6dea00b991faad81fe6476fdc8c5117eaccab56c688edacd61f18f5"
+      },
+      "draws": {
+        "bytes": 92920,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/draws.npz",
+        "sha256": "5361946d78bfd4392571247a67ec0c2cd9febd8c1bf82e55790d5b26b7fa6ce3"
+      },
+      "fp32": true,
+      "identity": "81ab60f2a2d74c3d6c1aa3376c364bd4fd14836673d9e1b7e6315b5845be8933",
+      "initial_state": "16213ec954dcb2c88be70f43f6bdcc5c5dfca88848a8d4cada9a3825296d2be6",
+      "inputs": {
+        "data": "3ce3d5828299ba9f985724b11de59baca95e75b5e234e9f86be368fb93fcddd3",
+        "draws": "5361946d78bfd4392571247a67ec0c2cd9febd8c1bf82e55790d5b26b7fa6ce3",
+        "normalizer": "d5776127b6353a95ac28d13e8748dc2e99697c9a9b36fdd7b5f6a16524cda49f",
+        "seed": 29,
+        "sources": "793e31136195663d8a946050a8a13e452a3f1fd213f2a876c1007dccb826391b"
+      },
+      "normalizer": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/normalizer.json",
+      "parameters": 1345,
+      "resume": {
+        "bytes": 37764,
+        "path": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/training/seed29/WITH_NEW_CORRESPONDENCE_STATS/resume.pt",
+        "sha256": "788a8e51e5d7cbfe19cd6a76c631919aefae41385f76838867230adcd5346741"
+      },
+      "seed": 29,
+      "status": "COMPLETE",
+      "updates": 2000
+    }
+  },
+  "frozen_FG2_gradients": false,
+  "gate": "36488d3bf190977b5df85515ad0eb342e421b447dec37a89aba94ecf29fed91e",
+  "identity": "58371281d46d0bb81932f38dd591e1930dae790dffb5fff72c7704aa7370eb48",
+  "new_optimizer_updates": 8000,
+  "paired_draws_and_init": true,
+  "status": "COMPLETE"
+}

@@ -1,0 +1,41 @@
+{
+  "claims": [
+    {
+      "claim": "Frozen cached forward/feature isolation",
+      "status": "VERIFIED",
+      "support": [
+        "preflight.json",
+        "capture.json",
+        "focused_tests.json"
+      ]
+    },
+    {
+      "claim": "TRAIN branch admission utility coverage",
+      "status": "PASSED_BOTH_SEEDS",
+      "support": [
+        "training_gate.json"
+      ]
+    },
+    {
+      "claim": "Matched learned controller advantage",
+      "status": "NOT_SUPPORTED",
+      "support": [
+        "selection.json",
+        "repeat.json"
+      ]
+    },
+    {
+      "claim": "Official map advantage over FG2/strong controls",
+      "status": "NOT_TESTED_BY_FIXED_ACTIVATION_RULE",
+      "support": [
+        "evaluation/store.json"
+      ]
+    },
+    {
+      "claim": "Improved geometry/online30fps/unseen-scene generalization",
+      "status": "NOT_SUPPORTED",
+      "support": []
+    }
+  ],
+  "identity": "5fd49d3bbec185955012db25df8945e10fca20b05e2656e87188293cf9fe90e5"
+}

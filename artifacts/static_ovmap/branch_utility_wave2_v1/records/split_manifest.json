@@ -1,0 +1,1998 @@
+{
+  "candidate_queue": "8c464767e9566d7c121d9d5471e752ccf2c15ce320beba23c85a5a9ccb05695d",
+  "data_authority": {
+    "bytes": 2817,
+    "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/worktree/artifacts/static_ovmap/module_validation_v1/scannet_execution_20260922.json",
+    "sha256": "c7b9a6a145a3b0f60f5477ede1eeb367447f82fae937a4d5d27a3059517e4922"
+  },
+  "exclusions": [
+    "scene0011",
+    "scene0027",
+    "scene0050",
+    "scene0056",
+    "scene0064",
+    "scene0084",
+    "scene0106",
+    "scene0107",
+    "scene0168",
+    "scene0231",
+    "scene0378",
+    "scene0434",
+    "scene0445",
+    "scene0518",
+    "scene0534",
+    "scene0538",
+    "scene0547",
+    "scene0553",
+    "scene0571",
+    "scene0626",
+    "scene0639"
+  ],
+  "holdout_annotation_reads": 0,
+  "identity": "0c1209d9d3887f317251fd7909393329ce804cfa1d42294936addd22d1d56fda",
+  "rejected": [],
+  "roles": {
+    "dev": [
+      "scene0105_00",
+      "scene0143_00",
+      "scene0211_00",
+      "scene0620_00"
+    ],
+    "holdout": [
+      "scene0202_00",
+      "scene0368_00",
+      "scene0037_00",
+      "scene0635_00"
+    ],
+    "train": [
+      "scene0561_00",
+      "scene0413_00",
+      "scene0110_00",
+      "scene0424_00",
+      "scene0194_00",
+      "scene0662_00",
+      "scene0603_00",
+      "scene0436_00",
+      "scene0047_00",
+      "scene0345_00",
+      "scene0543_00",
+      "scene0519_00",
+      "scene0403_00",
+      "scene0369_00",
+      "scene0162_00",
+      "scene0481_00",
+      "scene0393_00",
+      "scene0132_00",
+      "scene0522_00",
+      "scene0363_00",
+      "scene0102_00",
+      "scene0326_00",
+      "scene0634_00",
+      "scene0394_00"
+    ]
+  },
+  "selected": [
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"2938-605cd4e3955ae\"",
+          "last_modified": "Wed, 20 Sep 2023 16:59:59 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00.aggregation.json",
+          "sha256": "8f13d39a26f1a9c82802c9ee99768acf43c724c9920f404a8ff3ddc2323f32a5",
+          "size_bytes": 10552,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0561_00/scene0561_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"1d5e6db4-6414a540f25c8\"",
+          "last_modified": "Thu, 16 Oct 2025 17:55:53 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00.sens",
+          "sha256": "5fc650ff22c80fa25a28aaf867c8158a100f19399ab4bf0c1238645cdb1dd974",
+          "size_bytes": 492727732,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0561_00/scene0561_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"209-605cd4e397cbe\"",
+          "last_modified": "Wed, 20 Sep 2023 16:59:59 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00.txt",
+          "sha256": "d40e0599eb1f667d0c5a64875ea5b307922f310568f6640c3d6960b61fbd359b",
+          "size_bytes": 521,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0561_00/scene0561_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"191ca8-605cd4f1eac9b\"",
+          "last_modified": "Wed, 20 Sep 2023 17:00:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "7630c8cb0440c0ceae5a481fd0afecab817dc5b7de837eea91f7fa6b369c838b",
+          "size_bytes": 1645736,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0561_00/scene0561_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"9ed6b6-605cd4f27ad4b\"",
+          "last_modified": "Wed, 20 Sep 2023 17:00:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00_vh_clean_2.ply",
+          "sha256": "c6ae04ad25c88fd2064eee6d8af23e03152d7e0347ea1b27c70fdf2ddd790ce2",
+          "size_bytes": 10409654,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0561_00/scene0561_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0561",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0561_00/scene0561_00_vh_clean_2.ply"
+      },
+      "scene": "scene0561_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"127f-605cc65e6dc14\"",
+          "last_modified": "Wed, 20 Sep 2023 15:55:01 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00.aggregation.json",
+          "sha256": "b3dd7049af1fedde048bc8e3cb22c39e98e527e027ae9639137a667bd2b8b4a5",
+          "size_bytes": 4735,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0413_00/scene0413_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"26ccec26-64149069c9dcd\"",
+          "last_modified": "Thu, 16 Oct 2025 16:22:39 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00.sens",
+          "sha256": "bc063bda6c9542672844d1816117ba6344cdacb1c5df2f0e2bd7b10dd074517c",
+          "size_bytes": 650964006,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0413_00/scene0413_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"20b-605cc65e70324\"",
+          "last_modified": "Wed, 20 Sep 2023 15:55:01 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00.txt",
+          "sha256": "9b44a036c66409df3143af9bddb92baf2f5f8f111dc3d5cece8483eb2c685561",
+          "size_bytes": 523,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0413_00/scene0413_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"68a3d-605cc664c54a3\"",
+          "last_modified": "Wed, 20 Sep 2023 15:55:08 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "bb28d55afad73a9b067864f744c9a2f015362ba49a5cc0914665a39ba8163465",
+          "size_bytes": 428605,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0413_00/scene0413_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"2c1ab5-605cc66509a63\"",
+          "last_modified": "Wed, 20 Sep 2023 15:55:08 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00_vh_clean_2.ply",
+          "sha256": "644b5ff0eee7e547a6d250030ffcbde78b7f241e0bd71fbec741706e11c35496",
+          "size_bytes": 2890421,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0413_00/scene0413_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0413",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0413_00/scene0413_00_vh_clean_2.ply"
+      },
+      "scene": "scene0413_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1aff-605cabaebc8ae\"",
+          "last_modified": "Wed, 20 Sep 2023 13:55:37 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00.aggregation.json",
+          "sha256": "8e168805b2a53315e66d8d65dc7652b5b1c784ae3a60a9554664d77e0beb74a0",
+          "size_bytes": 6911,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0110_00/scene0110_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"266d6cd1-64146c9e2e8f1\"",
+          "last_modified": "Thu, 16 Oct 2025 13:42:30 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00.sens",
+          "sha256": "3822c348a3a2e39996734087e73fa4f13214292c49319f4180c373bc2e43e0ae",
+          "size_bytes": 644705489,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0110_00/scene0110_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c4-605cabaec16ce\"",
+          "last_modified": "Wed, 20 Sep 2023 13:55:37 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00.txt",
+          "sha256": "d8c05ab19aa8d20641b304bc23c1e1cb957c8fa77756b0644fcbf550f9e6f8d2",
+          "size_bytes": 708,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0110_00/scene0110_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"c87d5-605cabb82ff9c\"",
+          "last_modified": "Wed, 20 Sep 2023 13:55:47 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "937d6e6690e8bd9dcf7fcb6fb940a9b61a11c8632507e42dfd9c91e2784d5c65",
+          "size_bytes": 821205,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0110_00/scene0110_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"5331ea-605cabb89dd6c\"",
+          "last_modified": "Wed, 20 Sep 2023 13:55:48 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00_vh_clean_2.ply",
+          "sha256": "f5c8700355f03147f540bee84a5c4283127a56320bf370fa5447a4764d3e2482",
+          "size_bytes": 5452266,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0110_00/scene0110_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0110",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0110_00/scene0110_00_vh_clean_2.ply"
+      },
+      "scene": "scene0110_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"28ba-605cc7966c581\"",
+          "last_modified": "Wed, 20 Sep 2023 16:00:28 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00.aggregation.json",
+          "sha256": "8cde57a78f86c3c2b713b9166158dd12468e47d82805da523b55a87fc5bcd504",
+          "size_bytes": 10426,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0424_00/scene0424_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"36bf0bf9-6414925f0c970\"",
+          "last_modified": "Thu, 16 Oct 2025 16:31:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00.sens",
+          "sha256": "4e23a26eec48f77f925eddd923ee781ffa7ab7292009b834fc1375dff8f7d2e3",
+          "size_bytes": 918490105,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0424_00/scene0424_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2bb-605cc7966c581\"",
+          "last_modified": "Wed, 20 Sep 2023 16:00:28 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00.txt",
+          "sha256": "37a27c7e7dfc260a4ed74eae55206c81d432767afb25071ecfbefbee178c182d",
+          "size_bytes": 699,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0424_00/scene0424_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"df1cc-605cc79d4f09f\"",
+          "last_modified": "Wed, 20 Sep 2023 16:00:35 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "f12dff773300849ab2b5e04d9bc877e5563049553c793bb5fe6374c4ed86e573",
+          "size_bytes": 913868,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0424_00/scene0424_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"5a1fe3-605cc79da20bf\"",
+          "last_modified": "Wed, 20 Sep 2023 16:00:36 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00_vh_clean_2.ply",
+          "sha256": "b84c0ea7c9f9a5466d6c64efaeda951401c1de3089cc6c49881b63ab9acc2f63",
+          "size_bytes": 5906403,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0424_00/scene0424_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0424",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0424_00/scene0424_00_vh_clean_2.ply"
+      },
+      "scene": "scene0424_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1eb2-605cb351b1306\"",
+          "last_modified": "Wed, 20 Sep 2023 14:29:47 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00.aggregation.json",
+          "sha256": "f8de717caee23eb1e4be63fab277a1bd5b9d163c35677464cad2c1601177068f",
+          "size_bytes": 7858,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0194_00/scene0194_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"1a401ffb-641476535c7b5\"",
+          "last_modified": "Thu, 16 Oct 2025 14:25:56 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00.sens",
+          "sha256": "d9ded48cf8f28cd65e91a1eb5ba123798a01e8d508da8f5dc01703096274ba40",
+          "size_bytes": 440410107,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0194_00/scene0194_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"208-605cb351b1306\"",
+          "last_modified": "Wed, 20 Sep 2023 14:29:47 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00.txt",
+          "sha256": "bc238ede7168d4530f480aae10e365e333c53d14a49c2b843750dda5bfc7f143",
+          "size_bytes": 520,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0194_00/scene0194_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"f0efc-605cb35c49974\"",
+          "last_modified": "Wed, 20 Sep 2023 14:29:58 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "dc0355cafe41ec21f59f3aff386df79e50538826c01aa3aee3efdf7a52c352c8",
+          "size_bytes": 986876,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0194_00/scene0194_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"5fab22-605cb35ccd6d4\"",
+          "last_modified": "Wed, 20 Sep 2023 14:29:59 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00_vh_clean_2.ply",
+          "sha256": "cd2cc8ae385c7344b25fa104af00994157b3d0fa6b774558ae7a29a432bf2c70",
+          "size_bytes": 6269730,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0194_00/scene0194_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0194",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0194_00/scene0194_00_vh_clean_2.ply"
+      },
+      "scene": "scene0194_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"e64-605ce26420a90\"",
+          "last_modified": "Wed, 20 Sep 2023 18:00:23 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00.aggregation.json",
+          "sha256": "d1ea8a9676cac29a112d02e52890c979eff659b9c8dbc2b811c5020192d72735",
+          "size_bytes": 3684,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0662_00/scene0662_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"248968d4-6414b61262842\"",
+          "last_modified": "Thu, 16 Oct 2025 19:11:08 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00.sens",
+          "sha256": "73cd501c8637a742feb8daeee45f002e217d278ac8fe768a1eb641efa8559f14",
+          "size_bytes": 612985044,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0662_00/scene0662_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"20b-605ce264231a0\"",
+          "last_modified": "Wed, 20 Sep 2023 18:00:23 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00.txt",
+          "sha256": "4af2c3bfb16f98522eb0dd01610bbd6612c293fd6c3947d0460460b48e9e00e6",
+          "size_bytes": 523,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0662_00/scene0662_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"41f8c-605ce26b4a27f\"",
+          "last_modified": "Wed, 20 Sep 2023 18:00:31 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "91aeb59b8de81c5d39783b2d5970e9fa8536f419f9a510d5bd03a883ffaab922",
+          "size_bytes": 270220,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0662_00/scene0662_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"1d140e-605ce26b8730f\"",
+          "last_modified": "Wed, 20 Sep 2023 18:00:31 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00_vh_clean_2.ply",
+          "sha256": "192e4c047128f978b53261e0861e9b8a1b1d50d1915d078f26b891e89c939d97",
+          "size_bytes": 1905678,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0662_00/scene0662_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0662",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0662_00/scene0662_00_vh_clean_2.ply"
+      },
+      "scene": "scene0662_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"357e-605cd94a9dcda\"",
+          "last_modified": "Wed, 20 Sep 2023 17:19:40 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00.aggregation.json",
+          "sha256": "0bddbc30b1a179016d812c11f63113f72d55eaa80d3ba9e0355696160090af16",
+          "size_bytes": 13694,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0603_00/scene0603_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"49946007-6414aca3962ae\"",
+          "last_modified": "Thu, 16 Oct 2025 18:28:56 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00.sens",
+          "sha256": "d6ec224630e972e576d7f56d02c7243136deb7919076151846331ec2bcd8ec27",
+          "size_bytes": 1234460679,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0603_00/scene0603_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"215-605cd94aa03e9\"",
+          "last_modified": "Wed, 20 Sep 2023 17:19:40 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00.txt",
+          "sha256": "f190d596b465ef4bfcb505025ca85749fdddff1254bdcfa5db7b00505ed41e36",
+          "size_bytes": 533,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0603_00/scene0603_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"1804c1-605cd95ebd2b5\"",
+          "last_modified": "Wed, 20 Sep 2023 17:20:01 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "79f56db2bf57a97e8cf3abdb5d7e99ad4ef7f35eae55f52c0f359f46e7841f03",
+          "size_bytes": 1574081,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0603_00/scene0603_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"93ecb9-605cd95fa9fc5\"",
+          "last_modified": "Wed, 20 Sep 2023 17:20:02 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00_vh_clean_2.ply",
+          "sha256": "cc15cf8c98ec7a228db65174256da0b5b15c05aabdf62405e9070c17963ea4f5",
+          "size_bytes": 9694393,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0603_00/scene0603_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0603",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0603_00/scene0603_00_vh_clean_2.ply"
+      },
+      "scene": "scene0603_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1669-605cc87867e4f\"",
+          "last_modified": "Wed, 20 Sep 2023 16:04:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00.aggregation.json",
+          "sha256": "19462cf6bb2b5b87c8e7e693397595a1294910279f09df7459ea3336867f624a",
+          "size_bytes": 5737,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0436_00/scene0436_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"173bc62d-641493f77aac8\"",
+          "last_modified": "Thu, 16 Oct 2025 16:38:33 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00.sens",
+          "sha256": "408bffd6881c3233326c04350e406020f5f34d7df170897f1df53c3e11a589f3",
+          "size_bytes": 389793325,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0436_00/scene0436_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2bc-605cc87871a8f\"",
+          "last_modified": "Wed, 20 Sep 2023 16:04:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00.txt",
+          "sha256": "1c935b0d186f1e4a271369458f6c525da5537d96966d2f27f539d7213849c8a3",
+          "size_bytes": 700,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0436_00/scene0436_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"b5b1d-605cc88001b1e\"",
+          "last_modified": "Wed, 20 Sep 2023 16:04:33 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "b8eea5535448f4952db58a6866056665728cddb8b58d7a28b6c8dc60f7b2438b",
+          "size_bytes": 744221,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0436_00/scene0436_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"4c676f-605cc880683be\"",
+          "last_modified": "Wed, 20 Sep 2023 16:04:33 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00_vh_clean_2.ply",
+          "sha256": "3aaafc74e4d9bdb3cce2c4f83dd9607b3fc42f7acc78eafa3376d5cf9622b43c",
+          "size_bytes": 5007215,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0436_00/scene0436_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0436",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0436_00/scene0436_00_vh_clean_2.ply"
+      },
+      "scene": "scene0436_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1b07-605ca437d4bfc\"",
+          "last_modified": "Wed, 20 Sep 2023 13:22:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00.aggregation.json",
+          "sha256": "ccd2e38a4093a3edfb64448990425ec43d885123d0d06c9c12a9041ffbbfc69f",
+          "size_bytes": 6919,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0047_00/scene0047_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"1eb67946-6414653bccabb\"",
+          "last_modified": "Thu, 16 Oct 2025 13:09:28 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00.sens",
+          "sha256": "6681624c00b7d4d9931dabaee060d326e3ece6b5ca669b9e07b002de744187e0",
+          "size_bytes": 515275078,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0047_00/scene0047_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"208-605ca437d9a1c\"",
+          "last_modified": "Wed, 20 Sep 2023 13:22:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00.txt",
+          "sha256": "9fc8bb889b16f5161f0e2a96218346d5cc1c59e67366f8beceed51c67e4dfc93",
+          "size_bytes": 520,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0047_00/scene0047_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"ab68c-605ca444d1f1a\"",
+          "last_modified": "Wed, 20 Sep 2023 13:22:27 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "fe9495059c9d4fdf95dda3d6846036722009c41ff4527e07baadf3daa5432ba5",
+          "size_bytes": 702092,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0047_00/scene0047_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"478cf7-605ca4457cd79\"",
+          "last_modified": "Wed, 20 Sep 2023 13:22:28 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00_vh_clean_2.ply",
+          "sha256": "25bd4608b44d020369a74ea6fe228f0381291218df3bdf01217c4ef847522b4d",
+          "size_bytes": 4689143,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0047_00/scene0047_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0047",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0047_00/scene0047_00_vh_clean_2.ply"
+      },
+      "scene": "scene0047_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"3259-605cc00d26673\"",
+          "last_modified": "Wed, 20 Sep 2023 15:26:45 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00.aggregation.json",
+          "sha256": "49fcbf1f5f231ae797d8730c04ed4b3534332761b541e1bdfea1577c7ee4eb7b",
+          "size_bytes": 12889,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0345_00/scene0345_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"3493db1f-6414887ca0a35\"",
+          "last_modified": "Thu, 16 Oct 2025 15:47:11 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00.sens",
+          "sha256": "c6a09b78fa4fb17f7b5c1854ee01381426a3887aa9558ba7535a98ee53df24d5",
+          "size_bytes": 882105119,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0345_00/scene0345_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c2-605cc00d28d83\"",
+          "last_modified": "Wed, 20 Sep 2023 15:26:45 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00.txt",
+          "sha256": "47a57766d955ea315d29696a9e3281e45ea1403b75448c5db3ddfd1417bc7399",
+          "size_bytes": 706,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0345_00/scene0345_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"193d7d-605cc01b79650\"",
+          "last_modified": "Wed, 20 Sep 2023 15:27:00 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "efe4dd2d658b122d95129a0543198429653e8b08468e54cde30f6bd6594ee286",
+          "size_bytes": 1654141,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0345_00/scene0345_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"9dde79-605cc01c3a440\"",
+          "last_modified": "Wed, 20 Sep 2023 15:27:01 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00_vh_clean_2.ply",
+          "sha256": "0164c8fad672ce35a73666eca1a6960d82456aca35f6386cf61726d97497c74e",
+          "size_bytes": 10346105,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0345_00/scene0345_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0345",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0345_00/scene0345_00_vh_clean_2.ply"
+      },
+      "scene": "scene0345_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"ba6-605cd35fb4802\"",
+          "last_modified": "Wed, 20 Sep 2023 16:53:12 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00.aggregation.json",
+          "sha256": "3c708b354d1425ad2dd43a10ebb03d38f73d2469505528f39c581770441ce28e",
+          "size_bytes": 2982,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0543_00/scene0543_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"f54df5e-6414a2de651fc\"",
+          "last_modified": "Thu, 16 Oct 2025 17:45:13 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00.sens",
+          "sha256": "1f4b52f0011287a4e8f425e907dbf24a98d063dd91ae2bfd3d4727d08bb521f5",
+          "size_bytes": 257220446,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0543_00/scene0543_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"207-605cd35fbe442\"",
+          "last_modified": "Wed, 20 Sep 2023 16:53:12 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00.txt",
+          "sha256": "29914f93c6b72a62d3c192eb6b8bd50a4c8d556276ab5e9dace13d69e9bee036",
+          "size_bytes": 519,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0543_00/scene0543_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"55a9d-605cd36568761\"",
+          "last_modified": "Wed, 20 Sep 2023 16:53:18 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "1d7c28fe0aea35aeb892a2e7980fb79660b10009a06d528c15d21852789f711c",
+          "size_bytes": 350877,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0543_00/scene0543_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"252d92-605cd365bde91\"",
+          "last_modified": "Wed, 20 Sep 2023 16:53:18 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00_vh_clean_2.ply",
+          "sha256": "78ddb4574095ea2354a0b1b674efc554fb58bea4ed7faac0d8a240dbd38d6059",
+          "size_bytes": 2436498,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0543_00/scene0543_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0543",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0543_00/scene0543_00_vh_clean_2.ply"
+      },
+      "scene": "scene0543_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"878-605cd15bb35c2\"",
+          "last_modified": "Wed, 20 Sep 2023 16:44:11 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00.aggregation.json",
+          "sha256": "6916573e613798d5862c5e1a7a4bc1fb3b90ee06152281b2d8288ccff891f567",
+          "size_bytes": 2168,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0519_00/scene0519_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"179d7877-64149fd68b005\"",
+          "last_modified": "Thu, 16 Oct 2025 17:31:40 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00.sens",
+          "sha256": "ba0cb6f6d07d1e940c1d392327ca2c7b6fedc3c6196374d462cd783229b213c0",
+          "size_bytes": 396195959,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0519_00/scene0519_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"209-605cd15bbaaf2\"",
+          "last_modified": "Wed, 20 Sep 2023 16:44:11 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00.txt",
+          "sha256": "7ab9d010e2e272349c3f3f10dd71618a5d16424f902249cbad9da36efb8e2887",
+          "size_bytes": 521,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0519_00/scene0519_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"1febb-605cd1607f631\"",
+          "last_modified": "Wed, 20 Sep 2023 16:44:16 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "7d4c1f39e7c8da013558267932fdad40b165967b64fcc2be8d5ea4130b739d75",
+          "size_bytes": 130747,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0519_00/scene0519_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"d912a-605cd160a1911\"",
+          "last_modified": "Wed, 20 Sep 2023 16:44:16 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00_vh_clean_2.ply",
+          "sha256": "09ba53857c20de4030e38ddcb3f30157becd7ae4c01d52cc555b139a2e8a0aa2",
+          "size_bytes": 889130,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0519_00/scene0519_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0519",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0519_00/scene0519_00_vh_clean_2.ply"
+      },
+      "scene": "scene0519_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"456f-605cc58535db3\"",
+          "last_modified": "Wed, 20 Sep 2023 15:51:13 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00.aggregation.json",
+          "sha256": "ad5f68e7713a97227e3f5e6cb6f8462f7d69aa4f9a865a30eb1ca0fab8a8d666",
+          "size_bytes": 17775,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0403_00/scene0403_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"42e4cf9c-64148f2386ee4\"",
+          "last_modified": "Thu, 16 Oct 2025 16:16:57 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00.sens",
+          "sha256": "28ff12c83df06533776e6d7113c1e1c5212165fbb0f7318f5172b9f452a992ef",
+          "size_bytes": 1122291612,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0403_00/scene0403_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c4-605cc5853abd3\"",
+          "last_modified": "Wed, 20 Sep 2023 15:51:13 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00.txt",
+          "sha256": "00ab2709eeb6ca78c6eabb90857b2035f675bdc51fe41ecd7f44ba3e3ef71911",
+          "size_bytes": 708,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0403_00/scene0403_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"1fd260-605cc59a6919f\"",
+          "last_modified": "Wed, 20 Sep 2023 15:51:35 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "478c8337b3dcce29bb1e894a99e8f25cede2c2e3017278bbe13c8f9c3b064849",
+          "size_bytes": 2085472,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0403_00/scene0403_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"c22f67-605cc59b5379e\"",
+          "last_modified": "Wed, 20 Sep 2023 15:51:36 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00_vh_clean_2.ply",
+          "sha256": "4fa5ef7774997893670556dbf84e8c2b5dee5d034f1b369cf016c1e59e38664a",
+          "size_bytes": 12726119,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0403_00/scene0403_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0403",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0403_00/scene0403_00_vh_clean_2.ply"
+      },
+      "scene": "scene0403_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1dc3-605cc2254e3bf\"",
+          "last_modified": "Wed, 20 Sep 2023 15:36:07 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00.aggregation.json",
+          "sha256": "b7df4d1ed30ae75f9a5488621c6e678f12790c0a64a4dd960fce2bf7d07aa5da",
+          "size_bytes": 7619,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0369_00/scene0369_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"2a477b47-64148b0756a28\"",
+          "last_modified": "Thu, 16 Oct 2025 15:58:34 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00.sens",
+          "sha256": "9ab3117ccf493d7eb573c87b0d33c31e5316781a98ea18773e6b3542eeb954b5",
+          "size_bytes": 709327687,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0369_00/scene0369_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2b9-605cc225531df\"",
+          "last_modified": "Wed, 20 Sep 2023 15:36:07 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00.txt",
+          "sha256": "911ab074714505686bb04901b13d9fa0f65a3085b8527d17b09e9527aa0144e7",
+          "size_bytes": 697,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0369_00/scene0369_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"e6f7f-605cc22e9347d\"",
+          "last_modified": "Wed, 20 Sep 2023 15:36:17 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "a6e76f317f14c9f774bff88055f599725ad2aab84c255f4e168efe9412b7231c",
+          "size_bytes": 946047,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0369_00/scene0369_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"5e4607-605cc22f0877d\"",
+          "last_modified": "Wed, 20 Sep 2023 15:36:17 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00_vh_clean_2.ply",
+          "sha256": "5309b854f5d1033cf7265fc67144ef09703d4a36ebfacc29d7e73f7cef188830",
+          "size_bytes": 6178311,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0369_00/scene0369_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0369",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0369_00/scene0369_00_vh_clean_2.ply"
+      },
+      "scene": "scene0369_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"23a0-605cb0a3b46eb\"",
+          "last_modified": "Wed, 20 Sep 2023 14:17:48 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00.aggregation.json",
+          "sha256": "ef93d3a6c2164475435bb4ecc94a715e39ea96c478712de9c5a67f9848d22877",
+          "size_bytes": 9120,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0162_00/scene0162_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"2516e0f8-641472a1c8a93\"",
+          "last_modified": "Thu, 16 Oct 2025 14:09:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00.sens",
+          "sha256": "2724a8e706eefb355d469aa6b16714764257e9b6a278e5be538ac2099d780328",
+          "size_bytes": 622256376,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0162_00/scene0162_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c8-605cb0a3b6dfb\"",
+          "last_modified": "Wed, 20 Sep 2023 14:17:48 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00.txt",
+          "sha256": "82bd584573045bbd48ab6720cee6f7a11d4922bd80c165fc2987285e6f7407dd",
+          "size_bytes": 712,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0162_00/scene0162_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"114bb2-605cb0ad53cf9\"",
+          "last_modified": "Wed, 20 Sep 2023 14:17:58 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "191d070c6b3a42a308a900ac347425f5cf5027de2b87303be35e58679dbb35d7",
+          "size_bytes": 1133490,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0162_00/scene0162_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"702ad6-605cb0adcb709\"",
+          "last_modified": "Wed, 20 Sep 2023 14:17:59 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00_vh_clean_2.ply",
+          "sha256": "9fd1af4f489325dc1a27fdb980838ebd8d91c78c14d657b1c15f7a51748afe5c",
+          "size_bytes": 7350998,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0162_00/scene0162_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0162",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0162_00/scene0162_00_vh_clean_2.ply"
+      },
+      "scene": "scene0162_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"3167-605ccd5d97420\"",
+          "last_modified": "Wed, 20 Sep 2023 16:26:19 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00.aggregation.json",
+          "sha256": "b1885e1cdeb651598f14a1cf9b3a3ae38dd84a38ce27e13e3f2616c12c112233",
+          "size_bytes": 12647,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0481_00/scene0481_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"26b50df4-64149a8e47dfa\"",
+          "last_modified": "Thu, 16 Oct 2025 17:08:02 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00.sens",
+          "sha256": "e0fb58359dd08186109988ce495b0b41593e12e04a02694e07e3ef22f0e87e92",
+          "size_bytes": 649399796,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0481_00/scene0481_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c9-605ccd5d97420\"",
+          "last_modified": "Wed, 20 Sep 2023 16:26:19 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00.txt",
+          "sha256": "2ab73a76adc860f0e7f21ad0e93fdc403f63295600c36d84db80489e500bd00a",
+          "size_bytes": 713,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0481_00/scene0481_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"17936b-605ccd725ca3b\"",
+          "last_modified": "Wed, 20 Sep 2023 16:26:41 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "b941f8c0f4ff5c8fd55b0487880124cad76da36a81b24284fe38acd691fdeccd",
+          "size_bytes": 1545067,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0481_00/scene0481_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"91f8a3-605ccd738dd0b\"",
+          "last_modified": "Wed, 20 Sep 2023 16:26:42 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00_vh_clean_2.ply",
+          "sha256": "77ea71eeb2fc18252b5253f385fe5370beb4594c541d04750437a15d61d32ccc",
+          "size_bytes": 9566371,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0481_00/scene0481_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0481",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0481_00/scene0481_00_vh_clean_2.ply"
+      },
+      "scene": "scene0481_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"239b-605cc4913dd08\"",
+          "last_modified": "Wed, 20 Sep 2023 15:46:57 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00.aggregation.json",
+          "sha256": "201b4a6ca481c9b6e41edddf34e3286cb56361b54b9f51d04b5d11352e6b067d",
+          "size_bytes": 9115,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0393_00/scene0393_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"2b292bdf-64148ddc2dadb\"",
+          "last_modified": "Thu, 16 Oct 2025 16:11:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00.sens",
+          "sha256": "917f2d9e55328ad382353440565e4a6599f3a4a78799cb0d79c18ff3a9b8f0e5",
+          "size_bytes": 724118495,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0393_00/scene0393_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c3-605cc49140418\"",
+          "last_modified": "Wed, 20 Sep 2023 15:46:57 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00.txt",
+          "sha256": "fc9f471da393b2c01b538e9400882e2691957f91f534153175c710b7da67d95a",
+          "size_bytes": 707,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0393_00/scene0393_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"116bf7-605cc49b06b26\"",
+          "last_modified": "Wed, 20 Sep 2023 15:47:08 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "153fa2be2c89584bf33cec285572930525385dfd363b76538151eba26d10c288",
+          "size_bytes": 1141751,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0393_00/scene0393_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"6e9e21-605cc49bacb66\"",
+          "last_modified": "Wed, 20 Sep 2023 15:47:08 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00_vh_clean_2.ply",
+          "sha256": "10e18ed5bed2b51496aca02dfabf7ad9d34ced442dabe7c8533ff5534bc08339",
+          "size_bytes": 7249441,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0393_00/scene0393_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0393",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0393_00/scene0393_00_vh_clean_2.ply"
+      },
+      "scene": "scene0393_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1bdf-605cad9950e54\"",
+          "last_modified": "Wed, 20 Sep 2023 14:04:12 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00.aggregation.json",
+          "sha256": "bed3bce9c3af218e09810b23ae6111275726ceba31065a466b040d2d33c4dfa3",
+          "size_bytes": 7135,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0132_00/scene0132_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"1d4e7da5-64146f0f384a9\"",
+          "last_modified": "Thu, 16 Oct 2025 13:53:26 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00.sens",
+          "sha256": "302260205db982786d4981fa25e2b5f9518d65de4bab42ed1c135ccae919508b",
+          "size_bytes": 491683237,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0132_00/scene0132_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"208-605cad9953564\"",
+          "last_modified": "Wed, 20 Sep 2023 14:04:12 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00.txt",
+          "sha256": "6b7115a49cd35b8afe41c7d2dfd4271a0ee2f7151b81e932eb43112a98c9e9cb",
+          "size_bytes": 520,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0132_00/scene0132_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"10641a-605cada602681\"",
+          "last_modified": "Wed, 20 Sep 2023 14:04:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "994fb90fcd69bd5d67b60ff4555af92381628d6706732aed1bb0d5dd121b9e75",
+          "size_bytes": 1074202,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0132_00/scene0132_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"684577-605cada68d911\"",
+          "last_modified": "Wed, 20 Sep 2023 14:04:26 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00_vh_clean_2.ply",
+          "sha256": "617b45f26fa36a161f78801d07a89abf42b41de3ab325911844b912f0cfea590",
+          "size_bytes": 6833527,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0132_00/scene0132_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0132",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0132_00/scene0132_00_vh_clean_2.ply"
+      },
+      "scene": "scene0132_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1873-605cd1910f066\"",
+          "last_modified": "Wed, 20 Sep 2023 16:45:07 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00.aggregation.json",
+          "sha256": "c69f2b88c4a3d033781497365c27fc0c6d6985a467cde25514f118fbb14bb5f3",
+          "size_bytes": 6259,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0522_00/scene0522_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"13374206-6414a01c441e5\"",
+          "last_modified": "Thu, 16 Oct 2025 17:32:53 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00.sens",
+          "sha256": "95a49776498a8403e1d799b2ae90a2d3f86c28a13c11461690f5a75f809c9319",
+          "size_bytes": 322388486,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0522_00/scene0522_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"20a-605cd19118ca6\"",
+          "last_modified": "Wed, 20 Sep 2023 16:45:07 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00.txt",
+          "sha256": "b10be371edf000c250e1697e52695495b818aa86c1ac71f528ec96b1290c11c0",
+          "size_bytes": 522,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0522_00/scene0522_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"7d046-605cd197e5835\"",
+          "last_modified": "Wed, 20 Sep 2023 16:45:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "9540aaf2c177e8eb6195c49c6979f7918f8a22acc84cde1b44ba0b32b9941b23",
+          "size_bytes": 512070,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0522_00/scene0522_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"34eb5a-605cd19838855\"",
+          "last_modified": "Wed, 20 Sep 2023 16:45:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00_vh_clean_2.ply",
+          "sha256": "518ed0dd14aa3d8e8925a011c634c8e6ae9412e9f8996cd4cc82005a55ef86c6",
+          "size_bytes": 3468122,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0522_00/scene0522_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0522",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0522_00/scene0522_00_vh_clean_2.ply"
+      },
+      "scene": "scene0522_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"19ce-605cc1cc4f092\"",
+          "last_modified": "Wed, 20 Sep 2023 15:34:34 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00.aggregation.json",
+          "sha256": "c11142d02b20984c29013e0d62e13413b15420356fd8fd3eb1b3e439b09bb7c9",
+          "size_bytes": 6606,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0363_00/scene0363_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"33f50953-64148a8d3fc22\"",
+          "last_modified": "Thu, 16 Oct 2025 15:56:26 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00.sens",
+          "sha256": "842daf0b9cc5728ffec68009d4a09602eafb6dff0178f3503e5c611217076eee",
+          "size_bytes": 871696723,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0363_00/scene0363_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2b8-605cc1cc53eb2\"",
+          "last_modified": "Wed, 20 Sep 2023 15:34:34 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00.txt",
+          "sha256": "f9eb928b97b8870477c2ce64b09df1b0e2572efb600ead0be98e2273ffd044c6",
+          "size_bytes": 696,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0363_00/scene0363_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"fdb8f-605cc1da5175f\"",
+          "last_modified": "Wed, 20 Sep 2023 15:34:49 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "99256358871a4b1b9fc1324f510c331b7ca91d21e21bd2132c0e1faf2414e3c2",
+          "size_bytes": 1039247,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0363_00/scene0363_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"674d6a-605cc1dad7bcf\"",
+          "last_modified": "Wed, 20 Sep 2023 15:34:49 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00_vh_clean_2.ply",
+          "sha256": "f1b6f2ef4e8241cd4ca2f1a0fcb52325d3166ef79efb69f5d875ceecbdbb1642",
+          "size_bytes": 6770026,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0363_00/scene0363_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0363",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0363_00/scene0363_00_vh_clean_2.ply"
+      },
+      "scene": "scene0363_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"34ac-605cab088a2a2\"",
+          "last_modified": "Wed, 20 Sep 2023 13:52:43 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00.aggregation.json",
+          "sha256": "2418bc6bcafc3e8e16d37d852f04bab5032eeff8a40f8827294ea3a3b5c08991",
+          "size_bytes": 13484,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0102_00/scene0102_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"2cb98f31-64146be56d349\"",
+          "last_modified": "Thu, 16 Oct 2025 13:39:17 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00.sens",
+          "sha256": "26f724a3144aa995f5ae678c901691731a5b65c8a818fc64d76cb70fecdcbe19",
+          "size_bytes": 750358321,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0102_00/scene0102_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"20e-605cab088a2a2\"",
+          "last_modified": "Wed, 20 Sep 2023 13:52:43 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00.txt",
+          "sha256": "706fbd1f6fb749eabbab0e5b5685265950ecdac61fc3c7f60d363c7f6f5dcc56",
+          "size_bytes": 526,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0102_00/scene0102_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"1879fc-605cab1d2aece\"",
+          "last_modified": "Wed, 20 Sep 2023 13:53:05 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "396f92898c84b75d2efc48bc2b59c0de14f02d253c6131d4238d640949fa3aa8",
+          "size_bytes": 1604092,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0102_00/scene0102_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"99eed0-605cab1dee3cd\"",
+          "last_modified": "Wed, 20 Sep 2023 13:53:05 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00_vh_clean_2.ply",
+          "sha256": "05adbc2db93034306616bf706985799c6684e0682e0e1b051360cab07da63da0",
+          "size_bytes": 10088144,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0102_00/scene0102_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0102",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0102_00/scene0102_00_vh_clean_2.ply"
+      },
+      "scene": "scene0102_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"11b9-605cbe69b960e\"",
+          "last_modified": "Wed, 20 Sep 2023 15:19:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00.aggregation.json",
+          "sha256": "8abad336726a28791d05025c3664e8aad31d981c379ff510cb4cf8f4beebae21",
+          "size_bytes": 4537,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0326_00/scene0326_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"f2d83f2-6414865bd755b\"",
+          "last_modified": "Thu, 16 Oct 2025 15:37:40 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00.sens",
+          "sha256": "371f0cc4267ee2cb66937ca034ef82eb74e7b854fcd419c805c4614952b3aeb2",
+          "size_bytes": 254641138,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0326_00/scene0326_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"215-605cbe69be42e\"",
+          "last_modified": "Wed, 20 Sep 2023 15:19:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00.txt",
+          "sha256": "d2c51f6bad6a605ef745948d4b1cf7945ec60e35a7e82cb98c1a91df92654c32",
+          "size_bytes": 533,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0326_00/scene0326_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"6db2b-605cbe6e0673d\"",
+          "last_modified": "Wed, 20 Sep 2023 15:19:30 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "5b58539b4a4d23fee520afb2458fc34d7907eec7527a2a6f759423e49a9c68a9",
+          "size_bytes": 449323,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0326_00/scene0326_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"2f647e-605cbe6e34d6d\"",
+          "last_modified": "Wed, 20 Sep 2023 15:19:30 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00_vh_clean_2.ply",
+          "sha256": "448048f550ebbdbd4db0438f20a61d2b2114f2cbee2ce7f0a44bde15ea5066f9",
+          "size_bytes": 3105918,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0326_00/scene0326_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0326",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0326_00/scene0326_00_vh_clean_2.ply"
+      },
+      "scene": "scene0326_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"2034-605cddd0d5a5e\"",
+          "last_modified": "Wed, 20 Sep 2023 17:39:55 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00.aggregation.json",
+          "sha256": "18872aefef734323db36ae6ad18aaa787db6f2a8b521038853b072585f1d5cb2",
+          "size_bytes": 8244,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0634_00/scene0634_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"24e93526-6414b1aee8b66\"",
+          "last_modified": "Thu, 16 Oct 2025 18:51:30 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00.sens",
+          "sha256": "1d321f9a68027b0ee3bb89314a7a8d73fe14193b63efdebdd85f987126c86176",
+          "size_bytes": 619263270,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0634_00/scene0634_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"210-605cddd0da87e\"",
+          "last_modified": "Wed, 20 Sep 2023 17:39:55 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00.txt",
+          "sha256": "4926e15821bddb9e7bca2b8fb797fb857279c5ea6bacc0b602433e88f196e052",
+          "size_bytes": 528,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0634_00/scene0634_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"f181d-605cddebdc978\"",
+          "last_modified": "Wed, 20 Sep 2023 17:40:23 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "43aa38a52d7cb51aef6a9cd48096a56dc4efd4e9941cae7a71180836e585b523",
+          "size_bytes": 989213,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0634_00/scene0634_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"608cc6-605cddec7db98\"",
+          "last_modified": "Wed, 20 Sep 2023 17:40:24 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00_vh_clean_2.ply",
+          "sha256": "9c10f1ed5bcad7061c8275f5c4bf77bee7045aa9273e8a3c8aa7c99d1a657001",
+          "size_bytes": 6327494,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0634_00/scene0634_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0634",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0634_00/scene0634_00_vh_clean_2.ply"
+      },
+      "scene": "scene0634_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"5b75-605cc4b83cb90\"",
+          "last_modified": "Wed, 20 Sep 2023 15:47:38 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00.aggregation.json",
+          "sha256": "3bf8df680104acf06f2d4c5c3931f1c241083328c1b078b6424ce1ea29c5412c",
+          "size_bytes": 23413,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0394_00/scene0394_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"42a61668-64148e101b21f\"",
+          "last_modified": "Thu, 16 Oct 2025 16:12:08 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00.sens",
+          "sha256": "56baec64d3346a7fa273277606f09cc54214f2d0a4e92fc29985a0741593693f",
+          "size_bytes": 1118180968,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0394_00/scene0394_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"212-605cc4b83f2a0\"",
+          "last_modified": "Wed, 20 Sep 2023 15:47:38 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00.txt",
+          "sha256": "0dbb55c1356e1545db1aeb01df98cfdf4af304dc4ed9b3d406d49124fbbf5f77",
+          "size_bytes": 530,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0394_00/scene0394_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"24146a-605cc4cc60f8b\"",
+          "last_modified": "Wed, 20 Sep 2023 15:47:59 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "c6a80d9a142194438d3b41d148657dc534c3aa871b7f34c31e5b6f0b6c7dd5cb",
+          "size_bytes": 2364522,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0394_00/scene0394_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"d9bce0-605cc4cd48e7b\"",
+          "last_modified": "Wed, 20 Sep 2023 15:48:00 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00_vh_clean_2.ply",
+          "sha256": "8152ba6b750ea5435ac81e66de4e07562e7f7b425ec23d7ced280a78876cd86b",
+          "size_bytes": 14269664,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0394_00/scene0394_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0394",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0394_00/scene0394_00_vh_clean_2.ply"
+      },
+      "scene": "scene0394_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"a07-605cab44116b5\"",
+          "last_modified": "Wed, 20 Sep 2023 13:53:45 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00.aggregation.json",
+          "sha256": "c2a80fa75ba2c7444d728e13465b67c7e0320a4828dbb769636c0448607b8a0e",
+          "size_bytes": 2567,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0105_00/scene0105_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"1afcb589-64146c1d0699d\"",
+          "last_modified": "Thu, 16 Oct 2025 13:40:15 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00.sens",
+          "sha256": "94276bf349d861d76906aae2e5cb951750aa52772ca3d5cb668f16dc40d0c325",
+          "size_bytes": 452769161,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0105_00/scene0105_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"209-605cab441da05\"",
+          "last_modified": "Wed, 20 Sep 2023 13:53:46 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00.txt",
+          "sha256": "8d59bbf52490558c92f6a8155779c5b33c0229e5f64ec6bb33d28a18897f5829",
+          "size_bytes": 521,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0105_00/scene0105_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"30cbf-605cab4843a34\"",
+          "last_modified": "Wed, 20 Sep 2023 13:53:50 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "d323cde46c37d516a62bed498b7e79d6abb47fe27030e06418889461f5964075",
+          "size_bytes": 199871,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0105_00/scene0105_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"15a47f-605cab486d244\"",
+          "last_modified": "Wed, 20 Sep 2023 13:53:50 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00_vh_clean_2.ply",
+          "sha256": "722f859c0d4bb6b687d632995af6bcb120a36934d01f845017b1476cd854c160",
+          "size_bytes": 1418367,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0105_00/scene0105_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0105",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0105_00/scene0105_00_vh_clean_2.ply"
+      },
+      "scene": "scene0105_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"de1-605caef3d55f8\"",
+          "last_modified": "Wed, 20 Sep 2023 14:10:15 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00.aggregation.json",
+          "sha256": "043279756645772a96b07468b5168001acbcf3a3f4767d4be3326d562a94dbf7",
+          "size_bytes": 3553,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0143_00/scene0143_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"52db21a-64147075b99db\"",
+          "last_modified": "Thu, 16 Oct 2025 13:59:42 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00.sens",
+          "sha256": "4126d307fe4d6e9b4a5c689fc5a94c68156fce5c9292ad57ba9f626a2183765c",
+          "size_bytes": 86880794,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0143_00/scene0143_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"20d-605caef3d55f8\"",
+          "last_modified": "Wed, 20 Sep 2023 14:10:15 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00.txt",
+          "sha256": "2aca1f7081b004240bee86af102155ede8a327ed38018a80cff2b8ebdbe4f1e3",
+          "size_bytes": 525,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0143_00/scene0143_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"4a3bb-605caef6d66a8\"",
+          "last_modified": "Wed, 20 Sep 2023 14:10:18 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "e04f6bfe61b7bf1f3b2d48979e81189bdd3f3b3ee144cebb0f62564a60c27089",
+          "size_bytes": 304059,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0143_00/scene0143_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"205a77-605caef704cd8\"",
+          "last_modified": "Wed, 20 Sep 2023 14:10:18 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00_vh_clean_2.ply",
+          "sha256": "95f4c4785979ca9f7cd4edec6eaff75875ae597c881acda0fb5efb675500c724",
+          "size_bytes": 2120311,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0143_00/scene0143_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0143",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0143_00/scene0143_00_vh_clean_2.ply"
+      },
+      "scene": "scene0143_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"211b-605cb5018dce8\"",
+          "last_modified": "Wed, 20 Sep 2023 14:37:20 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00.aggregation.json",
+          "sha256": "c32a786b5c67474272d641171848931f2518bc639d029b7181671bed2f99d95b",
+          "size_bytes": 8475,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0211_00/scene0211_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"588fcde9-6414788604fab\"",
+          "last_modified": "Thu, 16 Oct 2025 14:35:46 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00.sens",
+          "sha256": "0553b51dd906c7fe1a18de0898db9aa33e5fb1e7528ee4070d014116b361108b",
+          "size_bytes": 1485819369,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0211_00/scene0211_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2ba-605cb50192b08\"",
+          "last_modified": "Wed, 20 Sep 2023 14:37:20 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00.txt",
+          "sha256": "156ce9a88078da16c9561f2fef47bb8d39e9a6c8575473328ff09e2ccf304b41",
+          "size_bytes": 698,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0211_00/scene0211_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"db3fc-605cb50adc9e6\"",
+          "last_modified": "Wed, 20 Sep 2023 14:37:30 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "2bd3c042fbab6bda8c5d624f6d4a3b5342129a3395e4d5cdaab44cfbbc0c0681",
+          "size_bytes": 898044,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0211_00/scene0211_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"59cfc2-605cb50b4cec6\"",
+          "last_modified": "Wed, 20 Sep 2023 14:37:30 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00_vh_clean_2.ply",
+          "sha256": "46b6967aa56ab07a0bc9ba0b1fde1890538e3bf21f5a251f7419f932fa3d596b",
+          "size_bytes": 5885890,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0211_00/scene0211_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0211",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0211_00/scene0211_00_vh_clean_2.ply"
+      },
+      "scene": "scene0211_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"ef5-605cdb8e55f9c\"",
+          "last_modified": "Wed, 20 Sep 2023 17:29:48 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00.aggregation.json",
+          "sha256": "056d8491c8a605994424c7ca703106b71cbd3569c206f5d69b348f0d28c9c777",
+          "size_bytes": 3829,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0620_00/scene0620_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"1b1cb576-6414afd59ea0c\"",
+          "last_modified": "Thu, 16 Oct 2025 18:43:14 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00.sens",
+          "sha256": "3b87acd8bd0597047476905959e4519af5fc18a01bd99d28b5d5801e97dfd6f0",
+          "size_bytes": 454866294,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0620_00/scene0620_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c0-605cdb8e5adbc\"",
+          "last_modified": "Wed, 20 Sep 2023 17:29:48 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00.txt",
+          "sha256": "1c0c07f7cc37af8a1c118443c4b5a0b611fc45fcd3794f3b6271d042c55a7ae6",
+          "size_bytes": 704,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0620_00/scene0620_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"6dc66-605cdb975b8ba\"",
+          "last_modified": "Wed, 20 Sep 2023 17:29:58 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "2797aa117ab623511fb405b4a149f21b5ae79cae8d86e9a041ed57473ee1e045",
+          "size_bytes": 449638,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0620_00/scene0620_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"2fe7fe-605cdb97b851a\"",
+          "last_modified": "Wed, 20 Sep 2023 17:29:58 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00_vh_clean_2.ply",
+          "sha256": "6fd60da59a5d84190a3d8593643fa4c490f1f1e93e533afd963bb59ccff293f4",
+          "size_bytes": 3139582,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0620_00/scene0620_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0620",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0620_00/scene0620_00_vh_clean_2.ply"
+      },
+      "scene": "scene0620_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"1418-605cb3e0cf5d7\"",
+          "last_modified": "Wed, 20 Sep 2023 14:32:17 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00.aggregation.json",
+          "sha256": "55a79b05459d0e6b5bdf43e1911ddf64c93cb9cdacabb9d90367140751cafdcf",
+          "size_bytes": 5144,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0202_00/scene0202_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"24ef5e3f-6414772686168\"",
+          "last_modified": "Thu, 16 Oct 2025 14:29:38 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00.sens",
+          "sha256": "5967e096191d0417e53161de4c23aa5c1c04dbf92de5f3fe3987d8e354d3c460",
+          "size_bytes": 619667007,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0202_00/scene0202_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2b8-605cb3e0d1ce7\"",
+          "last_modified": "Wed, 20 Sep 2023 14:32:17 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00.txt",
+          "sha256": "690cbe32e02bab493e31fea496d0c80221d7e077d303eedae7a5f6fc004f7c13",
+          "size_bytes": 696,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0202_00/scene0202_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"b31f6-605cb3eb65535\"",
+          "last_modified": "Wed, 20 Sep 2023 14:32:28 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "85ab70b783a58db0e1634ab0712bfff5c8312e38c5835c3c04863217079aeb03",
+          "size_bytes": 733686,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0202_00/scene0202_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"4ad6b2-605cb3ebd5a14\"",
+          "last_modified": "Wed, 20 Sep 2023 14:32:29 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00_vh_clean_2.ply",
+          "sha256": "8b0545302f38fd6d5d9e04bcf6f6811784d180d0b0f083bda498e0c0025062c2",
+          "size_bytes": 4904626,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0202_00/scene0202_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0202",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0202_00/scene0202_00_vh_clean_2.ply"
+      },
+      "scene": "scene0202_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"151f-605cc217977e2\"",
+          "last_modified": "Wed, 20 Sep 2023 15:35:53 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00.aggregation.json",
+          "sha256": "c88276a15d644967d989f71e014d57db48ed68ddd031fc4e1c2cc45cf279cc9e",
+          "size_bytes": 5407,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0368_00/scene0368_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"10bb14d3-64148af398ecc\"",
+          "last_modified": "Thu, 16 Oct 2025 15:58:13 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00.sens",
+          "sha256": "b33ea8913069b0f96ff93aca63adb3169707a1ca92a744c27383dedb2e60f520",
+          "size_bytes": 280696019,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0368_00/scene0368_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"215-605cc2179c602\"",
+          "last_modified": "Wed, 20 Sep 2023 15:35:53 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00.txt",
+          "sha256": "0a250320fe875d7c3dd9b35cfbcc50ec3090f6cf6f87029fa87b084f239bdfba",
+          "size_bytes": 533,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0368_00/scene0368_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"91442-605cc21f33bc0\"",
+          "last_modified": "Wed, 20 Sep 2023 15:36:01 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "a4f6c5bb3168df2ef3e7c7d95522bfdddd548b7ebc0e40a5acf599bb87cfc43b",
+          "size_bytes": 595010,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0368_00/scene0368_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"3cee97-605cc21f844d0\"",
+          "last_modified": "Wed, 20 Sep 2023 15:36:01 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00_vh_clean_2.ply",
+          "sha256": "b7d338f88ee3bd1172a409421d860303b2a90e0d4065cdc0ced71677b9957385",
+          "size_bytes": 3993239,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0368_00/scene0368_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0368",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0368_00/scene0368_00_vh_clean_2.ply"
+      },
+      "scene": "scene0368_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"25ff-605ca2e75b125\"",
+          "last_modified": "Wed, 20 Sep 2023 13:16:21 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00.aggregation.json",
+          "sha256": "ddb20ba0da3b76de0cdc18ce975f4e381a31294ab24a8941d616bbb3189e7d8c",
+          "size_bytes": 9727,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0037_00/scene0037_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"197ecff1-641463e1371a6\"",
+          "last_modified": "Thu, 16 Oct 2025 13:03:25 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00.sens",
+          "sha256": "a9870a034de59d63ed0d907742f6f36cd41c1e8204eda729c38dc809a7bdc2d9",
+          "size_bytes": 427741169,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0037_00/scene0037_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"2c9-605ca2e75b125\"",
+          "last_modified": "Wed, 20 Sep 2023 13:16:21 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00.txt",
+          "sha256": "52df74d72cd4120cb86bbcb9f8c33a913c6da768240bb4b1675b1bc0197bd592",
+          "size_bytes": 713,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0037_00/scene0037_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"14a96f-605ca2f6f0542\"",
+          "last_modified": "Wed, 20 Sep 2023 13:16:37 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "34e45adbfb74d2bcb492cec1b88e7600f3829f4d4448b5c47801c26544e4ee07",
+          "size_bytes": 1354095,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0037_00/scene0037_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"81a6c0-605ca2f7c4bb2\"",
+          "last_modified": "Wed, 20 Sep 2023 13:16:38 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00_vh_clean_2.ply",
+          "sha256": "ae8b13d80703b45d5bd8ef25494a719e8a90d1d73ed8185696b0d50b1a298b03",
+          "size_bytes": 8496832,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0037_00/scene0037_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0037",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0037_00/scene0037_00_vh_clean_2.ply"
+      },
+      "scene": "scene0037_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    },
+    {
+      "directory": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00",
+      "download_receipts": {
+        ".aggregation.json": {
+          "etag": "\"32aa-605cddec877d8\"",
+          "last_modified": "Wed, 20 Sep 2023 17:40:24 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00.aggregation.json",
+          "sha256": "c2340ac8169ecaab40246d7f9cbaeb5323149a5e8e952ef7d6827962ef58a50b",
+          "size_bytes": 12970,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0635_00/scene0635_00.aggregation.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".sens": {
+          "etag": "\"2fffd658-6414b1c2f96e1\"",
+          "last_modified": "Thu, 16 Oct 2025 18:51:51 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00.sens",
+          "sha256": "0785b28ce2a2580323036cc9e2eb2288891a93126c716adac5b9ca29c6b643b0",
+          "size_bytes": 805295704,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v1/scans/scene0635_00/scene0635_00.sens",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        ".txt": {
+          "etag": "\"218-605cddec89ee8\"",
+          "last_modified": "Wed, 20 Sep 2023 17:40:24 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00.txt",
+          "sha256": "3f08accd239a214c56de547b473443f8b7fd14c40987996de76a3eaabbe79ac6",
+          "size_bytes": 536,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0635_00/scene0635_00.txt",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.0.010000.segs.json": {
+          "etag": "\"1238a9-605cddfe72e44\"",
+          "last_modified": "Wed, 20 Sep 2023 17:40:43 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00_vh_clean_2.0.010000.segs.json",
+          "sha256": "980a08c7045be9d44afdfeca722d071343affed3373683ad5ea38572f274bd61",
+          "size_bytes": 1194153,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0635_00/scene0635_00_vh_clean_2.0.010000.segs.json",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        },
+        "_vh_clean_2.ply": {
+          "etag": "\"7314d2-605cddff1b594\"",
+          "last_modified": "Wed, 20 Sep 2023 17:40:43 GMT",
+          "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00_vh_clean_2.ply",
+          "sha256": "75e0ab5747c91f85a4ff35ed875239667ba6dc71e21891882ee12fa8d4e95326",
+          "size_bytes": 7541970,
+          "url": "https://kaldir.vc.cit.tum.de/scannet/v2/scans/scene0635_00/scene0635_00_vh_clean_2.ply",
+          "validation": "HTTPS_REMOTE_LENGTH_AND_LOCAL_SHA256; no published server checksum"
+        }
+      },
+      "family": "scene0635",
+      "files": {
+        ".aggregation.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00.aggregation.json",
+        ".sens": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00.sens",
+        ".txt": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00.txt",
+        "_vh_clean_2.0.010000.segs.json": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00_vh_clean_2.0.010000.segs.json",
+        "_vh_clean_2.ply": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/data/scannet/scans/scene0635_00/scene0635_00_vh_clean_2.ply"
+      },
+      "scene": "scene0635_00",
+      "source": "AUTHORIZED_FIXED_QUEUE_DOWNLOAD"
+    }
+  ],
+  "status": "LOCKED_FILES_BEFORE_ANNOTATION_GENERATION",
+  "supervision_scope": "GT_DERIVED_PROPOSAL_RECOGNITION"
+}

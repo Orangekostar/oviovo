@@ -1,0 +1,66 @@
+{
+  "affected_rechecks": [
+    {
+      "checks": "label independence, correspondence invariants, zero valid-vector rejection",
+      "command": [
+        "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+        "-m",
+        "pytest",
+        "tests/static_ovmap/test_branch_utility_wave2_v1.py",
+        "-q",
+        "-k",
+        "test_4"
+      ],
+      "exit_code": 0,
+      "group": 4,
+      "observed_after_tool_wait": true
+    }
+  ],
+  "command": [
+    "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+    "-m",
+    "pytest",
+    "tests/static_ovmap/test_branch_utility_wave2_v1.py",
+    "-q"
+  ],
+  "environment": {
+    "PYTHONPATH": "src"
+  },
+  "exit_code": 0,
+  "groups": 6,
+  "identity": "59ed16d9afd9c76aec216718157b6f123e993643ced18fb4aafea6e7223a22d8",
+  "initial_red_proof": "/home/ww/crove/fg2-branch-utility-wave2-v1/attempt_001/test_red.log",
+  "no_full_repository_suite": true,
+  "observed_after_wait": true,
+  "prepublication_invocation_error": {
+    "cause": "ModuleNotFoundError: static_ovmap; corrected invocation passed without code changes",
+    "command": [
+      "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+      "-m",
+      "pytest",
+      "tests/static_ovmap/test_branch_utility_wave2_v1.py",
+      "-q"
+    ],
+    "exit_code": 1,
+    "missing_environment": "PYTHONPATH=src"
+  },
+  "prepublication_recheck": {
+    "command": [
+      "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+      "-m",
+      "pytest",
+      "tests/static_ovmap/test_branch_utility_wave2_v1.py",
+      "-q"
+    ],
+    "environment": {
+      "PYTHONPATH": "src"
+    },
+    "exit_code": 0,
+    "observed_after_tool_wait": true,
+    "result": "6 passed in 1.66s",
+    "test_groups": 6
+  },
+  "real_FC_parity_is_runtime_baseline_not_synthetic_test": true,
+  "source_digest": "9f69677069c81bab3338f986033f44d81d545c69264295f6d1ef8efabf9a380f",
+  "test_file_sha256": "d67453011b6f558be312bc938b4e0e0d0d707c414b45d1abeeb42f6808811bb5"
+}

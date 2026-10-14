@@ -1,0 +1,244 @@
+{
+  "causal_world_claim": false,
+  "examples": {
+    "COMPLEMENTARY": {
+      "alias_actual_support": false,
+      "base_direction_change": 0.10723739117383957,
+      "cells": {
+        "00": {
+          "CE": 4.891486167907715,
+          "NLL": 5.123495101928711,
+          "correct": false,
+          "margin": -0.06192319095134735,
+          "prediction": 276
+        },
+        "01": {
+          "CE": 4.890970230102539,
+          "NLL": 5.122938632965088,
+          "correct": false,
+          "margin": -0.06185716390609741,
+          "prediction": 276
+        },
+        "10": {
+          "CE": 4.8984150886535645,
+          "NLL": 5.129828929901123,
+          "correct": false,
+          "margin": -0.05900375545024872,
+          "prediction": 276
+        },
+        "11": {
+          "CE": 4.897902488708496,
+          "NLL": 5.129277229309082,
+          "correct": false,
+          "margin": -0.05893908441066742,
+          "prediction": 276
+        }
+      },
+      "condition": "append",
+      "correctness_effects": {
+        "base": 0.0,
+        "interaction": 0.0,
+        "local": 0.0,
+        "total": 0.0
+      },
+      "effects": {
+        "base": 0.0029187574982643127,
+        "interaction": -1.3560056686401367e-06,
+        "local": 6.53490424156189e-05,
+        "total": 0.0029841065406799316
+      },
+      "family": "scene0047",
+      "frame_ids_new": [
+        542,
+        1350,
+        563,
+        523,
+        510
+      ],
+      "frame_ids_old": [
+        542,
+        1350,
+        563,
+        523
+      ],
+      "key": "scene0047_00:10",
+      "local_weighted_direction_change": 0.0028989880811423063,
+      "new_actual": 5,
+      "new_local": {
+        "group_count": 45,
+        "null": 0.20320971310138702,
+        "route_mass": 0.7967903017997742,
+        "weighted_sum_norm": 0.6700789332389832
+      },
+      "new_prefix": 8,
+      "old_actual": 4,
+      "old_local": {
+        "group_count": 45,
+        "null": 0.20308440923690796,
+        "route_mass": 0.7969156503677368,
+        "weighted_sum_norm": 0.6699690222740173
+      },
+      "old_prefix": 4,
+      "role": "train",
+      "seed": 17
+    },
+    "GLOBAL_HARMFUL_ONLY": {
+      "alias_actual_support": false,
+      "base_direction_change": 0.20633038878440857,
+      "cells": {
+        "00": {
+          "CE": 3.3071556091308594,
+          "NLL": 3.5494394302368164,
+          "correct": true,
+          "margin": 0.01872125267982483,
+          "prediction": 5
+        },
+        "01": {
+          "CE": 3.208239793777466,
+          "NLL": 3.451857328414917,
+          "correct": true,
+          "margin": 0.019334107637405396,
+          "prediction": 5
+        },
+        "10": {
+          "CE": 3.387220859527588,
+          "NLL": 3.6278557777404785,
+          "correct": true,
+          "margin": 0.016662776470184326,
+          "prediction": 5
+        },
+        "11": {
+          "CE": 3.3004117012023926,
+          "NLL": 3.5421528816223145,
+          "correct": true,
+          "margin": 0.017219454050064087,
+          "prediction": 5
+        }
+      },
+      "condition": "append",
+      "correctness_effects": {
+        "base": 0.0,
+        "interaction": 0.0,
+        "local": 0.0,
+        "total": 0.0
+      },
+      "effects": {
+        "base": -0.0020865648984909058,
+        "interaction": -5.6177377700805664e-05,
+        "local": 0.0005847662687301636,
+        "total": -0.0015017986297607422
+      },
+      "family": "scene0047",
+      "frame_ids_new": [
+        762,
+        788,
+        1296,
+        849
+      ],
+      "frame_ids_old": [
+        762,
+        788
+      ],
+      "key": "scene0047_00:22",
+      "local_weighted_direction_change": 0.24710263311862946,
+      "new_actual": 4,
+      "new_local": {
+        "group_count": 61,
+        "null": 0.0991392731666565,
+        "route_mass": 0.9008607864379883,
+        "weighted_sum_norm": 0.7780551910400391
+      },
+      "new_prefix": 4,
+      "old_actual": 2,
+      "old_local": {
+        "group_count": 60,
+        "null": 0.17847739160060883,
+        "route_mass": 0.8215226531028748,
+        "weighted_sum_norm": 0.7051251530647278
+      },
+      "old_prefix": 2,
+      "role": "train",
+      "seed": 17
+    },
+    "LOCAL_HARMFUL_ONLY": {
+      "alias_actual_support": false,
+      "base_direction_change": 0.27765312790870667,
+      "cells": {
+        "00": {
+          "CE": 4.885797500610352,
+          "NLL": 5.1219658851623535,
+          "correct": false,
+          "margin": -0.08183449506759644,
+          "prediction": 27
+        },
+        "01": {
+          "CE": 4.90425968170166,
+          "NLL": 5.142920017242432,
+          "correct": false,
+          "margin": -0.08628597855567932,
+          "prediction": 27
+        },
+        "10": {
+          "CE": 5.013237953186035,
+          "NLL": 5.246833801269531,
+          "correct": false,
+          "margin": -0.07743361592292786,
+          "prediction": 27
+        },
+        "11": {
+          "CE": 5.021330833435059,
+          "NLL": 5.257512092590332,
+          "correct": false,
+          "margin": -0.0822073370218277,
+          "prediction": 27
+        }
+      },
+      "condition": "truncate",
+      "correctness_effects": {
+        "base": 0.0,
+        "interaction": 0.0,
+        "local": 0.0,
+        "total": 0.0
+      },
+      "effects": {
+        "base": 0.004239760339260101,
+        "interaction": -0.00032223761081695557,
+        "local": -0.0046126022934913635,
+        "total": -0.0003728419542312622
+      },
+      "family": "scene0047",
+      "frame_ids_new": [
+        542,
+        1350,
+        563,
+        523
+      ],
+      "frame_ids_old": [
+        542,
+        1350
+      ],
+      "key": "scene0047_00:10",
+      "local_weighted_direction_change": 0.22793802618980408,
+      "new_actual": 4,
+      "new_local": {
+        "group_count": 43,
+        "null": 0.1631687730550766,
+        "route_mass": 0.8368312120437622,
+        "weighted_sum_norm": 0.7068802118301392
+      },
+      "new_prefix": 4,
+      "old_actual": 2,
+      "old_local": {
+        "group_count": 42,
+        "null": 0.2705077528953552,
+        "route_mass": 0.7294922471046448,
+        "weighted_sum_norm": 0.6467654705047607
+      },
+      "old_prefix": 2,
+      "role": "train",
+      "seed": 17
+    }
+  },
+  "fixed_selection": "EFFECT_SIGN_EARLIEST_KEY",
+  "identity": "8f1931cdec00244cd1245cdf7c8cb1bfbabc52c3939e7e712993c0d7e4dc1bef"
+}

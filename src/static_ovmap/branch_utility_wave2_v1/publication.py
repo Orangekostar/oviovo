@@ -1,0 +1,125 @@
+"""Two normal commits; C2 proves C1, final C2 proof stays outside Git."""
+from pathlib import Path
+import subprocess
+from .common import REPO, write, read, digest_file, source_digest, atomic_text
+
+def release_paths():
+    paths=[]
+    for folder in ('src/static_ovmap/branch_utility_wave2_v1','docs/paper/static_ovmap/branch_utility_wave2_v1','artifacts/static_ovmap/branch_utility_wave2_v1'):
+        paths += [str(p.relative_to(REPO)) for p in (REPO/folder).rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.name!='PUBLICATION_RECEIPT.json']
+    paths += ['scripts/evaluation/run_fg2_branch_utility_wave2_v1.py','configs/static_ovmap/branch_utility_wave2_v1.json','tests/static_ovmap/test_branch_utility_wave2_v1.py','docs/superpowers/plans/2026-10-14-fg2-branch-utility-wave2-v1.md']
+    return paths
+
+def unchanged_release(root):
+    final=Path(root)/'publication/final.json'
+    if not final.exists(): return None
+    old=read(final)
+    if old.get('status')!='PUSH_VERIFIED': return None
+    if git(REPO,'rev-parse','HEAD')!=old['C2'] or git(REPO,'status','--porcelain','--',*release_paths(),old['C1_receipt']): return None
+    if remote_head(REPO,old['branch'])!=old['C2']: raise ValueError('Published remote changed; terminal release is no longer identical')
+    summary=Path(root)/'run_summary.json'
+    if not summary.exists() or read(summary)['execution_status']!='COMPLETE':return None
+    return old
+
+def git(repo,*args):
+    result=subprocess.run(['git',*args],cwd=repo,text=True,capture_output=True)
+    if result.returncode: raise RuntimeError('git '+args[0]+' failed: '+(result.stderr+result.stdout)[-3000:])
+    return result.stdout.strip()
+
+def remote_head(repo,branch):
+    line=git(repo,'ls-remote','origin','refs/heads/'+branch)
+    return line.split()[0] if line else None
+
+def push_verified(repo,branch,commit):
+    failure=None
+    for attempt in range(2):
+        try:
+            git(repo,'push','-u','origin','HEAD:refs/heads/'+branch)
+            remote=remote_head(repo,branch)
+            if remote!=commit: raise RuntimeError('Full local/remote SHA differs')
+            return dict(commit=commit,remote_SHA=remote,push_attempts=attempt+1,status='PUSH_VERIFIED')
+        except RuntimeError as exc:
+            failure=exc
+            if any(s in str(exc) for s in ('non-fast-forward','Permission denied','Authentication failed','Please tell me who you are')): break
+    raise failure
+
+def check_files(repo,files):
+    total=0; checked=[]
+    for name in sorted(set(files)):
+        p=Path(repo)/name
+        if p.is_symlink() or not p.is_file(): raise ValueError('Publish only task-owned regular files: '+name)
+        size=p.stat().st_size
+        if size>40*2**20: raise ValueError('Task40MiB file budget exceeded: '+name)
+        total+=size; checked.append(dict(path=name,bytes=size,sha256=digest_file(p)))
+    if total>150*2**20: raise ValueError('Task150MiB total budget exceeded')
+    return dict(files=checked,total_bytes=total)
+
+def publish_local_protocol(repo,out,files,branch,*,receipt,handoff,release_identity=None):
+    repo=Path(repo); out=Path(out); out.mkdir(parents=True,exist_ok=True); final=out/'publication/final.json'
+    transaction=out/'publication/transaction.json'; previous_release=None
+    if final.exists():
+        old=read(final)
+        if old.get('status')!='PUSH_VERIFIED' or git(repo,'rev-parse','HEAD')!=old['C2'] or remote_head(repo,old['branch'])!=old['C2']:
+            raise ValueError('Existing publication head/remote differs; preserve its immutable release')
+        if not git(repo,'status','--porcelain','--',*files,receipt): return old
+        if git(repo,'status','--porcelain','--',receipt): raise ValueError('Published C1 receipt was altered; preserve the actual proof')
+        # Genuine code/results changes get a new normal C1/C2 release. Preserve
+        # the earlier proof; an unchanged resume never reaches this branch.
+        previous_release=old['C2']; history=out/'publication/history'; history.mkdir(parents=True,exist_ok=True)
+        write(out/'publication/revision.json',dict(previous_release=previous_release,prior_branch=old['branch']))
+        final.replace(history/(previous_release+'_final.json'))
+        if transaction.exists(): transaction.replace(history/(previous_release+'_transaction.json'))
+    elif (out/'publication/revision.json').exists(): previous_release=read(out/'publication/revision.json')['previous_release']
+    if transaction.exists():
+        state=read(transaction); state.pop('identity',None); branch=state['branch']; checked=state['file_inventory']
+        if state.get('release_identity')!=release_identity: raise ValueError('Publication source/spec/artifact identity changed')
+        if git(repo,'branch','--show-current')!=branch or git(repo,'rev-parse','HEAD')!=state.get('C2',state['C1']): raise ValueError('Pending publication branch/head changed')
+        for item in checked['files']:
+            if item['path']==handoff: continue
+            if digest_file(repo/item['path'])!=item['sha256']: raise ValueError('Pending C1 artifact changed: '+item['path'])
+    else:
+        checked=check_files(repo,files); remote=remote_head(repo,branch)
+        if remote and remote!=git(repo,'rev-parse','HEAD'):
+            raise ValueError('Remote branch differs; normal fixed-branch publication cannot overwrite it')
+        current=git(repo,'branch','--show-current')
+        if current!=branch: git(repo,'checkout','-b',branch)
+        git(repo,'add','--',*files); git(repo,'diff','--cached','--check')
+        staged=[p for p in git(repo,'diff','--cached','--name-only','-z').split('\0') if p]
+        if not set(staged)<=set(files): raise ValueError('Unrelated staged files must not enter task commit')
+        if staged: git(repo,'commit','-m','Implement frozen FG2 branch evidence admission and report measured scope')
+        state=dict(stage='C1_LOCAL',branch=branch,C1=git(repo,'rev-parse','HEAD'),file_inventory=checked,release_identity=release_identity,previous_release=previous_release); write(transaction,state)
+    C1=state['C1']
+    if state['stage']=='C1_LOCAL':
+        first=push_verified(repo,branch,C1); state.update(stage='C1_PUSH_VERIFIED',first_push=first); write(transaction,state)
+    if state['stage']=='C1_PUSH_VERIFIED':
+        record=dict(state['first_push'],branch=branch,scope='PRECEDING_CODE_REPORTS_RESULTS_COMMIT_C1_ONLY',file_inventory=checked,frozen_FC_and_FG2=True,new_controller_updates=read(out/'training.json').get('new_optimizer_updates',0) if (out/'training.json').exists() else 0,release_identity=release_identity)
+        write(repo/receipt,record); handoff_path=repo/handoff
+        if f'Verified result commit C1: `{C1}`' not in handoff_path.read_text(): atomic_text(handoff_path,handoff_path.read_text()+f'\nVerified result commit C1: `{C1}`. [Immutable results](https://github.com/Orangekostar/oviovo/blob/{C1}/docs/paper/static_ovmap/branch_utility_wave2_v1/RESULTS.md).\n\nPublication of C1 was verified; the committed receipt proves C1 only. The final C2/local/remote equality receipt is external at OUT/publication/final.json.\n')
+        git(repo,'add','--',receipt,handoff)
+        if {p for p in git(repo,'diff','--cached','--name-only','-z').split('\0') if p}!={receipt,handoff}: raise ValueError('C2 may contain only C1 receipt and handoff')
+        git(repo,'commit','-m','Record verified FG2 branch utility C1 publication and handoff'); state.update(stage='C2_LOCAL',C2=git(repo,'rev-parse','HEAD')); write(transaction,state)
+    C2=state['C2']; second=push_verified(repo,branch,C2)
+    result=dict(status='PUSH_VERIFIED',branch=branch,C1=C1,C2=C2,local_HEAD=C2,remote_HEAD=second['remote_SHA'],C1_receipt=receipt,commit2_scope='COMMIT1_PUSH_RECEIPT_AND_HANDOFF_ONLY',release_identity=release_identity,previous_release=state.get('previous_release'))
+    write(final,result)
+    if (out/'publication/revision.json').exists(): (out/'publication/revision.json').unlink()
+    return result
+
+def run(root):
+    root=Path(root); paths=release_paths()
+    try:
+        identities=dict(scientific_source_digest=source_digest(),spec_sha256=digest_file(REPO/'configs/static_ovmap/branch_utility_wave2_v1.json'),artifact_index_sha256=digest_file(REPO/'artifacts/static_ovmap/branch_utility_wave2_v1/artifact_index.json'))
+        result=publish_local_protocol(REPO,root,paths,git(REPO,'branch','--show-current'),receipt='artifacts/static_ovmap/branch_utility_wave2_v1/PUBLICATION_RECEIPT.json',handoff='docs/paper/static_ovmap/branch_utility_wave2_v1/HANDOFF.md',release_identity=identities)
+        return result
+    except (RuntimeError,OSError,ValueError) as exc:
+        write(root/'publication/error.json',dict(status='PUBLICATION_BLOCKED',error=str(exc),local_HEAD=git(REPO,'rev-parse','HEAD'),local_commits_preserved=True))
+        raise
+
+
+def check_sizes(files,file_limit=40*2**20,total_limit=150*2**20):
+    total=0
+    for path in files:
+        size=Path(path).stat().st_size
+        if size>file_limit:raise ValueError('New blob exceeds publication limit: '+str(path))
+        total+=size
+    if total>total_limit:raise ValueError('New publication total exceeds150MiB budget')
+    return total

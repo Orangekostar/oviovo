@@ -1,0 +1,1213 @@
+{
+  "FP32_lossless": true,
+  "classes": [
+    {
+      "class_id": 1,
+      "frozen_name": "wall",
+      "official_name": "wall",
+      "text_row": 0
+    },
+    {
+      "class_id": 2,
+      "frozen_name": "chair",
+      "official_name": "chair",
+      "text_row": 1
+    },
+    {
+      "class_id": 3,
+      "frozen_name": "floor",
+      "official_name": "floor",
+      "text_row": 2
+    },
+    {
+      "class_id": 4,
+      "frozen_name": "table",
+      "official_name": "table",
+      "text_row": 3
+    },
+    {
+      "class_id": 5,
+      "frozen_name": "door",
+      "official_name": "door",
+      "text_row": 4
+    },
+    {
+      "class_id": 6,
+      "frozen_name": "couch",
+      "official_name": "couch",
+      "text_row": 5
+    },
+    {
+      "class_id": 7,
+      "frozen_name": "cabinet",
+      "official_name": "cabinet",
+      "text_row": 6
+    },
+    {
+      "class_id": 8,
+      "frozen_name": "shelf",
+      "official_name": "shelf",
+      "text_row": 7
+    },
+    {
+      "class_id": 9,
+      "frozen_name": "desk",
+      "official_name": "desk",
+      "text_row": 8
+    },
+    {
+      "class_id": 10,
+      "frozen_name": "office chair",
+      "official_name": "office chair",
+      "text_row": 9
+    },
+    {
+      "class_id": 11,
+      "frozen_name": "bed",
+      "official_name": "bed",
+      "text_row": 10
+    },
+    {
+      "class_id": 13,
+      "frozen_name": "pillow",
+      "official_name": "pillow",
+      "text_row": 11
+    },
+    {
+      "class_id": 14,
+      "frozen_name": "sink",
+      "official_name": "sink",
+      "text_row": 12
+    },
+    {
+      "class_id": 15,
+      "frozen_name": "picture",
+      "official_name": "picture",
+      "text_row": 13
+    },
+    {
+      "class_id": 16,
+      "frozen_name": "window",
+      "official_name": "window",
+      "text_row": 14
+    },
+    {
+      "class_id": 17,
+      "frozen_name": "toilet",
+      "official_name": "toilet",
+      "text_row": 15
+    },
+    {
+      "class_id": 18,
+      "frozen_name": "bookshelf",
+      "official_name": "bookshelf",
+      "text_row": 16
+    },
+    {
+      "class_id": 19,
+      "frozen_name": "monitor",
+      "official_name": "monitor",
+      "text_row": 17
+    },
+    {
+      "class_id": 21,
+      "frozen_name": "curtain",
+      "official_name": "curtain",
+      "text_row": 18
+    },
+    {
+      "class_id": 22,
+      "frozen_name": "book",
+      "official_name": "book",
+      "text_row": 19
+    },
+    {
+      "class_id": 23,
+      "frozen_name": "armchair",
+      "official_name": "armchair",
+      "text_row": 20
+    },
+    {
+      "class_id": 24,
+      "frozen_name": "coffee table",
+      "official_name": "coffee table",
+      "text_row": 21
+    },
+    {
+      "class_id": 26,
+      "frozen_name": "box",
+      "official_name": "box",
+      "text_row": 22
+    },
+    {
+      "class_id": 27,
+      "frozen_name": "refrigerator",
+      "official_name": "refrigerator",
+      "text_row": 23
+    },
+    {
+      "class_id": 28,
+      "frozen_name": "lamp",
+      "official_name": "lamp",
+      "text_row": 24
+    },
+    {
+      "class_id": 29,
+      "frozen_name": "kitchen cabinet",
+      "official_name": "kitchen cabinet",
+      "text_row": 25
+    },
+    {
+      "class_id": 31,
+      "frozen_name": "towel",
+      "official_name": "towel",
+      "text_row": 26
+    },
+    {
+      "class_id": 32,
+      "frozen_name": "clothes",
+      "official_name": "clothes",
+      "text_row": 27
+    },
+    {
+      "class_id": 33,
+      "frozen_name": "tv",
+      "official_name": "tv",
+      "text_row": 28
+    },
+    {
+      "class_id": 34,
+      "frozen_name": "nightstand",
+      "official_name": "nightstand",
+      "text_row": 29
+    },
+    {
+      "class_id": 35,
+      "frozen_name": "counter",
+      "official_name": "counter",
+      "text_row": 30
+    },
+    {
+      "class_id": 36,
+      "frozen_name": "dresser",
+      "official_name": "dresser",
+      "text_row": 31
+    },
+    {
+      "class_id": 38,
+      "frozen_name": "stool",
+      "official_name": "stool",
+      "text_row": 32
+    },
+    {
+      "class_id": 39,
+      "frozen_name": "cushion",
+      "official_name": "cushion",
+      "text_row": 33
+    },
+    {
+      "class_id": 40,
+      "frozen_name": "plant",
+      "official_name": "plant",
+      "text_row": 34
+    },
+    {
+      "class_id": 41,
+      "frozen_name": "ceiling",
+      "official_name": "ceiling",
+      "text_row": 35
+    },
+    {
+      "class_id": 42,
+      "frozen_name": "bathtub",
+      "official_name": "bathtub",
+      "text_row": 36
+    },
+    {
+      "class_id": 44,
+      "frozen_name": "end table",
+      "official_name": "end table",
+      "text_row": 37
+    },
+    {
+      "class_id": 45,
+      "frozen_name": "dining table",
+      "official_name": "dining table",
+      "text_row": 38
+    },
+    {
+      "class_id": 46,
+      "frozen_name": "keyboard",
+      "official_name": "keyboard",
+      "text_row": 39
+    },
+    {
+      "class_id": 47,
+      "frozen_name": "bag",
+      "official_name": "bag",
+      "text_row": 40
+    },
+    {
+      "class_id": 48,
+      "frozen_name": "backpack",
+      "official_name": "backpack",
+      "text_row": 41
+    },
+    {
+      "class_id": 49,
+      "frozen_name": "toilet paper",
+      "official_name": "toilet paper",
+      "text_row": 42
+    },
+    {
+      "class_id": 50,
+      "frozen_name": "printer",
+      "official_name": "printer",
+      "text_row": 43
+    },
+    {
+      "class_id": 51,
+      "frozen_name": "tv stand",
+      "official_name": "tv stand",
+      "text_row": 44
+    },
+    {
+      "class_id": 52,
+      "frozen_name": "whiteboard",
+      "official_name": "whiteboard",
+      "text_row": 45
+    },
+    {
+      "class_id": 54,
+      "frozen_name": "blanket",
+      "official_name": "blanket",
+      "text_row": 46
+    },
+    {
+      "class_id": 55,
+      "frozen_name": "shower curtain",
+      "official_name": "shower curtain",
+      "text_row": 47
+    },
+    {
+      "class_id": 56,
+      "frozen_name": "trash can",
+      "official_name": "trash can",
+      "text_row": 48
+    },
+    {
+      "class_id": 57,
+      "frozen_name": "closet",
+      "official_name": "closet",
+      "text_row": 49
+    },
+    {
+      "class_id": 58,
+      "frozen_name": "stairs",
+      "official_name": "stairs",
+      "text_row": 50
+    },
+    {
+      "class_id": 59,
+      "frozen_name": "microwave",
+      "official_name": "microwave",
+      "text_row": 51
+    },
+    {
+      "class_id": 62,
+      "frozen_name": "stove",
+      "official_name": "stove",
+      "text_row": 52
+    },
+    {
+      "class_id": 63,
+      "frozen_name": "shoe",
+      "official_name": "shoe",
+      "text_row": 53
+    },
+    {
+      "class_id": 64,
+      "frozen_name": "computer tower",
+      "official_name": "computer tower",
+      "text_row": 54
+    },
+    {
+      "class_id": 65,
+      "frozen_name": "bottle",
+      "official_name": "bottle",
+      "text_row": 55
+    },
+    {
+      "class_id": 66,
+      "frozen_name": "bin",
+      "official_name": "bin",
+      "text_row": 56
+    },
+    {
+      "class_id": 67,
+      "frozen_name": "ottoman",
+      "official_name": "ottoman",
+      "text_row": 57
+    },
+    {
+      "class_id": 68,
+      "frozen_name": "bench",
+      "official_name": "bench",
+      "text_row": 58
+    },
+    {
+      "class_id": 69,
+      "frozen_name": "board",
+      "official_name": "board",
+      "text_row": 59
+    },
+    {
+      "class_id": 70,
+      "frozen_name": "washing machine",
+      "official_name": "washing machine",
+      "text_row": 60
+    },
+    {
+      "class_id": 71,
+      "frozen_name": "mirror",
+      "official_name": "mirror",
+      "text_row": 61
+    },
+    {
+      "class_id": 72,
+      "frozen_name": "copier",
+      "official_name": "copier",
+      "text_row": 62
+    },
+    {
+      "class_id": 73,
+      "frozen_name": "basket",
+      "official_name": "basket",
+      "text_row": 63
+    },
+    {
+      "class_id": 74,
+      "frozen_name": "sofa chair",
+      "official_name": "sofa chair",
+      "text_row": 64
+    },
+    {
+      "class_id": 75,
+      "frozen_name": "file cabinet",
+      "official_name": "file cabinet",
+      "text_row": 65
+    },
+    {
+      "class_id": 76,
+      "frozen_name": "fan",
+      "official_name": "fan",
+      "text_row": 66
+    },
+    {
+      "class_id": 77,
+      "frozen_name": "laptop",
+      "official_name": "laptop",
+      "text_row": 67
+    },
+    {
+      "class_id": 78,
+      "frozen_name": "shower",
+      "official_name": "shower",
+      "text_row": 68
+    },
+    {
+      "class_id": 79,
+      "frozen_name": "paper",
+      "official_name": "paper",
+      "text_row": 69
+    },
+    {
+      "class_id": 80,
+      "frozen_name": "person",
+      "official_name": "person",
+      "text_row": 70
+    },
+    {
+      "class_id": 82,
+      "frozen_name": "paper towel dispenser",
+      "official_name": "paper towel dispenser",
+      "text_row": 71
+    },
+    {
+      "class_id": 84,
+      "frozen_name": "oven",
+      "official_name": "oven",
+      "text_row": 72
+    },
+    {
+      "class_id": 86,
+      "frozen_name": "blinds",
+      "official_name": "blinds",
+      "text_row": 73
+    },
+    {
+      "class_id": 87,
+      "frozen_name": "rack",
+      "official_name": "rack",
+      "text_row": 74
+    },
+    {
+      "class_id": 88,
+      "frozen_name": "plate",
+      "official_name": "plate",
+      "text_row": 75
+    },
+    {
+      "class_id": 89,
+      "frozen_name": "blackboard",
+      "official_name": "blackboard",
+      "text_row": 76
+    },
+    {
+      "class_id": 90,
+      "frozen_name": "piano",
+      "official_name": "piano",
+      "text_row": 77
+    },
+    {
+      "class_id": 93,
+      "frozen_name": "suitcase",
+      "official_name": "suitcase",
+      "text_row": 78
+    },
+    {
+      "class_id": 95,
+      "frozen_name": "rail",
+      "official_name": "rail",
+      "text_row": 79
+    },
+    {
+      "class_id": 96,
+      "frozen_name": "radiator",
+      "official_name": "radiator",
+      "text_row": 80
+    },
+    {
+      "class_id": 97,
+      "frozen_name": "recycling bin",
+      "official_name": "recycling bin",
+      "text_row": 81
+    },
+    {
+      "class_id": 98,
+      "frozen_name": "container",
+      "official_name": "container",
+      "text_row": 82
+    },
+    {
+      "class_id": 99,
+      "frozen_name": "wardrobe",
+      "official_name": "wardrobe",
+      "text_row": 83
+    },
+    {
+      "class_id": 100,
+      "frozen_name": "soap dispenser",
+      "official_name": "soap dispenser",
+      "text_row": 84
+    },
+    {
+      "class_id": 101,
+      "frozen_name": "telephone",
+      "official_name": "telephone",
+      "text_row": 85
+    },
+    {
+      "class_id": 102,
+      "frozen_name": "bucket",
+      "official_name": "bucket",
+      "text_row": 86
+    },
+    {
+      "class_id": 103,
+      "frozen_name": "clock",
+      "official_name": "clock",
+      "text_row": 87
+    },
+    {
+      "class_id": 104,
+      "frozen_name": "stand",
+      "official_name": "stand",
+      "text_row": 88
+    },
+    {
+      "class_id": 105,
+      "frozen_name": "light",
+      "official_name": "light",
+      "text_row": 89
+    },
+    {
+      "class_id": 106,
+      "frozen_name": "laundry basket",
+      "official_name": "laundry basket",
+      "text_row": 90
+    },
+    {
+      "class_id": 107,
+      "frozen_name": "pipe",
+      "official_name": "pipe",
+      "text_row": 91
+    },
+    {
+      "class_id": 110,
+      "frozen_name": "clothes dryer",
+      "official_name": "clothes dryer",
+      "text_row": 92
+    },
+    {
+      "class_id": 112,
+      "frozen_name": "guitar",
+      "official_name": "guitar",
+      "text_row": 93
+    },
+    {
+      "class_id": 115,
+      "frozen_name": "toilet paper holder",
+      "official_name": "toilet paper holder",
+      "text_row": 94
+    },
+    {
+      "class_id": 116,
+      "frozen_name": "seat",
+      "official_name": "seat",
+      "text_row": 95
+    },
+    {
+      "class_id": 118,
+      "frozen_name": "speaker",
+      "official_name": "speaker",
+      "text_row": 96
+    },
+    {
+      "class_id": 120,
+      "frozen_name": "column",
+      "official_name": "column",
+      "text_row": 97
+    },
+    {
+      "class_id": 121,
+      "frozen_name": "bicycle",
+      "official_name": "bicycle",
+      "text_row": 98
+    },
+    {
+      "class_id": 122,
+      "frozen_name": "ladder",
+      "official_name": "ladder",
+      "text_row": 99
+    },
+    {
+      "class_id": 125,
+      "frozen_name": "bathroom stall",
+      "official_name": "bathroom stall",
+      "text_row": 100
+    },
+    {
+      "class_id": 128,
+      "frozen_name": "shower wall",
+      "official_name": "shower wall",
+      "text_row": 101
+    },
+    {
+      "class_id": 130,
+      "frozen_name": "cup",
+      "official_name": "cup",
+      "text_row": 102
+    },
+    {
+      "class_id": 131,
+      "frozen_name": "jacket",
+      "official_name": "jacket",
+      "text_row": 103
+    },
+    {
+      "class_id": 132,
+      "frozen_name": "storage bin",
+      "official_name": "storage bin",
+      "text_row": 104
+    },
+    {
+      "class_id": 134,
+      "frozen_name": "coffee maker",
+      "official_name": "coffee maker",
+      "text_row": 105
+    },
+    {
+      "class_id": 136,
+      "frozen_name": "dishwasher",
+      "official_name": "dishwasher",
+      "text_row": 106
+    },
+    {
+      "class_id": 138,
+      "frozen_name": "paper towel roll",
+      "official_name": "paper towel roll",
+      "text_row": 107
+    },
+    {
+      "class_id": 139,
+      "frozen_name": "machine",
+      "official_name": "machine",
+      "text_row": 108
+    },
+    {
+      "class_id": 140,
+      "frozen_name": "mat",
+      "official_name": "mat",
+      "text_row": 109
+    },
+    {
+      "class_id": 141,
+      "frozen_name": "windowsill",
+      "official_name": "windowsill",
+      "text_row": 110
+    },
+    {
+      "class_id": 145,
+      "frozen_name": "bar",
+      "official_name": "bar",
+      "text_row": 111
+    },
+    {
+      "class_id": 148,
+      "frozen_name": "toaster",
+      "official_name": "toaster",
+      "text_row": 112
+    },
+    {
+      "class_id": 154,
+      "frozen_name": "bulletin board",
+      "official_name": "bulletin board",
+      "text_row": 113
+    },
+    {
+      "class_id": 155,
+      "frozen_name": "ironing board",
+      "official_name": "ironing board",
+      "text_row": 114
+    },
+    {
+      "class_id": 156,
+      "frozen_name": "fireplace",
+      "official_name": "fireplace",
+      "text_row": 115
+    },
+    {
+      "class_id": 157,
+      "frozen_name": "soap dish",
+      "official_name": "soap dish",
+      "text_row": 116
+    },
+    {
+      "class_id": 159,
+      "frozen_name": "kitchen counter",
+      "official_name": "kitchen counter",
+      "text_row": 117
+    },
+    {
+      "class_id": 161,
+      "frozen_name": "doorframe",
+      "official_name": "doorframe",
+      "text_row": 118
+    },
+    {
+      "class_id": 163,
+      "frozen_name": "toilet paper dispenser",
+      "official_name": "toilet paper dispenser",
+      "text_row": 119
+    },
+    {
+      "class_id": 165,
+      "frozen_name": "mini fridge",
+      "official_name": "mini fridge",
+      "text_row": 120
+    },
+    {
+      "class_id": 166,
+      "frozen_name": "fire extinguisher",
+      "official_name": "fire extinguisher",
+      "text_row": 121
+    },
+    {
+      "class_id": 168,
+      "frozen_name": "ball",
+      "official_name": "ball",
+      "text_row": 122
+    },
+    {
+      "class_id": 169,
+      "frozen_name": "hat",
+      "official_name": "hat",
+      "text_row": 123
+    },
+    {
+      "class_id": 170,
+      "frozen_name": "shower curtain rod",
+      "official_name": "shower curtain rod",
+      "text_row": 124
+    },
+    {
+      "class_id": 177,
+      "frozen_name": "water cooler",
+      "official_name": "water cooler",
+      "text_row": 125
+    },
+    {
+      "class_id": 180,
+      "frozen_name": "paper cutter",
+      "official_name": "paper cutter",
+      "text_row": 126
+    },
+    {
+      "class_id": 185,
+      "frozen_name": "tray",
+      "official_name": "tray",
+      "text_row": 127
+    },
+    {
+      "class_id": 188,
+      "frozen_name": "shower door",
+      "official_name": "shower door",
+      "text_row": 128
+    },
+    {
+      "class_id": 191,
+      "frozen_name": "pillar",
+      "official_name": "pillar",
+      "text_row": 129
+    },
+    {
+      "class_id": 193,
+      "frozen_name": "ledge",
+      "official_name": "ledge",
+      "text_row": 130
+    },
+    {
+      "class_id": 195,
+      "frozen_name": "toaster oven",
+      "official_name": "toaster oven",
+      "text_row": 131
+    },
+    {
+      "class_id": 202,
+      "frozen_name": "mouse",
+      "official_name": "mouse",
+      "text_row": 132
+    },
+    {
+      "class_id": 208,
+      "frozen_name": "toilet seat cover dispenser",
+      "official_name": "toilet seat cover dispenser",
+      "text_row": 133
+    },
+    {
+      "class_id": 213,
+      "frozen_name": "furniture",
+      "official_name": "furniture",
+      "text_row": 134
+    },
+    {
+      "class_id": 214,
+      "frozen_name": "cart",
+      "official_name": "cart",
+      "text_row": 135
+    },
+    {
+      "class_id": 221,
+      "frozen_name": "storage container",
+      "official_name": "storage container",
+      "text_row": 136
+    },
+    {
+      "class_id": 229,
+      "frozen_name": "scale",
+      "official_name": "scale",
+      "text_row": 137
+    },
+    {
+      "class_id": 230,
+      "frozen_name": "tissue box",
+      "official_name": "tissue box",
+      "text_row": 138
+    },
+    {
+      "class_id": 232,
+      "frozen_name": "light switch",
+      "official_name": "light switch",
+      "text_row": 139
+    },
+    {
+      "class_id": 233,
+      "frozen_name": "crate",
+      "official_name": "crate",
+      "text_row": 140
+    },
+    {
+      "class_id": 242,
+      "frozen_name": "power outlet",
+      "official_name": "power outlet",
+      "text_row": 141
+    },
+    {
+      "class_id": 250,
+      "frozen_name": "decoration",
+      "official_name": "decoration",
+      "text_row": 142
+    },
+    {
+      "class_id": 261,
+      "frozen_name": "sign",
+      "official_name": "sign",
+      "text_row": 143
+    },
+    {
+      "class_id": 264,
+      "frozen_name": "projector",
+      "official_name": "projector",
+      "text_row": 144
+    },
+    {
+      "class_id": 276,
+      "frozen_name": "closet door",
+      "official_name": "closet door",
+      "text_row": 145
+    },
+    {
+      "class_id": 283,
+      "frozen_name": "vacuum cleaner",
+      "official_name": "vacuum cleaner",
+      "text_row": 146
+    },
+    {
+      "class_id": 286,
+      "frozen_name": "candle",
+      "official_name": "candle",
+      "text_row": 147
+    },
+    {
+      "class_id": 300,
+      "frozen_name": "plunger",
+      "official_name": "plunger",
+      "text_row": 148
+    },
+    {
+      "class_id": 304,
+      "frozen_name": "stuffed animal",
+      "official_name": "stuffed animal",
+      "text_row": 149
+    },
+    {
+      "class_id": 312,
+      "frozen_name": "headphones",
+      "official_name": "headphones",
+      "text_row": 150
+    },
+    {
+      "class_id": 323,
+      "frozen_name": "dish rack",
+      "official_name": "dish rack",
+      "text_row": 151
+    },
+    {
+      "class_id": 325,
+      "frozen_name": "broom",
+      "official_name": "broom",
+      "text_row": 152
+    },
+    {
+      "class_id": 331,
+      "frozen_name": "guitar case",
+      "official_name": "guitar case",
+      "text_row": 153
+    },
+    {
+      "class_id": 342,
+      "frozen_name": "range hood",
+      "official_name": "range hood",
+      "text_row": 154
+    },
+    {
+      "class_id": 356,
+      "frozen_name": "dustpan",
+      "official_name": "dustpan",
+      "text_row": 155
+    },
+    {
+      "class_id": 370,
+      "frozen_name": "hair dryer",
+      "official_name": "hair dryer",
+      "text_row": 156
+    },
+    {
+      "class_id": 392,
+      "frozen_name": "water bottle",
+      "official_name": "water bottle",
+      "text_row": 157
+    },
+    {
+      "class_id": 395,
+      "frozen_name": "handicap bar",
+      "official_name": "handicap bar",
+      "text_row": 158
+    },
+    {
+      "class_id": 399,
+      "frozen_name": "purse",
+      "official_name": "purse",
+      "text_row": 159
+    },
+    {
+      "class_id": 408,
+      "frozen_name": "vent",
+      "official_name": "vent",
+      "text_row": 160
+    },
+    {
+      "class_id": 417,
+      "frozen_name": "shower floor",
+      "official_name": "shower floor",
+      "text_row": 161
+    },
+    {
+      "class_id": 488,
+      "frozen_name": "water pitcher",
+      "official_name": "water pitcher",
+      "text_row": 162
+    },
+    {
+      "class_id": 540,
+      "frozen_name": "mailbox",
+      "official_name": "mailbox",
+      "text_row": 163
+    },
+    {
+      "class_id": 562,
+      "frozen_name": "bowl",
+      "official_name": "bowl",
+      "text_row": 164
+    },
+    {
+      "class_id": 570,
+      "frozen_name": "paper bag",
+      "official_name": "paper bag",
+      "text_row": 165
+    },
+    {
+      "class_id": 572,
+      "frozen_name": "alarm clock",
+      "official_name": "alarm clock",
+      "text_row": 166
+    },
+    {
+      "class_id": 581,
+      "frozen_name": "music stand",
+      "official_name": "music stand",
+      "text_row": 167
+    },
+    {
+      "class_id": 609,
+      "frozen_name": "projector screen",
+      "official_name": "projector screen",
+      "text_row": 168
+    },
+    {
+      "class_id": 748,
+      "frozen_name": "divider",
+      "official_name": "divider",
+      "text_row": 169
+    },
+    {
+      "class_id": 776,
+      "frozen_name": "laundry detergent",
+      "official_name": "laundry detergent",
+      "text_row": 170
+    },
+    {
+      "class_id": 1156,
+      "frozen_name": "bathroom counter",
+      "official_name": "bathroom counter",
+      "text_row": 171
+    },
+    {
+      "class_id": 1163,
+      "frozen_name": "object",
+      "official_name": "object",
+      "text_row": 172
+    },
+    {
+      "class_id": 1164,
+      "frozen_name": "bathroom vanity",
+      "official_name": "bathroom vanity",
+      "text_row": 173
+    },
+    {
+      "class_id": 1165,
+      "frozen_name": "closet wall",
+      "official_name": "closet wall",
+      "text_row": 174
+    },
+    {
+      "class_id": 1166,
+      "frozen_name": "laundry hamper",
+      "official_name": "laundry hamper",
+      "text_row": 175
+    },
+    {
+      "class_id": 1167,
+      "frozen_name": "bathroom stall door",
+      "official_name": "bathroom stall door",
+      "text_row": 176
+    },
+    {
+      "class_id": 1168,
+      "frozen_name": "ceiling light",
+      "official_name": "ceiling light",
+      "text_row": 177
+    },
+    {
+      "class_id": 1169,
+      "frozen_name": "trash bin",
+      "official_name": "trash bin",
+      "text_row": 178
+    },
+    {
+      "class_id": 1170,
+      "frozen_name": "dumbbell",
+      "official_name": "dumbbell",
+      "text_row": 179
+    },
+    {
+      "class_id": 1171,
+      "frozen_name": "stair rail",
+      "official_name": "stair rail",
+      "text_row": 180
+    },
+    {
+      "class_id": 1172,
+      "frozen_name": "tube",
+      "official_name": "tube",
+      "text_row": 181
+    },
+    {
+      "class_id": 1173,
+      "frozen_name": "bathroom cabinet",
+      "official_name": "bathroom cabinet",
+      "text_row": 182
+    },
+    {
+      "class_id": 1174,
+      "frozen_name": "cd case",
+      "official_name": "cd case",
+      "text_row": 183
+    },
+    {
+      "class_id": 1175,
+      "frozen_name": "closet rod",
+      "official_name": "closet rod",
+      "text_row": 184
+    },
+    {
+      "class_id": 1176,
+      "frozen_name": "coffee kettle",
+      "official_name": "coffee kettle",
+      "text_row": 185
+    },
+    {
+      "class_id": 1178,
+      "frozen_name": "structure",
+      "official_name": "structure",
+      "text_row": 186
+    },
+    {
+      "class_id": 1179,
+      "frozen_name": "shower head",
+      "official_name": "shower head",
+      "text_row": 187
+    },
+    {
+      "class_id": 1180,
+      "frozen_name": "keyboard piano",
+      "official_name": "keyboard piano",
+      "text_row": 188
+    },
+    {
+      "class_id": 1181,
+      "frozen_name": "case of water bottles",
+      "official_name": "case of water bottles",
+      "text_row": 189
+    },
+    {
+      "class_id": 1182,
+      "frozen_name": "coat rack",
+      "official_name": "coat rack",
+      "text_row": 190
+    },
+    {
+      "class_id": 1183,
+      "frozen_name": "storage organizer",
+      "official_name": "storage organizer",
+      "text_row": 191
+    },
+    {
+      "class_id": 1184,
+      "frozen_name": "folded chair",
+      "official_name": "folded chair",
+      "text_row": 192
+    },
+    {
+      "class_id": 1185,
+      "frozen_name": "fire alarm",
+      "official_name": "fire alarm",
+      "text_row": 193
+    },
+    {
+      "class_id": 1186,
+      "frozen_name": "power strip",
+      "official_name": "power strip",
+      "text_row": 194
+    },
+    {
+      "class_id": 1187,
+      "frozen_name": "calendar",
+      "official_name": "calendar",
+      "text_row": 195
+    },
+    {
+      "class_id": 1188,
+      "frozen_name": "poster",
+      "official_name": "poster",
+      "text_row": 196
+    },
+    {
+      "class_id": 1189,
+      "frozen_name": "potted plant",
+      "official_name": "potted plant",
+      "text_row": 197
+    },
+    {
+      "class_id": 1190,
+      "frozen_name": "luggage",
+      "official_name": "luggage",
+      "text_row": 198
+    },
+    {
+      "class_id": 1191,
+      "frozen_name": "mattress",
+      "official_name": "mattress",
+      "text_row": 199
+    }
+  ],
+  "identity": "6897c580f6206e1bcf5d21177ba6b2fe1c95fd02c5b7d57bde749401cd43e8b1",
+  "normalized_again": false,
+  "status": "COMPLETE",
+  "text": {
+    "bytes": 669136,
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+    "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+  }
+}

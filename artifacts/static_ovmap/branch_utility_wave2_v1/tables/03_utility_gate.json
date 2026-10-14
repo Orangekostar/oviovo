@@ -1,0 +1,66 @@
+{
+  "caption": "Table3. TRAIN prefix8 only, original deduplication over4 conditions. Positive\u2265.01; negative\u2264\u2212.01; same-view branch preference>coupled/KEEP+.01. GT-best is an offline TRAIN diagnostic, not a method or AP bound.",
+  "identity": "ce9d2c4193c5bf50491ab44b99bf1444e34382dd6cabec77d01113ee06474e3f",
+  "rows": [
+    {
+      "both_seed_training_activated": true,
+      "criterion": "positive",
+      "families": 24,
+      "minimum_families": 8,
+      "minimum_originals": 40,
+      "originals": 602,
+      "seed": "17",
+      "seed_passed": true
+    },
+    {
+      "both_seed_training_activated": true,
+      "criterion": "negative",
+      "families": 24,
+      "minimum_families": 8,
+      "minimum_originals": 40,
+      "originals": 602,
+      "seed": "17",
+      "seed_passed": true
+    },
+    {
+      "both_seed_training_activated": true,
+      "criterion": "branch_preference",
+      "families": 24,
+      "minimum_families": 6,
+      "minimum_originals": 20,
+      "originals": 436,
+      "seed": "17",
+      "seed_passed": true
+    },
+    {
+      "both_seed_training_activated": true,
+      "criterion": "positive",
+      "families": 24,
+      "minimum_families": 8,
+      "minimum_originals": 40,
+      "originals": 602,
+      "seed": "29",
+      "seed_passed": true
+    },
+    {
+      "both_seed_training_activated": true,
+      "criterion": "negative",
+      "families": 24,
+      "minimum_families": 8,
+      "minimum_originals": 40,
+      "originals": 602,
+      "seed": "29",
+      "seed_passed": true
+    },
+    {
+      "both_seed_training_activated": true,
+      "criterion": "branch_preference",
+      "families": 24,
+      "minimum_families": 6,
+      "minimum_originals": 20,
+      "originals": 430,
+      "seed": "29",
+      "seed_passed": true
+    }
+  ]
+}

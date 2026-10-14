@@ -1,0 +1,313 @@
+{
+  "schema_version": 1,
+  "design_date": "2026-10-14",
+  "task_id": "fg2-branch-utility-wave2-v1",
+  "status": "DESIGNED_NOT_EXECUTED",
+  "repository": "Orangekostar/oviovo",
+  "source_base": "0f96c5e09c3ced9262105c1352cc428643f5676e",
+  "fg_parent_base": "bec4176d9a6784a89ea293a9803e5cf6fab178ec",
+  "branch": "research/fg2-branch-utility-wave2-v1",
+  "new_module": "src/static_ovmap/branch_utility_wave2_v1",
+  "entrypoint": "scripts/evaluation/run_fg2_branch_utility_wave2_v1.py",
+  "deployment": "N0_UNCHANGED",
+  "scope": {
+    "new_rgb_encodings": 0,
+    "new_sam_proposals": 0,
+    "new_geometry": false,
+    "frozen_fc": true,
+    "frozen_text": true,
+    "frozen_fg2": true,
+    "interpretation": "RECOGNITION_OVER_PRESELECTED_VIEW_BANKS_NOT_ONLINE_VIEW_ACQUISITION"
+  },
+  "heads": {
+    "17": {
+      "registry_key": "FG2_SURFACE",
+      "selected_step": 1000,
+      "sha256": "de7fc82edba5440d9c338f5253ecd3600a340271089600c9ff2d286e2711d963"
+    },
+    "29": {
+      "registry_key": "S29_FG2_SURFACE",
+      "selected_step": 2000,
+      "sha256": "501a6ad010fd2951c93a7638fce94c599b994c7fe9215adad82054919a84ea77"
+    }
+  },
+  "data": {
+    "train_base_objects": 622,
+    "train_families": 24,
+    "dev_base_objects": 69,
+    "dev_families": 4,
+    "class_split": "EXACT_PARENT_160_BASE_40_ADAPTER_HELDOUT",
+    "conditions": [
+      "clean",
+      "truncate",
+      "append",
+      "truncate_append"
+    ],
+    "prefixes": [
+      2,
+      4,
+      8
+    ],
+    "action_prefixes": [
+      4,
+      8
+    ],
+    "physical_sites": "FIXED_WITHIN_OBJECT_AND_CONDITION; NEVER_RESAMPLE_ACROSS_SUBSETS"
+  },
+  "diagnosis": {
+    "transitions": [
+      [
+        2,
+        4
+      ],
+      [
+        4,
+        8
+      ]
+    ],
+    "cross_cells": [
+      "old_base_old_local",
+      "new_base_old_local",
+      "old_base_new_local",
+      "new_base_new_local"
+    ],
+    "score": "FULL200_GT_MARGIN_FOR_OFFLINE_DIAGNOSIS_ONLY",
+    "pairwise_decomposition": "TWO_FACTOR_SYMMETRIC_EFFECTS_PLUS_INTERACTION",
+    "all_old_views_same_tensor_multiset": true,
+    "no_monotonicity_guarantee": true
+  },
+  "action_bank": {
+    "actions": [
+      "KEEP",
+      "DROP_GLOBAL_ONLY",
+      "DROP_LOCAL_ONLY",
+      "DROP_BOTH"
+    ],
+    "max_removed_views": 1,
+    "minimum_views_for_edit": 3,
+    "utility_target": "CE_BASE160_KEEP_MINUS_CE_BASE160_ACTION",
+    "temperature": 0.07,
+    "gt_used_in_forward": false,
+    "no_op_aliases": "RETAIN_LOGICAL_ZERO_UTILITY_ACTIONS_NO_DUPLICATE_PHYSICAL_INFERENCE"
+  },
+  "training_gate": {
+    "role": "TRAIN_ONLY",
+    "prefix": 8,
+    "positive_utility_cutoff": 0.01,
+    "negative_utility_cutoff": -0.01,
+    "positive_originals_min_per_seed": 40,
+    "negative_originals_min_per_seed": 40,
+    "positive_families_min_per_seed": 8,
+    "negative_families_min_per_seed": 8,
+    "branch_preference_originals_min_per_seed": 20,
+    "branch_preference_families_min_per_seed": 6,
+    "branch_preference_margin": 0.01,
+    "definition": "Each original counted once over four conditions. Positive and negative sets may overlap. For same v, max(U_G,U_L)>max(0,U_B)+margin. Require both frozen-head seeds."
+  },
+  "training": {
+    "conditional": true,
+    "variants": [
+      "WITH_NEW_CORRESPONDENCE_STATS",
+      "WITHOUT_NEW_CORRESPONDENCE_STATS"
+    ],
+    "seeds": [
+      17,
+      29
+    ],
+    "updates_per_arm": 2000,
+    "max_updates": 8000,
+    "architecture": [
+      24,
+      32,
+      16,
+      1
+    ],
+    "activations": "GELU",
+    "final_linear_init": "ZERO",
+    "batch_original_groups": 16,
+    "optimizer": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "schedule": "CONSTANT",
+    "clip_grad_norm": 1.0,
+    "loss": "SmoothL1(beta=0.1), action mean then original-group mean",
+    "draw": "present base class uniform -> original uniform; prefix4/8 equal; conditions 0.5,1/6,1/6,1/6",
+    "init_seed_offset": 2009,
+    "sampler_seed_offset": 3001,
+    "checkpoints": [
+      500,
+      1000,
+      1500,
+      2000
+    ],
+    "normalizer": "TRAIN action rows only, common normalizer per frozen-head seed; std floor 1e-6; zero last8 standardized inputs in control",
+    "fp32": true,
+    "amp": false,
+    "tf32": false,
+    "resume_every_updates": 100,
+    "extra_losses": false,
+    "fg2_gradients": false
+  },
+  "features": {
+    "shared16": [
+      "action_G",
+      "action_L",
+      "action_B",
+      "actual_views_div8",
+      "view_pair_cos_mean",
+      "view_pair_cos_min",
+      "view_pair_cos_std",
+      "cos_view_leaveoneout_base",
+      "cos_action_base_full_base",
+      "cos_action_embedding_full_embedding",
+      "norm_action_embedding_minus_full",
+      "full_route_mass",
+      "action_local_route_mass",
+      "norm_action_local_weighted_sum_minus_full",
+      "view_quality_logit_mean",
+      "view_quality_logit_std"
+    ],
+    "correspondence8": [
+      "view_valid_sites_div_total_slots",
+      "view_shared_fraction",
+      "exclusive_sites_div_union",
+      "mean_occupancy",
+      "mean_clipped_depth_residual",
+      "same_site_semantic_disagreement_mean",
+      "same_site_semantic_disagreement_std",
+      "same_site_direction_max_similarity_mean"
+    ]
+  },
+  "controls": {
+    "STATIC": {
+      "base": [
+        "MEAN",
+        "MASK_AREA",
+        "COSINE_MEDOID"
+      ],
+      "residual_scale": [
+        0,
+        0.5,
+        1
+      ],
+      "cells": 9
+    },
+    "COUPLED": "SAME_WITH_STATS_REGRESSOR; ALLOW_KEEP_OR_DROP_BOTH_ONLY; OWN_DEV_CHECKPOINT_THRESHOLD_SELECTION",
+    "NO_NEW_CORRESPONDENCE": "MATCHED_TRAINED_REGRESSOR; ALL_ACTIONS; ZERO_LAST8_INPUTS_NOT_GEOMETRY_FREE_SYSTEM"
+  },
+  "selection": {
+    "role": "DEV_BASE_ONLY",
+    "competition": 200,
+    "thresholds": [
+      0,
+      0.01,
+      0.03,
+      0.1
+    ],
+    "max_logical_seed17_cells": 57,
+    "rank": [
+      "A8_DESC",
+      "M8_DESC",
+      "C8_DESC",
+      "A4_DESC",
+      "FEWER_MEAN_VIEW_DELETIONS",
+      "EARLIER_STEP",
+      "LARGER_THRESHOLD",
+      "FIXED_METHOD_ORDER"
+    ],
+    "method_order": [
+      "FG2",
+      "STATIC",
+      "COUPLED",
+      "NO_NEW_CORRESPONDENCE",
+      "WITH_NEW_CORRESPONDENCE"
+    ],
+    "static_tie_order": [
+      "MEAN",
+      "MASK_AREA",
+      "COSINE_MEDOID"
+    ],
+    "static_scale_tie": "PREFER_1_THEN_0.5_THEN_0",
+    "seed29": "LOCKED_SEED17_STEP_AND_THRESHOLD; NO_RESELECTION",
+    "action_tie": [
+      "KEEP",
+      "DROP_GLOBAL_ONLY",
+      "DROP_LOCAL_ONLY",
+      "DROP_BOTH",
+      "FRAME_ID_ASC"
+    ],
+    "tolerance": 1e-10,
+    "mean_edit_count": "Logical non-KEEP edit fraction; proven no-op actions count zero; do not use GT or equality of predicted labels."
+  },
+  "promotion": {
+    "delta_A8_min": 0.005,
+    "delta_M8_min": -0.005,
+    "delta_C8_min": -0.005,
+    "delta_A4_min": -0.005,
+    "net_corrections8_positive": true,
+    "both_seeds": true,
+    "rule": "If M passes both -> M plus STATIC,COUPLED,NO_NEW_CORRESPONDENCE if available. Else only locked seed17 best control if it passes both. No training gate -> STATIC only may be promoted."
+  },
+  "maps": {
+    "cohorts": "EXACT_PARENT_REPLICA8_CF18_ORDER",
+    "max_new_methods": 4,
+    "max_seeds": 2,
+    "max_candidate_scene_rows": 208,
+    "extra_baseline_scorer_checks": 2,
+    "retain_N_Q_temperatures": true,
+    "source_grouping": "PE_D2_GROUPED",
+    "fixed_final_owner_partition": true,
+    "unchanged_rank_function": true,
+    "reselect_from_maps": false,
+    "diagnostic_conveyor": "EXISTING FG2 MAP READOUTS; NO NEW M1 SURFACE_BIAS MAP RUNS"
+  },
+  "resources": {
+    "gpus": 1,
+    "gpu_type_hint": "A40",
+    "cpu_scorers_max": 3,
+    "host_cache_GiB_max": 32,
+    "max_pre_map_native_head_forwards": 85000,
+    "head_count_upper_bound": 82920,
+    "initial_free_GiB_min": 10,
+    "reserve_GiB_min": 5,
+    "git_blob_MiB_max": 40,
+    "git_new_total_MiB_budget": 150,
+    "full_repo_tests": false,
+    "focused_test_groups": 6,
+    "new_fc_encodings": 0
+  },
+  "phases": [
+    "preflight",
+    "baseline",
+    "factorial",
+    "action_bank",
+    "training_gate",
+    "train",
+    "select",
+    "repeat",
+    "map_predict",
+    "map_evaluate",
+    "report",
+    "publish"
+  ],
+  "publication": {
+    "required_after_actual_execution": true,
+    "normal_branch_push_only": true,
+    "merge_main": false,
+    "protocol": "C1 code/results -> verify remote -> C2 C1 receipt/handoff -> external final receipt",
+    "no_future_self_sha": true
+  },
+  "frozen_fc_identity": "6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44",
+  "frozen_text_sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4",
+  "frozen_text_bytes": 669136,
+  "empty_local_state": {
+    "mass": 0,
+    "weighted_sum": "ZERO_VECTOR_D",
+    "compose": "RETURN_SUPPLIED_BASE"
+  }
+}

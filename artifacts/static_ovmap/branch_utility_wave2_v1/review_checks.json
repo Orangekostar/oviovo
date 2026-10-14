@@ -1,0 +1,58 @@
+{
+  "checks": [
+    {
+      "evidence": "preflight.json;binding.json;runtime_registry;history parity",
+      "passed": true,
+      "requirement": "Exact source/spec/head/text/parent support"
+    },
+    {
+      "evidence": "focused tests1\u20132;capture units;baseline.history_parity",
+      "passed": true,
+      "requirement": "Same7 tensor subset, currentprefix isolation, condition isolation, realFP32 Compose/history"
+    },
+    {
+      "evidence": "focused tests3\u20134;all action chunks;capture",
+      "passed": true,
+      "requirement": "G/L/B support edits, subset sharing, no-op proof,24 target-free features"
+    },
+    {
+      "evidence": "training_gate;training;normalizers/draws/curves/resume checkpoints",
+      "passed": true,
+      "requirement": "TRAIN-only gate; four paired2000 arms if activated, otherwise0"
+    },
+    {
+      "evidence": "selection_lock;selection.candidates;repeat;activation",
+      "passed": true,
+      "requirement": "STATIC9/conditional57; lockedC_STAR before29; fixedrepeat/promotion"
+    },
+    {
+      "evidence": "conveyor.json;52scene/head rows;GT-match and official metric receipts",
+      "passed": true,
+      "requirement": "Existing26scene conveyor regardless of promotion"
+    },
+    {
+      "evidence": "predictions/summary;evaluation/store;baseline scorer checks",
+      "passed": true,
+      "requirement": "Conditional dynamic allmap locks/scoring or exact nonactivation"
+    },
+    {
+      "evidence": "native ledger;resources;training;focused_tests",
+      "passed": true,
+      "requirement": "85000head/32GiBcache/8000update/0encoding caps; focused6tests"
+    },
+    {
+      "evidence": "tables;records;actions;artifact_index",
+      "passed": true,
+      "requirement": "Sixcoretables/full candidates/curves/weights/actions/raw receipts"
+    },
+    {
+      "evidence": "C2 C1 receipt;externalpublication/final.json;externalcontroller_exit.json",
+      "passed": null,
+      "requirement": "Normal C1/C2 remote verification and actual terminalexit"
+    }
+  ],
+  "identity": "f30533b8e2ec235d0cd7dec728a5412ffec3c31f2d28dd8502d5de390af57b5f",
+  "no_full_repo_suite": true,
+  "prompt_file": "prompt/00_\u4e0b\u4e00\u6b65\u5b9e\u9a8c\u8bbe\u8ba1\u4e0eCodex\u4efb\u52a1.md",
+  "review_owner": "PRIMARY_AGENT"
+}

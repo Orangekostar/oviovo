@@ -1,0 +1,31 @@
+{
+  "frozen_heads_and_features_unchanged": true,
+  "identity": "a4b1480bccb44e904c9c48f37cc5d2c9d3659532dac008b5e1642f6c0796bcd2",
+  "native_loops_unchanged": true,
+  "native_producer_loops_AST_sha256": "0dc3cdb177ce6d004339c5b23d1ff401a4d9edc93e2813c99212e3764e9dbaa8",
+  "new_files": {
+    "action_bank": "65cf702e75e645cd16dda161c59f74621ef3149469cb9604c8e47b4d4fa6fcb6",
+    "binding": "6901beae1bcd8dbea28ee8c5c2a1213c3b159dd24325d20795b4957764db03f0",
+    "capture": "950a37dd1991800928e98d2989873edb51204a13f8f9106e507daa2e0c97a205",
+    "common": "0b70e9e0574ca983d221a47bbe1c834211c754d79eb26a62b2b90e24e2975034",
+    "decomposition": "6542d9c21a601714eb10a0afe30275d5c62366026f679e80afdb1df51b52d16c",
+    "features": "adbb54e42c69f7a626e9405cc8c02aa7140a66b3d4fbcc426b19883279ebfdc4",
+    "subsets": "cb691bd7936b14ec2e7b8d0db25629721a9f3e07ba46219686239d925ae8faef"
+  },
+  "new_native_replay_only_incomplete_unit": true,
+  "old_files": {
+    "action_bank": "65cf702e75e645cd16dda161c59f74621ef3149469cb9604c8e47b4d4fa6fcb6",
+    "binding": "6901beae1bcd8dbea28ee8c5c2a1213c3b159dd24325d20795b4957764db03f0",
+    "capture": "b44f01e54f21cf58c520be10450953f282bf6050b55c41a69417b9ff853fdf21",
+    "common": "0b70e9e0574ca983d221a47bbe1c834211c754d79eb26a62b2b90e24e2975034",
+    "decomposition": "6542d9c21a601714eb10a0afe30275d5c62366026f679e80afdb1df51b52d16c",
+    "features": "adbb54e42c69f7a626e9405cc8c02aa7140a66b3d4fbcc426b19883279ebfdc4",
+    "subsets": "cb691bd7936b14ec2e7b8d0db25629721a9f3e07ba46219686239d925ae8faef"
+  },
+  "old_source_digest": "744197e45de52421699f21b97ef68234441f0df1c2cf73b03273de3b5ddcefae",
+  "only_completed_role": "train",
+  "patch": "Exclude actual diagonal entries, rather than subtracting mathematical1; mean-other medoid ties use physical frame IDs",
+  "prior_partial_stage_exit": -2,
+  "static_control_not_called_for_TRAIN": true,
+  "status": "PRIMARY_REVIEWED_EXACT_PATCH"
+}
