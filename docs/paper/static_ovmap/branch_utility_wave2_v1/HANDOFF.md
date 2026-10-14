@@ -15,3 +15,7 @@ Controller weights and normalizers: OUT/training/seed{17,29}/; selected threshol
 The pre-DEV medoid floating-point tie repair preserved only TRAIN units after exact native producer AST/byte validation; the−2 interrupted exit and its resources remain recorded. DEV STATIC candidates use the corrected mean-other-cosine definition. Resume validates sealed unit identities and parent bytes; partial errors/logs remain OUT/error.json and logs/. Do not replace FC/text/head bytes, lower fixed gates or resample exposed data. New raw regeneration uses a new output attempt. Map stages require whole-arm locks before GT; no map-driven reselection. Read-only parent roots are retained.
 
 Independent unseen scenes, actual proposals, and stronger matched external verification remain outside this exposed GT-support protocol. Positive observed recognition signals are not CVPR acceptance or world-causal evidence. Publication C1/C2 equality is verified externally; this file never predicts its own commit SHA.
+
+Verified result commit C1: `6bfad02fb8db72a5eeff2d859d425f33d6a49d73`. [Immutable results](https://github.com/Orangekostar/oviovo/blob/6bfad02fb8db72a5eeff2d859d425f33d6a49d73/docs/paper/static_ovmap/branch_utility_wave2_v1/RESULTS.md).
+
+Publication of C1 was verified; the committed receipt proves C1 only. The final C2/local/remote equality receipt is external at OUT/publication/final.json.
