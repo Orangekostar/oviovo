@@ -20,3 +20,11 @@ Frozen heads出自FG_BASE bec4176d9a6784a89ea293a9803e5cf6fab178ec，没有新�
 发布收据边界：C1发布后写PUBLICATION_RECEIPT.json；C2和最终all真实退出只写OUT外部。当前报告快照不预写未来SHA。
 
 表格重建：使用相同binding和冻结输出运行 --phase report；不会调用head或评分。数据角色、直接输入、实际hash和机器结果见artifact_index和experiment_ledger。部署N0_UNCHANGED，confirmation=NOT_RUN_BY_CONTRACT。
+
+## C1 publication verified
+
+C1: 49857195f32123e9726e2643c670300288aa817b
+
+[RESULTS](https://github.com/Orangekostar/oviovo/blob/49857195f32123e9726e2643c670300288aa817b/docs/paper/static_ovmap/contribution_attribution_v1/RESULTS.md) · [HANDOFF](https://github.com/Orangekostar/oviovo/blob/49857195f32123e9726e2643c670300288aa817b/docs/paper/static_ovmap/contribution_attribution_v1/HANDOFF.md)
+
+C1普通push及完整remote SHA核验已完成。此收据不预言C2；C2真实核验记录在OUT/publication/final.json。

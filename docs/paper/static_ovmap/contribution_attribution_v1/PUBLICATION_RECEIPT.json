@@ -1,0 +1,40 @@
+{
+  "C1": "49857195f32123e9726e2643c670300288aa817b",
+  "C2_not_proven_by_this_receipt": true,
+  "artifact_index": "7d830c2981179659a50714062d73a42c7f93ad4c59dc2e32d32840c1464cabbd",
+  "branch": "research/ovmap-contribution-attribution-v1",
+  "evidence_status": "ATTRIBUTION_COMPLETE_EXPOSED_ONLY",
+  "identity": "4f63b01d391745e4b38cf9e98258003186dd6d975627584c5d97c8281d44a279",
+  "numeric_source_digest": "05f0f71d7f68b2019fa704d247bdeb5bfa9db84e4a1a7579d2dfe373131e3815",
+  "remote_sha": "49857195f32123e9726e2643c670300288aa817b",
+  "scientific_execution_observed": {
+    "command": [
+      "/home/ww/miniconda3/envs/ovimap-map/bin/python",
+      "-u",
+      "/home/ww/crove/ovmap-contribution-attribution-v1/worktree/scripts/evaluation/run_ovmap_contribution_attribution_v1.py",
+      "--spec",
+      "/home/ww/crove/ovmap-contribution-attribution-v1/worktree/configs/static_ovmap/contribution_attribution_v1.json",
+      "--parent-root",
+      "/mnt/shared/capacity/node101/ww/ovimap-frozen-fc-routing-v1/attempt_001",
+      "--output-root",
+      "/home/ww/crove/ovmap-contribution-attribution-v1/attempt_001",
+      "--gpu",
+      "0",
+      "--phase",
+      "all",
+      "--scientific-all",
+      "--resume"
+    ],
+    "coordinator_report_publish_not_yet_run": true,
+    "exit_code": 0,
+    "identity": "ee91cd0be4e4846a75215f17da286ee6322b3757da4b3f3ed5111cc94b6ab14d",
+    "observed_after_wait": true,
+    "observed_tool_session": 74518,
+    "observer": "Codex tools.write_stdin completed session and returned actual exit_code=0",
+    "status": "COMPLETE",
+    "wall_seconds": null,
+    "wall_time_scope": "External scientific-all duration not measured; actual individual phase walls retained in stage_exits"
+  },
+  "spec_sha256": "856f94280040824df414065bd90c0a8588b28fdf761cf3c6909ca1528363d349",
+  "status": "C1_PUSH_VERIFIED"
+}
