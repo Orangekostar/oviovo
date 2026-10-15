@@ -1,0 +1,483 @@
+{
+  "dimensions": {
+    "maximum_sites": 64,
+    "maximum_views": 8,
+    "metadata": 8,
+    "raw": 1536,
+    "unit": 768
+  },
+  "identity": "9fda8083e8155d9ec9acec5b1279d6d83abcec5cdaaea411085e3e4acafa6c79",
+  "input_keys": [
+    "fc_vectors",
+    "frame_ids",
+    "local_raw",
+    "local_unit",
+    "local_valid",
+    "metadata",
+    "view_valid"
+  ],
+  "model_initialization_seed_for_module_description": 17,
+  "models": {
+    "B_FC": {
+      "grouping": null,
+      "module": "StaticReadout()",
+      "parameters": 0,
+      "trainable_parameters": 0
+    },
+    "B_PFE_ADAPTED": {
+      "grouping": null,
+      "module": "StaticReadout()",
+      "parameters": 0,
+      "trainable_parameters": 0
+    },
+    "B_SURFACE_MEAN": {
+      "grouping": null,
+      "module": "StaticReadout()",
+      "parameters": 0,
+      "trainable_parameters": 0
+    },
+    "G_LL": {
+      "grouping": "SURFACE",
+      "module": "FGReadout(\n  (base): FrozenFCBase()\n  (embed): Sequential(\n    (0): Linear(in_features=776, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=128, bias=True)\n    (3): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  )\n  (quality): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (membership): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (group_ff): Sequential(\n    (0): Linear(in_features=128, out_features=256, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=256, out_features=128, bias=True)\n  )\n  (group_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n)",
+      "parameters": 216194,
+      "trainable_parameters": 199553
+    },
+    "MV_ATTN": {
+      "grouping": null,
+      "module": "MVReadout(\n  (input_projection): Linear(in_features=768, out_features=256, bias=True)\n  (blocks): ModuleList(\n    (0-3): 4 x AttentionBlock(\n      (norm1): LayerNorm((256,), eps=1e-05, elementwise_affine=True)\n      (attention): MultiheadAttention(\n        (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)\n      )\n      (norm2): LayerNorm((256,), eps=1e-05, elementwise_affine=True)\n      (ff): Sequential(\n        (0): Linear(in_features=256, out_features=1024, bias=True)\n        (1): GELU(approximate='none')\n        (2): Linear(in_features=1024, out_features=256, bias=True)\n      )\n    )\n  )\n  (query_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)\n  (token_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)\n  (pool): MultiheadAttention(\n    (out_proj): NonDynamicallyQuantizableLinear(in_features=256, out_features=256, bias=True)\n  )\n  (output_norm): LayerNorm((256,), eps=1e-05, elementwise_affine=True)\n  (output_projection): Linear(in_features=256, out_features=768, bias=True)\n)",
+      "parameters": 3818240,
+      "trainable_parameters": 3818240
+    },
+    "S_LL": {
+      "grouping": "SURFACE",
+      "module": "FGReadout(\n  (base): FrozenFCBase()\n  (embed): Sequential(\n    (0): Linear(in_features=776, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=128, bias=True)\n    (3): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  )\n  (quality): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (membership): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (group_ff): Sequential(\n    (0): Linear(in_features=128, out_features=256, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=256, out_features=128, bias=True)\n  )\n  (group_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n)",
+      "parameters": 216194,
+      "trainable_parameters": 199553
+    },
+    "S_LU": {
+      "grouping": "SURFACE",
+      "module": "FGReadout(\n  (base): FrozenFCBase()\n  (embed): Sequential(\n    (0): Linear(in_features=776, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=128, bias=True)\n    (3): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  )\n  (quality): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (membership): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (group_ff): Sequential(\n    (0): Linear(in_features=128, out_features=256, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=256, out_features=128, bias=True)\n  )\n  (group_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n)",
+      "parameters": 216194,
+      "trainable_parameters": 199553
+    },
+    "S_PRE": {
+      "grouping": "SURFACE",
+      "module": "FGReadout(\n  (base): FrozenFCBase()\n  (embed): Sequential(\n    (0): Linear(in_features=776, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=128, bias=True)\n    (3): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  )\n  (quality): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (membership): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (group_ff): Sequential(\n    (0): Linear(in_features=128, out_features=256, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=256, out_features=128, bias=True)\n  )\n  (group_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n)",
+      "parameters": 216194,
+      "trainable_parameters": 199553
+    },
+    "S_UL": {
+      "grouping": "SURFACE",
+      "module": "FGReadout(\n  (base): FrozenFCBase()\n  (embed): Sequential(\n    (0): Linear(in_features=776, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=128, bias=True)\n    (3): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  )\n  (quality): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (membership): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (group_ff): Sequential(\n    (0): Linear(in_features=128, out_features=256, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=256, out_features=128, bias=True)\n  )\n  (group_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n)",
+      "parameters": 216194,
+      "trainable_parameters": 182912
+    },
+    "S_UU": {
+      "grouping": "SURFACE",
+      "module": "FGReadout(\n  (base): FrozenFCBase()\n  (embed): Sequential(\n    (0): Linear(in_features=776, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=128, bias=True)\n    (3): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  )\n  (quality): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (membership): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (group_ff): Sequential(\n    (0): Linear(in_features=128, out_features=256, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=256, out_features=128, bias=True)\n  )\n  (group_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n)",
+      "parameters": 216194,
+      "trainable_parameters": 182912
+    },
+    "V_LL": {
+      "grouping": "VIEW",
+      "module": "FGReadout(\n  (base): FrozenFCBase()\n  (embed): Sequential(\n    (0): Linear(in_features=776, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=128, bias=True)\n    (3): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n  )\n  (quality): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (membership): Sequential(\n    (0): Linear(in_features=128, out_features=128, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=128, out_features=1, bias=True)\n  )\n  (group_ff): Sequential(\n    (0): Linear(in_features=128, out_features=256, bias=True)\n    (1): GELU(approximate='none')\n    (2): Linear(in_features=256, out_features=128, bias=True)\n  )\n  (group_norm): LayerNorm((128,), eps=1e-05, elementwise_affine=True)\n)",
+      "parameters": 216194,
+      "trainable_parameters": 199553
+    }
+  },
+  "normalization": "FC region and local_unit are parent-normalized; S/V/G/factorial pool raw then phi then L2; S_PRE applies phi to valid raw before pooling with no token L2; MV normalizes region tokens and final anchor-plus-residual",
+  "numerical_sources": {
+    "checkpoints": "cdf18b645ebabf58892c75be42a053dfd026f5bf22bafcc07de58b7a2027d694",
+    "data": "149a32c785466138e430a24bff8623c1ae1e34d35bcf705d5e5d3bc2dd43f338",
+    "grouping": "5552d61a6455f27a37e88e03ad404feca96a7cf94a0e759ccc829fd034af6bf6",
+    "models": "71f33ade496e5c12b04a5c827062cec412aa973aed08dc9792d032a0711fe48a",
+    "recognition": "0ff4ca291ece01e7678f4651533540243ebd8065124263baf513a95d398eed8e",
+    "selection": "bf57cfe23bce75f06a923fd67e02e8f50e553d00d3d3d1ee97f6e1aed44b8446",
+    "training": "fcbc0a873aa9f3cf9632eda2fd622c47a9c2349fd77bac323d24e39299145623"
+  },
+  "permutation": "External joint valid-token permutation; FG2_GROUP_CONTROL_V1 / key / condition / frame / salt9173; SHA256 first8 big endian; NumPy default_rng; prefix consistent",
+  "predictor_lock": "faa683ee8faf39f2f46ebdf749c400ac9ca7c48d86755b8df075a046c0d70058",
+  "residual": "FG variants use parent correct(base, group_vectors-base, alpha, eta); MV uses unit(base+eta*output_projection(pooled)); static means have no learned residual",
+  "schema": "FG2_STRUCTURE_CONFIRMATION_ARCHITECTURE_V1",
+  "specification": {
+    "base_commit": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "branch": "research/fg2-structure-confirmation-v1",
+    "confirmation": {
+      "GT_object_selection": "HASH_ORIGINAL_GROUP_ID_BEFORE_VISIBILITY;NO_REPLACEMENT",
+      "coverage_floor_for_claim": {
+        "heldout_families": 4,
+        "heldout_positive_objects": 20,
+        "matched_families": 8,
+        "matched_real_gt_at_iou50": 40
+      },
+      "download_authority": "EXACT_PRIOR_SCANNET_ACCEPTANCE_LOCK_REQUIRED",
+      "execute": true,
+      "extra_matched_step_heads": [
+        "S_LL",
+        "V_LL",
+        "G_LL",
+        "S_UL",
+        "S_LU",
+        "S_UU",
+        "S_PRE",
+        "MV_ATTN"
+      ],
+      "family_count": 12,
+      "independence": "NOT_USED_IN_CURRENT_DEVELOPMENT;FULL_HISTORICAL_NONUSE_NOT_PROVEN",
+      "inference_prefixes": [
+        2,
+        4,
+        8
+      ],
+      "max_FC_unique_images": 1152,
+      "max_GT_diagnostic_objects_per_family": 64,
+      "max_SAM_images": 48,
+      "max_new_download_GiB": 120,
+      "max_pose_bank_frames_per_family": 96,
+      "max_predictor_slots_selected": 19,
+      "max_real_AP_pools": 35,
+      "max_real_AP_scene_rows": 420,
+      "max_retained_real_proposals": 768,
+      "new_online_maps": 0,
+      "new_semantic_mIoU_real_sparse": false,
+      "official_real_AP": "FIXED_SPARSE_PROPOSALS_ON_SUPPLIED_RECONSTRUCTION;NOT_FULL_MAPPING",
+      "plan_git_blob": "41b2769612e89e6f9d4e67c26d29550d79d8c884",
+      "plan_path": "artifacts/static_ovmap/contribution_attribution_v1/records/confirmation_plan.json.gz",
+      "prediction_lock_before_real_GT_parse": true,
+      "rank": "CONSTANT_ONE_COMMON_PROPOSAL_ORDER",
+      "raw_suffixes": [
+        ".sens",
+        ".txt",
+        "_vh_clean_2.ply",
+        "_vh_clean_2.0.010000.segs.json",
+        ".aggregation.json"
+      ],
+      "real_scoring_prefix": 8,
+      "real_seed_frame_indices": "floor(j*(M-1)/3),j=0,1,2,3;deduplicate",
+      "real_seed_frames_per_family": 4,
+      "replace_missing_scene": false,
+      "retained_masks_per_SAM_image": 16,
+      "scene_field": "scene_nomination.selected",
+      "use_supplied_unlabelled_reconstruction": true
+    },
+    "date": "2026-10-15",
+    "deployment": "N0_UNCHANGED",
+    "entrypoint": "scripts/evaluation/run_fg2_structure_confirmation_v1.py",
+    "fg_science_commit": "bec4176d9a6784a89ea293a9803e5cf6fab178ec",
+    "full_external_reproduction": "NOT_IN_SCOPE_NO_FULL_CAMFUSION_OR_OPEN3DIS_SOTA_CLAIM",
+    "future_original_paper_experiments": "REQUIRES_SEPARATE_PROTOCOL_ASSETS_AND_BUDGET;DO_NOT_AUTORUN",
+    "limits": {
+      "BLAS_threads": 1,
+      "CPU_score_workers": 3,
+      "GPU_workers": 1,
+      "dev_checkpoint_head_calls_nominal": 22080,
+      "host_cache_GiB": 32,
+      "initial_free_GiB": 80,
+      "map_source_grid_encodings": 0,
+      "max_confirmation_head_calls": 300000,
+      "max_cost_head_calls": 4000,
+      "max_engineering_head_calls": 200,
+      "max_git_blob_MiB": 40,
+      "max_git_task_MiB": 256,
+      "max_main_training_validation_head_calls": 1100000,
+      "max_new_SAM_image_encodings": 48,
+      "max_new_case_figures": 12,
+      "max_new_confirmation_FC_encodings": 1152,
+      "max_new_runtime_storage_GiB": 200,
+      "max_old_map_head_calls": 131072,
+      "max_replayed_optimizer_updates": 400,
+      "minimum_remaining_GiB": 20,
+      "new_NQ_encodings": 0,
+      "new_geometry_maps": 0,
+      "test_groups": 4,
+      "train_head_calls_nominal": 1024000,
+      "training_source_grid_encodings": 0
+    },
+    "map_regression": {
+      "GT_used_for_selection": false,
+      "all_required_predictions_lock_before_score": true,
+      "cohorts": {
+        "replica8": [
+          "office0",
+          "office1",
+          "office2",
+          "office3",
+          "office4",
+          "room0",
+          "room1",
+          "room2"
+        ],
+        "scannet_cf18": [
+          "scene0011_00",
+          "scene0011_01",
+          "scene0050_00",
+          "scene0050_01",
+          "scene0050_02",
+          "scene0084_00",
+          "scene0084_01",
+          "scene0084_02",
+          "scene0168_00",
+          "scene0168_01",
+          "scene0168_02",
+          "scene0231_00",
+          "scene0231_01",
+          "scene0231_02",
+          "scene0378_00",
+          "scene0378_01",
+          "scene0378_02",
+          "scene0518_00"
+        ]
+      },
+      "execute": true,
+      "learned_methods": [
+        "S_LL",
+        "V_LL",
+        "G_LL",
+        "MV_ATTN"
+      ],
+      "max_pools": 44,
+      "max_predictor_slots": 11,
+      "max_scene_rows": 572,
+      "no_new_NQ": true,
+      "no_new_RGB": true,
+      "no_new_geometry": true,
+      "readouts": [
+        "F_ONLY_FIXED_ELIGIBLE",
+        "PARENT_D2_FIXED_ELIGIBLE"
+      ],
+      "static_methods": [
+        "B_FC",
+        "B_SURFACE_MEAN",
+        "B_PFE_ADAPTED"
+      ],
+      "view_prefix": 8
+    },
+    "namespace": "src/static_ovmap/structure_confirmation_v1",
+    "phases": [
+      "preflight",
+      "bind",
+      "prepare_cache",
+      "train",
+      "dev_select",
+      "freeze",
+      "confirm_acquire",
+      "confirm_geometry",
+      "confirm_proposals",
+      "confirm_features",
+      "confirm_real_predict",
+      "confirm_gt_prepare",
+      "confirm_gt_predict",
+      "confirm_score",
+      "map_predict",
+      "map_score",
+      "statistics",
+      "cost",
+      "qualitative",
+      "report",
+      "publish",
+      "all"
+    ],
+    "repository": "Orangekostar/oviovo",
+    "sam2": {
+      "commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+      "config": "configs/sam2.1/sam2.1_hiera_l.yaml",
+      "settings": {
+        "box_nms_thresh": 0.7,
+        "crop_n_layers": 0,
+        "crop_n_points_downscale_factor": 1,
+        "crop_nms_thresh": 0.7,
+        "crop_overlap_ratio": 0.3413333333333333,
+        "mask_threshold": 0.0,
+        "min_mask_region_area": 0,
+        "multimask_output": true,
+        "output_mode": "binary_mask",
+        "points_per_batch": 64,
+        "points_per_side": 16,
+        "pred_iou_thresh": 0.8,
+        "stability_score_offset": 1.0,
+        "stability_score_thresh": 0.95,
+        "use_m2m": false
+      },
+      "weights": "PARENT_BOUND_sam2_1_hiera_large"
+    },
+    "schema_version": 1,
+    "selection": {
+      "confirmation_outcomes_used": false,
+      "retain_same_step1000": true,
+      "role": "S_DEV_BASE_ONLY",
+      "scientific_gain_gate": false,
+      "seed17_order": [
+        "A8_desc",
+        "M8_desc",
+        "C8_desc",
+        "step_asc"
+      ],
+      "seed29_checkpoint": "SAME_METHOD_SEED17_SELECTED_STEP",
+      "seed29_reselect": false,
+      "tolerance": 1e-10
+    },
+    "static_methods": [
+      "B_FC",
+      "B_SURFACE_MEAN",
+      "B_PFE_ADAPTED"
+    ],
+    "statistics": {
+      "GT_and_real_use_same_draws": true,
+      "compare_seed_mean_not_pool_seed_predictions": true,
+      "confirmation_pairs": [
+        [
+          "S_LL",
+          "G_LL"
+        ],
+        [
+          "S_LL",
+          "V_LL"
+        ],
+        [
+          "S_LL",
+          "MV_ATTN"
+        ],
+        [
+          "S_LL",
+          "B_SURFACE_MEAN"
+        ]
+      ],
+      "draw_sets": 4000,
+      "draws_per_pair": 1000,
+      "old_attribution_reaudit": false,
+      "primary_profile_by_domain": {
+        "GT_DIAGNOSTIC": "MATCHED_STEP1000",
+        "REAL_PROPOSAL_AP": "SEED17_DEV_SELECTED_SAME_STEP_IN_SEED29"
+      },
+      "resample_matches_namespaced": true,
+      "seed": 4314,
+      "unit": "PHYSICAL_FAMILY"
+    },
+    "task_id": "fg2-structure-confirmation-v1",
+    "train": {
+      "checkpoints": [
+        250,
+        500,
+        1000,
+        1500,
+        2000
+      ],
+      "classes_base": 160,
+      "classes_heldout": 40,
+      "conditions": [
+        "clean",
+        "truncate",
+        "append",
+        "truncate_append"
+      ],
+      "dev_base_originals": 69,
+      "dev_families": 4,
+      "draws": "PARENT_draw_schedule_BY_ORIGINAL_ORDER",
+      "effective_batch": 16,
+      "eta_max": 0.5,
+      "eta_ramp_updates": 200,
+      "fresh_training_default": true,
+      "grad_clip": 1.0,
+      "learning_rate": "PARENT_learning_rate_2000",
+      "loss": {
+        "clean_CE": 0.5,
+        "corrupt_CE": 0.5,
+        "detached_clean_cosine": 0.1,
+        "membership": 0.0,
+        "temperature": 0.07
+      },
+      "max_new_updates": 32000,
+      "methods": [
+        {
+          "grouping": "SURFACE",
+          "id": "S_LL",
+          "inner": "LEARNED",
+          "kind": "PARENT_EQUIVALENT",
+          "outer": "LEARNED",
+          "projection": "POOL_THEN_PHI"
+        },
+        {
+          "grouping": "VIEW",
+          "id": "V_LL",
+          "inner": "LEARNED",
+          "kind": "PARENT_EQUIVALENT",
+          "outer": "LEARNED",
+          "projection": "POOL_THEN_PHI"
+        },
+        {
+          "grouping": "PER_VIEW_FIXED_VALID_PERMUTATION",
+          "id": "G_LL",
+          "inner": "LEARNED",
+          "kind": "MATCHED_GROUP_COUNT",
+          "outer": "LEARNED",
+          "projection": "POOL_THEN_PHI"
+        },
+        {
+          "grouping": "SURFACE",
+          "id": "S_UL",
+          "inner": "UNIFORM",
+          "kind": "FACTORIAL",
+          "outer": "LEARNED",
+          "projection": "POOL_THEN_PHI"
+        },
+        {
+          "grouping": "SURFACE",
+          "id": "S_LU",
+          "inner": "LEARNED",
+          "kind": "FACTORIAL",
+          "outer": "UNIFORM_OWN_DIFFERENTIABLE_MASS",
+          "projection": "POOL_THEN_PHI"
+        },
+        {
+          "grouping": "SURFACE",
+          "id": "S_UU",
+          "inner": "UNIFORM",
+          "kind": "FACTORIAL",
+          "outer": "UNIFORM_OWN_DIFFERENTIABLE_MASS",
+          "projection": "POOL_THEN_PHI"
+        },
+        {
+          "grouping": "SURFACE",
+          "id": "S_PRE",
+          "inner": "LEARNED",
+          "kind": "PROJECTION_ORDER_CONTROL",
+          "outer": "LEARNED",
+          "projection": "PHI_THEN_POOL_WITHOUT_TOKEN_L2"
+        },
+        {
+          "dimension": 256,
+          "dropout": 0.0,
+          "ffn": 1024,
+          "grouping": "VIEW_DESCRIPTOR_TRANSFORMER",
+          "heads": 8,
+          "id": "MV_ATTN",
+          "kind": "CONTROLLED_ADAPTED_BASELINE_NOT_CAMFUSION",
+          "latent_queries": 1,
+          "layers": 4,
+          "pre_norm": true,
+          "zero_output_linear": true
+        }
+      ],
+      "microbatch": 1,
+      "optimizer": "PARENT_optimizer_for",
+      "precision": "FP32_NO_TF32_NO_AMP",
+      "prefixes": [
+        2,
+        4,
+        8
+      ],
+      "preserve_all_eval_model_states": true,
+      "same_step_primary": 1000,
+      "save_full_resume_every": 100,
+      "seeds": [
+        17,
+        29
+      ],
+      "terminal_step_secondary": 2000,
+      "train_base_originals": 622,
+      "train_families": 24,
+      "updates_per_arm": 2000
+    }
+  },
+  "status": "COMPLETE"
+}

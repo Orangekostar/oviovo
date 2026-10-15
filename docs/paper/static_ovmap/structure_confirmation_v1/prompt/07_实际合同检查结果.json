@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "scope": "PACKAGE_SYNTHETIC_CONTRACT_ONLY_NOT_REAL_FC_TRAINING_OR_SCORER",
+  "groups": [
+    {
+      "group": "T1_INPUT_GROUPING",
+      "status": "PASS",
+      "checks": [
+        "seven_keys_unchanged_nonlocal",
+        "joint_token_multiset",
+        "per_group_counts",
+        "prefix_does_not_change_random_map"
+      ]
+    },
+    {
+      "group": "T2_ARITHMETIC_GRADIENT",
+      "status": "PASS",
+      "checks": [
+        "outer_mass_preserved",
+        "relative_uniformity",
+        "quality_gradient_through_frozen_phi",
+        "own_mass_gradient_not_detached",
+        "backbone_no_gradient",
+        "projection_order_is_distinct",
+        "no_local_exact_fallback",
+        "factorial_sum_without_double_interaction"
+      ]
+    },
+    {
+      "group": "T3_SELECTION_RESUME",
+      "status": "PASS",
+      "checks": [
+        "seed17_earliest_tie",
+        "all_checkpoint_states_required",
+        "seed29_no_reselect",
+        "one_update_resume_exact_cpu_fixture"
+      ]
+    },
+    {
+      "group": "T4_COUNTS_SCOPE_EVALUATION",
+      "status": "PASS",
+      "checks": [
+        "32000_updates",
+        "1024000_training_heads",
+        "22080_DEV_heads",
+        "19_selected_predictors",
+        "16_matched_predictors",
+        "420_real_AP_rows",
+        "280320_confirmation_head_upper_bound",
+        "572_old_map_rows_44_pools",
+        "3648_cost_calls",
+        "4000_paired_draw_sets",
+        "duplicated_scan_and_filename_isolation",
+        "no_outcome_scene_replacement",
+        "real_predictions_before_GT",
+        "external_adaptation_scope"
+      ]
+    }
+  ],
+  "group_count": 4,
+  "individual_assertion_topics": 30,
+  "spec_sha256": "5462e13dfcc7b7d5ea30bc0b2616471281c54273571c4e134bf3be2b6be11d5f",
+  "torch_version": "2.10.0+cpu",
+  "numpy_version": "2.3.5",
+  "new_real_training_updates": 0,
+  "new_RGB_encodings": 0,
+  "new_SAM_encodings": 0,
+  "new_map_scores": 0,
+  "Github_publication_performed": false
+}

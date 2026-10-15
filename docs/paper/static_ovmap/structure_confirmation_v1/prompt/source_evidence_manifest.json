@@ -1,0 +1,250 @@
+{
+  "repository": "Orangekostar/oviovo",
+  "commit": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+  "scope": "Relevant files/ranges only; not a full repository or remote server audit",
+  "sources": [
+    {
+      "id": "S01",
+      "path": "src/static_ovmap/frozen_fc_routing/models.py",
+      "git_blob_sha": "44c38bf4de71d26e5bcefe1267ed28de1bdd038e",
+      "read_scope": "全文，当前对话已提供",
+      "symbols_or_evidence": "FGHead/route/correct/FrozenFCBase",
+      "task_decision": "六个FG结构臂、匹配mass、受限残差；G仅改输入分组",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/frozen_fc_routing/models.py"
+    },
+    {
+      "id": "S02",
+      "path": "src/static_ovmap/frozen_fc_routing/training.py",
+      "git_blob_sha": "bb00c9cd0ca1b9f45325ef1ab494c5d4d826ac44",
+      "read_scope": "全文，本轮重读",
+      "symbols_or_evidence": "train_arm/pending_validation/train",
+      "task_decision": "旧selected覆盖；新增永久匹配步权重；禁调用四臂旧编排",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/frozen_fc_routing/training.py"
+    },
+    {
+      "id": "S03",
+      "path": "src/static_ovmap/learned_object_readout/training.py",
+      "git_blob_sha": "86e6f433e12e635e7a88f39635c02c57b4dea112",
+      "read_scope": "1–170，本轮",
+      "symbols_or_evidence": "draw_schedule/optimizer_for/learning_rate/save_checkpoint/restore_checkpoint",
+      "task_decision": "完整原件顺序及16micro/2000updates/原RNG优化器复用",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/learned_object_readout/training.py"
+    },
+    {
+      "id": "S04",
+      "path": "src/static_ovmap/learned_object_readout/losses.py",
+      "git_blob_sha": "3cdd19c6f9dbbb719030d38f32cbe650730eab2e",
+      "read_scope": "全文，本轮",
+      "symbols_or_evidence": "base_loss",
+      "task_decision": "0.5clean+0.5corrupt+0.1detachclean，160base0.07",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/learned_object_readout/losses.py"
+    },
+    {
+      "id": "S05",
+      "path": "src/static_ovmap/learned_object_readout/features.py",
+      "git_blob_sha": "8282d8ed2249680a65d9fa1e14b3b1e4dec0d4f2",
+      "read_scope": "1–190本轮＋当前对话已有190后loader内容",
+      "symbols_or_evidence": "FrozenFC/phi/capture/ObjectLoader",
+      "task_decision": "冻结phi保留输入梯度；local_unit已L2；3904资源硬码不适用新12family",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/learned_object_readout/features.py"
+    },
+    {
+      "id": "S06",
+      "path": "src/static_ovmap/learned_object_readout/observations.py",
+      "git_blob_sha": "f6c5e9cd258940115720fa4b4aff874ba48b64b4",
+      "read_scope": "全文，本轮",
+      "symbols_or_evidence": "sample_raw/choose_views/full_qualified/site_indices",
+      "task_decision": "覆盖优先viewbank、exactresize/grid sample、资格阈值",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/learned_object_readout/observations.py"
+    },
+    {
+      "id": "S07",
+      "path": "src/static_ovmap/learned_object_readout/data.py",
+      "git_blob_sha": "a0af78677f1ad1491619cbfbe9270751f4d136d3",
+      "read_scope": "1–245，本轮",
+      "symbols_or_evidence": "instance_arrays/vertex_area/perturb_support/proposal_sites/site_observation/_mesh/prepare_family",
+      "task_decision": "GT诊断pure函数、48+16局部slot；不用有旧holdout门槛的wholeprepare",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/learned_object_readout/data.py"
+    },
+    {
+      "id": "S08",
+      "path": "src/static_ovmap/frozen_fc_routing/data.py",
+      "git_blob_sha": "fb83e1d82be05d30eba395dad073ae33e39a2164",
+      "read_scope": "全文，本轮",
+      "symbols_or_evidence": "ObjectLoader/CachedObjectLoader",
+      "task_decision": "七键full8稀疏缓存；旧parity前置不能伪造",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/frozen_fc_routing/data.py"
+    },
+    {
+      "id": "S09",
+      "path": "src/static_ovmap/contribution_attribution_v1/nomination.py",
+      "git_blob_sha": "eff18b99e20eb5bf542ee497f1814a0e32c95af3",
+      "read_scope": "全文，当前对话已提供",
+      "symbols_or_evidence": "_confirmation/run",
+      "task_decision": "已有名单field scene_nomination.selected，不能重新挑family",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/contribution_attribution_v1/nomination.py"
+    },
+    {
+      "id": "S10",
+      "path": "src/static_ovmap/preservation_routing/real_proposals.py",
+      "git_blob_sha": "efc0c64daac09557ebd2b9afa9d7e69c5fbdbbfd",
+      "read_scope": "全文至260，本轮",
+      "symbols_or_evidence": "run的GT-free支持构造与后验GT匹配",
+      "task_decision": "复用source-row lifting/flags/site逻辑，不调用旧H2转移锁/8图wholeworker",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/preservation_routing/real_proposals.py"
+    },
+    {
+      "id": "S11",
+      "path": "src/static_ovmap/preservation_routing/sam2_worker.py",
+      "git_blob_sha": "8146bb911c74c1ca3c48953f76dee7e41e005b68",
+      "read_scope": "全文，本轮",
+      "symbols_or_evidence": "main/SAM2AutomaticMaskGenerator",
+      "task_decision": "FP32、top16、GT-free retention、真实hooks计数",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/preservation_routing/sam2_worker.py"
+    },
+    {
+      "id": "S12",
+      "path": "configs/static_ovmap/preservation_routing_v1.json",
+      "git_blob_sha": "57ceba274a1b68ae872471ecfde3ebd3c01db9ae",
+      "read_scope": "1–230，本轮",
+      "symbols_or_evidence": "data.real_proposal",
+      "task_decision": "SAM2全部固定设置、commit/config与旧资源边界",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/configs/static_ovmap/preservation_routing_v1.json"
+    },
+    {
+      "id": "S13",
+      "path": "src/static_ovmap/backbone_wave1/maps.py",
+      "git_blob_sha": "ad0529b2f08b87fe8724ee62397eb6c2891d0789",
+      "read_scope": "全文至230，本轮",
+      "symbols_or_evidence": "mapping_job/run_map",
+      "task_decision": "依赖原capture/200slot/parentcommand，不能假称通用CONF12建图接口",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/backbone_wave1/maps.py"
+    },
+    {
+      "id": "S14",
+      "path": "src/static_ovmap/frozen_fc_routing/prediction.py",
+      "git_blob_sha": "6e629d75204f20325ce4ab75a8812434b446204f",
+      "read_scope": "全文，本轮",
+      "symbols_or_evidence": "run/build_predictions",
+      "task_decision": "旧26回归只替eligible F，原NQ/text/rank/G1；新调度",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/frozen_fc_routing/prediction.py"
+    },
+    {
+      "id": "S15",
+      "path": "src/static_ovmap/learned_object_readout/sensor.py",
+      "git_blob_sha": "82a6ac3d1ddf998d7324c854ba60a5932ab6e212",
+      "read_scope": "全文，本轮",
+      "symbols_or_evidence": "SensorReader/register_depth_rgb",
+      "task_decision": "depth-grid RGB配准、原unaligned坐标，不新增感知标定假设",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/learned_object_readout/sensor.py"
+    },
+    {
+      "id": "S16",
+      "path": "src/static_ovmap/learned_object_readout/inventory.py",
+      "git_blob_sha": "4757e6101b8eff532c94224fa7e531f2257975e3",
+      "read_scope": "1–210，本轮",
+      "symbols_or_evidence": "inventory_roots/materialize的authority与DownloaderLayout",
+      "task_decision": "有限原件/既有协议证据/官方下载helper；不能用旧函数重新选32family",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/learned_object_readout/inventory.py"
+    },
+    {
+      "id": "S17",
+      "path": "src/static_ovmap/contribution_attribution_v1/surface.py",
+      "git_blob_sha": "d42547b6033b9dfff372fe25becd6a2ee36efea8",
+      "read_scope": "全文当前对话已提供",
+      "symbols_or_evidence": "permute_valid/_historical",
+      "task_decision": "旧shuffle只推理，G改为从头训练；jointmetadata保持token",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/contribution_attribution_v1/surface.py"
+    },
+    {
+      "id": "S18",
+      "path": "src/static_ovmap/contribution_attribution_v1/stability.py",
+      "git_blob_sha": "e2643dcb53d5ac6fc678e4e804dbdd6bf7c29a2b",
+      "read_scope": "全文当前对话已提供",
+      "symbols_or_evidence": "namespace_matches/_bootstrap",
+      "task_decision": "matches命名空间可复用，不能拼模型seed为场景",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/contribution_attribution_v1/stability.py"
+    },
+    {
+      "id": "S19",
+      "path": "src/static_ovmap/contribution_attribution_v1/recovery.py",
+      "git_blob_sha": "d96ae6f7dd3999aa75af6460c10471d5182c4ea3",
+      "read_scope": "全文当前对话已提供",
+      "symbols_or_evidence": "one_to_one/official_entries",
+      "task_decision": "官方scoreentries与一对一几何诊断分开",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/contribution_attribution_v1/recovery.py"
+    },
+    {
+      "id": "S20",
+      "path": "src/static_ovmap/paired_evidence_study/residuals.py",
+      "git_blob_sha": "8f77cb9bdaba0dd9c37069420ad575cbf3bc70ef",
+      "read_scope": "全文当前对话已提供",
+      "symbols_or_evidence": "pool/simple_dependence",
+      "task_decision": "原D2float64与缺源语义，禁止新确认后调权",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/paired_evidence_study/residuals.py"
+    },
+    {
+      "id": "S21",
+      "path": "src/static_ovmap/contribution_attribution_v1/rank.py",
+      "git_blob_sha": "2a91c745d63840716bc8531e0411b270ac37a12f",
+      "read_scope": "全文当前对话已提供",
+      "symbols_or_evidence": "score_explicit_view/explicit_view",
+      "task_decision": "explicit稀疏mask与rank接口参考，非默认复用exclusivePayload",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/contribution_attribution_v1/rank.py"
+    },
+    {
+      "id": "S22",
+      "path": "src/static_ovmap/contribution_attribution_v1/selection.py",
+      "git_blob_sha": "2ddd8d8e03835f36d1cd7c6fb4c07f25d402e22b",
+      "read_scope": "全文当前对话已提供",
+      "symbols_or_evidence": "immutable weight lock",
+      "task_decision": "沿用锁定思想，不用其融合指标当S模型选择器",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/contribution_attribution_v1/selection.py"
+    },
+    {
+      "id": "S23",
+      "path": "docs/paper/static_ovmap/contribution_attribution_v1/HANDOFF.md",
+      "git_blob_sha": "efc2abe1d78ab49cb459c85d5eaa8a48c727934f",
+      "read_scope": "全文当前对话已提供",
+      "symbols_or_evidence": "root/runtime/publishing",
+      "task_decision": "真实ATTR_ROOT，C1/C2与外部final边界",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/docs/paper/static_ovmap/contribution_attribution_v1/HANDOFF.md"
+    },
+    {
+      "id": "S24",
+      "path": "artifacts/static_ovmap/contribution_attribution_v1/records/confirmation_plan.json.gz",
+      "git_blob_sha": "41b2769612e89e6f9d4e67c26d29550d79d8c884",
+      "read_scope": "本轮目录元数据；字段schema由S09核对，未在本地解压内容",
+      "symbols_or_evidence": "scene_nomination.selected",
+      "task_decision": "运行必须读取封存内容，不能从本包猜scene names",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/artifacts/static_ovmap/contribution_attribution_v1/records/confirmation_plan.json.gz"
+    },
+    {
+      "id": "S25",
+      "path": "docs/paper/static_ovmap/contribution_attribution_v1/RESULTS.md",
+      "git_blob_sha": "7dad7d71d056ca201dda012d18bb4e3c8e744381",
+      "read_scope": "报告范围当前对话已提供",
+      "symbols_or_evidence": "matchedstep+wholemap+partialproof",
+      "task_decision": "原始效应是历史，不写成本轮预期结果",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/docs/paper/static_ovmap/contribution_attribution_v1/RESULTS.md"
+    },
+    {
+      "id": "S26",
+      "path": "configs/static_ovmap/frozen_fc_routing_v1.json",
+      "git_blob_sha": "11ecb5f8b4babe0b88c6ea13f04eb754fb40c9c3",
+      "read_scope": "data/inputs/model/loss/training当前对话已提供",
+      "symbols_or_evidence": "methods/grouping/classes",
+      "task_decision": "160/40、622/69、8views、64slots、冻骨干",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/configs/static_ovmap/frozen_fc_routing_v1.json"
+    },
+    {
+      "id": "S27",
+      "path": "src/static_ovmap/preservation_routing/selection.py",
+      "git_blob_sha": "4ca15d22701314c3d4e03f6a560bfc0f3fd896c9",
+      "read_scope": "全文，本轮",
+      "symbols_or_evidence": "summarize / choose",
+      "task_decision": "原A/M/C是family/class/clean正确率；heldout CE160不能调用原base-only接口；不用旧qualifies",
+      "url": "https://github.com/Orangekostar/oviovo/blob/2f0d8a4f7043557462f05875eca8b7f71eb66761/src/static_ovmap/preservation_routing/selection.py"
+    }
+  ]
+}
