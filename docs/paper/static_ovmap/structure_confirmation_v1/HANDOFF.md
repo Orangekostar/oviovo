@@ -27,3 +27,7 @@ PY
 ```
 
 该加载接口恢复小头；实际前向仍需锁定FC的phi及精确七张量输入。基础FC权重和原始ScanNet数据未上传。
+
+C1：`94d0cab99bd55dfb46b9a401f9a560b9a78832e5`
+
+[RESULTS](https://github.com/Orangekostar/oviovo/blob/94d0cab99bd55dfb46b9a401f9a560b9a78832e5/docs/paper/static_ovmap/structure_confirmation_v1/RESULTS.md) · [HANDOFF](https://github.com/Orangekostar/oviovo/blob/94d0cab99bd55dfb46b9a401f9a560b9a78832e5/docs/paper/static_ovmap/structure_confirmation_v1/HANDOFF.md)
