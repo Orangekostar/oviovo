@@ -14,3 +14,7 @@ python scripts/evaluation/run_semantic_update_evidence_v1.py --parent-root "$STR
 B/C阶段入口在当前闭合gate下统一返回NOT_ACTIVATED_BY_A；B模型定义/算子为未训练代码，不声明已验证B/C服务器接入。若未来科学合同要改变门槛、输入或数学，必须新identity并重新审计，不能沿用本轮负结果收据宣称完成新实验。
 
 没有外部全方法复现、主分支合并或部署变更。C1固定成果，C2仅C1收据与永久链接。C2 SHA及真实零工作resume结果写OUT/publication，不产生第三次自引用提交。
+
+C1：`175758bd91d9f41236a765b236f2a3efcfad52cf`
+
+[RESULTS](https://github.com/Orangekostar/oviovo/blob/175758bd91d9f41236a765b236f2a3efcfad52cf/docs/paper/static_ovmap/semantic_update_evidence_v1/RESULTS.md) · [HANDOFF](https://github.com/Orangekostar/oviovo/blob/175758bd91d9f41236a765b236f2a3efcfad52cf/docs/paper/static_ovmap/semantic_update_evidence_v1/HANDOFF.md)
