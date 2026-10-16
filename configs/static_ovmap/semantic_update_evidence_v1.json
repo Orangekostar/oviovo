@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "task_id": "ovmap-semantic-update-evidence-v1",
+  "date": "2026-10-16",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "553758bda89031b05916ac81a2981b597dfb3bda",
+  "branch": "research/ovmap-semantic-update-evidence-v1",
+  "namespace": "src/static_ovmap/semantic_update_evidence_v1",
+  "entrypoint": "scripts/evaluation/run_semantic_update_evidence_v1.py",
+  "parent_root_default": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001",
+  "parent_public_artifacts": "artifacts/static_ovmap/structure_confirmation_v1",
+  "phases": [
+    "bind",
+    "A_import",
+    "A_scores",
+    "A_vectors",
+    "A_crossfit",
+    "A_decide",
+    "B_roles",
+    "B_engineering",
+    "B_train",
+    "B_select",
+    "B_regression",
+    "B_decide",
+    "C_nominate",
+    "C_acquire",
+    "C_geometry",
+    "C_proposals",
+    "C_features",
+    "C_real_predict",
+    "C_GT_prepare",
+    "C_GT_predict",
+    "C_score",
+    "C_statistics",
+    "report",
+    "review",
+    "publish"
+  ],
+  "A": {
+    "domain": "PARENT_CONF12_EXPOSED_EXPLORATION",
+    "primary_profile": "matched1000",
+    "primary_prefix": 8,
+    "primary_condition": "clean",
+    "methods": [
+      "B_FC",
+      "S_LL",
+      "G_LL",
+      "V_LL",
+      "MV_ATTN"
+    ],
+    "seeds": [
+      17,
+      29
+    ],
+    "alpha_grid": [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "gamma_grid": [
+      -0.5,
+      -0.25,
+      -0.1,
+      -0.05,
+      -0.025,
+      0,
+      0.025,
+      0.05,
+      0.1,
+      0.25,
+      0.5
+    ],
+    "angle_cap_degrees": [
+      5,
+      10,
+      20,
+      30,
+      180
+    ],
+    "candidate_rule": "UNION_OF_MIX_GAMMA_AND_CAP_GAMMA_NOT_CARTESIAN_MIX_CAP",
+    "logical_candidates_per_source": 110,
+    "crossfit": "LEAVE_ONE_PARENT_CONF_FAMILY_OUT;SELECT_SEED17_APPLY_SAME_TO_SEED29",
+    "B_gate_min_H_macro_advantage_each_seed": 0.01,
+    "B_gate_min_positive_families_each_seed": 8,
+    "B_gate_candidates": [
+      "S_LL",
+      "G_LL"
+    ],
+    "B_gate_not_statistical_significance": true,
+    "restore_head_cap": 2500
+  },
+  "B": {
+    "enabled_only_after": "A_GATE_OPEN",
+    "methods": [
+      "FREE",
+      "RADIUS",
+      "EVIDENCE"
+    ],
+    "seeds": [
+      17,
+      29
+    ],
+    "pseudo_novel_count": 8,
+    "pseudo_hash_prefix": "SUEV1-PSEUDO-20261016|",
+    "pseudo_eligibility": {
+      "train_positive_min": 4,
+      "dev_positive_min": 1
+    },
+    "pseudo_dev_family_min": 2,
+    "core_dev_positive_min": 8,
+    "core_dev_classes_min": 8,
+    "train_updates_per_arm": 2000,
+    "batch_originals": 16,
+    "clean_corrupt_forwards_per_original": 2,
+    "checkpoints": [
+      250,
+      500,
+      1000,
+      1500,
+      2000
+    ],
+    "prefix_cycle": [
+      2,
+      4,
+      8
+    ],
+    "core_class_count": 152,
+    "pseudo_class_count": 8,
+    "original_novel_class_count": 40,
+    "classification_temperature": 0.07,
+    "loss_weights": {
+      "clean_CE": 0.5,
+      "corrupt_CE": 0.5,
+      "cosine_consistency": 0.1
+    },
+    "network": {
+      "width": 256,
+      "blocks": 4,
+      "attention_heads": 8,
+      "ff_width": 1024,
+      "dropout": 0,
+      "type_tokens": 3,
+      "latent_tokens": 1,
+      "output_zero_init": true,
+      "seed_offset": 3701
+    },
+    "evidence": "UNIFORM_VALID_RAW_SURFACE_POOL_FROZEN_PHI_UNIT;NO_TRAINED_S_WEIGHTS",
+    "max_evidence_vectors": 64,
+    "center_epsilon": 0.02,
+    "radius": 0.5,
+    "hull_steps": 128,
+    "hull_algorithm": "FIXED_UNROLLED_FISTA_SIMPLEX_NO_STE",
+    "exact_intersection_projection": false,
+    "numerical_check": {
+      "train_objects": 2,
+      "prefixes": [
+        2,
+        8
+      ],
+      "probes_per_input": 3,
+      "compare_steps": 256,
+      "max_output_L2": 0.002,
+      "max_FW_gap": 0.0001
+    },
+    "primary_selection": "SEED17_DEV_CORE_PSEUDO_H_MACRO_THEN_MIN_MACRO_THEN_CORE_MACRO_THEN_EARLIEST",
+    "postprocess_grid": "SAME_110_AS_A_PER_CHECKPOINT_FOR_ALL_THREE_METHODS",
+    "nominal_updates": 12000,
+    "maximum_replayed_updates": 200,
+    "fresh_gate_delta_H_raw_vs_RADIUS_each_seed": 0.005,
+    "fresh_gate_delta_H_POST_vs_best_simple_each_seed": 0.01,
+    "fresh_gate_max_base_or_pseudo_loss_each_seed": 0.01,
+    "fresh_gate_requires_active_evidence_and_nonzero_alpha": true,
+    "regression_runs_on_completed_B_even_if_C_gate_fails": true,
+    "historical_REG26_new_map_construction": 0,
+    "regression_slots": 14,
+    "regression_readouts": [
+      "F_ONLY_FIXED_ELIGIBLE",
+      "PARENT_D2_FIXED_ELIGIBLE"
+    ],
+    "max_regression_rows": 728,
+    "max_regression_pools": 56
+  },
+  "C": {
+    "enabled_only_after": "B_GATE_OPEN",
+    "families": 12,
+    "selection_hash_prefix": "SUEV1-CONF-20261016|",
+    "source": "PINNED_OFFICIAL_SCANNET_V2_TRAIN",
+    "exclude": "ALL_KNOWN_PROJECT_EXPOSED_FAMILIES_IN_FINITE_LINEAGE_INCLUDING_OLD_CONF12",
+    "choose_capture": "LOWEST_NUMERIC_CAPTURE_SUFFIX_PER_FAMILY",
+    "replace_failed_family": false,
+    "frames_per_family_max": 96,
+    "AMG_seed_frames_per_family": 12,
+    "retained_masks_per_seed": 32,
+    "max_retained_real_proposals": 4608,
+    "frame_index_rule": "floor(j*(n-1)/11), j=0..11;deduplicate",
+    "provided_mesh_only": true,
+    "new_full_online_map": false,
+    "raw_slots_per_seed": 3,
+    "post_slots_per_seed": 3,
+    "static_slots": [
+      "B_FC",
+      "B_C0"
+    ],
+    "real_columns": 14,
+    "GT_selected_columns": 14,
+    "GT_matched1000_extra_columns": 6,
+    "max_real_scene_rows": 168,
+    "max_real_pools": 14,
+    "GT_originals_per_family_cap": 64,
+    "max_GT_originals": 768,
+    "real_score_confidence": 1.0,
+    "deduplicate_exact_source_rows_with_provenance": true,
+    "cross_frame_merge_or_oracle_union": false,
+    "support_reference": {
+      "IoU": 0.5,
+      "unique_GT": 40,
+      "families": 8,
+      "original_novel_unique_GT": 20,
+      "original_novel_families": 4
+    },
+    "bootstrap_pairs": [
+      "EVIDENCE_RAW-RADIUS_RAW",
+      "EVIDENCE_RAW-FREE_RAW",
+      "EVIDENCE_POST-SIMPLE_STAR",
+      "EVIDENCE_RAW-B_C0"
+    ],
+    "bootstrap_draws_per_pair": 1000,
+    "bootstrap_seed": 4817,
+    "real_primary": "LOCKED_POST_FOR_POST_PAIR_ELSE_RAW",
+    "GT_primary": "SELECTED_MATCHED1000_SUPPLEMENT",
+    "new_confirmation_parameters_reselected": false
+  },
+  "runtime": {
+    "single_inherited_GPU": true,
+    "CPU_scorers": 3,
+    "BLAS_threads": 1,
+    "shared_host_cache_GiB": 32,
+    "max_new_download_GiB": 120,
+    "max_OUT_GiB": 220,
+    "reserve_free_GiB": 20,
+    "max_A_head_calls": 2500,
+    "max_B_train_validation_head_calls": 420000,
+    "max_B_engineering_calls": 200,
+    "max_C_head_calls": 220000,
+    "max_REG_head_calls": 24000,
+    "max_cost_head_calls": 512,
+    "max_new_FC_images": 1152,
+    "max_new_SAM_images": 144,
+    "max_new_old_data_encodings": 0,
+    "max_new_maps": 0,
+    "max_new_NQ_encodings": 0,
+    "test_groups": 4,
+    "per_blob_MiB": 40,
+    "new_publication_total_MiB": 512,
+    "normal_push_attempts_max": 2
+  },
+  "policy": {
+    "deployment": "N0_UNCHANGED",
+    "new_novelty_guarantee": false,
+    "external_full_method_reproduction": "NOT_RUN",
+    "conditional_skip_is_not_failed_execution": true,
+    "dependency_missing_is_not_negative_science": true,
+    "always_deliver_negative_and_partial": true,
+    "resume_completed_new_workers_heads_commits": 0
+  }
+}

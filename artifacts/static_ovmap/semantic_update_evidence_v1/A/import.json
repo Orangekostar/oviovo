@@ -1,0 +1,5704 @@
+{
+  "abstention_originals": 9,
+  "base_objects": 215,
+  "class_split": {
+    "base_ids": [
+      1,
+      2,
+      5,
+      6,
+      9,
+      10,
+      11,
+      15,
+      17,
+      18,
+      19,
+      21,
+      22,
+      24,
+      26,
+      27,
+      28,
+      29,
+      32,
+      33,
+      34,
+      35,
+      38,
+      39,
+      40,
+      41,
+      42,
+      44,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      54,
+      55,
+      56,
+      57,
+      58,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      70,
+      71,
+      74,
+      76,
+      77,
+      79,
+      80,
+      82,
+      84,
+      86,
+      87,
+      88,
+      89,
+      90,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      107,
+      112,
+      115,
+      120,
+      121,
+      122,
+      125,
+      131,
+      134,
+      136,
+      138,
+      140,
+      141,
+      148,
+      154,
+      155,
+      156,
+      159,
+      161,
+      165,
+      168,
+      169,
+      170,
+      177,
+      180,
+      185,
+      188,
+      191,
+      193,
+      195,
+      202,
+      208,
+      213,
+      214,
+      221,
+      229,
+      230,
+      232,
+      233,
+      242,
+      250,
+      261,
+      264,
+      300,
+      304,
+      312,
+      323,
+      325,
+      342,
+      356,
+      370,
+      392,
+      399,
+      417,
+      488,
+      540,
+      562,
+      570,
+      572,
+      581,
+      609,
+      748,
+      776,
+      1156,
+      1163,
+      1164,
+      1165,
+      1166,
+      1167,
+      1168,
+      1169,
+      1170,
+      1171,
+      1172,
+      1174,
+      1175,
+      1176,
+      1178,
+      1179,
+      1180,
+      1181,
+      1182,
+      1183,
+      1184,
+      1186,
+      1187,
+      1188,
+      1189
+    ],
+    "constants": {
+      "bytes": 9918,
+      "path": "/mnt/shared/capacity/node101/ww/ovimap-learned-object-readout-v1/attempt_001/external/upstream_sources/ScanNet/BenchmarkScripts/ScanNet200/scannet200_constants.py",
+      "sha256": "28a365821a1d9a5db1adf4873d87e740b8dcbc89f9ae68e03591815d666f216f"
+    },
+    "heldout_ids": [
+      3,
+      4,
+      7,
+      8,
+      13,
+      14,
+      16,
+      23,
+      31,
+      36,
+      45,
+      59,
+      69,
+      72,
+      73,
+      75,
+      78,
+      93,
+      106,
+      110,
+      116,
+      118,
+      128,
+      130,
+      132,
+      139,
+      145,
+      157,
+      163,
+      166,
+      276,
+      283,
+      286,
+      331,
+      395,
+      408,
+      1173,
+      1185,
+      1190,
+      1191
+    ],
+    "identity": "5fe3b8d50d3149e9eebb6874d27c558121b7c83381e037178e3c7a486fbdccad",
+    "inherited_text_mapping": "VERIFY_AT_FEATURE_BINDING",
+    "official_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      23,
+      24,
+      26,
+      27,
+      28,
+      29,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      38,
+      39,
+      40,
+      41,
+      42,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      82,
+      84,
+      86,
+      87,
+      88,
+      89,
+      90,
+      93,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      110,
+      112,
+      115,
+      116,
+      118,
+      120,
+      121,
+      122,
+      125,
+      128,
+      130,
+      131,
+      132,
+      134,
+      136,
+      138,
+      139,
+      140,
+      141,
+      145,
+      148,
+      154,
+      155,
+      156,
+      157,
+      159,
+      161,
+      163,
+      165,
+      166,
+      168,
+      169,
+      170,
+      177,
+      180,
+      185,
+      188,
+      191,
+      193,
+      195,
+      202,
+      208,
+      213,
+      214,
+      221,
+      229,
+      230,
+      232,
+      233,
+      242,
+      250,
+      261,
+      264,
+      276,
+      283,
+      286,
+      300,
+      304,
+      312,
+      323,
+      325,
+      331,
+      342,
+      356,
+      370,
+      392,
+      395,
+      399,
+      408,
+      417,
+      488,
+      540,
+      562,
+      570,
+      572,
+      581,
+      609,
+      748,
+      776,
+      1156,
+      1163,
+      1164,
+      1165,
+      1166,
+      1167,
+      1168,
+      1169,
+      1170,
+      1171,
+      1172,
+      1173,
+      1174,
+      1175,
+      1176,
+      1178,
+      1179,
+      1180,
+      1181,
+      1182,
+      1183,
+      1184,
+      1185,
+      1186,
+      1187,
+      1188,
+      1189,
+      1190,
+      1191
+    ],
+    "official_names": [
+      "wall",
+      "chair",
+      "floor",
+      "table",
+      "door",
+      "couch",
+      "cabinet",
+      "shelf",
+      "desk",
+      "office chair",
+      "bed",
+      "pillow",
+      "sink",
+      "picture",
+      "window",
+      "toilet",
+      "bookshelf",
+      "monitor",
+      "curtain",
+      "book",
+      "armchair",
+      "coffee table",
+      "box",
+      "refrigerator",
+      "lamp",
+      "kitchen cabinet",
+      "towel",
+      "clothes",
+      "tv",
+      "nightstand",
+      "counter",
+      "dresser",
+      "stool",
+      "cushion",
+      "plant",
+      "ceiling",
+      "bathtub",
+      "end table",
+      "dining table",
+      "keyboard",
+      "bag",
+      "backpack",
+      "toilet paper",
+      "printer",
+      "tv stand",
+      "whiteboard",
+      "blanket",
+      "shower curtain",
+      "trash can",
+      "closet",
+      "stairs",
+      "microwave",
+      "stove",
+      "shoe",
+      "computer tower",
+      "bottle",
+      "bin",
+      "ottoman",
+      "bench",
+      "board",
+      "washing machine",
+      "mirror",
+      "copier",
+      "basket",
+      "sofa chair",
+      "file cabinet",
+      "fan",
+      "laptop",
+      "shower",
+      "paper",
+      "person",
+      "paper towel dispenser",
+      "oven",
+      "blinds",
+      "rack",
+      "plate",
+      "blackboard",
+      "piano",
+      "suitcase",
+      "rail",
+      "radiator",
+      "recycling bin",
+      "container",
+      "wardrobe",
+      "soap dispenser",
+      "telephone",
+      "bucket",
+      "clock",
+      "stand",
+      "light",
+      "laundry basket",
+      "pipe",
+      "clothes dryer",
+      "guitar",
+      "toilet paper holder",
+      "seat",
+      "speaker",
+      "column",
+      "bicycle",
+      "ladder",
+      "bathroom stall",
+      "shower wall",
+      "cup",
+      "jacket",
+      "storage bin",
+      "coffee maker",
+      "dishwasher",
+      "paper towel roll",
+      "machine",
+      "mat",
+      "windowsill",
+      "bar",
+      "toaster",
+      "bulletin board",
+      "ironing board",
+      "fireplace",
+      "soap dish",
+      "kitchen counter",
+      "doorframe",
+      "toilet paper dispenser",
+      "mini fridge",
+      "fire extinguisher",
+      "ball",
+      "hat",
+      "shower curtain rod",
+      "water cooler",
+      "paper cutter",
+      "tray",
+      "shower door",
+      "pillar",
+      "ledge",
+      "toaster oven",
+      "mouse",
+      "toilet seat cover dispenser",
+      "furniture",
+      "cart",
+      "storage container",
+      "scale",
+      "tissue box",
+      "light switch",
+      "crate",
+      "power outlet",
+      "decoration",
+      "sign",
+      "projector",
+      "closet door",
+      "vacuum cleaner",
+      "candle",
+      "plunger",
+      "stuffed animal",
+      "headphones",
+      "dish rack",
+      "broom",
+      "guitar case",
+      "range hood",
+      "dustpan",
+      "hair dryer",
+      "water bottle",
+      "handicap bar",
+      "purse",
+      "vent",
+      "shower floor",
+      "water pitcher",
+      "mailbox",
+      "bowl",
+      "paper bag",
+      "alarm clock",
+      "music stand",
+      "projector screen",
+      "divider",
+      "laundry detergent",
+      "bathroom counter",
+      "object",
+      "bathroom vanity",
+      "closet wall",
+      "laundry hamper",
+      "bathroom stall door",
+      "ceiling light",
+      "trash bin",
+      "dumbbell",
+      "stair rail",
+      "tube",
+      "bathroom cabinet",
+      "cd case",
+      "closet rod",
+      "coffee kettle",
+      "structure",
+      "shower head",
+      "keyboard piano",
+      "case of water bottles",
+      "coat rack",
+      "storage organizer",
+      "folded chair",
+      "fire alarm",
+      "power strip",
+      "calendar",
+      "poster",
+      "potted plant",
+      "luggage",
+      "mattress"
+    ],
+    "positive_supervision": "BASE_ONLY",
+    "status": "LOCKED"
+  },
+  "columns": [
+    {
+      "method": "G_LL",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:G_LL:seed17",
+      "step": 1500,
+      "unique_model": "G_LL:seed17:step1500"
+    },
+    {
+      "method": "G_LL",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:G_LL:seed17",
+      "step": 1500,
+      "unique_model": "G_LL:seed17:step1500"
+    },
+    {
+      "method": "G_LL",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:G_LL:seed17",
+      "step": 1500,
+      "unique_model": "G_LL:seed17:step1500"
+    },
+    {
+      "method": "G_LL",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:G_LL:seed29",
+      "step": 1500,
+      "unique_model": "G_LL:seed29:step1500"
+    },
+    {
+      "method": "G_LL",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:G_LL:seed29",
+      "step": 1500,
+      "unique_model": "G_LL:seed29:step1500"
+    },
+    {
+      "method": "G_LL",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:G_LL:seed29",
+      "step": 1500,
+      "unique_model": "G_LL:seed29:step1500"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:MV_ATTN:seed17",
+      "step": 2000,
+      "unique_model": "MV_ATTN:seed17:step2000"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:MV_ATTN:seed17",
+      "step": 2000,
+      "unique_model": "MV_ATTN:seed17:step2000"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:MV_ATTN:seed17",
+      "step": 2000,
+      "unique_model": "MV_ATTN:seed17:step2000"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:MV_ATTN:seed29",
+      "step": 2000,
+      "unique_model": "MV_ATTN:seed29:step2000"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:MV_ATTN:seed29",
+      "step": 2000,
+      "unique_model": "MV_ATTN:seed29:step2000"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:MV_ATTN:seed29",
+      "step": 2000,
+      "unique_model": "MV_ATTN:seed29:step2000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:S_LL:seed17",
+      "step": 1000,
+      "unique_model": "S_LL:seed17:step1000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:S_LL:seed17",
+      "step": 1000,
+      "unique_model": "S_LL:seed17:step1000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:S_LL:seed17",
+      "step": 1000,
+      "unique_model": "S_LL:seed17:step1000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:S_LL:seed29",
+      "step": 1000,
+      "unique_model": "S_LL:seed29:step1000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:S_LL:seed29",
+      "step": 1000,
+      "unique_model": "S_LL:seed29:step1000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:S_LL:seed29",
+      "step": 1000,
+      "unique_model": "S_LL:seed29:step1000"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:V_LL:seed17",
+      "step": 500,
+      "unique_model": "V_LL:seed17:step500"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:V_LL:seed17",
+      "step": 500,
+      "unique_model": "V_LL:seed17:step500"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 17,
+      "slot": "selected:V_LL:seed17",
+      "step": 500,
+      "unique_model": "V_LL:seed17:step500"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:V_LL:seed29",
+      "step": 500,
+      "unique_model": "V_LL:seed29:step500"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:V_LL:seed29",
+      "step": 500,
+      "unique_model": "V_LL:seed29:step500"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": 29,
+      "slot": "selected:V_LL:seed29",
+      "step": 500,
+      "unique_model": "V_LL:seed29:step500"
+    },
+    {
+      "method": "G_LL",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 17,
+      "slot": "matched1000:G_LL:seed17",
+      "step": 1000,
+      "unique_model": "G_LL:seed17:step1000"
+    },
+    {
+      "method": "G_LL",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 29,
+      "slot": "matched1000:G_LL:seed29",
+      "step": 1000,
+      "unique_model": "G_LL:seed29:step1000"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 17,
+      "slot": "matched1000:MV_ATTN:seed17",
+      "step": 1000,
+      "unique_model": "MV_ATTN:seed17:step1000"
+    },
+    {
+      "method": "MV_ATTN",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 29,
+      "slot": "matched1000:MV_ATTN:seed29",
+      "step": 1000,
+      "unique_model": "MV_ATTN:seed29:step1000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 17,
+      "slot": "matched1000:S_LL:seed17",
+      "step": 1000,
+      "unique_model": "S_LL:seed17:step1000"
+    },
+    {
+      "method": "S_LL",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 29,
+      "slot": "matched1000:S_LL:seed29",
+      "step": 1000,
+      "unique_model": "S_LL:seed29:step1000"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 17,
+      "slot": "matched1000:V_LL:seed17",
+      "step": 1000,
+      "unique_model": "V_LL:seed17:step1000"
+    },
+    {
+      "method": "V_LL",
+      "prefix": 8,
+      "profile": "matched1000",
+      "seed": 29,
+      "slot": "matched1000:V_LL:seed29",
+      "step": 1000,
+      "unique_model": "V_LL:seed29:step1000"
+    },
+    {
+      "method": "B_FC",
+      "prefix": 2,
+      "profile": "selected",
+      "seed": null,
+      "slot": "selected:B_FC",
+      "step": null,
+      "unique_model": "B_FC"
+    },
+    {
+      "method": "B_FC",
+      "prefix": 4,
+      "profile": "selected",
+      "seed": null,
+      "slot": "selected:B_FC",
+      "step": null,
+      "unique_model": "B_FC"
+    },
+    {
+      "method": "B_FC",
+      "prefix": 8,
+      "profile": "selected",
+      "seed": null,
+      "slot": "selected:B_FC",
+      "step": null,
+      "unique_model": "B_FC"
+    }
+  ],
+  "embedding_source": "ORIGINAL_OUT_NPZ",
+  "identity": "e74d57cad7dc21e62ce561310749e0fc26d374057577d6369b0e25655f40335a",
+  "input_lock": "534b660ea744ec474e6d86cee06a68d72e0b958d02730e99b6f69e7e0e25476c",
+  "new_head_calls": 0,
+  "novel_objects": 64,
+  "objects": [
+    {
+      "base": true,
+      "class_id": 49,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:11",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 31,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:5",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:3",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 55,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:1",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:6",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 408,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:0",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:4",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 170,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:22",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 17,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:7",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 161,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:19",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:16",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 15,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:12",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 41,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:15",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 157,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:8",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 31,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:13",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:17",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 31,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:10",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 145,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:20",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 128,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:2",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 42,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:21",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:14",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 31,
+      "family": "scene0410",
+      "key": "scene0410_00:GT:9",
+      "scene": "scene0410_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 130,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:15",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 161,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:31",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 32,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:23",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 17,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:8",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:27",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:6",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 14,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:3",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:21",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:10",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:1",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:25",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 16,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:24",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:29",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 188,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:11",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 31,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:12",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 71,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:20",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 130,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:18",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 42,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:0",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 300,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:28",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 32,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:22",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1164,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:4",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 106,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:5",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:14",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 78,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:7",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 120,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:34",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 417,
+      "family": "scene0447",
+      "key": "scene0447_00:GT:2",
+      "scene": "scene0447_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:13",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 4,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:12",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:6",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 16,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:14",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:3",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:9",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 161,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:17",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:1",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 33,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:19",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 48,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:10",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:11",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:20",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:15",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:0",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:7",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:2",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 52,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:16",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:8",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:5",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 16,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:21",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 10,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:4",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0456",
+      "key": "scene0456_00:GT:18",
+      "scene": "scene0456_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:16",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 55,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:4",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 49,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:19",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 71,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:7",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:12",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1164,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:6",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:15",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 41,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:17",
+      "scene": "scene0460_00",
+      "supported": false
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:2",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:1",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 7,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:10",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 14,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:11",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 17,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:0",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 161,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:14",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:9",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:3",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 105,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:8",
+      "scene": "scene0460_00",
+      "supported": false
+    },
+    {
+      "base": true,
+      "class_id": 55,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:18",
+      "scene": "scene0460_00",
+      "supported": false
+    },
+    {
+      "base": true,
+      "class_id": 42,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:5",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0460",
+      "key": "scene0460_00:GT:13",
+      "scene": "scene0460_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 15,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:12",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 23,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:3",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 250,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:7",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 23,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:5",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:11",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 23,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:4",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 16,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:15",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:0",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 23,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:6",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 4,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:2",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 6,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:1",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 250,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:9",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:14",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 16,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:13",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 69,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:10",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0199",
+      "key": "scene0199_00:GT:8",
+      "scene": "scene0199_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:14",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 26,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:11",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:17",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 154,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:8",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 35,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:3",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 102,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:6",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:16",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:0",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 102,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:10",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 72,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:1",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 7,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:5",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:2",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:15",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:9",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 26,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:12",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:13",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:7",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 180,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:18",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 7,
+      "family": "scene0109",
+      "key": "scene0109_00:GT:4",
+      "scene": "scene0109_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 18,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:1",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 8,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:29",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:25",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:8",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:4",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:15",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 64,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:17",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:28",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 8,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:0",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 26,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:14",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:22",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 48,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:16",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 33,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:27",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:19",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:13",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:23",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:11",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 9,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:2",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 9,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:3",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:21",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 52,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:31",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 392,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:35",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:32",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 77,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:20",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 46,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:30",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 77,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:34",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:24",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 52,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:18",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:6",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:5",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:26",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:12",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:7",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0108",
+      "key": "scene0108_00:GT:33",
+      "scene": "scene0108_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:10",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:18",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:9",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 35,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:1",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 82,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:26",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 14,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:11",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:15",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 41,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:19",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 27,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:7",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 29,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:3",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:23",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 342,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:12",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:28",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 29,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:25",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 29,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:6",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 488,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:31",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 100,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:27",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:13",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 29,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:5",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 62,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:0",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 8,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:30",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 29,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:4",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:17",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 323,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:8",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 159,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:2",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 166,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:29",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 59,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:14",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 29,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:20",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:16",
+      "scene": "scene0158_00",
+      "supported": false
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:24",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 488,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:32",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 570,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:21",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0158",
+      "key": "scene0158_00:GT:22",
+      "scene": "scene0158_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 161,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:17",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 15,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:9",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 15,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:8",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 26,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:4",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:6",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 41,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:15",
+      "scene": "scene0182_00",
+      "supported": false
+    },
+    {
+      "base": true,
+      "class_id": 1171,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:11",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 13,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:5",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:0",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:1",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 58,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:3",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1171,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:12",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:14",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:2",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:16",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 15,
+      "family": "scene0182",
+      "key": "scene0182_00:GT:10",
+      "scene": "scene0182_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 55,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:31",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 128,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:24",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 17,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:5",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 161,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:29",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 170,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:19",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 65,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:23",
+      "scene": "scene0501_00",
+      "supported": false
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:3",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:6",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 145,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:16",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 31,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:32",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 65,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:25",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:1",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 128,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:0",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 417,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:14",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 65,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:17",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 49,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:13",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 229,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:8",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1164,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:4",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:22",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1163,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:35",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:2",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 8,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:11",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 71,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:34",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 14,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:37",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 14,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:38",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 145,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:15",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 41,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:28",
+      "scene": "scene0501_00",
+      "supported": false
+    },
+    {
+      "base": true,
+      "class_id": 55,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:18",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:9",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 104,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:12",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 31,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:20",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 145,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:21",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 42,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:7",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:27",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 170,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:30",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 47,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:33",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 65,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:36",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0501",
+      "key": "scene0501_00:GT:10",
+      "scene": "scene0501_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:1",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:3",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 22,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:4",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 18,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:0",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 22,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:9",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 22,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:8",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 18,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:2",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 261,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:6",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 22,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:7",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 261,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:5",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 8,
+      "family": "scene0444",
+      "key": "scene0444_00:GT:10",
+      "scene": "scene0444_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 5,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:11",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 26,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:16",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 16,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:9",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 131,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:21",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:2",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 89,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:14",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:17",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:7",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:8",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:1",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 56,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:15",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 48,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:6",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 41,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:18",
+      "scene": "scene0628_00",
+      "supported": false
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:3",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 9,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:12",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 77,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:0",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 103,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:19",
+      "scene": "scene0628_00",
+      "supported": false
+    },
+    {
+      "base": true,
+      "class_id": 9,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:13",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": false,
+      "class_id": 3,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:5",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:20",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 2,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:4",
+      "scene": "scene0628_00",
+      "supported": true
+    },
+    {
+      "base": true,
+      "class_id": 1,
+      "family": "scene0628",
+      "key": "scene0628_00:GT:10",
+      "scene": "scene0628_00",
+      "supported": true
+    }
+  ],
+  "original_objects": 279,
+  "original_prediction_files": [
+    {
+      "arrays": {
+        "bytes": 1041850,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/cadd415383a77f935a4c850716bc0a2a32843d14abc87f5881c9b22f8378691f.npz",
+        "sha256": "7036cb7e05cdbdd184a25e46121f0669be9ca83e7640feb9916fdfdcf239284c"
+      },
+      "key": "scene0410_00:GT:11",
+      "original_identity": "a9c06f5616c432c2e92bf035034ea48a60847a33887a83f74e077faad450c68f"
+    },
+    {
+      "arrays": {
+        "bytes": 1037104,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7b4fa9348c5910984442f717461c3dad3a7d0eb4bb9d99724d22863d3fc43b59.npz",
+        "sha256": "71d86e5d675d9d77adbcd1719e172936721e809ad5bbfcd6504821e0dc54be4d"
+      },
+      "key": "scene0410_00:GT:5",
+      "original_identity": "8269ce036f8a905f40907bd717177908e34127fd89f98ca4f88c995bef5afee0"
+    },
+    {
+      "arrays": {
+        "bytes": 1036672,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0c8661b23ef9a8978e8141b495d90729e4b3402cb9f27d6bab61e8ab734c5f99.npz",
+        "sha256": "0838ae056ef56b8b8f95a1874539f104802cfd356c2b098f86a0580435711c2c"
+      },
+      "key": "scene0410_00:GT:3",
+      "original_identity": "1f9245d40d89f09f1513445d01851a94fe5ce4ea259b19b1014dacd1d3730779"
+    },
+    {
+      "arrays": {
+        "bytes": 1037279,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c31f788744163d7169449a6ef9c8ff4210790e57d5f9993ecdf18a88088fc6c2.npz",
+        "sha256": "5430a1dc683670bc92e6fb432761b3df969cc587ee4f983c529cc185dfb51ece"
+      },
+      "key": "scene0410_00:GT:1",
+      "original_identity": "f72f70cba8f57b191ba4998b70321476bd0ffc09d856409009324eb1621723f6"
+    },
+    {
+      "arrays": {
+        "bytes": 1035265,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/259339a2977eacc0c40232a9d954f48653f56414c9b4d75bd9dfebfb34a2a789.npz",
+        "sha256": "72b35c07477e3be6a6ad3bb46cef0438d1ed80a285f5d7517d4927a92ea6f969"
+      },
+      "key": "scene0410_00:GT:6",
+      "original_identity": "cda45a030734a352be9bab38c823d2165392da9ad77b59ab258a2c168dde330c"
+    },
+    {
+      "arrays": {
+        "bytes": 504693,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/25268bba8aac3d5fc5cb4c4d3d0e2b167de459de6004d449c6cc1782876f0059.npz",
+        "sha256": "33bc9f9a65854ba38ecee8aae6fcb048ebb530848dc9606e1a0585aef00bb6bb"
+      },
+      "key": "scene0410_00:GT:0",
+      "original_identity": "ce0a850083ef71a29ef827c7ca80ec989b7f6ba807267b4843a525139014577f"
+    },
+    {
+      "arrays": {
+        "bytes": 1034148,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/71221ae84fca64651cdb9f91418a4e54e95ad1df5cf9c47906318e1c3fbce034.npz",
+        "sha256": "2d22b31b3f01c2a314ede841b452a78fcaec78ac4c1c48f6d9574c22157bf52a"
+      },
+      "key": "scene0410_00:GT:4",
+      "original_identity": "b21a40acc4aea548a8ab19358b2a504a16e7a9ecf75aa2373c47a3c4f20918f5"
+    },
+    {
+      "arrays": {
+        "bytes": 506435,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d8b1fe6ebc527147b13b3faafcf827296bdf2c922c56d8bf973793768a3326fd.npz",
+        "sha256": "242f628016e8aa027e0968bee75210547298cdaa9b616c47587740a20256065b"
+      },
+      "key": "scene0410_00:GT:22",
+      "original_identity": "d4e32ad9923a7d1e6434378873e545e61380502cce39406188db03d6adb2e31e"
+    },
+    {
+      "arrays": {
+        "bytes": 1038436,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/eb53c99669b18635b867e85f4ea4f6a8ec6df666a563ce66b034703978784529.npz",
+        "sha256": "867821d7160c4626b0369896c948426a8a992f825151a2b729a8df756f3af46d"
+      },
+      "key": "scene0410_00:GT:7",
+      "original_identity": "d579c08a28a2d204d52df3fb29700fb13383aed3e30146f3a5f782ee81e1a681"
+    },
+    {
+      "arrays": {
+        "bytes": 1035979,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a31de58b659d05d001b902c659a9bb5f9a90e050a95d632af14b72f90568dede.npz",
+        "sha256": "cb3533bcdc7c78d6a6fc06cae8f0bbd258b7749c1ecffde9c96ee1f8943d1885"
+      },
+      "key": "scene0410_00:GT:19",
+      "original_identity": "d966c01d81f085be987c618d8af1379aa8f0fcc0e4a8ce97dc82ffbf8315c2cb"
+    },
+    {
+      "arrays": {
+        "bytes": 1035495,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/044ca68e74127bd1781fdf0dc2fc78c60cab634d54483d7dc85cb722c908dfa8.npz",
+        "sha256": "79b4529a887c5be1a59e44c406e8e567f7f0fbad3fc112a9c85ea2ff4d52921b"
+      },
+      "key": "scene0410_00:GT:16",
+      "original_identity": "3597d02b89d771bc6768ba675d3193a69df0d1a8d6424a431a8cba1d285a37ad"
+    },
+    {
+      "arrays": {
+        "bytes": 503951,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e8852420a10f92a9c877efd64483d9dd3cf732100ea967e2743fffc792bbc6f1.npz",
+        "sha256": "a3b0c64d080f75fa133ba435fbbe981a16c0b3d711c854fc56f63923f8531c83"
+      },
+      "key": "scene0410_00:GT:12",
+      "original_identity": "d76915d79ba4228ba433358695e2fb2de7776944980adbdfa54e7a22232c858e"
+    },
+    {
+      "arrays": {
+        "bytes": 1035828,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4c25141db9e38e7499b6004ae97a7abd9011be579642e6fc8aba735e89b29715.npz",
+        "sha256": "ecf4bfca2d9dbf6fbd14cc87f33fc0ead61d2ad52d5e39de033277e38d409d5e"
+      },
+      "key": "scene0410_00:GT:15",
+      "original_identity": "fb36479b228328c59a1c2abdc7529e7c02b237fd496296d7bcbf50d4f981aafa"
+    },
+    {
+      "arrays": {
+        "bytes": 1041801,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2ab8e0facf0ec488416c594f382aa8574296e8c6cf66472dc17adf3e160b01ce.npz",
+        "sha256": "ceaa40f22d34b238ef414b2853d65ee6d67782e07c4c0b1680504608255209ee"
+      },
+      "key": "scene0410_00:GT:8",
+      "original_identity": "d1c8a3cb7062eb979ab0e4ce9d17ee88fc42fedbbe846afcc38df382e2348edf"
+    },
+    {
+      "arrays": {
+        "bytes": 1036430,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2200693440cae21135e8dc8e3332caeaf1d77ced50771a439a01f5aa953dc92c.npz",
+        "sha256": "14b157513cf03a8eaf359ef575132c69b13abbdbcb837a59c7d0c345e2077f1a"
+      },
+      "key": "scene0410_00:GT:13",
+      "original_identity": "470bcd95181aa3d1963cbf432e8de48d76d61e8c9bcd4afd2c61e71b2aea6047"
+    },
+    {
+      "arrays": {
+        "bytes": 1036044,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/b79df1aabf1344a087aac59fa3d8e47a56733fc55962710c0bcc1522836d4afa.npz",
+        "sha256": "dd33428fd7c0ddc7086c675be5fd042512f625ed8a98e73a54f093ff6882aadc"
+      },
+      "key": "scene0410_00:GT:17",
+      "original_identity": "627d988921d04aef4fd6033da90ad1ce733468f5e13effca8043e752b722f20d"
+    },
+    {
+      "arrays": {
+        "bytes": 1037999,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/56fb3cfe64d14c58bfd587b97d9ea19d31c04a0de7596b23477360938214912d.npz",
+        "sha256": "8ea1438b02d267c349c90cb81aeee1ce56a3f4d1a0f8f322b2229c2308e7ac76"
+      },
+      "key": "scene0410_00:GT:10",
+      "original_identity": "537af87206ebde3f2d0778b0316470e63cbfae9429b98a12430b54a12f2d0add"
+    },
+    {
+      "arrays": {
+        "bytes": 1042180,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/db62f1d8c72b2984bdc92e3050926d5ab0a62b847ab2fc6cb7ca5c44d3d66185.npz",
+        "sha256": "45d03fb48f62543cf13ee1bc10c0b6f96f7916eaab5191f38812da3bfa23e9ff"
+      },
+      "key": "scene0410_00:GT:20",
+      "original_identity": "00eaa3e79ffc14b6693cf0cd9d2522e4b542890fbef1fc2f29996495511566ea"
+    },
+    {
+      "arrays": {
+        "bytes": 1037068,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a436abf066a65c2e0794be15b8f7f0c01e950f42cf38a4bf0f9f3e4bbbcae102.npz",
+        "sha256": "aabe5e8d6afc158cdd3b061bea95e5d72ecf205060a433750f866d26f1ee7eba"
+      },
+      "key": "scene0410_00:GT:2",
+      "original_identity": "f9e4edd2b1dcb0d7772de68b4fec1c594345de9a6f0c70188ea8b1b1f1d2c84a"
+    },
+    {
+      "arrays": {
+        "bytes": 1036197,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0944d066de148c8b00dbb0709f70594ef987eae46d0300f4aa10eec51cad688d.npz",
+        "sha256": "4d369cb8b087d94b98a77759f3db6801fc406c67438deb2cf68da32cabe7a38b"
+      },
+      "key": "scene0410_00:GT:21",
+      "original_identity": "d967884027482e7ed4fe7a0d0f649f7a6f7d623de6f7385dbfddc0ad99cd750f"
+    },
+    {
+      "arrays": {
+        "bytes": 1043281,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/878111a7a7302a207b34df7aead79cf676fa52120633b084d1c82c177876c64c.npz",
+        "sha256": "101b03f3257dcba8ac1277595deda46acc88417e9999814e5f43287aed421501"
+      },
+      "key": "scene0410_00:GT:14",
+      "original_identity": "7b903534cd45321cf4124f0200d40daac420003dd863dda74c38e653b0dc7bc3"
+    },
+    {
+      "arrays": {
+        "bytes": 1039106,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f3fcd1bb8bcfa092c84f403f3db4627232c053d7cdc06543c32d68cebfab1875.npz",
+        "sha256": "e844ede107fc005e0f288cd0188a3e007c60a1f75c8f2582da76538ae8c2d8ca"
+      },
+      "key": "scene0410_00:GT:9",
+      "original_identity": "6731c30a0ffc098fc44684753a83126df306d36041e307fd0b05508a1488b211"
+    },
+    {
+      "arrays": {
+        "bytes": 1043080,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9cba132a0abfc0d05f1a994521c7ce388ac041027ca60bc99337fc393565d381.npz",
+        "sha256": "de1254cfd538bb2b5ac874165c5db9ece1c5ab41c8265d879b3f38a25708c309"
+      },
+      "key": "scene0447_00:GT:15",
+      "original_identity": "4ff97c089add71d52517e3130a97dca36542429346c15bb149d107830207cff3"
+    },
+    {
+      "arrays": {
+        "bytes": 1036094,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/40f67a708681b8f1e4f30552b8321ca6dc1a37a7d0c27dd91cb8ad175e3708e3.npz",
+        "sha256": "7ef631addb025f6fe34a3254e396b591fdecb5ee87de79affdece087f0338566"
+      },
+      "key": "scene0447_00:GT:31",
+      "original_identity": "6d98ef7aa870630ec8cf72aafc1c4fa9364ab49cc3a3ab92b0b5dcbc12770802"
+    },
+    {
+      "arrays": {
+        "bytes": 1038549,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/de5662ed186887b6c80a4523454f382921ca9e802b9de80c202cc8545417f2b6.npz",
+        "sha256": "80e04503289fb568f9ef63727e4531db2f91577fccc2141c72496682bb0a108f"
+      },
+      "key": "scene0447_00:GT:23",
+      "original_identity": "dd07355f2c22996319c1ee493be15531b52362b84a28fb2b85141ec9e2b2bd2c"
+    },
+    {
+      "arrays": {
+        "bytes": 1039209,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/75cb77267dcee9953964d61a9e00a9a66b224cf4c63cf7dbdd8da5cf99cf32a5.npz",
+        "sha256": "608e9b23f74988035d5618a578e23c94d3da53686d89b2aa58b2255267ac6529"
+      },
+      "key": "scene0447_00:GT:8",
+      "original_identity": "fd943b56d68bdf8d85dbc6605ee6e5940a0cefff7bbb1924f15056910c2c4f22"
+    },
+    {
+      "arrays": {
+        "bytes": 1035800,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/950350bc4a8ef2da16d465c00e0a9277a3b55450d34da6cb50b193cd77846ba5.npz",
+        "sha256": "b270c8c825be39de0da05c3389617b8f503f19c7e82d1169456f14a03a0d4141"
+      },
+      "key": "scene0447_00:GT:27",
+      "original_identity": "8318fe2a5b93719b2be702020c2633f7adec819d4bc494a5f9904a0b5ddb55a4"
+    },
+    {
+      "arrays": {
+        "bytes": 1035845,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/fdf3e984ed7916dd0ffa798f105c0b3a0e0f594908f05f94c55b2f6f2b290916.npz",
+        "sha256": "606d8f9d00075a690a0836b32c152abd5902489b85760e69ba09963484e7e958"
+      },
+      "key": "scene0447_00:GT:6",
+      "original_identity": "3ce4ebabd5bc7c2d4a98c470fd67dc4130ae5c5923e2ba9cdfda2874fb6fc55b"
+    },
+    {
+      "arrays": {
+        "bytes": 1036612,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/152df88b31817cb25ab43211e6d1e54e7f588e990cc816898f697d4d896e6235.npz",
+        "sha256": "dbd2b7b0d926d5ec15fd7dd1a1560606ed19a324ab4684c219df5a1f4372db58"
+      },
+      "key": "scene0447_00:GT:3",
+      "original_identity": "61ed7526c3d5e17e1d1edab4099b7eae26c26701f288705fb433f732e265c444"
+    },
+    {
+      "arrays": {
+        "bytes": 1037592,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c2f2142ccfd3ae5d47bbe9bac8d177de9602b7ffbdf447eba952527d1ed75f1e.npz",
+        "sha256": "9a7bc48c18306a7d702aa28b88e86044f7e551dbf891d74fabf66b22098b4b3a"
+      },
+      "key": "scene0447_00:GT:21",
+      "original_identity": "e57dc8f7a1c6f5f91bf47babd42e8dde1d2d76d7c5dfcb899c1704529da3f7fb"
+    },
+    {
+      "arrays": {
+        "bytes": 1035391,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f32749e07dd16c9a6444dc13dc17d5700e7bf495d242c86419045894ab3de286.npz",
+        "sha256": "bb192184e4683c1af9da55443a1d6c06c20479a2e549eabe9907eb12a7987e6f"
+      },
+      "key": "scene0447_00:GT:10",
+      "original_identity": "26f773ef6658648623d5dd5e14990f279425cb82dd296fcc05a381ad478d17e7"
+    },
+    {
+      "arrays": {
+        "bytes": 1035238,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ce7c12e60037faf988c99db04f84f98cd9de50587759bdc68429fa85f16fb965.npz",
+        "sha256": "7f0ea6df72f159cbefcf7eff7f0bb6f5f1eca359cf9a1bfd33fe1990040027a6"
+      },
+      "key": "scene0447_00:GT:1",
+      "original_identity": "fe9056cd37747382d81efb12d9f5ca7cdc9026e2e4fd63ddf519b5ebfd891853"
+    },
+    {
+      "arrays": {
+        "bytes": 1036445,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4e67bef0f1028d07c2333bc2e5d98da90a38d62bf86ce8fee9197e2ad0b54d1a.npz",
+        "sha256": "843438b35c92caba4cfb5ae95d4fdc088087535f9e5a3be7189f91231e9234a5"
+      },
+      "key": "scene0447_00:GT:25",
+      "original_identity": "0c0b3a15dea2df196243da92c30ffc78c6909849efff78d9bbe39c704f87cd87"
+    },
+    {
+      "arrays": {
+        "bytes": 505378,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d2deb86fed0a932f4fa254c1785c01e8cc5558ddb38f5dd68ed65c1eb4129fe9.npz",
+        "sha256": "f7299b77c03710f5110a8660bdc3d67facb6c26edca7de6338f8dc4ae36fca19"
+      },
+      "key": "scene0447_00:GT:24",
+      "original_identity": "e87f567c83231bb2d4b89c7bfaed621679db13b3efaef3fcbb661e46a5a64e65"
+    },
+    {
+      "arrays": {
+        "bytes": 1043073,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/75dc2eed5902218f06eb93ab00fe1b88b57ffba53499ccbd29b05e4902d6d63a.npz",
+        "sha256": "473998548dbfd94b307d405373bd6ea199fd19ebe655393ae37f6dae895cb5d2"
+      },
+      "key": "scene0447_00:GT:29",
+      "original_identity": "faca20e4d17cb63fb49a501c89f7978198e71c42e456538981b862c4a6773631"
+    },
+    {
+      "arrays": {
+        "bytes": 1037715,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e9a53a907ed9924f0e5a2d5da8d89e68231c83300a75c9611036020a25107a87.npz",
+        "sha256": "af7f1e253c1127995f89084ce59e7ce255f295b5439fed7f1f7d28956d5dfa69"
+      },
+      "key": "scene0447_00:GT:11",
+      "original_identity": "8000a53d96a60ce96523c1dba66ffffb014b830f18b004d9ca90c29c978e2325"
+    },
+    {
+      "arrays": {
+        "bytes": 1037142,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/1e25bce602b5f98ad2a1fb258f01d254a8ee44ada755629737202deb26821189.npz",
+        "sha256": "06c553591267f56a66d4e1cd5ed48ec580ca9e79d58118cda28421f549e4b2c7"
+      },
+      "key": "scene0447_00:GT:12",
+      "original_identity": "77dc8384cce53b5b0673664e09c6cf51887d36f0217747a03dc7b9f02476c4ed"
+    },
+    {
+      "arrays": {
+        "bytes": 1039053,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/bc4304954c3c8ccb22f2b5bdb1adf8d4d6b97ddcc9a2ce4b269e17e82d7c0756.npz",
+        "sha256": "1b9084cb7fbb0b95e2d313567e1dbbfb544d35ac26755d658c064125e1a9f72d"
+      },
+      "key": "scene0447_00:GT:20",
+      "original_identity": "0e2e17f67e00c43baca0ead5e37f55530ba7916cbd281ae92b947ce8886f96d6"
+    },
+    {
+      "arrays": {
+        "bytes": 1041710,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a873348e045c4419dc1328946e42c09959abf8d9e01d9784520b366d0e34954b.npz",
+        "sha256": "f130a9157b8212c92a5a03563f4ef083ed2575f6c6ac7872bc42eb909152daba"
+      },
+      "key": "scene0447_00:GT:18",
+      "original_identity": "a317397299a4ccc0e9aecbb25721fab103f6e0a0dcdaaaa1c4cbc332f6e7454a"
+    },
+    {
+      "arrays": {
+        "bytes": 1035758,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/60fd1caf5c40e6a0112601540b5e10522c7931df3f7c587bee117f126ecc0fda.npz",
+        "sha256": "f982072724682a0bf927010819252702d460fba29b7b409cd51d1a4d03a0d42a"
+      },
+      "key": "scene0447_00:GT:0",
+      "original_identity": "f45170124d9bbb3bd90a6d1d2aff47f49227809f087dfc626241b25f3731013a"
+    },
+    {
+      "arrays": {
+        "bytes": 771837,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a0b3316b0161741453fdc76b080b4e4ea80bef7f35a8c77a29647fd69001d22b.npz",
+        "sha256": "0b2571cd2c0fdb293fb516333ea4029f55752a0c034ee93a81ee94e13688b51a"
+      },
+      "key": "scene0447_00:GT:28",
+      "original_identity": "8b1a101e9eeeb0efd9c7801ca200e2f433161ca87898b89fce83d08658721847"
+    },
+    {
+      "arrays": {
+        "bytes": 506630,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/22f835e15988365cb4e6c56621774d6e026f30f4cf5c59a0b25cc517323a44c8.npz",
+        "sha256": "c15fd3fbfce01001106d2158991e99026dfcf522f30608066189850bb04783cd"
+      },
+      "key": "scene0447_00:GT:22",
+      "original_identity": "01439d6fdfa7ee0378d48a4f941c2599abfaf57eb7558a59bbe2b0035dcfab85"
+    },
+    {
+      "arrays": {
+        "bytes": 1035446,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ba4c334cc0f193bd9bc2d094a16e87adafc3d56d746dd8927a56f86327555478.npz",
+        "sha256": "38f6c2d7f628418b92060719e3b3b54ab92dc387bea4732cd99da7761ced4d51"
+      },
+      "key": "scene0447_00:GT:4",
+      "original_identity": "c2bf3e49903a458fd34a6385491c6b0c776e40071615d9239ce825be61576f00"
+    },
+    {
+      "arrays": {
+        "bytes": 1039450,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2140fcdd6d676ccd3effb92c2f4142a1b13f603a69fab8b9b4be0dc3cdb1439e.npz",
+        "sha256": "8e99cb540abb165c0c31c5b77552848f16f991851331cbe8894ac2253fbf899a"
+      },
+      "key": "scene0447_00:GT:5",
+      "original_identity": "142799d6d63ab63bb20ed3234a61ce04aba3ced7c8218531af3fdd4bcaec0303"
+    },
+    {
+      "arrays": {
+        "bytes": 775467,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/1daf2c36f9d9e099f73b885079744ba43d1cd8847e9a98a7c9857d7abd00912d.npz",
+        "sha256": "f12f6dd5343c31794bd3753a236c7fdac34d12811a705458e2ce3ac0aacc44f8"
+      },
+      "key": "scene0447_00:GT:14",
+      "original_identity": "db869f81cc97af48ca83bd731fdb28c2cb696bc0d001b4ef5d7d9f51170c5ea2"
+    },
+    {
+      "arrays": {
+        "bytes": 1036524,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/b08666065828782388b63b8e2ec12844e7c7c54f81db806615800d109f611ce7.npz",
+        "sha256": "0ad947dd6e51113161c162e425a0334d55c396aeffec8b67c23dd295585b2b72"
+      },
+      "key": "scene0447_00:GT:7",
+      "original_identity": "efed8cedcb50b5fb5c9002ed43d43dc8b65ca646f157b91a60fbb4a2dd0656de"
+    },
+    {
+      "arrays": {
+        "bytes": 1035412,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f44708eda558faa2a9fec8c2e23c267c076862aa84c22be3583865b958b6b2d9.npz",
+        "sha256": "665a72413d94ead36edcd4924a89bba51b0969128d2f39d66f7188f597750e59"
+      },
+      "key": "scene0447_00:GT:34",
+      "original_identity": "cf83ba49a9068a4ba4ceed273663c1623e4bbb91b4e530d9fb9181436a559ada"
+    },
+    {
+      "arrays": {
+        "bytes": 1034344,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e11e68dc40c927042dbc73e1c420b8358a3a254a13e31850ab333fcc8a84b759.npz",
+        "sha256": "cc61c346c4b46a431d03f360c66737fdbafe203593ff7fdd10611d53714fbd08"
+      },
+      "key": "scene0447_00:GT:2",
+      "original_identity": "8674f94aac026723944fd881eca509b04f23dd3f5edc6abef426e8b04190ffa2"
+    },
+    {
+      "arrays": {
+        "bytes": 1034320,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/98ac1fbb2a19462d4d48cff9692b11bede6a079d5fc904c8990d7dc9323a1b78.npz",
+        "sha256": "afb3c68ea97ed3476a73d4c3120b3ce97df733f1ebc723bf88cd93abf509f110"
+      },
+      "key": "scene0456_00:GT:13",
+      "original_identity": "90b54d2affe92878ec3c5094e83bf5a7b69a7fca26d71fae2050dbee471404b6"
+    },
+    {
+      "arrays": {
+        "bytes": 1035058,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0ed863c8272abdc6aeed26414c4a70f33ba77c29ad083cf4d7420d6e28da2ccb.npz",
+        "sha256": "b89a5d22bf7914848478c92e9fef6e2b4aece7e34caa768e80435189b8cc4770"
+      },
+      "key": "scene0456_00:GT:12",
+      "original_identity": "60247069f88c650ef95a9300243319cb5d01f3cae8b04dd64d4fe056667ecc62"
+    },
+    {
+      "arrays": {
+        "bytes": 991834,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/71a442bf7d9d595a994e3740b26e8b9f317ae98e6bf1f5b66244318664e3c13e.npz",
+        "sha256": "fbc371748fe6519d7296a70c19ae4ea17d9ee8f8e18e4c652ac4d61a81f239b3"
+      },
+      "key": "scene0456_00:GT:6",
+      "original_identity": "7aa3d4fda763cadf31cb2f9fea737c902b6fc42af19ea139ebd92f7d4f0ac7f2"
+    },
+    {
+      "arrays": {
+        "bytes": 1034708,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0949df54ec61a2f7f45acb20283697ac51ab45cab78e43cf7db96888b6217f2e.npz",
+        "sha256": "a17012751bc472c732673cb8a37ced561d627a81a0ee808b951ebd0ee36563f9"
+      },
+      "key": "scene0456_00:GT:14",
+      "original_identity": "f1f91dfe18dcd25489bab267edff6dec989035c5830441faa2236edd3f70f1a5"
+    },
+    {
+      "arrays": {
+        "bytes": 581265,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/3bb2dcf08ce1f1337f861858ad77a99a0af22fd09a6f7e9e9de51edad2634ed0.npz",
+        "sha256": "c98042bc029f64ede42fecf48ca1fe7fd304448486195b0b6f364e459897e39e"
+      },
+      "key": "scene0456_00:GT:3",
+      "original_identity": "3a1c76a7b262339e0348bedb6f44c596d5391d7d95fb3791a0bb8a7fff430566"
+    },
+    {
+      "arrays": {
+        "bytes": 1012034,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2662be122c50852a6165eb7844d40b2023ba3c5ba4a575c6a2f034a31b4ebd16.npz",
+        "sha256": "c07c26b42c2f0311050f9b9bd6395eee24476135184b4db2e7bdaf041f8dfc7d"
+      },
+      "key": "scene0456_00:GT:9",
+      "original_identity": "c75812652fcbbbec038e5b636c22429a35d737c98d1e87a7f616241dda38b243"
+    },
+    {
+      "arrays": {
+        "bytes": 1040053,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e6e115008a4f0c3b5f2cd594351df580e32f800ca1281101885d155e065e10b7.npz",
+        "sha256": "446d05c6d2e78fee86586582de85baa517a0e97730b69c97c1697ee79d7271f5"
+      },
+      "key": "scene0456_00:GT:17",
+      "original_identity": "2de14d45adcf4f8f313670dda0f72aa8bdeb993d18b02b582578148c63301ac6"
+    },
+    {
+      "arrays": {
+        "bytes": 958896,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/57235847a5ecd57c9b67c1662807ef4280b7cbefa3846e07c1e56294f040d33d.npz",
+        "sha256": "b06ef6616bd813205747138953e29dc940fc414498c7052c5231cd879df56274"
+      },
+      "key": "scene0456_00:GT:1",
+      "original_identity": "b42e959856dcf9bf02d6e643a58a1651e6933e7e3ca68d58c1c113fa6e314bf2"
+    },
+    {
+      "arrays": {
+        "bytes": 772138,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/99a7acd830794dc63385291b7fc4d6c2686f34814ef9fc8400e6e0fdc227b26e.npz",
+        "sha256": "5c8e2b632428530f9b0cb266dcf3c8df427330fc9297e5c8ab135d682b7e75fc"
+      },
+      "key": "scene0456_00:GT:19",
+      "original_identity": "71b15aaaac880e2cfdcd324725e805c701a9f9f7c5ef4a1b9fce9a5078a9b163"
+    },
+    {
+      "arrays": {
+        "bytes": 1041902,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/792779a78b9ba849c5234d86de666aa872e08a2d47a5db566e1853db60870da0.npz",
+        "sha256": "35208d7d35bddd5a658e684388379b115f74b14da1ea196c6958707e3022b5ea"
+      },
+      "key": "scene0456_00:GT:10",
+      "original_identity": "81274f3e8c406a2eaec5ff54f2954b3258bd583c5351313d17fc7451b31b347a"
+    },
+    {
+      "arrays": {
+        "bytes": 1042308,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/829229309876b7d259fcce33e76ad22cf5fd17316729adc62d6e7687b88ebb8b.npz",
+        "sha256": "32c01630309b6e942303a9242f4dafc1cf3c5f2c7cf04f089c462c79023776d6"
+      },
+      "key": "scene0456_00:GT:11",
+      "original_identity": "58d37b94ee545ba5920fbb223dc7ec479765046b9e5a9cc63e7eead8330eedfa"
+    },
+    {
+      "arrays": {
+        "bytes": 1035433,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/71fe6c85ce8291f6ff501c4ac2b7a54f8592fe18b0c9fcb87f457fcb34f73c6a.npz",
+        "sha256": "6633293139d56bdd4aaa8cf8ec20a89874d51373f42af2f05982c2dcf336457b"
+      },
+      "key": "scene0456_00:GT:20",
+      "original_identity": "7db98709ad351e0d9a8c4e21b02197a75f572b47de691a8f6f0cd9d6f8599ca1"
+    },
+    {
+      "arrays": {
+        "bytes": 1035874,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/522c29929e4c3be561408d093d486d990ea9c6a1fe617052ea20b565ca14f4bd.npz",
+        "sha256": "fc300ee9212fbcdbd3bf8bf2836689c0296f783fac3d952894a769f2779ed6d8"
+      },
+      "key": "scene0456_00:GT:15",
+      "original_identity": "f103bcfaf1e5bcbe4790b29e3efc9a1285ad78c72804d1990cf4512584c8c5f8"
+    },
+    {
+      "arrays": {
+        "bytes": 1035653,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/92146a3d75788fd0d9710c7d4dc67856676ab7f2a56f655fe812092ba727f237.npz",
+        "sha256": "ebb291a61db0f176022c74ca3c91cf07f79774c9621f424eb4ca36c7cff74268"
+      },
+      "key": "scene0456_00:GT:0",
+      "original_identity": "70db581b86f85cd747dbb8dc518d4da45ac52a476a4a9992cdbe99be09466302"
+    },
+    {
+      "arrays": {
+        "bytes": 1036270,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e1661c489ed51ee472478e1d9032b14dc95492ffedf96bd34c92f308a34f0a1b.npz",
+        "sha256": "564a6ba404bb0d7d99147a36bc0fafe2418ed88ed2e3b4dad90e6f68aa6fa4e6"
+      },
+      "key": "scene0456_00:GT:7",
+      "original_identity": "53b688be927896830d28a08b8b5ce45f37815dcf493980542df2781d84e259e4"
+    },
+    {
+      "arrays": {
+        "bytes": 581222,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d35fbf111123dd240d9f6945e0c7ed38bfc440dc9574c75423d4a6b8877c305f.npz",
+        "sha256": "0af30d2990a90c30842302e19407a9536497a745f9eed7278fc0c39592ff036a"
+      },
+      "key": "scene0456_00:GT:2",
+      "original_identity": "09f9ed06e2453f54746f7757ecbd61977d6bcc3fe77ecc28b90e2b6cabf4bb13"
+    },
+    {
+      "arrays": {
+        "bytes": 1034515,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5e92150f0223e289e2720ef43d5c46e86436be7c33be5b11516837bccfbd8e81.npz",
+        "sha256": "fbbb1a4d2827f2ab1392a56395fb12c1b89a1cf2cc85afe33de213d997804eb8"
+      },
+      "key": "scene0456_00:GT:16",
+      "original_identity": "8d235cfafb693260c512b9a8db2a06e59e5d42a9a4b21dceb48d225ef16c5d32"
+    },
+    {
+      "arrays": {
+        "bytes": 955954,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ec8b10859215c7dccd3368adcc7b7abee5942c0b27f81f094661bf4c3e473d53.npz",
+        "sha256": "897d4627f976bba2e690664aefc49e1cf95f07080e9c6ca3fc81e15bf44ab8cd"
+      },
+      "key": "scene0456_00:GT:8",
+      "original_identity": "a0358baff12a68d546bbed88f89b25280a5b2584ccf6fd96622d99ebeb84cdff"
+    },
+    {
+      "arrays": {
+        "bytes": 1036028,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ed2676162deade591abad5eebe86d5c73bac3402c3a1e0060f8e2c7991981cf2.npz",
+        "sha256": "5b443a26d77f07036960e3943fab9264e910852b3d3afd8a60c45313442185e0"
+      },
+      "key": "scene0456_00:GT:5",
+      "original_identity": "ccd33feace7bccb7d2d367a98a3a688c0f4b99d123b6aeda0b49231abfaf4840"
+    },
+    {
+      "arrays": {
+        "bytes": 1034772,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/6d29fc90fa582e297cef5741d2c067b4ad67c928e07624a3df67f3fe54d958f7.npz",
+        "sha256": "386ba8d67dd4f570d6f8fbdf145f150bf4f03f904498aa2f7a22ff196ebc286e"
+      },
+      "key": "scene0456_00:GT:21",
+      "original_identity": "d1c6aa6ff873395c9cce8aa313de194df048a67e99dace328d8b2362d06de7e0"
+    },
+    {
+      "arrays": {
+        "bytes": 580539,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/1e6094855fcc099c30c8cd407b6c2547e2e3363d76981d60556978ff08ea730b.npz",
+        "sha256": "70602f81f41515e501aa4462d472ddd69afd6633d2c16bfe43abbd036daaed78"
+      },
+      "key": "scene0456_00:GT:4",
+      "original_identity": "40857460f7889beee6d8e7d9710bc5cb24f4e8fc6c4bf876c8218be9d1fd6b5b"
+    },
+    {
+      "arrays": {
+        "bytes": 1035150,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/777aa358f46feaf0c98c9c244287a0842a74e8c7ee443fcc7fb97f9a9e7a4d3c.npz",
+        "sha256": "1de625761ad05eb4f7154b4e84671b056eca9b42c43e0c206c6c7ee72b9a0c86"
+      },
+      "key": "scene0456_00:GT:18",
+      "original_identity": "f45c8a5203fb4dfcdbf3238fba0c5984ccd52e3c20225577f2438d3c8b08ebd7"
+    },
+    {
+      "arrays": {
+        "bytes": 1033143,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c8c3a86f5fa77e64943c2a777c5245fe72473dc32d78e3cd5167c25a5dc028c6.npz",
+        "sha256": "f53890ccf6fbb116997dc4f78951f0a660e7fef8ed715222c244cac0bd9f48a6"
+      },
+      "key": "scene0460_00:GT:16",
+      "original_identity": "dc95968dc74f9cd164d13131e8bd4f6505dae46278338ae4fec6403e3b5fdbb1"
+    },
+    {
+      "arrays": {
+        "bytes": 1034972,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/62df4a04fd20dc7bb4435f1258b2fd7b445b08cb44d6810642927eddb62ed0f2.npz",
+        "sha256": "9539856588ccc4e80f7faddfe44a0b961a5bee278e51698d6b739683a8f6e683"
+      },
+      "key": "scene0460_00:GT:4",
+      "original_identity": "a14c8e0cb67153baf584efe2db88430ded2fbf0526e1b2d4ae038f1ee8fb08e3"
+    },
+    {
+      "arrays": {
+        "bytes": 1042471,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ec953da18b68b610be2dd4c6c0be468d1bf6bf969830721735123893317a0263.npz",
+        "sha256": "0efdd2d3cb2f88536b95f1c805f30e7119932ef2417201e7a87941d5aef4da7f"
+      },
+      "key": "scene0460_00:GT:19",
+      "original_identity": "16f207661be636bb7d8cc8cd01ddb620a30b9ae250aa941d7bae85756b436b04"
+    },
+    {
+      "arrays": {
+        "bytes": 1012713,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2b7fa4709e4faf9b2914ad01f3e6fca22a4943cbecec51640875a9dfca230e76.npz",
+        "sha256": "92a17cb4af622bed8e223227fcd8f1ef14c7e1ed77989f49b708ad5b8562f31e"
+      },
+      "key": "scene0460_00:GT:7",
+      "original_identity": "125000a90acce285ff7f9f8d29da9d3958a97a2587ddca5ce7c3f5a3bb06678e"
+    },
+    {
+      "arrays": {
+        "bytes": 1035075,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a76dcdd009a2d277c53c1d1ac5c90146042d81279fc07e9a6bb68bf739f64338.npz",
+        "sha256": "f1fc4035b35871f1ae55adf3c677d29275166d94753400fbad5beec2fc196b8b"
+      },
+      "key": "scene0460_00:GT:12",
+      "original_identity": "de4729f86f81dbdb126b3d4100913de06ed26e8e9bf3e6e2ec3e092443c1700c"
+    },
+    {
+      "arrays": {
+        "bytes": 1035225,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/867dc64f36aff5984ab2cd4cf9941b9ec7245f87fd0bed32a11daf90381d630c.npz",
+        "sha256": "1b4a06c5362960e005b1d2d52401ba8f273977e3f3e215a2f8d9622a9e08b122"
+      },
+      "key": "scene0460_00:GT:6",
+      "original_identity": "5f8e6e0f9a3036b6f0e41c62ca16f3142e42ef1762c370434c056e3591b83f2e"
+    },
+    {
+      "arrays": {
+        "bytes": 1036003,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/189141c23489c9cca4881e00c5b791df19bc4aefb4d13398b575509745c9dc5a.npz",
+        "sha256": "cde7ac59c3c251af2fc2eb4fa861ce102a2766bbf2e1c47c4d4d160244f674bf"
+      },
+      "key": "scene0460_00:GT:15",
+      "original_identity": "5a2f8ce3a2adb86082ec67fb3f9f2a08142fbd207b646acbc1f590c75e703e7b"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c15a6f82775da73b0e95d5e7c42a9b1598098f621689b58b43e85120be56dbfe.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0460_00:GT:17",
+      "original_identity": "5f22ccd694a673fc2e294d415c9a0efc19078ef3cf7246ad2a5b629387ba3269"
+    },
+    {
+      "arrays": {
+        "bytes": 1035432,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7efb4d329afb016910b2094b7967af0ec197e9dd19c8cdff383e3332a6935809.npz",
+        "sha256": "3d7cc672239cb65d55d425e781d05f6e9f6ff7ad7cb5b7cc0db287a4efd22f2a"
+      },
+      "key": "scene0460_00:GT:2",
+      "original_identity": "698f97370b8c0089063394ccf8a4e13a43520809e933af03dec3c5f5014c6808"
+    },
+    {
+      "arrays": {
+        "bytes": 1035496,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/538fb3b6e6709590e3627b79ecad361c98645ae6858d77fb0ffe0ceee19e75fd.npz",
+        "sha256": "9cd5a004e74d7500a045743638ff3657de85ad76d129505035e3789cdb184130"
+      },
+      "key": "scene0460_00:GT:1",
+      "original_identity": "4744f69bf2549a4010845ea4ffab7df5be67cdd952b42f00f67841df79bc95bf"
+    },
+    {
+      "arrays": {
+        "bytes": 1035276,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7e346fa4c3ca1779dd52d3ea2d62d76c9a19087a7d35f795f32218d236a1fd4b.npz",
+        "sha256": "3924bc91543382540e32fe23b785358360d401094cc0980a433521a79022b2a9"
+      },
+      "key": "scene0460_00:GT:10",
+      "original_identity": "63a711bf96bac380c8ad4a56fe1597f526e444f6bc5b6c944a149af6e0b797f0"
+    },
+    {
+      "arrays": {
+        "bytes": 1036657,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/58013b13e3e858f0e048e1ce4695eae2398a124aa4bf2a52f36d3416cc0a2b11.npz",
+        "sha256": "947b0a1082339e760fb7bb122f1aff8d5b5bf8de81fea73d96bc13cba8028dc2"
+      },
+      "key": "scene0460_00:GT:11",
+      "original_identity": "63c6fd2322729f3e90903b7645a3aca8854135653e7f9fb57c2e24dfb03dd9ee"
+    },
+    {
+      "arrays": {
+        "bytes": 1041374,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8d039920fdf8cf46227a3ca9cff0cbbaf2b9d37a12d27c6e57052298faac0466.npz",
+        "sha256": "8eccdff8d8f2aca1672a98f64680c0028e1a609c4fe1bfd31b725c3132cc01f4"
+      },
+      "key": "scene0460_00:GT:0",
+      "original_identity": "de6d5cfd2c300523ff8dce25fd9717bd45d455a01b628f3d13308f8d6d646640"
+    },
+    {
+      "arrays": {
+        "bytes": 1035625,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/218843516c99245f90fbbb37116e76c0fc7b8ffa8e7c7dc6c7aa27e525bd6bb9.npz",
+        "sha256": "c3047c658a45d645b617f7f86b1dac82930bea1552236a93badaef9f5d8a6afd"
+      },
+      "key": "scene0460_00:GT:14",
+      "original_identity": "ef81730c4c69b7b93a0a6b959ae7f2ab2dfea572e9bd6d22ace29f5c08287110"
+    },
+    {
+      "arrays": {
+        "bytes": 1035272,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f9315383fe3811a7899da23b7cb82b7a6050d5bfd75a230e5d622ec533a462b5.npz",
+        "sha256": "942d38c9fe2c79cf5b06c7b8f20ca20e9e71abfb922c60a3084346cb1d39aef2"
+      },
+      "key": "scene0460_00:GT:9",
+      "original_identity": "4fccb73b0af882dfe0fe63ba8083d5dd58b451cd0e2ed9ea5e4645b8b019b642"
+    },
+    {
+      "arrays": {
+        "bytes": 1035914,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d63675040df1916210f5bc42600a0a1fbe7bf30258c694c19d473cfcfd491d07.npz",
+        "sha256": "050f3a6fafaff0fbcae59a13d101bb3cdd6f10cbfc3c92ab1a0917c1363082f3"
+      },
+      "key": "scene0460_00:GT:3",
+      "original_identity": "1a5f9331f39750a6032f247aac29713854b565b02dfb7b05082eea059c8a04cf"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/45ba46ce3e06cb9e83c27ddf84912ce7e97019659cac13357e1f00bd266ab28e.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0460_00:GT:8",
+      "original_identity": "25864e21727304728bfefda84937c0a4f73d817767f627eebc96290be416a910"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f9c7b5b3058508731c8fe53b823ca1792faeb2fbd1ab2f263a59b136847084d7.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0460_00:GT:18",
+      "original_identity": "35f6d501e78fc6464edddeda2e1d405d635cbaa71418cad11d01f32f54f7f9ce"
+    },
+    {
+      "arrays": {
+        "bytes": 1035188,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7d65bc8473ae90c3f37a21c5a0b39fefb6f5b16f5f649e1dce97461c8e4dc794.npz",
+        "sha256": "d3ea939a65bf3feef958db7f3c54e8a2c4b0f0381a82df456b719f6e7bd86014"
+      },
+      "key": "scene0460_00:GT:5",
+      "original_identity": "c9f444ee097b31234fd988cb5c88bced223cd02c19d0426bcf2c8c04e5e9521c"
+    },
+    {
+      "arrays": {
+        "bytes": 1033144,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8f6104eae3e15f4cfc3c964d7274a26c44dc7f4c961c40712f132ef88e8e44a8.npz",
+        "sha256": "8ec3c05f0a2b77077b819d0df4cbcac23575fc4720177a1167a249c525240016"
+      },
+      "key": "scene0460_00:GT:13",
+      "original_identity": "c898fe27a2f0e14b9e65f68e75a0400ed148f7fdf41f91b56391347de76be8a5"
+    },
+    {
+      "arrays": {
+        "bytes": 1041372,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/dd94a4182ddf380fd3bc5b844bcf3aafa6550228105123e14754311738843a0e.npz",
+        "sha256": "2d92e09f87d5f7abaccd6825e59e735bb5398444cdf35add3bfb90dd74f6d4f1"
+      },
+      "key": "scene0199_00:GT:12",
+      "original_identity": "d7cc13d36ccbdafa675677febcc04cb54124b88500fc8d422327a07851afca3a"
+    },
+    {
+      "arrays": {
+        "bytes": 1040306,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/04075eb237e99ce78e36e09683339788995b4549349cfebdc2b8ace78d5fb48d.npz",
+        "sha256": "323d1f8cf8aa0071b0ec3ae25a9812afdfbf6d224ed7688e5c125166a51c4c28"
+      },
+      "key": "scene0199_00:GT:3",
+      "original_identity": "bcece0a8da929a2b08c687bedfd4e8580fae790464dac104dcc2d1192f09d434"
+    },
+    {
+      "arrays": {
+        "bytes": 1039752,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4548177f6c34ab8797eb4a033cac45751a74e2880e76bd7b5ab02b987d02ae64.npz",
+        "sha256": "f769733d1f4e89ae7fc03c7402b75ef0b9d3a22a89e3c6a386573989562afeb3"
+      },
+      "key": "scene0199_00:GT:7",
+      "original_identity": "2829d703ecce751927f8458626e42ffcf74ca693dd767f285242eeca338439ff"
+    },
+    {
+      "arrays": {
+        "bytes": 1036131,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4fc3954590b8b037d9c44c90a441ffb7f0b3edddbeecee962a2f73aeb0cbadb5.npz",
+        "sha256": "fe51618e58e164ad657a7272c8e087a8f3db80048388135a36ce84b0af738518"
+      },
+      "key": "scene0199_00:GT:5",
+      "original_identity": "1418617a427646ca2e3ff74c2fc7f411f8493e9c9c4ee6140b0397df1febd26b"
+    },
+    {
+      "arrays": {
+        "bytes": 1034500,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/17ffca8b0c6816d8dbfe09ba31dcb9276dc9a0c8aaed39e14009c14302d98be6.npz",
+        "sha256": "99408c95a6be6d51204d9d69b503b052010ef471816cbc7184de97ab0cef966d"
+      },
+      "key": "scene0199_00:GT:11",
+      "original_identity": "5231fb09566ed61d2913360358c738bfb45e1841a62695ca8ddbba3a10b3a6e3"
+    },
+    {
+      "arrays": {
+        "bytes": 1035239,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/b6129d8d62ba4fc88d97b12c7b3e87f81dadc131cf6c30540cddd3a303184723.npz",
+        "sha256": "3c47503084508584a22c40c488233ce7d201825a4f8bfc6eed0b28d417f446ce"
+      },
+      "key": "scene0199_00:GT:4",
+      "original_identity": "9b04a0ed244e7eaba87095ee0ece95d19d9b63f52b341796f93c5463ae135f28"
+    },
+    {
+      "arrays": {
+        "bytes": 1034185,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d8abe8c07b1d46d1372fdd7c2501ef353b4140e7ee56e87cf72c9ba3a1680f8c.npz",
+        "sha256": "6d1821fc10465836d931125c9df7cf39038e1ee6d75c896030f4794a51d66da5"
+      },
+      "key": "scene0199_00:GT:15",
+      "original_identity": "ce032cb87721697016db4e49e9f8225e200218f0219028f6f9ff66bb060d5b53"
+    },
+    {
+      "arrays": {
+        "bytes": 1034775,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/14b76bdb7cf86274c585aff072c51208a56acdec0d27b94239f64434f29c7bb1.npz",
+        "sha256": "58b6b07157576cd7bf6e27e01ad3664b7c79be522e787c3708c7846a62d21183"
+      },
+      "key": "scene0199_00:GT:0",
+      "original_identity": "e944dbe1deed18e50cb98c066a515a1a742791a709a495e0fb62ed7108ad280e"
+    },
+    {
+      "arrays": {
+        "bytes": 1038810,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5d6710c064db7b01d6a75d0bfd9743ee7968760e674a91858bd0f2d3aedb06cd.npz",
+        "sha256": "5fcee1c3e96048ef33e1aecb3ed023dbab9235d3482f10004427f1ca16bab2b6"
+      },
+      "key": "scene0199_00:GT:6",
+      "original_identity": "54494777f7176e89ded9788b1a76978471f098806696330494eadb390cb08dd8"
+    },
+    {
+      "arrays": {
+        "bytes": 1036174,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e4aa836e9d37a78d69eda9ffe5ecfaa49051894a36fd834d87c11775e0ec7505.npz",
+        "sha256": "3058a28be6049e82a00999fbd7b16d831d2fe7c6a014646e0a219a7757439807"
+      },
+      "key": "scene0199_00:GT:2",
+      "original_identity": "f07504b9fe42a95c4aff92a3badc84f69a5b2b74c9741290591a8412fd5afeae"
+    },
+    {
+      "arrays": {
+        "bytes": 1035985,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/1c65382534c47ace582e8f1e1c9909417cca2faafe7e2227cc5b93ce74da3140.npz",
+        "sha256": "3d3822cb57fc2640d503e6a1408c1bce55d37f86355f27495c413e5886634730"
+      },
+      "key": "scene0199_00:GT:1",
+      "original_identity": "360e36317ccb0f9e8a15bb47e0537d44e0bcbcb5f1919a9f438c53487b110c4c"
+    },
+    {
+      "arrays": {
+        "bytes": 507152,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/17f63fd3935487897d5876db81b0810dda48df047b9928d27d5fe84687b63175.npz",
+        "sha256": "e0dd31a132f55280c69802e91d9e5d22ae0fb7a865f88d6e2b1df8dcb85ff2e2"
+      },
+      "key": "scene0199_00:GT:9",
+      "original_identity": "8840e75e96ac4f23214aa1bd5fd86bcf164ff0c58097fedcebae3a11e5ed0f8a"
+    },
+    {
+      "arrays": {
+        "bytes": 1036589,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/17dd5460101bc34cb34a8f4c27a224ebaefcda2545c9b4e8a8ffc8be33ad9903.npz",
+        "sha256": "f3f32e17ee5e857e89c5c4f264e8911623c77f9846515eecb502783862ca7b83"
+      },
+      "key": "scene0199_00:GT:14",
+      "original_identity": "32163336f369cab2f75dedfebf5e3ba3c7145d451f57f9d500410bbefc3a7500"
+    },
+    {
+      "arrays": {
+        "bytes": 1034562,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/18bfd9f64dc17e26762842eec929290556d8e14b3f799aaf3145ab801f6fe0eb.npz",
+        "sha256": "d1147b3521a884d9a86fe8afb7519e1329381a87bbb88162c2c0abea1e569c2f"
+      },
+      "key": "scene0199_00:GT:13",
+      "original_identity": "bc41cd5c261c5f4a8ecd8c451aa4286287d3836e71ee8ca5cae4653e792725a8"
+    },
+    {
+      "arrays": {
+        "bytes": 1037150,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/43675c5b60d29eb2a97d91247dfad328b8efcdcdb1ead9977269f46805caa11e.npz",
+        "sha256": "f09e11cb573ac682ee11b6abaf1cb56567f0a6773f9a9366a8ab6d8a4bea9cd5"
+      },
+      "key": "scene0199_00:GT:10",
+      "original_identity": "d7a05b269357f9f8559ee0c0e8ca1a79db05acf5d5c01270bae86c72c7bfb456"
+    },
+    {
+      "arrays": {
+        "bytes": 1034675,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9f6ebd309a0fccd15ae6c77ebdd7ae6f1dbb1961752cf20297b44a9508650ee3.npz",
+        "sha256": "5cbf09b7f91d040e054800c7e6117712dec844779b8627e22ff0992b6855cdcc"
+      },
+      "key": "scene0199_00:GT:8",
+      "original_identity": "26265832e6f52431c130002d1d8d31cb0d6e6d8d56d7c7f6ed3856c9118a740d"
+    },
+    {
+      "arrays": {
+        "bytes": 1035971,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/fad30aac2339a929bf07bfeb450e5a9d3c5eef34d54dda403f05647c46275436.npz",
+        "sha256": "86260e69241e14fab0bfb0cbe789301d71fd16fef74538a53be2323de64c3ff8"
+      },
+      "key": "scene0109_00:GT:14",
+      "original_identity": "3f53c1e8aef339d639b9bb87f2315b160521a4a8b587675e0960a6fe00cd96a9"
+    },
+    {
+      "arrays": {
+        "bytes": 1040756,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/98341cefbecf7f687c922ce927b8ecf689deb363cf4d44046fa745b7cd8f26c2.npz",
+        "sha256": "130782ba071824e2ab726ab2164b78353419f84f3e864bb1b8b9f4b618045287"
+      },
+      "key": "scene0109_00:GT:11",
+      "original_identity": "bf66d34d73395cae4b7da8be37b287b2a60b767fe9398f7c0524e365e1a0bd69"
+    },
+    {
+      "arrays": {
+        "bytes": 1035924,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a37221597c74e908f1622dfe0bebdb3a770eb16d15e7a93960451a4a6ee63351.npz",
+        "sha256": "8f9fd1326dfed9d4c317ffc8882da2fc4ad1af58654dd340f41269186b9812bc"
+      },
+      "key": "scene0109_00:GT:17",
+      "original_identity": "947b6555fe045332c884d753551b6051305ed9993998cf6f35b6aec6499b578d"
+    },
+    {
+      "arrays": {
+        "bytes": 1036454,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/150893db363ca3ee4cc4660ca4e9bfa477b44542f4bbc153fc7e0f90dfa65d12.npz",
+        "sha256": "2b3fd4a96c24f435b4333f7de8991c3328622a69693391da3e8e4c56d4fe8bdf"
+      },
+      "key": "scene0109_00:GT:8",
+      "original_identity": "ea83702484b66da079b1efa6c23629da23c5b5367d71254c74cf6330ecd845ca"
+    },
+    {
+      "arrays": {
+        "bytes": 1035788,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/6e5acefbbc4ef3171b66ac9357e117e2b26fbd7c7ed4af473e6ab7f7f484e486.npz",
+        "sha256": "32c17404755326a7f9d0d4a18baa7ce408ce726ac8f4361f7c0bfc2bca4a8f35"
+      },
+      "key": "scene0109_00:GT:3",
+      "original_identity": "5d8a06380dc9a46539c65250741f511c58dd8921b4aa1614b4f99676536ae40a"
+    },
+    {
+      "arrays": {
+        "bytes": 1042004,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/677609285d9d88a5cd1e0e52b3a4a257e7d5e907f47e997c0dbccf812a4a6903.npz",
+        "sha256": "742cda19438e1b0ca02c7bcaf3078336139da97c962d5462ad782b767b02d49f"
+      },
+      "key": "scene0109_00:GT:6",
+      "original_identity": "92b8a6e5727030da7d25df02f725205039b9ffdb884942dd74fa35b5e266a26c"
+    },
+    {
+      "arrays": {
+        "bytes": 1035645,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/1eb69ae13f0ee19d148379dcc83faf0b294e9d21504512930f11e2b0427a5775.npz",
+        "sha256": "f0a565a57fa841d0ca3102af1381882c981ac413a203bebdb081c66fd393e286"
+      },
+      "key": "scene0109_00:GT:16",
+      "original_identity": "22eb229094766d37c2be5a9b7170afef5fb4832afda66051f6455bb8e23e8def"
+    },
+    {
+      "arrays": {
+        "bytes": 1035086,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/070e3d410e96ba36b816195c5903c4cfb2463c26e5cc92956a49a84de6acb0d9.npz",
+        "sha256": "01d6ea31176b10baf641b3bf32b88381f9c52d4d616183e9f5f970bdfe11f766"
+      },
+      "key": "scene0109_00:GT:0",
+      "original_identity": "a571ac80c1d81e4e9d8ffdf0a8217ad7fb778be1d07afef19d353e3e5b4043d3"
+    },
+    {
+      "arrays": {
+        "bytes": 1041432,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7c910082ab2c6e49b3b79fb3de33b717931eede1cf0331c1002e1c461606bbe7.npz",
+        "sha256": "498aa3f2edce1221dd5ff23091214bf5895ddf0eefcbc2ce3cae7a7f6ca16c3f"
+      },
+      "key": "scene0109_00:GT:10",
+      "original_identity": "bae77824263e1e3f88b6644e2c8ac2f41a6fab093f9d179a50b91e49838daf0a"
+    },
+    {
+      "arrays": {
+        "bytes": 1043146,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9acd2d49fdae3e4d46727f44e9153dbdf69fea147bef05e4aa6be407148e4a44.npz",
+        "sha256": "40052272b1852534a21605358296699198d18185931f7b401b5305342ad30e9e"
+      },
+      "key": "scene0109_00:GT:1",
+      "original_identity": "64cf142369d70a5db1838e3bc38c871ea64039703051de78ffb54fc88ce0b2b1"
+    },
+    {
+      "arrays": {
+        "bytes": 1034980,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8b639d8fb46f91d4a53b4fbd8222ee56bdb90da74f8fa6447cd834b417ca5ecd.npz",
+        "sha256": "6004095e01ab45fc0d1b4bf359616e301cafab66d1300bfc7e689af9d5598c98"
+      },
+      "key": "scene0109_00:GT:5",
+      "original_identity": "80837755eea4216f51995c8e0a322a752d44f66ff75db3d22fd1ead7ab1cb712"
+    },
+    {
+      "arrays": {
+        "bytes": 1035116,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2e58f535558f1ee072eaea48cfde13f0ed22e8d3b25089a8b82b677941fdf772.npz",
+        "sha256": "af0de85b5d7f9b2ab7964078b3d13a33f52e318aaf44e610bd097b23b3cb5546"
+      },
+      "key": "scene0109_00:GT:2",
+      "original_identity": "ca798df394f65fcdd8a1d721ee399b4bd4707e75190f4c4c20f499974b0b5c6a"
+    },
+    {
+      "arrays": {
+        "bytes": 1033123,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0d0f5d1cd6551b22bbd031d56d3890d0979f89269e94bf358ae88d3cbf9f0b65.npz",
+        "sha256": "0158202c36934ef1e57cb84ac80eeee99aaa87f4cc412ff41be03e0477664b08"
+      },
+      "key": "scene0109_00:GT:15",
+      "original_identity": "269f4a78eeb2a01d4492a805fbc42bfd7561610a97caf012826f22c1172a61db"
+    },
+    {
+      "arrays": {
+        "bytes": 1035570,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/3c4598ead50b62d8d4a16f692517dba2b47dd8b45d62015f168b2303535a1fb5.npz",
+        "sha256": "a38e1c794b04d1eb9702ded4c7e295509c5ff767603fd185f90b93ba9ff3a6c0"
+      },
+      "key": "scene0109_00:GT:9",
+      "original_identity": "ed1714c83b9b735b0aacc26c38a28884503a1fdaafd70ecc605182bec1437e67"
+    },
+    {
+      "arrays": {
+        "bytes": 1038076,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/3463169b74074adcd474a4ea2393d0d0115f8e2774f6c975e8b9d359228a9fad.npz",
+        "sha256": "b3612cc642d5befd9f645739b12815d935bdcb97e05c5a284edddc7e160e64d8"
+      },
+      "key": "scene0109_00:GT:12",
+      "original_identity": "fe3d4ce4435a0442aa132b8c2abd23f3e0b92e80d0654d7cc05861c09869490d"
+    },
+    {
+      "arrays": {
+        "bytes": 1039501,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/959e1a3364d0cdc6f3d60fcf46a16feca2b8114943edd1a3ca9fd52a6c555ad1.npz",
+        "sha256": "72408a3d2fedc94d7b7c507f3bce9e5be876ba748139c8922be887dc17126182"
+      },
+      "key": "scene0109_00:GT:13",
+      "original_identity": "6d48f911ce5a42c0a217fb341c4f6b6ca50287d9458d559034150fae2dfeb8bd"
+    },
+    {
+      "arrays": {
+        "bytes": 1034198,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4e87f4b029ce2428e44ba072ae426d05fde58c405f9b513a3452de5df5bdd41a.npz",
+        "sha256": "6b94a324ee74f316a41289af235846236508a2808aaf6ad0ad9a3172e74d3b58"
+      },
+      "key": "scene0109_00:GT:7",
+      "original_identity": "139564a4cb1f386204fc3d60ffd2f1b833bc448b113d72cbf56bf9ee0ff765f3"
+    },
+    {
+      "arrays": {
+        "bytes": 1036569,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/3ed366cd7f8bf190ac66b09626b78e2e403cbb6793a71495fcb8dea85269561c.npz",
+        "sha256": "d6736dcc5593934913da882b103f7827f74300f2271c08491c2f961de05f5d36"
+      },
+      "key": "scene0109_00:GT:18",
+      "original_identity": "503c7e22d817d98ff11872a28d8af1d140c9c62379a23cd7cd7d1205cc2b38d9"
+    },
+    {
+      "arrays": {
+        "bytes": 1035035,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e1b5fd19947be2e105a8bac0b0cf86df7f94246ff3a539295074f0c6c9f1e664.npz",
+        "sha256": "abffa5c05febc04a2b58702d5f475116611fdd1e786c5cff0d207015ca5021e7"
+      },
+      "key": "scene0109_00:GT:4",
+      "original_identity": "e928bf4eab15787d31f7043cf912143951c98fb4a7d9ba7596d38fdd77f6cdb8"
+    },
+    {
+      "arrays": {
+        "bytes": 1035452,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d8699ff2286f8018dbaf8a026a7abe820ce07acd1cac6f226626c0928e5e841b.npz",
+        "sha256": "17013f8f63b125da1804f408ebc3b297c8a666c78250da75476a4dd5507ece53"
+      },
+      "key": "scene0108_00:GT:1",
+      "original_identity": "0df544f85215acf8b612edac035712086d73a1785805863e8b8439d505884036"
+    },
+    {
+      "arrays": {
+        "bytes": 1034047,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e64fed336a21a70735aa22d6cf853c09b5ff5eb7dfffd2de212272578f5650f8.npz",
+        "sha256": "575319757db863e6dfee11e035c1c2efd3405e9038d8a61ad7bc3cc77a36791a"
+      },
+      "key": "scene0108_00:GT:29",
+      "original_identity": "7024a9861780fcbb6a1ad3b144c9d3a318669c2bbf408997eb53d807f428f25a"
+    },
+    {
+      "arrays": {
+        "bytes": 506766,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/6defc600ca5be2d5fc4279e25f39b9b4ccdd09595a6e91457bac7bafa5bd5bef.npz",
+        "sha256": "15857416911284ebb9596a0ebef36542483d386e03febcc6d0472f256075081e"
+      },
+      "key": "scene0108_00:GT:25",
+      "original_identity": "dbfec293f43005de2de94ff625cd0eebd0388885341d0fc51545e2d457664751"
+    },
+    {
+      "arrays": {
+        "bytes": 771368,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0a19d57a79908cb35fd9fa06ef2df0f64f438db84afe99d05dd6227463a57bd9.npz",
+        "sha256": "c7c17d13cc7c469df9d16193e5e0ffdc42df12cd4c7c916f1194edb4b9c2d78d"
+      },
+      "key": "scene0108_00:GT:8",
+      "original_identity": "152ecbc906f255e670f217f7783cb9599d9421c0a9f8d7bb74536516fae3777c"
+    },
+    {
+      "arrays": {
+        "bytes": 1034977,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/dfba12690f26452c1dc63e22306f4e337db14752cb832f7bb5d0dd08754ac28c.npz",
+        "sha256": "5729200791256a7b7a89996824026816a16ad9cbcb3277def04c8c63df01bd5c"
+      },
+      "key": "scene0108_00:GT:4",
+      "original_identity": "283e7c08c77ea4e5102ba4068c574367fdd7823953fe3ab548c9aa551d98c7f0"
+    },
+    {
+      "arrays": {
+        "bytes": 773520,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d5e7b094518c94e5e16dd4861d593dba9de9b64fff3dfb45172522fdd5dea0d4.npz",
+        "sha256": "4bb422b69b91e0fe80844aa2de9074a504239e18c21b81c466cac6bab2508bcd"
+      },
+      "key": "scene0108_00:GT:15",
+      "original_identity": "9ac7c1aa3977b9684eb550a965080fab88771210d0d28349a0ed0a1b96e78a2f"
+    },
+    {
+      "arrays": {
+        "bytes": 1042950,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ab787d063ec647fc6367c1633f3e66477133052a3fd7994a6436226286aecdb5.npz",
+        "sha256": "7208a65e8cb94431c28d217e00c722a476df3d3070908262f4642bb47d3de15e"
+      },
+      "key": "scene0108_00:GT:17",
+      "original_identity": "22a11e29438dea755844fb948b092c826aa3df95937f55c6af0a5522019089fd"
+    },
+    {
+      "arrays": {
+        "bytes": 1035842,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/dc5103bff77927b45750982851e7fb11572fed0368cd546e13764505512cd190.npz",
+        "sha256": "5abb7d277754a1890c3339b320d571bade49b29b2a811adbd1e506a5f4566276"
+      },
+      "key": "scene0108_00:GT:28",
+      "original_identity": "3ca9f20d77d243171d904c794d793ce5fdc3329b9b72531e66eb5003418856b8"
+    },
+    {
+      "arrays": {
+        "bytes": 1035626,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8632d6d24a2b913a8591c6dc7877482ee7cbece445052bf5f7cd639fbe0f2fa1.npz",
+        "sha256": "4ecef5bd93246b07f1f81081ea0d226d73551fd693acd3e63828f0f07f3b9c56"
+      },
+      "key": "scene0108_00:GT:0",
+      "original_identity": "91cdb870a7ed5fe65cfe2f7f5ab3bae03e2a519c11bb66cbc4bc9418c89b0ba0"
+    },
+    {
+      "arrays": {
+        "bytes": 1040801,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ee019221a6f590c0f144a7e1d206014521695c2f3208b6f4132769d2471fea11.npz",
+        "sha256": "d7289f30b498f3216761e5b5bb78e9dba00647f8157dca6d6630c94b92934db3"
+      },
+      "key": "scene0108_00:GT:14",
+      "original_identity": "2a3eb87605eb343616428c1c01c03fa5549abb30b6f12fdfc4f1e26e8351f2c0"
+    },
+    {
+      "arrays": {
+        "bytes": 1033835,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/b3052cd71d5e131dc894ed1f66ecc1640be1ef135053a594ba6430c675964383.npz",
+        "sha256": "f67e1878a79e51a09bed41de1b1a886c8a2076c3e27802fe5d27c0b32f9a9051"
+      },
+      "key": "scene0108_00:GT:22",
+      "original_identity": "2b2c747aaa7b0df98c1e12c23b6d93304aedc030cb7c3776dde1c68a29c39ade"
+    },
+    {
+      "arrays": {
+        "bytes": 1042241,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/21aac59e6b2bdc40ee11078968ce78cd1618317c7199ad76ca45e274f16dd6ac.npz",
+        "sha256": "ffd6c266430dd67d599b3018a4fbee201a926c80f3a5a7f25fed058967d771e3"
+      },
+      "key": "scene0108_00:GT:16",
+      "original_identity": "e5a65314078bc1b84ea2316ba6838693556567b80c3dadba19d9cc7a5f3cb65f"
+    },
+    {
+      "arrays": {
+        "bytes": 1039735,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/915f3d8b46a2295cbbe83611d51e929f9215f1a647062d4ad19e72c19ac243d3.npz",
+        "sha256": "67ebd9f4e762545a38019bd96fcd29c19e04b63f5b0edd07b5a8616114697e7a"
+      },
+      "key": "scene0108_00:GT:27",
+      "original_identity": "b6afff200763dd2971c961271f4b26ed5cb0a4336ee94cfb3dd4167f971d5332"
+    },
+    {
+      "arrays": {
+        "bytes": 1036013,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e95014fddd1d6ff8b5996eaa335bd33af3e98f391067bae0d396c0b71a061823.npz",
+        "sha256": "187b257e08d62e474b8fe5cbf978ddaede10158abfac9471f71d852675f6b914"
+      },
+      "key": "scene0108_00:GT:19",
+      "original_identity": "bbeae8e2bf37a782c2b6d7e3b17726483d805cac81310ffc7e8767bf72f61abf"
+    },
+    {
+      "arrays": {
+        "bytes": 1034838,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/10682e9f3502e16e2c003d0be4c44614a5c7aa3d10ab69a3592e96391175af6c.npz",
+        "sha256": "2c226c21f743bfda3f925a184cde24eeab6ab10c5248b7045a78fe732672aa20"
+      },
+      "key": "scene0108_00:GT:13",
+      "original_identity": "e3c57b924405d3ad5fcf4a5e9b948b4123a2c3487c8220d9aa80f7391737ba9f"
+    },
+    {
+      "arrays": {
+        "bytes": 774788,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4e887fd958021c1f152642dc299a98e2b81e69e061a09b3594083c0a925c3f33.npz",
+        "sha256": "1513e3f014bd2c7064219e6fc777dbb2e6df5f58877aef79a3ae034f27724a05"
+      },
+      "key": "scene0108_00:GT:23",
+      "original_identity": "9bf64738c190c63c999b0b0781ab15bbb57590618c7f4e1d28c2538747bf3dd4"
+    },
+    {
+      "arrays": {
+        "bytes": 1034049,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9296ffc4befb246f387e63d716136741404773fa2e4b44b26f0ecd7ce9eb0661.npz",
+        "sha256": "2a77fa3e966c36faa412bb008e3be2d09e5ca4b4e6ead6527f1877390dfc249f"
+      },
+      "key": "scene0108_00:GT:11",
+      "original_identity": "6543f884dfbb5d0671eace79892b59cedf2330761d4b7a19738d21df450757e2"
+    },
+    {
+      "arrays": {
+        "bytes": 1034871,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0bba2cd6d9197b4290d0f385921fd9e718f5f86a46d553502c555de604d53ab2.npz",
+        "sha256": "8a2b400ebcb399224c2fe3d0a30ca8b95b92946814278671261324288fddad7d"
+      },
+      "key": "scene0108_00:GT:2",
+      "original_identity": "7d8aa15eae7b043c8bcdeb2ae92844cf57af5b7408e4442e382b67aceb94c448"
+    },
+    {
+      "arrays": {
+        "bytes": 1034720,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/affa47ee78ff41ba766fe92d9727ee3dd8ff239f842a6cbec1ec387cdd1233a6.npz",
+        "sha256": "02156e4d8598fdbadf50a3869d27ca763dd43ee8cea30f0a56c10cbfee093633"
+      },
+      "key": "scene0108_00:GT:3",
+      "original_identity": "0338a2953f8966aad7d23228612c1d228f9c1ea4dcaeb42bb785335dba0785f6"
+    },
+    {
+      "arrays": {
+        "bytes": 1033934,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0681cf24a64000aa9e4f383d03ee9dde1301e39273125e11d1e30b6cb67bf430.npz",
+        "sha256": "eeecb34bbbbe50fe1dae9edaf5703ed5a8842473d2013c0656cafb0dd27c59f3"
+      },
+      "key": "scene0108_00:GT:21",
+      "original_identity": "b6c37e1bb5ec990b0c0ad8e57664425fa32d3db12d6f540099e22fbe163c3845"
+    },
+    {
+      "arrays": {
+        "bytes": 1038917,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ba3d87d98a183acb7d00f0185f6896c08c4ee680183d6ae5a0e69ca800617c2c.npz",
+        "sha256": "0dab9eac3cc722ac6a2208bad72fb6a19302685c96fb864b5f5072621ee49906"
+      },
+      "key": "scene0108_00:GT:31",
+      "original_identity": "1d9df05d723645470ba1b6c88bffd5a74bd097a7a5cdfce2a8f46cc05f53bddb"
+    },
+    {
+      "arrays": {
+        "bytes": 1041196,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/638ebd634102a6361bb918a463cf6f615e81fa8f8bd8a9cf4e97fa10a96696bf.npz",
+        "sha256": "39c1a336e4e44a559eb513c3d852eb2ec65049f49b3ddf0295eb735646fceb3f"
+      },
+      "key": "scene0108_00:GT:35",
+      "original_identity": "188cf004ead308990c963a2d2d7bb6c7563f43b517c59936bf56456e2fc39b94"
+    },
+    {
+      "arrays": {
+        "bytes": 1043187,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a542558d99f244c4778cb98ae368a50197b1edc8d387d72ba94be99ba3d5b3bb.npz",
+        "sha256": "b9086047e4870e8d412caae8dd48a2de5491a2273149f82f5b6b1d42de9415c1"
+      },
+      "key": "scene0108_00:GT:32",
+      "original_identity": "911af2d4f4d4789f521584ffdf6fde5dec1b068a013ed781de83d8ebb73110e9"
+    },
+    {
+      "arrays": {
+        "bytes": 1042665,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/265a1646ced85ce16da809449156d6aed79c8c533574198b9e2f78e79c8bafc2.npz",
+        "sha256": "d9b4a47a84d9589cedd8e3bf8d14b38244fb9f59bcd0321122a69f897140f2fa"
+      },
+      "key": "scene0108_00:GT:20",
+      "original_identity": "b232047c0b64f481dc40aa460b7467a632942b832339431ab258d456d632bace"
+    },
+    {
+      "arrays": {
+        "bytes": 1041734,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/af1ecc95dc74205e022f68870f1adfd55a8939297d126e536abeee41c7874712.npz",
+        "sha256": "63b205d61939539c7504ef1580498001b1cb23768748733be669eafdc9948733"
+      },
+      "key": "scene0108_00:GT:30",
+      "original_identity": "4394654ffd9a2ee0132156c934a16e78db8079d6c719a185b74d42ccf08d0928"
+    },
+    {
+      "arrays": {
+        "bytes": 1042362,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2d9252ba7936091a925006bd1885b09f20db370d04951fce04d05c95372f666f.npz",
+        "sha256": "9295c3e380615c3a922c47e3f3d232e090a5a66502bba489b52bf9be5e72b047"
+      },
+      "key": "scene0108_00:GT:34",
+      "original_identity": "350f82aa94c73341e0a2d502406de5be5e86a827e0230c4489d30ec36dab376e"
+    },
+    {
+      "arrays": {
+        "bytes": 507694,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/18a7b243d96db7a1d17738cd81f545720209034f32667d4392979f0a66549e3a.npz",
+        "sha256": "a11c0e776e2403bb2d25d0791fa213cd0217d410c3be8ba19588a03c14c35e3d"
+      },
+      "key": "scene0108_00:GT:24",
+      "original_identity": "526a7afa35ed068511f86f05442f2dd320261d3ddc87bb3ec1fa4171d80d34db"
+    },
+    {
+      "arrays": {
+        "bytes": 1037054,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/601f53b1f75a3bf55a070171f9b92f062572905c83aa7303cc37cc50e3d8079b.npz",
+        "sha256": "68a149b31f873af58c339876ac23a07d4ae1373c68981357192dd75db9296b22"
+      },
+      "key": "scene0108_00:GT:18",
+      "original_identity": "87eead991c839aeae3865c2e2456f1c9064053e90a6da404c59bd5c915d8d1ef"
+    },
+    {
+      "arrays": {
+        "bytes": 1037136,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8b0acec937eb0dec7842aef8a255f9c9b832b6b0ae95f1590934c6e6055b8620.npz",
+        "sha256": "c27a05fa3432a1f3f24b7f6d20fdb17a99514c837195e331d4fe430757e636f4"
+      },
+      "key": "scene0108_00:GT:6",
+      "original_identity": "7f1bd2c25f2fbf96fd76870e828ae9bf1c582b1f2655083ebb70fbcb5ddfe8db"
+    },
+    {
+      "arrays": {
+        "bytes": 1037102,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f93c9cb65985516e7975407b314f7fb04fe92c88d2073a3bf8ce091f854203e9.npz",
+        "sha256": "85cea1a4372bca7b1d27b22e0a5dd8ff34a56cf7bf5601bedf6a00e3f01cce2e"
+      },
+      "key": "scene0108_00:GT:5",
+      "original_identity": "4d3bc35c61fb2a26cd84d95883db7bdb2122aaf50dac13e1fefe0841642101c5"
+    },
+    {
+      "arrays": {
+        "bytes": 1039984,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e30d6b86666bf85f7a038d10c3ac9ea1874c779141b20c81cf8ef8ea232b569b.npz",
+        "sha256": "dc30bb395f85c68e9b4cedbf1c73a4ee0c22de7560e95fde1a83fb490a52d842"
+      },
+      "key": "scene0108_00:GT:26",
+      "original_identity": "873cad5108b39d6431af26cc82a91d01e0436e828d023c3d8b61689ea40d6882"
+    },
+    {
+      "arrays": {
+        "bytes": 1033591,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/b61caaf9458bebb2b1cb6ee7d0e11b6259b0e2d92ecd2abfba26d61130e41a05.npz",
+        "sha256": "e6b5b0dd81ae843fc00b055d5efe0360010298477621f145ef7c8b06176f3963"
+      },
+      "key": "scene0108_00:GT:12",
+      "original_identity": "1f109d1e5d8ba2fabddb52093f9726c28a03a402053499360a253f2792ae71f5"
+    },
+    {
+      "arrays": {
+        "bytes": 1042084,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a6401ed3dab19ef2f047c06fd7514dc8f37cee6f2e9670e79cb64eb843ae2ff5.npz",
+        "sha256": "2ac9272e4a56f2dda152d0ad8c39a5ac7921fc2f01bfae93b5be798808e69442"
+      },
+      "key": "scene0108_00:GT:7",
+      "original_identity": "00b8c006fe5560f1e3726511f319e5333dba76ee4d39cae0efdd08ed0ab6a646"
+    },
+    {
+      "arrays": {
+        "bytes": 1034970,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e0458531853a1a9f054907b3a7fa8683f2481444027d070dfe073753e72a7852.npz",
+        "sha256": "5593a4c2f480f0b086497d72f9af53bd41b30bb6463e3f7bd823645ffef894db"
+      },
+      "key": "scene0108_00:GT:33",
+      "original_identity": "2e37001177ac94e3e3a82c6d2e61f3f8ac6b840676cbc8301b73daf431dd13d3"
+    },
+    {
+      "arrays": {
+        "bytes": 1035032,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f4640ae89256dc3eb10dc707892c1303289720ab11a3c97e4db2f3df31c77e92.npz",
+        "sha256": "0ad779df5dad29c4c139cc6a66a06321eafca90da8e1a398850c4919b85602c3"
+      },
+      "key": "scene0158_00:GT:10",
+      "original_identity": "1e55427b2d7498f8486a0759952010a996f9a5c759eb4a1827750e3f8ddeae41"
+    },
+    {
+      "arrays": {
+        "bytes": 1035491,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2f5dd52fae703c29c584ffc02febb75910dfeb0b7172167b861f56376081090c.npz",
+        "sha256": "d2a56a48b98e17fc47948f4fb55aace4d51bc28673f1eab08c8761a555132afd"
+      },
+      "key": "scene0158_00:GT:18",
+      "original_identity": "d464ca08c4e1066de6fba26093f08140d89020ff4dee2d991718247e505c2f44"
+    },
+    {
+      "arrays": {
+        "bytes": 1035076,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/fdef3b7c071804489beed4142df2347db26b9c9c5d97f51278550100d7f31f6c.npz",
+        "sha256": "100aa9be6a7ad9a5e6a44a04874bdabb6545543a6366981c457e56e4666d0459"
+      },
+      "key": "scene0158_00:GT:9",
+      "original_identity": "81500e1791d212df1fb384799c879ad1d733f73cc4c069e0bb9a5fe4dd9b3064"
+    },
+    {
+      "arrays": {
+        "bytes": 1035938,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7cb30b65f5cbadc8c7a6bb901bf61fb9d68d4ff54367ae4bcddceb7c3c35ed5e.npz",
+        "sha256": "61754c3a29c19a3c630f8210823c0b5bb62b1654a0049c344c52790e7c19fe3a"
+      },
+      "key": "scene0158_00:GT:1",
+      "original_identity": "2e3fd42457979b0998d34a8ef9bb0f2e58a3d3818d930cabce893ffe3cdde148"
+    },
+    {
+      "arrays": {
+        "bytes": 1037962,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f39b6a0bea234f3ca97f6bc301e54fd18251f55428a5c6edf67b8d4339d40847.npz",
+        "sha256": "cf29295b9026f85f1fc659274a229a603113eed32d7a21c9396a085d7d508823"
+      },
+      "key": "scene0158_00:GT:26",
+      "original_identity": "efa3f1e5782a3355f842ee9ec82a8eeb9873486dc67f02bc573190216fbecacf"
+    },
+    {
+      "arrays": {
+        "bytes": 1039373,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5d4b2088bc35d67395ecafd74d4ee8ec701ef8ad49762a0d355a367b6af0984a.npz",
+        "sha256": "ead719a619054b53b267cf94ea9993c99dfbf8f9dae058b92f4dc8eb89087b9d"
+      },
+      "key": "scene0158_00:GT:11",
+      "original_identity": "fbb4d92baa6d22fd0f49b2266b85518b8ec2aa1953d609a1091f37666af16af2"
+    },
+    {
+      "arrays": {
+        "bytes": 1034474,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0af596c5e9b2edb963d73e0d7f1ab174a4a07051735d1c252e611003b94cd96d.npz",
+        "sha256": "d6ab865f5432e09422c5a5dced4cde80f0f5c79120da2ca168ead0c63abb772c"
+      },
+      "key": "scene0158_00:GT:15",
+      "original_identity": "88f5211a38e64e2d372fda44949b86f4a03fd5a783203613d8c4133c86c2ee17"
+    },
+    {
+      "arrays": {
+        "bytes": 1035439,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/587b7d9e5d9f20b3620d83f959dd1687dca495a97d7207a3283b1e65c1debb9a.npz",
+        "sha256": "1475aa473251499412cbfaccc425320498b2ac3c53b0f3c142a01b29308f7784"
+      },
+      "key": "scene0158_00:GT:19",
+      "original_identity": "3e7d28a3cc42b79feac960b3c8bb11628a13783dbc904ffd6e64f48b8799327f"
+    },
+    {
+      "arrays": {
+        "bytes": 1036674,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f076f4e3d24d6bc4a914267976dda54470d839dcf7e5f2ba6c4f8f5f8624aa3d.npz",
+        "sha256": "4c227f75987c91a05adea1434af636bfed4adb3eab7d50383f1de55143c0c4c8"
+      },
+      "key": "scene0158_00:GT:7",
+      "original_identity": "cabcbd7ce0f96b256f7f3f56d55a4bb8c25b9bf5a5a992979b3f673baab3bbed"
+    },
+    {
+      "arrays": {
+        "bytes": 1035032,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/fdd3f29203c68ec02f5ac32685602d9956934939a0cd620c3075e84321158fd4.npz",
+        "sha256": "176792ac549750810aa0bc1e0799a8eec8e488625f90c443584047ef8b413e76"
+      },
+      "key": "scene0158_00:GT:3",
+      "original_identity": "0da494e2c7d937d886df432bceb72fc2711dbf20499bd81a2eabb2b6b0bb1381"
+    },
+    {
+      "arrays": {
+        "bytes": 1036279,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/3d908c4ce741694c53916dbadbc2f15e6d44b3838c62cb87e7eae9bd66ec2e0d.npz",
+        "sha256": "c9f3c7a09dcb6798a3f9d762ff6d0f61b4074ba8c11be9bfe9f12000f649e92d"
+      },
+      "key": "scene0158_00:GT:23",
+      "original_identity": "c009174f1ec15aaa836c0431d2f8b75abbcf1ca01baa3f5d1870a34098e9abba"
+    },
+    {
+      "arrays": {
+        "bytes": 1043262,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c45dde15efde175911be0a951e31c21e56ee3032ba1315861d3be892f70da32a.npz",
+        "sha256": "69f6d3e996f80d07b56918e16ccf15a4f8724459d5ba4c96e3f0d8c2047f4053"
+      },
+      "key": "scene0158_00:GT:12",
+      "original_identity": "869b7469873d76cc141de7f3104c80dee28f19d67b6d265d00fe9db78a90dfd6"
+    },
+    {
+      "arrays": {
+        "bytes": 1033615,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/31c1dd898a97dac36c89a510bafc4a416365fd26820dc24f59abaf6ed34b3292.npz",
+        "sha256": "cc5bdb61ca4b64877b84420e2716fdfa7dedb23b833d5136c11c1e05c0ff026c"
+      },
+      "key": "scene0158_00:GT:28",
+      "original_identity": "36e65ffdbd30e0776304ea65d0e187054f95d58035516fe280773939a0dec6e6"
+    },
+    {
+      "arrays": {
+        "bytes": 1034662,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8e16f5abd932676ce72735bbeb85456098461d90dfde2ba6b5512f8461be6718.npz",
+        "sha256": "4b66183d8209140402dd17e6114044796a6bfc0509d50a68f5e5ecb6603b8bb3"
+      },
+      "key": "scene0158_00:GT:25",
+      "original_identity": "c64f8c6d7ef7162af500581f0718a83172e15657d40d1c5e7971bf1666cc706a"
+    },
+    {
+      "arrays": {
+        "bytes": 1035381,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c75891616b960c105d8ec21b585853f8e8645148ec1d3ab59a90396965f201bf.npz",
+        "sha256": "2f6f126afb1c22c54f9ce0922a3cd297d51b1e822572210c5d6ee5051c02aa9c"
+      },
+      "key": "scene0158_00:GT:6",
+      "original_identity": "7adba4b4d05ccaaed6098138a900d507252f294483ffd49b2643d6d848a0cfae"
+    },
+    {
+      "arrays": {
+        "bytes": 1040013,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4e89e3d203e92d1fc20b8f99c44a8552162abc9b0ddbfc4f74186a12247cdc24.npz",
+        "sha256": "55fccc786d5cba13259bb29676397ae066f963c094276dd2ae252c0fa984d03d"
+      },
+      "key": "scene0158_00:GT:31",
+      "original_identity": "117af9e60678270ce9c700565ba30b67500eca2b3ba07a606bc20690fb2f6ca7"
+    },
+    {
+      "arrays": {
+        "bytes": 1043249,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/bd0edeff8f2d7818df021732941db99078aefcb3793870f6faf3e9256d950456.npz",
+        "sha256": "6dca469471df23058a11ff599e56f67382bf78dc0d7df7707723ab695f053eaf"
+      },
+      "key": "scene0158_00:GT:27",
+      "original_identity": "c67981178af04991648d247987a0622f4e569e20cfba12f5875d92a38ee71587"
+    },
+    {
+      "arrays": {
+        "bytes": 1034842,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/45a1b7e4bbbb3cde59d5e5a2733c5e765a4ed4c0dca404f5e7e8bf9d3a80935c.npz",
+        "sha256": "556d0e7bdeeb39648f1e026bafefc1f51b1e5781e13cce549717ef6ecba302c9"
+      },
+      "key": "scene0158_00:GT:13",
+      "original_identity": "fd75eccbda6d71dcd17f9e363bbd1268a7181b31f8876f1bacc63a16ad447d2b"
+    },
+    {
+      "arrays": {
+        "bytes": 1036997,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a9a94d96b40889eda829f696c407d05c4e46f1f266219aed19944812298f7451.npz",
+        "sha256": "87d6ed167a63d7cedeb7a472683a3c44c52786c257e48e269c60675fb8b1ee79"
+      },
+      "key": "scene0158_00:GT:5",
+      "original_identity": "057479d0bc4d394fc654f8bcc0969914aac72a83c7042edc1efb233a55f9373c"
+    },
+    {
+      "arrays": {
+        "bytes": 1037829,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/602575732655bfb909ee74c95a47b865a736cc69924243f166018f30b55c1e53.npz",
+        "sha256": "6b23ab7bfe521f8d61476a0be8ec2f03d6adef7e74e90f5f051cd4bccf6a2161"
+      },
+      "key": "scene0158_00:GT:0",
+      "original_identity": "98c3fd08c318fbe5ffdf156295969e4f75c2e2b91ac943711f771f67443fbf85"
+    },
+    {
+      "arrays": {
+        "bytes": 1035573,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a953e4fed9f3e7799a3594b7a5c6995d061f56f0fa5f21265120f22b7098b068.npz",
+        "sha256": "85f9ab237ccd3e02901a81194541a80b39ef16fa45c8726a0dc474dd508a889f"
+      },
+      "key": "scene0158_00:GT:30",
+      "original_identity": "eb058de106503a08780172cbd08a895c71ead4fdee6487e6d5c80a39ab76752d"
+    },
+    {
+      "arrays": {
+        "bytes": 1034482,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/55960ca06e12746686eedb3a85c06ac38fb622dfd93bced1c0b05fd7f7e5e2d2.npz",
+        "sha256": "4b0a7b8721966e937ab236bf20f67d76ed97d21622dc0fd27d0d37dc06839e54"
+      },
+      "key": "scene0158_00:GT:4",
+      "original_identity": "eea21312f66aea9a76405e4769e271d6ce410a268a138559dc61e8b6cbdcd683"
+    },
+    {
+      "arrays": {
+        "bytes": 1036665,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8001474892275191bb6965d4a7dcebc4f35ababac8eab0f29bf71bc5976f3964.npz",
+        "sha256": "645bde39f2c6195a2e348ca651df919e4d220c6b02b7e3d8b69c79e7c1d7ea12"
+      },
+      "key": "scene0158_00:GT:17",
+      "original_identity": "895041a427372429a480911ddf30b383252638d4be85df3e7007679ba03d4a28"
+    },
+    {
+      "arrays": {
+        "bytes": 1034717,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d07239ec84cece164f5421696061da9dfd1137cd841ebab76da7c51de20d39c4.npz",
+        "sha256": "80fea65eac49187d0cdaf88694bd67da805d7ba97fed39c01f308c105c70560f"
+      },
+      "key": "scene0158_00:GT:8",
+      "original_identity": "9ae7f472150f761c18b82a25b9d3aff8ca771a03ee3cf658db848a6e782ff71c"
+    },
+    {
+      "arrays": {
+        "bytes": 1035337,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/38f09c941f87d7b10be499b9fb6c48bb1fb25b4462e391724ca5b7b0c88eb51e.npz",
+        "sha256": "3d3c702356806a9f9493f049989fe9e454c81f469b38400d55e7ccbac6b1186c"
+      },
+      "key": "scene0158_00:GT:2",
+      "original_identity": "89bb9468396097e1ff4ccd00f13006f20ca333b103c648bb28bfaf2008b86801"
+    },
+    {
+      "arrays": {
+        "bytes": 1042068,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ff6a1d442f105db5fa3d9f3087a0f659456da3732939134b4949f400bb488058.npz",
+        "sha256": "02984db5eba12fd491ee7b5c5ce8a50ab6c2190611ca989a53428395045aa32c"
+      },
+      "key": "scene0158_00:GT:29",
+      "original_identity": "a2f179e046cd8626c1e28936694f9a6c5f75e75bbc2577f325b3e291016697bc"
+    },
+    {
+      "arrays": {
+        "bytes": 1038664,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8c7cc645eaa20c84fdb8640c41a34897d7140be6b26d260c5f51f614602f0d39.npz",
+        "sha256": "39be504282c0e3c5e4e84784644c6ae6580e4293bcaf2dd8c83b121d2996e3f0"
+      },
+      "key": "scene0158_00:GT:14",
+      "original_identity": "1f4979d982d09429fec6d4518e2a3609d5fe39a4f299e687e574ab65b85b2500"
+    },
+    {
+      "arrays": {
+        "bytes": 1034563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/40164f6bcafc2a5757ecd77b1a9e5557555438c51c6fb4fd7eb8431bf429f5df.npz",
+        "sha256": "9bd8550902cdc98846e492f9bd687af5638ddbee9ac334f21bdb187a62b99e18"
+      },
+      "key": "scene0158_00:GT:20",
+      "original_identity": "0981c2e770e483a8aaf17863be02f7066fc6a2b1790628e4ceb6ffd1431d0156"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/dcee7b3f811e269faa430f002fa5acdc07ca29eaf3c28569d2dc8e9d335f4f50.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0158_00:GT:16",
+      "original_identity": "aae932b76d8929293a4eb7db36d30069d3a0fcb21848f3d11145c6c44488547c"
+    },
+    {
+      "arrays": {
+        "bytes": 1036028,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/faa4684b769445a5e9d300646c7fc137b06d01dec159f52b2b3cb2154e098695.npz",
+        "sha256": "3c67e0b5fdbb4c749f59c07eb8f767e554880a23441d859f487fe748385b16b5"
+      },
+      "key": "scene0158_00:GT:24",
+      "original_identity": "5c3b1bc22943f6808ddccbfe813e02183c2cefdf5af8d839ef9f8457930b9ae3"
+    },
+    {
+      "arrays": {
+        "bytes": 1041855,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2833aa00de2225ee86a7b10105f5ba0d2e78bdf32c0d834a5365bff741ee5095.npz",
+        "sha256": "b6031f9a04b2bd82b7e5b700f2486b3d42eba8f6c115f9a244c1a4530da7ea1c"
+      },
+      "key": "scene0158_00:GT:32",
+      "original_identity": "d55ba5dfac4233e6c97805b94c769385187f8e4fc74652d33faa8f10cbeb4bcb"
+    },
+    {
+      "arrays": {
+        "bytes": 1040350,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2f7b0214b415e39e45c939de6a8e765b27cb7c13b985d19f95fcb71558c5654a.npz",
+        "sha256": "fc1b1c89d42db2141d197e30ca88a97ec6083d24490cd06e05ce1d25bc47a8a2"
+      },
+      "key": "scene0158_00:GT:21",
+      "original_identity": "7860104f02de3419d3cb946b36efd20547de8549d96a642bb6ee64afeca38625"
+    },
+    {
+      "arrays": {
+        "bytes": 1034431,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/61a16a8236d78f692dc947ff9edda72ac75c4e822937707834c783f67195b5d9.npz",
+        "sha256": "e1d6d67ec5c0e76083337ce43769cd2c36b3b07611ae7dd55422c307ebabc65b"
+      },
+      "key": "scene0158_00:GT:22",
+      "original_identity": "fe02a4f94ae15d9b221453f49fdbc666beab645d9de52aa6d3be51304b9b8947"
+    },
+    {
+      "arrays": {
+        "bytes": 773353,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e9cc8466d00c8ae3db3aaff2b8b4a36dab3ecffdba554fafc029314fd281754c.npz",
+        "sha256": "0a010f48aea917c1dafb952bf01ac959ed2a2c9417c3377ba79891d9af84fe2f"
+      },
+      "key": "scene0182_00:GT:17",
+      "original_identity": "df54706d6e345ebe3463153747a4a95ee87a3288ca36dda1e8749e175be67735"
+    },
+    {
+      "arrays": {
+        "bytes": 772223,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2da09f52010548f10418b21a2100711b0bd26f3338dec895634855dff5707c8b.npz",
+        "sha256": "fe98332bd307a29e30a5bf34e973b384edd40c28932371851122135d54631e66"
+      },
+      "key": "scene0182_00:GT:9",
+      "original_identity": "4366bbad63465f7bdafe6c18bcc121d02f51b2df95bdb3bd80d2b3dc035d354a"
+    },
+    {
+      "arrays": {
+        "bytes": 1039299,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/566654012f7b966b6f492da83f801fc5feec112df5d620408dbb789d4d28741b.npz",
+        "sha256": "0737c68321487d6ff0ac606e86b73dc63daa94bf8846cfb20d05e91990c4dd60"
+      },
+      "key": "scene0182_00:GT:8",
+      "original_identity": "ae5e3f2284437f15885b13ee5fa9aeb0a563a7ae12a3a9b7a2d7b1021d3cee87"
+    },
+    {
+      "arrays": {
+        "bytes": 1035094,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/aa0820145bc4841f56a6251cd8c1175c1de13c67fe2e838d0e094dd8b49d387b.npz",
+        "sha256": "39706a6ab9cdf9b150d6b345f5389f902753f48aff18083759c15062b88fb520"
+      },
+      "key": "scene0182_00:GT:4",
+      "original_identity": "6f770770ec77bf443eed65972b427ee671c34dcd3cde2aeace04deb459624ec8"
+    },
+    {
+      "arrays": {
+        "bytes": 1035636,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5152aab3bd53a90df20e79855869318401dc01a4c67c8e7b9f432f8e5a7fd724.npz",
+        "sha256": "ca861fedd78aedf605f29c8c4f372be992568f69008b33f223dcc7dff5c8960e"
+      },
+      "key": "scene0182_00:GT:6",
+      "original_identity": "07f5ab4815184962db2cf21cbfe96c8b05599c2147c3b4386334b0744ba32f0f"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ea582b5bf10e681c2e873757d320f782c7cfe8ca62f80bc18e6ecbb5e2ca3d47.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0182_00:GT:15",
+      "original_identity": "8c6a00a79fea3ca550d81420a417338e47859a23a5a77e2c642501740c375f7a"
+    },
+    {
+      "arrays": {
+        "bytes": 1035484,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9d4b936b76bde34c5f6c37aa7d0f820744cd6570e08d39fed1f98c731519adaa.npz",
+        "sha256": "a6f7f56c8160119f7fe62d0061b325a38b1ee3e978dc8e53bb035332e8bc2a7e"
+      },
+      "key": "scene0182_00:GT:11",
+      "original_identity": "064667869c54801a9ef39de06622096f219cdc5c05f452e80d9a9dd26a52e0d0"
+    },
+    {
+      "arrays": {
+        "bytes": 1037300,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5c5c0649094d532729780c28307e73f7b30fa6f1e235ada84efd15dec943b20a.npz",
+        "sha256": "fd4b656e883e803beb5ce15635fdb1772780fa68190702a423ba089601acda2b"
+      },
+      "key": "scene0182_00:GT:5",
+      "original_identity": "760c077443d3c09abcfae2febde774158784305fdb1db4d2b8472d5d7bfcaf31"
+    },
+    {
+      "arrays": {
+        "bytes": 1034393,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/afb793084a14118d5e508a3bd40e28bb46d2313eac905460c4a4a63d1516de9d.npz",
+        "sha256": "e344307922800329b455bea0fc88fa7f5ed363d9dacc1c56625db8ba6cb2456a"
+      },
+      "key": "scene0182_00:GT:0",
+      "original_identity": "4ff1ce1b936dd012fbf3e26f3c9032bf60e8a656bc3a87eeafdc403f079c0f93"
+    },
+    {
+      "arrays": {
+        "bytes": 1032931,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4d38249514e8dc13bb32afe018b78321a2f2ef2b625b986f8e62e307aa338fe5.npz",
+        "sha256": "7568810f67d2f582675f6545b419cae970f3def8dac518144ebbffd456a1e038"
+      },
+      "key": "scene0182_00:GT:1",
+      "original_identity": "66e1d593da509c7c548ad0d3cd03eb612681379253895555edfd725a0ef9e260"
+    },
+    {
+      "arrays": {
+        "bytes": 1043314,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/703d54539660f0ec123d393d9b6514222d0808428a9d919b547b4fcb03dfa085.npz",
+        "sha256": "c216af86e0392f6fa16660df68456129f6f4f2e63c3ec709a9788e97aff174a4"
+      },
+      "key": "scene0182_00:GT:3",
+      "original_identity": "bab26052a9308bc9bccd23948a22d1c9fa9bf719828c28a364d5a7ec4e948419"
+    },
+    {
+      "arrays": {
+        "bytes": 1036734,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e81140bd1ceffbffe6dedbab5e4d4c60d053a281da915e8048aa95ed6ab08d40.npz",
+        "sha256": "eea10162d00f0948ff15725913b9164973e51d2f8550ce289cff12ddc89a60e3"
+      },
+      "key": "scene0182_00:GT:12",
+      "original_identity": "42ecb491881643a3d0baae1b58b9aaea42b41864a26d0d12e22ae42f76297a07"
+    },
+    {
+      "arrays": {
+        "bytes": 1034614,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0471216131991f3a0eaf4a2644f1f94388f1a0a990920f2214ae6a0f43fd763e.npz",
+        "sha256": "9bd9cd7cff159f9d815f46a00bb27949df6d8b0e20159ed560ee9e30c4d49e62"
+      },
+      "key": "scene0182_00:GT:14",
+      "original_identity": "097accf9ef6464da29d8e39c45c8a035a3419ed5da679b6a95c375ac59985f99"
+    },
+    {
+      "arrays": {
+        "bytes": 1034259,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a1e0030022b3f884a99edcdb900e042d2ade0844654005296c6b3aa8e4f4289c.npz",
+        "sha256": "09d6f6e967a3220c4e728520f7ae8b8c6a3e913256e2856004082046d56ae0c0"
+      },
+      "key": "scene0182_00:GT:2",
+      "original_identity": "4c4230dd668aa364f05eb49a3091164ed52a2143e04415f45cbf1843ae6a76ee"
+    },
+    {
+      "arrays": {
+        "bytes": 771162,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/816ebfb20fb9f281d9296980793031c07977980d597678b1bacffae51be7e99c.npz",
+        "sha256": "488ecca02f9e47b4129dc42b29ba3b8a64a88a2090dd178da338d3c2b542aa76"
+      },
+      "key": "scene0182_00:GT:16",
+      "original_identity": "5c181556e6b96bcd8b96e05d6aa683cf3c2a8dba7e7eef4a51e4a22845b3fd83"
+    },
+    {
+      "arrays": {
+        "bytes": 1039661,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/3daf6d09c65718abb3e290e4866b0a3fa417ed580b3966ccf4a1f07f3fd56a94.npz",
+        "sha256": "db555473206179f688a4a5bfe25e3081396ba136cb93e5cf9111b7f36858a275"
+      },
+      "key": "scene0182_00:GT:10",
+      "original_identity": "782fbd089a1e2a638fc5d74d512eae6c8bdfa3af37362baaa852a1f6852ec880"
+    },
+    {
+      "arrays": {
+        "bytes": 1037916,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/63897f56d77dbb3fdcf681632f5e18330c8fa48acce39ce8f2f340a244a0dfcb.npz",
+        "sha256": "62c50fe33d9ffd1b56a1497cd09f8f09557330ab8251dc726853038beb9eabc9"
+      },
+      "key": "scene0501_00:GT:31",
+      "original_identity": "763f390cefafa1cdef70d9ef912c1f18fd32b124cc9500739fb7cd2b6b727962"
+    },
+    {
+      "arrays": {
+        "bytes": 1037201,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ea3bc9ce77f8f660ed17de167e08112e05f98db42f6f6b6205d700d4bf023d64.npz",
+        "sha256": "f21e3bc3118132930d48dbbbcc6e2acf43f686ad91b68f9a276df0cc819fdea3"
+      },
+      "key": "scene0501_00:GT:24",
+      "original_identity": "c4a64ac0dac792b6c167f4308c79b5560559147caed4caef66253b757ebd4c6f"
+    },
+    {
+      "arrays": {
+        "bytes": 1041256,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/96c654e70453650ad6eab2eba3c1885a043ccd8c64eef22661178fd1a5fcab50.npz",
+        "sha256": "2d7a7c107f4f74d0fd94bfa17ab334099b73a18cb1a47e0cc627f9aa1727cdfe"
+      },
+      "key": "scene0501_00:GT:5",
+      "original_identity": "0b28e4abd6783c830bdc5e863935f88e36f33325ed7b38c61d5e3329b8f58235"
+    },
+    {
+      "arrays": {
+        "bytes": 1035718,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/620deda8570bbac878b739ee779268f4965c26dae64f7cd4c9b3b6fecbc9c8c9.npz",
+        "sha256": "cc34618c0dd78560a766c1a4c2874f2dde91a95b55aad250c4dd5d457ed02743"
+      },
+      "key": "scene0501_00:GT:29",
+      "original_identity": "f6aacce497897f207c7cdc948e77d15a057c33b9152376e0d58a1b7403bbf56b"
+    },
+    {
+      "arrays": {
+        "bytes": 775166,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/beb981ce579b6b962ee97e6c8c035f6b04df92f551634fb174744824e7f681ab.npz",
+        "sha256": "5cdc1e27152b957189e3d8deca742bba0e5685e304fd84d1a01a8a09b97ddca6"
+      },
+      "key": "scene0501_00:GT:19",
+      "original_identity": "ffd96797400a4de4fdc6f48caf96375f393fd397ed9a674ec0bb28d87126b6d1"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c9452eb0111bad9113e4300914d8b3470386f5ee84fdce60271769414f630be9.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0501_00:GT:23",
+      "original_identity": "fee70d9a9bd2b6b4659dd5565c8cf85c19b7f4e8e8b95784913e8eb3bd1f5914"
+    },
+    {
+      "arrays": {
+        "bytes": 1035975,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/3c299d5d3e3fa1a7001934cdee5b1e8ad2dc7248d46e9ab05c1703fdc957cfd7.npz",
+        "sha256": "f66efb52c5581f264e7af4c29fd3af7e26169baadd04aeb8f4c6799eb904ec4f"
+      },
+      "key": "scene0501_00:GT:3",
+      "original_identity": "e1793d84d580ef65a8efc4177da643539ca20d01956c53a0016393cdf3d1c53b"
+    },
+    {
+      "arrays": {
+        "bytes": 1034557,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/08da8f9538f44f01c89cd57b4f38ac5c0431a6cb897f73cae827022abf28ec6d.npz",
+        "sha256": "483d42e86624f03a9fccce69702295ee94596d179faea9fa3ca9b877b707b150"
+      },
+      "key": "scene0501_00:GT:6",
+      "original_identity": "0eaeff9e072447916be96f7db08551825ead0235237484fc98842e7dfe8dad43"
+    },
+    {
+      "arrays": {
+        "bytes": 1033389,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c8098de0f33b513363dd007ced6740d440b13d458413601a5bcf11ea316e8638.npz",
+        "sha256": "99df38971a40d8df95d28d7c807e1aeb7a72edc9ed010fe54a107a498ae637f1"
+      },
+      "key": "scene0501_00:GT:16",
+      "original_identity": "55ed4c4ee7829d230bf0aac72ade3e906d607ef804574bba796ab4f7ac8711ca"
+    },
+    {
+      "arrays": {
+        "bytes": 1038688,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5e307193b240557dd5627f06423131b3d584012ca0d7a20eb38a510ad6fe2146.npz",
+        "sha256": "cf95d6a4ce954e15438605f3c510bd03a9d84af398c521ca68b45d764629bd30"
+      },
+      "key": "scene0501_00:GT:32",
+      "original_identity": "086bd43cec1d64d68948cf58adfa45c82d875230ca7bead75fff4a91b626b821"
+    },
+    {
+      "arrays": {
+        "bytes": 1043236,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/ed886a486f8a1849a6edf9c5b8d9c36542d975952ac8d696260b61e92f6b2bd6.npz",
+        "sha256": "594e44cc8cdcfce862b7b09870d2bc8a40da3fcbb1421e6782062f0ceeee6267"
+      },
+      "key": "scene0501_00:GT:25",
+      "original_identity": "fc0fc3fb859f09996916c69f43a345ee75f3c785729e1262d915ca9c7116c4db"
+    },
+    {
+      "arrays": {
+        "bytes": 1034779,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5ffc5ef43059244e4f971a2ea4044f8c01ba6307fb27f1c4b3296eaed8247bfe.npz",
+        "sha256": "4b457e493b54d23b20ef1c59772763b5aa708cad971c2e9297004c572a6c1517"
+      },
+      "key": "scene0501_00:GT:1",
+      "original_identity": "4b112752126a0e1f7c237a6759303892b871f74b6cfb4558574be297656119e5"
+    },
+    {
+      "arrays": {
+        "bytes": 1034857,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c011e658f5a86062dc2938752c034284868470b5eaeabad0ec49241172831c65.npz",
+        "sha256": "4a23153cca7abc71f837fcdfb4f58ad196f0d97525e610e94f313b211478ef8e"
+      },
+      "key": "scene0501_00:GT:0",
+      "original_identity": "a7c2b5b6fc59cd15bdbb0b546e61997f71e19cbcea1041a9fb50e559cf66cc01"
+    },
+    {
+      "arrays": {
+        "bytes": 1036050,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/76032e962de8c1038f8f72eaebe7f1a0ebc48e0a166fd257a0dcbb2f4952a7c3.npz",
+        "sha256": "e1bfc1e2717e18af5911dfe0fcf19a0115cb50bedcf331d91a161ca1ad298a23"
+      },
+      "key": "scene0501_00:GT:14",
+      "original_identity": "b75fd3df6beccf05fa1dbdeea8c141228c0fbf8e0f39b3cc35c51827c9e4f73c"
+    },
+    {
+      "arrays": {
+        "bytes": 1040509,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c36edd5bb8a4b1f2bd05d89ebfc9d4bf5c242274ecc8e8d857c7110fb11bbd34.npz",
+        "sha256": "483b4efa347bc870bd4daa2f130f609f50c31d6957f70bcb9e6d9a57764acbc4"
+      },
+      "key": "scene0501_00:GT:17",
+      "original_identity": "ec6e24079f690d47957d819e39013a7425ea8c5017c09c8945d738c7987644d5"
+    },
+    {
+      "arrays": {
+        "bytes": 1041995,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7d34c8795462b1a05f1d477f95946120febdfe0fd6cba0cf0853c5da50f23887.npz",
+        "sha256": "deb0a12752a83607d9ac144bb00c445ca1370ee4929e6bca23b123a319393a39"
+      },
+      "key": "scene0501_00:GT:13",
+      "original_identity": "8c2c16e12b4f7c185dd1d24b9caa903b24089512660026f5d99af0009357e38b"
+    },
+    {
+      "arrays": {
+        "bytes": 1018181,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/c19edb72904b840225c9e8f26440f6b34dbbcd774e63aca3cac058cf4736ffc7.npz",
+        "sha256": "fc3c99f0a15a1ce88f485aebee53636528a35380c1eb12cc4d61bd85c861bb77"
+      },
+      "key": "scene0501_00:GT:8",
+      "original_identity": "a3a1c867bd52827f7f31aa90409f58da4de8b9f80e685fbf5285591b4ceb48c8"
+    },
+    {
+      "arrays": {
+        "bytes": 1034418,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f141f16a15086ce67c3142eea103055fab5551c3b12a2fb90d91323f9f6de92e.npz",
+        "sha256": "5025bf190cc220d91b7590572c9add465b05cec719131dd4141ad23ae2a99ecf"
+      },
+      "key": "scene0501_00:GT:4",
+      "original_identity": "a1b8314d85818a0dddf3ea05bc7e5e00a642a40320f0ec4f99af83ae9e52bc8b"
+    },
+    {
+      "arrays": {
+        "bytes": 1036314,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/8be3ffa992374814890e773b6a675f5ec8c08a98cca06800a8e2b7682a868b5b.npz",
+        "sha256": "eff5cd69d6672e8f474306be6bf9e76cc222265a27aa0501f1e00c17388e9d72"
+      },
+      "key": "scene0501_00:GT:22",
+      "original_identity": "b8c00a1b7582edff3bb2781581e89020aeab8cdf52e4e1c29cc274cd6cc17ab6"
+    },
+    {
+      "arrays": {
+        "bytes": 775596,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5e0d980191c67852d5e198fefe427770c5b01f33da1efe23b34de8ddf2856bbb.npz",
+        "sha256": "d54d3317a2f1be684d2bb0603b1fbb07edb8ac8e5cee26917f40f527370aa7a3"
+      },
+      "key": "scene0501_00:GT:35",
+      "original_identity": "5ca67ec1f9a12d190b1f2961dcd8093247a66465e6cf94a02e381ef3e404819c"
+    },
+    {
+      "arrays": {
+        "bytes": 1036181,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9c7de001cfd37ab7904a5e07c66414746b515a2cb3d82365ffb7fd6e61a892e5.npz",
+        "sha256": "2672904334ce5f124b87a72def1f25b0f716f8153f3cdf92ecefc73088c3ccff"
+      },
+      "key": "scene0501_00:GT:2",
+      "original_identity": "f5d0bab2a6cc2c21c66d0c9e0fbbdbf9ace5ea3155ed9e6f3190390a6d19688b"
+    },
+    {
+      "arrays": {
+        "bytes": 1035633,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/feed8b21d32ce2fb35d5c5dd19791f1d8f8c6525665c4d13d55a9169a9b0482a.npz",
+        "sha256": "5c0c22ba5ad7d7b4d527ea715bc727b5cc0b54ecd45d84b8ee1a28cf773eb192"
+      },
+      "key": "scene0501_00:GT:11",
+      "original_identity": "de81a6226011c3d7c9c04a78d6862d0750edf1c5264c9e040edf82077bd4572a"
+    },
+    {
+      "arrays": {
+        "bytes": 1038807,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/bfe4b043f99eb5ffceae2966c319031f0996dce497b14b3b5ad041ee0cb76f46.npz",
+        "sha256": "7d7cfa43457c3b526e03735c2f14a748a66100ca9ae3c9d9c07a160a1147f5a3"
+      },
+      "key": "scene0501_00:GT:34",
+      "original_identity": "2ea31b34e5626290238d1cc6b52107a63998e15906fec1a0c96a7f667540b99f"
+    },
+    {
+      "arrays": {
+        "bytes": 1037807,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e2d51ee62ade77140b63ad4580195367699b6a532be904155d43709d1cfaa746.npz",
+        "sha256": "b924e3496db25675bb2cba1cb4acee175bb14d86d009e2ec3b65ed0a00e5c7e3"
+      },
+      "key": "scene0501_00:GT:37",
+      "original_identity": "4780132c71202b00e7e059540326d9c221d235b381893b5fb4a47558ca239dac"
+    },
+    {
+      "arrays": {
+        "bytes": 1038735,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0c07122dd1ac3b994235c9b171cf2b9115a2bbb4dfe388eb48647d2e88f63aa1.npz",
+        "sha256": "8003577361d83b0b7d59f9bf5169497a3a5d15d87543d21cf55d70ec7a3fb065"
+      },
+      "key": "scene0501_00:GT:38",
+      "original_identity": "087ab3bfb23e0f7d208f4e0e98ca91a980c1758657404fa473213150b0624dbf"
+    },
+    {
+      "arrays": {
+        "bytes": 1040694,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0c667ee92cc630e620b5bf789f7cde3308b6915b047e5172f1466c0471e54874.npz",
+        "sha256": "dd71d4cab3197a18503d0b5bcaf4287da4400a12fd0a762d82cadcb46a81012c"
+      },
+      "key": "scene0501_00:GT:15",
+      "original_identity": "b9f5ba87c9cd46ac3c84323f596868f3a32f8918e117a22288db92abf541fd4b"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4e1f1bf6f5c2c01d04df736bb3049aabeb48d711207938eb3ee0e667bd9814da.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0501_00:GT:28",
+      "original_identity": "83a1e0e5908f0cf113f5bbdc390f1cb2746c849ec703d58c86a192ee45903f16"
+    },
+    {
+      "arrays": {
+        "bytes": 1035473,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/dae403af473d45081279cb120cbf8276928aeb2938ea693ad7f0d87f31e2e597.npz",
+        "sha256": "f746e6b36f2d20bfd635c7f82a5b723a125b4fe9fb44178ab33adc8523a852e8"
+      },
+      "key": "scene0501_00:GT:18",
+      "original_identity": "7a859491e60e0466770838c17725a8f54a74a6eb0cf150c4d88070579d000465"
+    },
+    {
+      "arrays": {
+        "bytes": 1035188,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9d41deac92a526ed65325220bd5d49d1e18385b9764894207ce599c937e3b8ed.npz",
+        "sha256": "b12acf33cabb927ce4ce5b0e33e66d19a5452746c1ca89a4d4fa1fd9982ba8d1"
+      },
+      "key": "scene0501_00:GT:9",
+      "original_identity": "7cfecdc25df3de32957b381ac0b0373b5304708f9a5b72cffea6eaf15dfea185"
+    },
+    {
+      "arrays": {
+        "bytes": 1035101,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/da733b23a6987147c3734314499155a47809ce3a5237a850473203ccbb16b057.npz",
+        "sha256": "423e712f08578a07b86010e886119b3bf9aa684cc84c57e150ab20b1fb13ca46"
+      },
+      "key": "scene0501_00:GT:12",
+      "original_identity": "3dbe9fe078bd5a494dd3b13e85c660343db3ed8abb4c6eb0d4aaad013e4bb6e2"
+    },
+    {
+      "arrays": {
+        "bytes": 1037229,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/aa2a484a3875f946632b9d93f3b603ec5822a597ab295d42b4c3d2e4c96b9bd1.npz",
+        "sha256": "bc3c87581e356824194949a6f41ae4129cee8dea80d47ddcdfe2bbce8d75d584"
+      },
+      "key": "scene0501_00:GT:20",
+      "original_identity": "c16b1a808628bbf72f11ca0486ed3236ab4341a84c29a2ad5b2ed9b41b6f41fd"
+    },
+    {
+      "arrays": {
+        "bytes": 1019970,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/09e9652a0bb9ecd6679765ba80f61e1565fe220e3bcdac309e77c60ee50e6322.npz",
+        "sha256": "0f1c1bfdf0a1296607d4d08616d103ce1d052552b03192825ec637ecd09af68d"
+      },
+      "key": "scene0501_00:GT:21",
+      "original_identity": "fc7d4a69371aa31ee5cbbe242b718a4b189804eab124f4df42fac24e6f3be6da"
+    },
+    {
+      "arrays": {
+        "bytes": 1037463,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7afb4fe0b062526337245432f14c3ce4f631f90fa25d070472a63fd115492ef1.npz",
+        "sha256": "7f7c1b711f5131e16668e061d99f2c21a873840579e42c570c0d25e9e73a73ab"
+      },
+      "key": "scene0501_00:GT:7",
+      "original_identity": "d35fc38e88fd9c30e87ae42221ff430f4b3ce07fd89b5ce90755b5d69786c9db"
+    },
+    {
+      "arrays": {
+        "bytes": 769869,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e0f3ccebe95bd52ebd192255dd8d1e15e8cad7583da85946ca85b17066c19cbd.npz",
+        "sha256": "ee136787fd29da6fad230737925f4f7220f32eb637eefdf18f661e64d0791823"
+      },
+      "key": "scene0501_00:GT:27",
+      "original_identity": "90e5877ff642985590518b9539f3e6b84f613eafee9f29f3a2658242b4e48292"
+    },
+    {
+      "arrays": {
+        "bytes": 1041140,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/66a2df82e422c83d70b0f8142c163c4a28fea8d4fd812a4f7bebcb7286a10cab.npz",
+        "sha256": "498219f8498ed85c8e63e19f91f22a3c90e615e39a552fb819e75e44dd1cd64b"
+      },
+      "key": "scene0501_00:GT:30",
+      "original_identity": "941ac691d097054943aa0e95ac03bb1c77a4b64d39eb665021e7308ac4d179b6"
+    },
+    {
+      "arrays": {
+        "bytes": 505533,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e63cb0f7bddc99933154537fbb116dd2f9f3bf61e5a4f812787056375752938d.npz",
+        "sha256": "8d2420d0dbe7b20fc06c494404958ebcf7011b544215480b5f061836cb40ce2f"
+      },
+      "key": "scene0501_00:GT:33",
+      "original_identity": "ce38aaabea24ec2836b98bfcb82128880b85d1bfe76983bd5efed22e0009af56"
+    },
+    {
+      "arrays": {
+        "bytes": 775501,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/4d52294ce498943d73f77f17c96bcef73f4992066668cf725ea265e236aaae65.npz",
+        "sha256": "0c1abc909fa61a0536ad1727db243e20c5b82f45955e52157eb7512b85138fb3"
+      },
+      "key": "scene0501_00:GT:36",
+      "original_identity": "08de84bf29725461f1930a13249be84ec929d429de7af788c6fe790450df7847"
+    },
+    {
+      "arrays": {
+        "bytes": 1041666,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f3938a32d54bbe4b5ccc03df8af00735b62961970dd17571d3a49231e8dc6ec6.npz",
+        "sha256": "0956efb7981251000c740d672e74abc7722d9007ac4a1f256a54896e4a98d333"
+      },
+      "key": "scene0501_00:GT:10",
+      "original_identity": "e38f49b5fc6d941de4754d2fec5342a7b518ecbef387a2d616476fa201fe84d4"
+    },
+    {
+      "arrays": {
+        "bytes": 1028813,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/85fd0d8f7a992f0adac5353d5e9d6b58e7b258176b5877936209acfc09b2c31d.npz",
+        "sha256": "73379b9537bd857476b45b13d55581f15301885a0f80b3bbf0f11314f06c43de"
+      },
+      "key": "scene0444_00:GT:1",
+      "original_identity": "8e54eae9a2872647d1f182ccdf8dfd04cf45e524694b59089e37f0a76903ff84"
+    },
+    {
+      "arrays": {
+        "bytes": 1036056,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/b743f4f8090a5eb367a9b34f1b2f280d3de973a5a5f6300f5c6617af4f72d95a.npz",
+        "sha256": "81524bd6d9fc77e4786f751112061b2c0b88775e722bf854733e3b4e3101fe98"
+      },
+      "key": "scene0444_00:GT:3",
+      "original_identity": "8a89b956325bd970ce77020a78b6d7570822e724cd28406d0008c5154947d449"
+    },
+    {
+      "arrays": {
+        "bytes": 1042718,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/7e12529e851107e47c50e22c524cb598db6d8d3adc74e4771d6d2d38b3d0c183.npz",
+        "sha256": "61bb8c6742caf1376f15cbaddeb2e23487982ddc3f89f1fa44578a849d659c39"
+      },
+      "key": "scene0444_00:GT:4",
+      "original_identity": "e8a0f0dab1c9ae3dd88976390b996be8e3a02d30e221cd26b56a1308d782b0f3"
+    },
+    {
+      "arrays": {
+        "bytes": 1034394,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/f5559a8646938b81300d4ef550578a2f85d4e9d53722d386728c74678ed16361.npz",
+        "sha256": "20e5ef03479ebd12ce516b67392ecbd2d64a32417ed32c928a23695df169531f"
+      },
+      "key": "scene0444_00:GT:0",
+      "original_identity": "96ee7b93fb5d843d4a7fca4fc3058e2a419260baa6efc283f7dc779a39cfbaeb"
+    },
+    {
+      "arrays": {
+        "bytes": 1041080,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/91e7e557b26c5f882bdef1308ff8ff10904ceca50743ee325ac0c1e6f47c38e3.npz",
+        "sha256": "e4d1adc924f1d84b8a3446275cf7127e23b000d0775bcd25107d783197ee837a"
+      },
+      "key": "scene0444_00:GT:9",
+      "original_identity": "864e0038d0b39174ee8dacc5b5a4da4dda09a56cdf0cbb2fd1e377dd307e7c7e"
+    },
+    {
+      "arrays": {
+        "bytes": 1041824,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/cb6739805d8e34d7afc8d7cd2e9ac99e8c673a6be7a9da05908a0ffc408c4859.npz",
+        "sha256": "e647f8f65a5d391043887d9d45c8e0bed8bebe4f4dc2a8dc5a9eee3625c2d335"
+      },
+      "key": "scene0444_00:GT:8",
+      "original_identity": "a2015f66dc05c02b79dae065052387ea86c6ee9b1191b33be6310b6a7cb1d9ea"
+    },
+    {
+      "arrays": {
+        "bytes": 1038987,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/41f616b085f09882eca15a177c9bb2ca26fe0f738b6d361cbbc39c5d1d8351d8.npz",
+        "sha256": "7c10d16bef0990b2b9bf877c021a806cfe11b5b94f10ce6376b5e2dff5cdda8e"
+      },
+      "key": "scene0444_00:GT:2",
+      "original_identity": "e26929ebccd45ca7bc109fa7e6dcf88a39a0dec70eee0a50ae921092376179e0"
+    },
+    {
+      "arrays": {
+        "bytes": 469312,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d4a218b500d7cd44c45eeb0d3c1ce428eafe4efcc653602d48b30310c9b54cab.npz",
+        "sha256": "cdd109acf433a994f6412c1f2d9acb3610b8e29c19641d52ae27afcbe1412d51"
+      },
+      "key": "scene0444_00:GT:6",
+      "original_identity": "b0b5d93fae8e0358f45c82464184ad7d573b42bffedf6fdee7d0d1b63e2f3587"
+    },
+    {
+      "arrays": {
+        "bytes": 1043650,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/167c79720dc776a0dab0d91d4a1a9cf21572e8286c5067e86ce916214a9302a4.npz",
+        "sha256": "67c9b7ea72178c2d19757606b7dd4e3ef36fbdf646b1f3e0feb9eb4d13080f94"
+      },
+      "key": "scene0444_00:GT:7",
+      "original_identity": "104a81dd8f5c277c9bacbe04a37cbcb8f3b3e4c4aeb4321df367ceb0d0305d4f"
+    },
+    {
+      "arrays": {
+        "bytes": 1039947,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/dd986cc689a2f86c1e3a3804ecb7d8c4af95ded0177c511b867e3bb58556f92e.npz",
+        "sha256": "774f0f32cf5b894a9f76d73361cd6d4d7df6bccbd02721b5778a19d1e9f0057c"
+      },
+      "key": "scene0444_00:GT:5",
+      "original_identity": "db3abbce49b8d87fa2aa4cc3a79b6d51418d60d3230e2e5620542518e4071f3d"
+    },
+    {
+      "arrays": {
+        "bytes": 774858,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/63104ac76a01ae9c68207e2780ddde69e47ee060d5c79d10cf868ef1fb8bb402.npz",
+        "sha256": "5194d1eb1686198e84215d270b729aee5c63878d00454248a8afd18acc6c6d8f"
+      },
+      "key": "scene0444_00:GT:10",
+      "original_identity": "c70850768cd19cad42edb0df2c834e2ec972a72d260f49ef391373ff7643b27b"
+    },
+    {
+      "arrays": {
+        "bytes": 1037057,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/00fc0b232b8ef7b0619e1cb0a95c434d4a619f8fcead8b97656b74ecfb7cff03.npz",
+        "sha256": "03ef110c1270bdee6adba50d6438353a01074ce7005052b86dee31121c3abba8"
+      },
+      "key": "scene0628_00:GT:11",
+      "original_identity": "c03e1b0fd0819c00c0cc07e3a5dca6552774ecee9c8b2d86d3db654bb2191f95"
+    },
+    {
+      "arrays": {
+        "bytes": 1041702,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/28a17db9f46cc518b127cbdbde6111b8208b7672d7c04fef380cdd4dfe59caa7.npz",
+        "sha256": "c970504a7eb2f53bed03c2e91217116c9d8ebec9a05dbae964239ca037047d19"
+      },
+      "key": "scene0628_00:GT:16",
+      "original_identity": "0d78ec132ced3aa700d9e04e76459f5b5e63e195ea7c528b575a618dc1fc9ace"
+    },
+    {
+      "arrays": {
+        "bytes": 1036195,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0cfcb172c024882a18e7199160c98fad6eb8809b568b86c548849245402e77ed.npz",
+        "sha256": "478a04fdb1fbfbb191c1d27569d5a34323477d0cda8e8815b6171f091534b071"
+      },
+      "key": "scene0628_00:GT:9",
+      "original_identity": "b9949032199d88689c0f7316b222ce1ce3be9932af141a29349acc430763f081"
+    },
+    {
+      "arrays": {
+        "bytes": 1039691,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5f5e2010d404049cbd6b59a0ef2ac3368c1b01e42c659e6b7ae91e0a3db1fcfa.npz",
+        "sha256": "d9b5b5f8ecbcf44d6d65310e044c1b256fa88d0e7fd2e039f428f64829ea89ba"
+      },
+      "key": "scene0628_00:GT:21",
+      "original_identity": "395456d8a9b8a70eefed615cc1d79f84e4145e912e6cbb181a3f72a7962d0331"
+    },
+    {
+      "arrays": {
+        "bytes": 1042277,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/fb8a68ab05e8a1467c8d0c47a9f7d5347e2955343b58a24f2897a82abfbe37c8.npz",
+        "sha256": "3f58f6d3a0dc623b5ea854f96dcc407597c0af85e88e8db84b82f69326b8b23f"
+      },
+      "key": "scene0628_00:GT:2",
+      "original_identity": "4962b97e1448c0a65fe0aec8e4d3bc1ddd70a0e8b98726a2a9111810bb9c9fb8"
+    },
+    {
+      "arrays": {
+        "bytes": 1037814,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/57af0d9fad6401a728afcf229799ac7835603d80cca806e29d25c5ddbad3ff0a.npz",
+        "sha256": "37059f2579224d5ecd16a7db246d7cd6e843c5c1ad79a251acd120aec90bb0da"
+      },
+      "key": "scene0628_00:GT:14",
+      "original_identity": "d49e3ae0b133752948f33ba720e4b1b40f2de9030afaf61123d8d3cca71f490a"
+    },
+    {
+      "arrays": {
+        "bytes": 1035374,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/83816f605c91eb2dab4ca519cfab800fe73f849dc33acb3455bc3a79b95cd262.npz",
+        "sha256": "4c73a79f7555345da09d0de9ab7b14957b8fda9098a5ca6c34a39ab5eb8a6f32"
+      },
+      "key": "scene0628_00:GT:17",
+      "original_identity": "783f9eb732de5e39a2c6908734b7a219391b6093643dcdaee3f33fdf699d869e"
+    },
+    {
+      "arrays": {
+        "bytes": 1041771,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/9610a5e8f121577a4cfc021a4a80f7edec1c1e3109abd965dc0ff3b2e874f1ea.npz",
+        "sha256": "39feecfe24d07bb6572f69aac7aba24a122ab98ff45776eec26887e8b2a2ea68"
+      },
+      "key": "scene0628_00:GT:7",
+      "original_identity": "b7f7959a094d90cfc1edad5a092e366fb1b8dd62e5d8c9b2b013163541b7550a"
+    },
+    {
+      "arrays": {
+        "bytes": 1035317,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/6ddafc3fcb4c550bbee3d4ca5969d628c57bd0eba1bb313a735cd1c8f5688905.npz",
+        "sha256": "49bcfacc273bd4fa402a6bf5df548ba783148d1744224cb98a2a3102596d7cca"
+      },
+      "key": "scene0628_00:GT:8",
+      "original_identity": "48c12d424c718d1aad5ec3cbab2d8111bcbfd26bdefbbaf1f4e5befe700ab8df"
+    },
+    {
+      "arrays": {
+        "bytes": 1041725,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/1ae47264d50ec62e3d9eb5289d12e737301a07002a97b13141ca4771db3ee474.npz",
+        "sha256": "fbc66bbce8aa5513cd58b88c8985ec72fc0a8742460cf0e74e192e4ac80c3f2a"
+      },
+      "key": "scene0628_00:GT:1",
+      "original_identity": "dbaf71cc891e8f09a2576dd7e0d5977dd8b81a7123576308d46f37104eb4730e"
+    },
+    {
+      "arrays": {
+        "bytes": 1041322,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/a5f5939b8cc5667b3aabb59ae5f078db5474f87e4840b8c9e8411edb581b4efa.npz",
+        "sha256": "b179838b0ecf04f55cca3d23c097eb44ea8e0a6761988102dc2bda898df210b5"
+      },
+      "key": "scene0628_00:GT:15",
+      "original_identity": "28e84b84b1c4688dd5798866c02758e28a6b164d392baeb6c84e272377bd5f33"
+    },
+    {
+      "arrays": {
+        "bytes": 1040646,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/2e75554b0618492f485502a60c288c3b8e329f15c602f4da4d5bb26c7416cf8f.npz",
+        "sha256": "987bfb594537cb30199887b3ae364cd277460561955f20b44fe87c3ed139d17f"
+      },
+      "key": "scene0628_00:GT:6",
+      "original_identity": "9421ac214bba4da7f8d91f634443b14b2cadfabb19cd0a451c3405f528199d3f"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/64c5f57cfe1bd9f82a6ad98ebad0425d44d93ea070afa67829944ffe37590e26.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0628_00:GT:18",
+      "original_identity": "028ca4e93e03153dd1d24b4eba88d26c846c2ac5165b492401709411acf4a462"
+    },
+    {
+      "arrays": {
+        "bytes": 1041517,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/03eea76ee7fa460155ed0587b25bc83ca52ebb9e162ef3caa12c529beb88ea28.npz",
+        "sha256": "6606a335f8b9e5921e1f19e7354bcf0e7c81a303eea7ea32c0722ae9056fcd09"
+      },
+      "key": "scene0628_00:GT:3",
+      "original_identity": "f3c77c361fc692cf4138e5929b6aacf65877fa663c5984b680ba0663a86684f3"
+    },
+    {
+      "arrays": {
+        "bytes": 1035218,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/092f8d105f6b5ba4a40e1a40e4f53f457332b1dc2a3ff4870cf9e5f03539e2fb.npz",
+        "sha256": "b0be6c7a1a6cf73ee18040e05aa82737a35aef762923b95e523ff75a0143103d"
+      },
+      "key": "scene0628_00:GT:12",
+      "original_identity": "7b45513583ab7d85a593c82f52719bf53fe4337f0331297344c660d5b49bc6b2"
+    },
+    {
+      "arrays": {
+        "bytes": 1044049,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/5ed123e006e2c6822e761ea04517a364e76b06a66e68d04ca0bc89edfe33597e.npz",
+        "sha256": "99faafb51165f3dca330da79c4f3ccd984c165eadff94bae05769e1f5fd80797"
+      },
+      "key": "scene0628_00:GT:0",
+      "original_identity": "26eccbeb5d456d7c49ac93bdff088dcd5f0148d72c8b9f35c39a7759eac45f31"
+    },
+    {
+      "arrays": {
+        "bytes": 2563,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/08ce0e26ba45b418ba9eed71414983bd67c3794ef93db42bdca768878f27c072.npz",
+        "sha256": "867b2430e96922a561e6fa67204e501c6ac099de2435c0b8ced2c892b9821824"
+      },
+      "key": "scene0628_00:GT:19",
+      "original_identity": "5d6524687d8fc0d5b1d9513a057d83d9fef5ac2bbb7a15e9aa1070426e10a5f8"
+    },
+    {
+      "arrays": {
+        "bytes": 1042541,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0d4b3bcf8eaacf1c74c7ed88fb2da42c8a026e2832398cf99aa9427fb65baed8.npz",
+        "sha256": "09b1e97a4d635b0e1eb1e1c6be25286864d448259bf84e8ac2b5439b117095cf"
+      },
+      "key": "scene0628_00:GT:13",
+      "original_identity": "734fb7eca984ae63185a03b2225866e217570a26d3c6a0aeaa40d6340e157189"
+    },
+    {
+      "arrays": {
+        "bytes": 1034206,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e89a7afc6a008a99885d80585af9df12faa57487083c238221152016729d0ed1.npz",
+        "sha256": "9ac5d9b753137c9e3b3a65036c353fc112fa1c64e6c3a2b2c1cd50b94c75b63d"
+      },
+      "key": "scene0628_00:GT:5",
+      "original_identity": "48d90653cb3ba83ddd74e7bce6ffe0b84f4fa094af1e22720c18ed575b545b13"
+    },
+    {
+      "arrays": {
+        "bytes": 1034070,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/e84b106e5afd80d0b4a13f042ce34575b870d6821997370f53025a04a7705814.npz",
+        "sha256": "8c73a7c0cbc881a0dee6247bbef199b84a645415f94ced6e79400e4522e5b3b3"
+      },
+      "key": "scene0628_00:GT:20",
+      "original_identity": "729f3dd16e78ccafa46112af6f64a60ce5fa9990dc3cfac37c67532a59a56793"
+    },
+    {
+      "arrays": {
+        "bytes": 1040133,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/0893f13295e0391a8156735c134b8bf36b4ea82c14cd45ed0d7b853e67b922eb.npz",
+        "sha256": "5fce333977afa694c7c6f221aaf282298f0de2b79ede4b5cecc5ac11a480ba4e"
+      },
+      "key": "scene0628_00:GT:4",
+      "original_identity": "91c6af2dcef299d39defe739f804c24c7d8baaf44c81de2e6908bb862c68fdba"
+    },
+    {
+      "arrays": {
+        "bytes": 1034780,
+        "path": "/home/ww/crove/fg2-structure-confirmation-v1/attempt_001/confirmation/GT/predictions/d1976a5002a1d2929035074ea1ba794dcd7df64624ef4be1ef4887d15ca47bf7.npz",
+        "sha256": "404a7b30f349f9a9bfd6f66d5e180fa0382077e154b84e8af8a8c7e02b0b415c"
+      },
+      "key": "scene0628_00:GT:10",
+      "original_identity": "771de22bc4731c7433990a1441231ca000ad1b1d1a36da8f7622da667dc88263"
+    }
+  ],
+  "original_score_reconstruction_max_absolute_error": 4.172325134277344e-07,
+  "prediction_lock": "19142e79f6d0dff873183571fa32bb011efcc5bb7a6dff65354e25c0c6f9f11f",
+  "source_identity": "9c5afdf0826711090ab7162ee3c7a6a94ab1af4df1b3bdb69c0133382993946b",
+  "status": "COMPLETE",
+  "supported_originals": 270,
+  "text": {
+    "bytes": 669136,
+    "path": "/mnt/shared/ww/ovimap-backbone-wave1-v1/attempt_001/content_cache/fc/6132b1b1da69a7a3bcd650586f0bc7e9aea2b64d8183a004b1a61c39892c8b44/text/7c891c2f59498118a6d3232f07d7d6e488b6c09da158b78f32acad5446049852.npz",
+    "sha256": "8e3a532d4945493f7ecaab63168fab9232c8d9d0693c717893c7f9b73a88c4b4"
+  },
+  "text_renormalized": false
+}

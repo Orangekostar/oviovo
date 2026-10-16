@@ -1,0 +1,192 @@
+{
+  "case_images_viewed": 0,
+  "case_status": "NOT_ACTIVATED_BY_A",
+  "checks": [
+    {
+      "clause": "00§0",
+      "conclusion": "强简单对照优先；不维持S胜G或CVPR充分证据主张",
+      "evidence": "A/decision.json;CLAIMS_LEDGER.md",
+      "status": "PASS_A_SCOPE"
+    },
+    {
+      "clause": "00§1",
+      "conclusion": "固定BASE、独立worktree和分支；12原prompt和配置字节再次核对",
+      "evidence": "bootstrap/archive_and_sources.json;task_paths.json",
+      "status": "PASS"
+    },
+    {
+      "clause": "00§2",
+      "conclusion": "24声明Git blob绑定；复核实际A关键接口，不调用父bind/all，不声称全仓审计",
+      "evidence": "bootstrap/archive_and_sources.json;review/direct_sources.json",
+      "status": "PASS_SCOPED_REVIEW"
+    },
+    {
+      "clause": "00§3",
+      "conclusion": "parent-root明确STRUCT；原split字节不改；旧CONF及原40类历史曝光明确",
+      "evidence": "source_binding.json;class_split.json;STRUCT_ROOT/role_lock.json",
+      "status": "PASS"
+    },
+    {
+      "clause": "00§4",
+      "conclusion": "0新GPU推理/下载/旧RGB编码；CPU重复工作与合成测试另记",
+      "evidence": "workload.json;review/resource_audit.json",
+      "status": "PASS_SCIENTIFIC_PIPELINE"
+    },
+    {
+      "clause": "00§5",
+      "conclusion": "279原NPZ真向量、215/64、270支持/9未知；200行文本不重归一化；重构误差4.172e-7",
+      "evidence": "A/import.json;A/source_scores.npz;A/source_vectors.npz",
+      "status": "PASS"
+    },
+    {
+      "clause": "00§6",
+      "conclusion": "110逻辑union、余弦gamma、defined屏障、真向量CAP；实际数组alias、纠正误伤/三组角度",
+      "evidence": "A/candidates/ranks/angles/error_paths.json.gz;figures",
+      "status": "PASS"
+    },
+    {
+      "clause": "00§7",
+      "conclusion": "12次seed17选参双seed应用；独立重算OOF宏平均；S/G增益与8家族条件未过",
+      "evidence": "A/crossfit.json.gz;A/decision.json;review/primary_numeric_samples.json",
+      "status": "PASS_NEGATIVE_GATE"
+    },
+    {
+      "clause": "00§8",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§9",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§10",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§11",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§12",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§13",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§14",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§15",
+      "conclusion": "A闭合，未训练CORE三臂、未做真实工程/REG/成本、新名单/采集/AMG/预测/GT/AP/bootstrap；不造结果",
+      "evidence": "science.json;phase_status.json;phases/B_*.json;phases/C_*.json",
+      "status": "NOT_ACTIVATED_BY_A"
+    },
+    {
+      "clause": "00§16",
+      "conclusion": "A可执行/可复算且所有公开phase有状态。B/C仅未训练定义和未激活记录，不声明完整已验证生产流水线",
+      "evidence": "runner.py;stages.py;readers.py;diagnostics.py;replay.py;models.py;constraints.py",
+      "status": "CONDITIONAL_A_DELIVERY"
+    },
+    {
+      "clause": "00§17",
+      "conclusion": "4组12项；仅受影响组重跑；3次A候选/OOF逐位一致；身份memo保持；缺缓存CLI实测非零PARTIAL",
+      "evidence": "review/test_results.json;history/primary_repair_comparison.json;input_verifications.json",
+      "status": "PASS_ACTIVATED_SCOPE"
+    },
+    {
+      "clause": "00§18",
+      "conclusion": "实际A审核完成，C1/C2和真实terminal resume将在后续事务观察，不预填PASS",
+      "evidence": "六份docs;artifact_index.json;publication.py",
+      "status": "READY_FOR_PUBLICATION"
+    },
+    {
+      "clause": "00§19",
+      "conclusion": "最终答复写A闭合与强对照、原160协议/曝光范围/零新GPU训练、实际SHA和外部resume凭据",
+      "evidence": "RESULTS.md;HANDOFF.md;OUT/publication/final.json (待事务生成)",
+      "status": "FINAL_RESPONSE_CONTRACT"
+    },
+    {
+      "clause": "01",
+      "conclusion": "明确源码事实、实现选择、实测范围",
+      "evidence": "prompt/01;bootstrap/archive_and_sources.json",
+      "status": "PASS_CONDITIONAL_SCOPE"
+    },
+    {
+      "clause": "02",
+      "conclusion": "字节完全一致，未调门槛或网格",
+      "evidence": "configs/static_ovmap/semantic_update_evidence_v1.json",
+      "status": "PASS_CONDITIONAL_SCOPE"
+    },
+    {
+      "clause": "03",
+      "conclusion": "宏/微平均及unknown独立；有限投影只约束pre-unit，不称精确交集",
+      "evidence": "metrics.py;calibration.py;constraints.py;primary_numeric_samples.json",
+      "status": "PASS_CONDITIONAL_SCOPE"
+    },
+    {
+      "clause": "04",
+      "conclusion": "key/column/codec规范；不混REG FP64；状态区分和正常两提交事务",
+      "evidence": "readers.py;replay.py;publication.py",
+      "status": "PASS_CONDITIONAL_SCOPE"
+    },
+    {
+      "clause": "05",
+      "conclusion": "真实A审核；合成测试不填科学表；未激活B/C明确标记",
+      "evidence": "test_results.json;primary_numeric_samples.json;visual-composer/qa-ledger.md",
+      "status": "PASS_CONDITIONAL_SCOPE"
+    }
+  ],
+  "figures_actually_viewed": [
+    "A_main",
+    "A_tradeoffs",
+    "A_angles",
+    "A_fix_harm"
+  ],
+  "identity": "8dadf7e7cfb09eae3123bc4d9c81f1325026a0b1edc97aa3c372f74e6de7d745",
+  "publication_status": "READY_FOR_TRANSACTION_NOT_YET_OBSERVED",
+  "report_identity": "df7a0e21d781b9917596780ebedc7f6dd61079ff3744bcfd53a226b889a46308",
+  "resolved_findings": [
+    {
+      "issue": "公开GT后备key错误",
+      "resolution": "record_metadata.key与原codec精确解码，T1通过"
+    },
+    {
+      "issue": "finite placeholder仍需defined屏障",
+      "resolution": "候选与排名显式mask，三次实际候选/OOF逐位一致"
+    },
+    {
+      "issue": "cached bind可能缩减消费身份memo",
+      "resolution": "任务内merge保留此前消费记录，T4与真实resume生命周期核验"
+    },
+    {
+      "issue": "控制环境无timm及matplotlib移除labels",
+      "resolution": "既有FC环境运行T2/T3，不安装库；独立tick标签，四图实看"
+    },
+    {
+      "issue": "Generated SVG trailing whitespace and default CSV CRLF failed actual staged diff check",
+      "resolution": "Trim SVG line endings while preserving XML/geometry; CSV LF explicitly; affected publication check rerun required; no scientific outputs changed"
+    }
+  ],
+  "review_owner": "PRIMARY_AGENT",
+  "scientific_status": "COMPLETE_A_NO_RESIDUAL_SIGNAL",
+  "software_scope": "A-only conditional execution; inactive B/C not a complete production pipeline",
+  "source_identity": "9c5afdf0826711090ab7162ee3c7a6a94ab1af4df1b3bdb69c0133382993946b",
+  "status": "COMPLETE"
+}

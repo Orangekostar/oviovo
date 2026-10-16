@@ -1,0 +1,59 @@
+{
+  "affected_only_reruns": [
+    "T1 after actual public-fallback/defined repair",
+    "T4 after verification-memo repair",
+    "T4 after missing-cache nonzero PARTIAL integration"
+  ],
+  "collection_failures": [
+    {
+      "error": "missing PYTHONPATH; corrected without environment install",
+      "stage": "initial TDD invocation"
+    },
+    {
+      "error": "control environment lacks timm; T2/T3 moved to existing FC interpreter",
+      "stage": "one full four-group collection"
+    }
+  ],
+  "final_total": 12,
+  "groups": [
+    {
+      "actual_exit_code": 0,
+      "environment": "ovimap-map",
+      "group": "T1",
+      "seconds": 0.75,
+      "tests": 4
+    },
+    {
+      "actual_exit_code": 0,
+      "environment": "existing oviovo-radseg; pytest imported from existing control site-packages",
+      "group": "T2",
+      "tests": 2
+    },
+    {
+      "actual_exit_code": 0,
+      "environment": "same existing FC environment",
+      "group": "T3",
+      "tests": 2
+    },
+    {
+      "actual_exit_code": 0,
+      "environment": "ovimap-map; CUDA_VISIBLE_DEVICES empty",
+      "group": "T4",
+      "seconds": 1.62,
+      "tests": 4
+    }
+  ],
+  "identity": "9f76bc82c2de046d31c3ccfafc31597d497a68fe28424f7e2bdd1f127d050e2a",
+  "initial_RED": {
+    "actual_exit_code": 1,
+    "failure": "harmonic(0,0) returned None instead of zero",
+    "test": "test_harmonic_empty_and_zero_are_distinct"
+  },
+  "status": "COMPLETE",
+  "synthetic_tests_not_scientific_results": true,
+  "test_only_work": {
+    "CPU_FISTA_forward_iterations": 384,
+    "CPU_toy_optimizer_updates": 3,
+    "new_FC_or_SAM_inferences": 0
+  }
+}

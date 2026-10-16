@@ -1,0 +1,239 @@
+{
+  "status": "COMPLETE",
+  "archive": "/home/ww/crove/docs/1016/OVMap_语义更新机制_Codex执行包_v1.zip",
+  "archive_sha256": "f66bcff2d9221c15d75f90c46a90b6229823341cd0cf67ce58d38189eeaf4f6e",
+  "files": [
+    {
+      "name": "00_给Codex的最终执行指令.md",
+      "bytes": 24496,
+      "sha256": "18bfb17abea9802834af8d239840c30b31200394da05a02f8946784f82738efe"
+    },
+    {
+      "name": "01_源码证据与任务绑定.md",
+      "bytes": 10960,
+      "sha256": "e15db8c230882cb40183b5204d3bc159384e1c85dbb26b048e1e87f39bc53c16"
+    },
+    {
+      "name": "02_冻结执行配置.json",
+      "bytes": 7294,
+      "sha256": "c2d4ff60f6268422bc397ffde07bbe10b5686eb4e0fce7f16d15aa259c5c69b9"
+    },
+    {
+      "name": "03_数学与选模精确定义.md",
+      "bytes": 9060,
+      "sha256": "2f5314ed71c5054ff876a5ef7415e06ca1c8c85e56e1e82841f0117c6288a509"
+    },
+    {
+      "name": "04_数据评分与发布接口.md",
+      "bytes": 9344,
+      "sha256": "3f72641e6d3c71997f07fd0742c1be999dd038ecb1770ffb99ae733af8c3b62c"
+    },
+    {
+      "name": "05_交付前审核报告.md",
+      "bytes": 5645,
+      "sha256": "5b7d49713c946d762f5baf0d05f4e32ad38abb476faf25a84fb7f2fd2443a29e"
+    },
+    {
+      "name": "06_算子参考与合同自检.py",
+      "bytes": 10791,
+      "sha256": "346814b6061ec37b457ed8a5e1c2351f24f980b7a4d43daae02fd1b21754063a"
+    },
+    {
+      "name": "07_实际合同自检结果.json",
+      "bytes": 2848,
+      "sha256": "38dc8cde8b2075da446ca8238608fd63967adb866a31211f2ee46fd9c1559ae5"
+    },
+    {
+      "name": "08_源码证据清单.json",
+      "bytes": 9806,
+      "sha256": "75591bb8b528b18ae6456338b9c0a4a37f1c67d1828e52a5f19dadf2043efbf2"
+    },
+    {
+      "name": "09_包级一致性检查.py",
+      "bytes": 2520,
+      "sha256": "722f54f8a8326c6753ffed92daacc2145a460432e2afeedb76a08246a94274ab"
+    },
+    {
+      "name": "10_包级检查结果.json",
+      "bytes": 1774,
+      "sha256": "dc3013897759eeeacd9ec413bcb9ade7f7b32835b4071a1a0ed4ae465aa4e5c9"
+    },
+    {
+      "name": "文件校验清单.json",
+      "bytes": 1881,
+      "sha256": "ad83a0e24c674e81c519eb04805743aa6d105df47a9aad25882a0e9c9d75d1bd"
+    }
+  ],
+  "source_bindings": [
+    {
+      "id": "S01",
+      "path": "docs/paper/static_ovmap/structure_confirmation_v1/HANDOFF.md",
+      "BASE_blob": "22d23b6dd71774fd0714ceb56507f6aa536c7fc1",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S02",
+      "path": "src/static_ovmap/structure_confirmation_v1/export.py",
+      "BASE_blob": "2e1182f0bd3bc641dca6e0df97865574d3442e0c",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S03",
+      "path": "src/static_ovmap/structure_confirmation_v1/prediction_codec.py",
+      "BASE_blob": "771aa8f75b6b25faffa99eaab21a933fad19fd8f",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S04",
+      "path": "src/static_ovmap/structure_confirmation_v1/prediction.py",
+      "BASE_blob": "4816d6ed86dd28d00324bcbac667388c06749cdb",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S05",
+      "path": "src/static_ovmap/structure_confirmation_v1/gt_diagnostic.py",
+      "BASE_blob": "f76657d3d2177e7991ab8e8bed133d1020c460db",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S06",
+      "path": "src/static_ovmap/structure_confirmation_v1/metrics.py",
+      "BASE_blob": "a1a9829bc130a2311a463a538179f6e2a0d68e71",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S07",
+      "path": "src/static_ovmap/structure_confirmation_v1/data.py",
+      "BASE_blob": "76d397de1ae4af201bea9751aebb15ffe059b9b1",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S08",
+      "path": "src/static_ovmap/structure_confirmation_v1/models.py",
+      "BASE_blob": "32c13a50bae7952e8cb000f801f66cf78f559e2b",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S09",
+      "path": "src/static_ovmap/structure_confirmation_v1/training.py",
+      "BASE_blob": "e9700aa0e79db0dbec30aa8e16d6393d019401f5",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S10",
+      "path": "src/static_ovmap/structure_confirmation_v1/recognition.py",
+      "BASE_blob": "f4af725e2781abcd5b661656481eaf847772792e",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S11",
+      "path": "src/static_ovmap/structure_confirmation_v1/evaluation.py",
+      "BASE_blob": "b43ef78ab3b741944cf19341e2587e7c8573c3d8",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "1–240行返回范围，实际核心GT/REAL/池化可见"
+    },
+    {
+      "id": "S12",
+      "path": "src/static_ovmap/structure_confirmation_v1/confirmation.py",
+      "BASE_blob": "eae22f0fe35f35b8e6eeec8f15d1c58db6a176a9",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "1–230行返回范围，核心geometry/proposals/real_inputs可见"
+    },
+    {
+      "id": "S13",
+      "path": "src/static_ovmap/structure_confirmation_v1/binding.py",
+      "BASE_blob": "630f20865bc92d8ed8324f2494b5abe1d2bfa62c",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S14",
+      "path": "src/static_ovmap/structure_confirmation_v1/acquisition.py",
+      "BASE_blob": "0f322c4cac85b0599e14f8b83749ad55b6faae48",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "1–210行返回范围"
+    },
+    {
+      "id": "S15",
+      "path": "src/static_ovmap/structure_confirmation_v1/publication.py",
+      "BASE_blob": "c77dd2b96c8a023a407a49d43ddf0247afd51ff0",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "全文"
+    },
+    {
+      "id": "S16",
+      "path": "src/static_ovmap/structure_confirmation_v1/features.py",
+      "BASE_blob": "51ec5b84a7af16055a31e9b88170a4280bf954e6",
+      "expected_reference": "553758bda89031b05916ac81a2981b597dfb3bda",
+      "scope": "1–220行请求，返回全文"
+    },
+    {
+      "id": "H01",
+      "path": "src/static_ovmap/learned_object_readout/features.py",
+      "BASE_blob": "8282d8ed2249680a65d9fa1e14b3b1e4dec0d4f2",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读全文/核心FrozenFC.phi、capture、loader"
+    },
+    {
+      "id": "H02",
+      "path": "src/static_ovmap/learned_object_readout/training.py",
+      "BASE_blob": "86e6f433e12e635e7a88f39635c02c57b4dea112",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读draw/optimizer/lr/checkpoint范围"
+    },
+    {
+      "id": "H03",
+      "path": "src/static_ovmap/learned_object_readout/losses.py",
+      "BASE_blob": "3cdd19c6f9dbbb719030d38f32cbe650730eab2e",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读全文"
+    },
+    {
+      "id": "H04",
+      "path": "src/static_ovmap/learned_object_readout/inventory.py",
+      "BASE_blob": "4757e6101b8eff532c94224fa7e531f2257975e3",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读全文"
+    },
+    {
+      "id": "H05",
+      "path": "src/static_ovmap/learned_object_readout/sensor.py",
+      "BASE_blob": "82a6ac3d1ddf998d7324c854ba60a5932ab6e212",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读全文"
+    },
+    {
+      "id": "H06",
+      "path": "src/static_ovmap/preservation_routing/sam2_worker.py",
+      "BASE_blob": "8146bb911c74c1ca3c48953f76dee7e41e005b68",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读全文"
+    },
+    {
+      "id": "H07",
+      "path": "src/static_ovmap/frozen_fc_routing/prediction.py",
+      "BASE_blob": "6e629d75204f20325ce4ab75a8812434b446204f",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读全文"
+    },
+    {
+      "id": "H08",
+      "path": "src/static_ovmap/contribution_attribution_v1/recovery.py",
+      "BASE_blob": "d96ae6f7dd3999aa75af6460c10471d5182c4ea3",
+      "expected_reference": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+      "scope": "对话已读全文"
+    }
+  ],
+  "config_sha256": "c2d4ff60f6268422bc397ffde07bbe10b5686eb4e0fce7f16d15aa259c5c69b9",
+  "scope": "Bytecopy and declared24 BASE bindings only; not a whole repository audit"
+}

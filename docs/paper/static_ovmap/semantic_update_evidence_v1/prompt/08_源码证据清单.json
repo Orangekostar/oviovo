@@ -1,0 +1,242 @@
+[
+  {
+    "id": "S01",
+    "path": "docs/paper/static_ovmap/structure_confirmation_v1/HANDOFF.md",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "22d23b6dd71774fd0714ceb56507f6aa536c7fc1",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "STRUCT_ROOT、父根和load_export",
+    "task_binding": "绑定新任务而不是调用旧all"
+  },
+  {
+    "id": "S02",
+    "path": "src/static_ovmap/structure_confirmation_v1/export.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "2e1182f0bd3bc641dca6e0df97865574d3442e0c",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "load_export / scores manifest / embeddings_omitted",
+    "task_binding": "分数可复用，向量不能从分数反推"
+  },
+  {
+    "id": "S03",
+    "path": "src/static_ovmap/structure_confirmation_v1/prediction_codec.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "771aa8f75b6b25faffa99eaab21a933fad19fd8f",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "decode",
+    "task_binding": "不是普通gzip JSON"
+  },
+  {
+    "id": "S04",
+    "path": "src/static_ovmap/structure_confirmation_v1/prediction.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "4816d6ed86dd28d00324bcbac667388c06749cdb",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "columns / arrays / embeddings / defined",
+    "task_binding": "按字段连接；原OUT含真实向量"
+  },
+  {
+    "id": "S05",
+    "path": "src/static_ovmap/structure_confirmation_v1/gt_diagnostic.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "f76657d3d2177e7991ab8e8bed133d1020c460db",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "固定原件、支持、标签屏障",
+    "task_binding": "A保留9abstention；C先锁真实预测"
+  },
+  {
+    "id": "S06",
+    "path": "src/static_ovmap/structure_confirmation_v1/metrics.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "a1a9829bc130a2311a463a538179f6e2a0d68e71",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "partitions / score_losses",
+    "task_binding": "H_micro不是H_macro；CE分母重写清楚"
+  },
+  {
+    "id": "S07",
+    "path": "src/static_ovmap/structure_confirmation_v1/data.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "76d397de1ae4af201bea9751aebb15ffe059b9b1",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "SparseInputs",
+    "task_binding": "CPU总32GiB、共享parent张量"
+  },
+  {
+    "id": "S08",
+    "path": "src/static_ovmap/structure_confirmation_v1/models.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "32c13a50bae7952e8cb000f801f66cf78f559e2b",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "FGReadout / MVReadout / AttentionBlock",
+    "task_binding": "0.5自由残差不等于范数上界；同共同网络"
+  },
+  {
+    "id": "S09",
+    "path": "src/static_ovmap/structure_confirmation_v1/training.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "e9700aa0e79db0dbec30aa8e16d6393d019401f5",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "train_arm / model_state / select",
+    "task_binding": "抽样index、永久checkpoint和真实重放"
+  },
+  {
+    "id": "S10",
+    "path": "src/static_ovmap/structure_confirmation_v1/recognition.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "f4af725e2781abcd5b661656481eaf847772792e",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "base filter / adapter",
+    "task_binding": "不能用旧base过滤丢掉pseudo DEV"
+  },
+  {
+    "id": "S11",
+    "path": "src/static_ovmap/structure_confirmation_v1/evaluation.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "b43ef78ab3b741944cf19341e2587e7c8573c3d8",
+    "read_scope": "1–240行返回范围，实际核心GT/REAL/池化可见",
+    "retrieved_this_turn": true,
+    "functions": "GT_recognition / real_scene / real_score",
+    "task_binding": "复用官方数值，不复用35池420行计数"
+  },
+  {
+    "id": "S12",
+    "path": "src/static_ovmap/structure_confirmation_v1/confirmation.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "eae22f0fe35f35b8e6eeec8f15d1c58db6a176a9",
+    "read_scope": "1–230行返回范围，核心geometry/proposals/real_inputs可见",
+    "retrieved_this_turn": true,
+    "functions": "4seed frames、48cap、768proposals",
+    "task_binding": "新12seed/32cap必须新入口，not newmap"
+  },
+  {
+    "id": "S13",
+    "path": "src/static_ovmap/structure_confirmation_v1/binding.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "630f20865bc92d8ed8324f2494b5abe1d2bfa62c",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "父FG/LR、role锁与class复制",
+    "task_binding": "新binder不改旧CONF与160class字节"
+  },
+  {
+    "id": "S14",
+    "path": "src/static_ovmap/structure_confirmation_v1/acquisition.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "0f322c4cac85b0599e14f8b83749ad55b6faae48",
+    "read_scope": "1–210行返回范围",
+    "retrieved_this_turn": true,
+    "functions": "authorization、bounded_transfer、inventory",
+    "task_binding": "有限授权获取，先锁新名字、不补挑"
+  },
+  {
+    "id": "S15",
+    "path": "src/static_ovmap/structure_confirmation_v1/publication.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "c77dd2b96c8a023a407a49d43ddf0247afd51ff0",
+    "read_scope": "全文",
+    "retrieved_this_turn": true,
+    "functions": "C1/C2、terminal_resume、旧SCOPES",
+    "task_binding": "新事务改scope，总包512MiB，真实零工作核验"
+  },
+  {
+    "id": "S16",
+    "path": "src/static_ovmap/structure_confirmation_v1/features.py",
+    "ref": "553758bda89031b05916ac81a2981b597dfb3bda",
+    "git_blob_sha": "51ec5b84a7af16055a31e9b88170a4280bf954e6",
+    "read_scope": "1–220行请求，返回全文",
+    "retrieved_this_turn": true,
+    "functions": "capture_frame / capture",
+    "task_binding": "使用1152上限的新确认特征接口，不调用旧3904图存储假设"
+  },
+  {
+    "id": "H01",
+    "path": "src/static_ovmap/learned_object_readout/features.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "8282d8ed2249680a65d9fa1e14b3b1e4dec0d4f2",
+    "read_scope": "对话已读全文/核心FrozenFC.phi、capture、loader",
+    "retrieved_this_turn": false,
+    "functions": "FrozenFC / phi / local_unit",
+    "task_binding": "字典no_grad，约束q可微；不改文本"
+  },
+  {
+    "id": "H02",
+    "path": "src/static_ovmap/learned_object_readout/training.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "86e6f433e12e635e7a88f39635c02c57b4dea112",
+    "read_scope": "对话已读draw/optimizer/lr/checkpoint范围",
+    "retrieved_this_turn": false,
+    "functions": "draw_schedule / optimizer_for / learning_rate",
+    "task_binding": "新CORE标记保留index，纯函数复用"
+  },
+  {
+    "id": "H03",
+    "path": "src/static_ovmap/learned_object_readout/losses.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "3cdd19c6f9dbbb719030d38f32cbe650730eab2e",
+    "read_scope": "对话已读全文",
+    "retrieved_this_turn": false,
+    "functions": "base_loss",
+    "task_binding": "显式传152类text与target，不复用160指标名"
+  },
+  {
+    "id": "H04",
+    "path": "src/static_ovmap/learned_object_readout/inventory.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "4757e6101b8eff532c94224fa7e531f2257975e3",
+    "read_scope": "对话已读全文",
+    "retrieved_this_turn": false,
+    "functions": "official_classes / inventory_roots / family",
+    "task_binding": "官方train名单、有限扫描与权限来源"
+  },
+  {
+    "id": "H05",
+    "path": "src/static_ovmap/learned_object_readout/sensor.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "82a6ac3d1ddf998d7324c854ba60a5932ab6e212",
+    "read_scope": "对话已读全文",
+    "retrieved_this_turn": false,
+    "functions": "SensorReader / register_depth_rgb",
+    "task_binding": "新确认同坐标标定，不对齐单模态"
+  },
+  {
+    "id": "H06",
+    "path": "src/static_ovmap/preservation_routing/sam2_worker.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "8146bb911c74c1ca3c48953f76dee7e41e005b68",
+    "read_scope": "对话已读全文",
+    "retrieved_this_turn": false,
+    "functions": "AMG retain16 / hooks",
+    "task_binding": "任务新worker retain32，其余设置保留"
+  },
+  {
+    "id": "H07",
+    "path": "src/static_ovmap/frozen_fc_routing/prediction.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "6e629d75204f20325ce4ab75a8812434b446204f",
+    "read_scope": "对话已读全文",
+    "retrieved_this_turn": false,
+    "functions": "build_predictions / eligible / NQF",
+    "task_binding": "固定G1源支持及D2接入"
+  },
+  {
+    "id": "H08",
+    "path": "src/static_ovmap/contribution_attribution_v1/recovery.py",
+    "ref": "2f0d8a4f7043557462f05875eca8b7f71eb66761",
+    "git_blob_sha": "d96ae6f7dd3999aa75af6460c10471d5182c4ea3",
+    "read_scope": "对话已读全文",
+    "retrieved_this_turn": false,
+    "functions": "official_entries / one_to_one",
+    "task_binding": "匹配entry/唯一GT分开；无需重新恢复研究"
+  }
+]

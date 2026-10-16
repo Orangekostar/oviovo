@@ -1,0 +1,127 @@
+{
+  "status": "PASS",
+  "scope": "CPU_SYNTHETIC_CONTRACT_ONLY",
+  "groups": 4,
+  "checks": 12,
+  "tests": [
+    {
+      "group": "T1",
+      "name": "simplex_feasibility",
+      "status": "PASS",
+      "details": {
+        "sum": 1.0,
+        "minimum": 0.0
+      }
+    },
+    {
+      "group": "T1",
+      "name": "macro_micro_and_missing",
+      "status": "PASS",
+      "details": {
+        "H_macro": 0.3333333333333333,
+        "different_H_micro": 0.391304347826087
+      }
+    },
+    {
+      "group": "T1",
+      "name": "mix_calibration_endpoints",
+      "status": "PASS",
+      "details": {
+        "unchanged_noncore": true
+      }
+    },
+    {
+      "group": "T2",
+      "name": "shared_interior_initialization_gradient",
+      "status": "PASS",
+      "details": {
+        "same_initial_output_max_abs": 1.1102230246251565e-16,
+        "evidence_q_gradient_norm": 1.6508022771710642
+      }
+    },
+    {
+      "group": "T2",
+      "name": "hull_and_ball_preunit_feasibility",
+      "status": "PASS",
+      "details": {
+        "radius": 0.49999999999999994,
+        "coefficient_sum": 1.0,
+        "FW_gap": 0.0
+      }
+    },
+    {
+      "group": "T2",
+      "name": "small_synthetic_hull_oracle",
+      "status": "PASS",
+      "details": {
+        "synthetic_output_vs_SLSQP_L2": 2.2845722026868423e-16,
+        "FW_gap": 0.0
+      }
+    },
+    {
+      "group": "T2",
+      "name": "finite_unrolled_gradient",
+      "status": "PASS",
+      "details": {
+        "finite_difference": 0.24990507493938274,
+        "autograd": 0.2499050749238668
+      }
+    },
+    {
+      "group": "T2",
+      "name": "angle_cap_and_antipodal_boundary",
+      "status": "PASS",
+      "details": {
+        "theta_degrees": 29.999999999999993,
+        "antipodal": "ANTIPODAL_FALLBACK_BASE"
+      }
+    },
+    {
+      "group": "T3",
+      "name": "core_pseudo_final_class_roles",
+      "status": "PASS",
+      "details": {
+        "core": 152,
+        "pseudo": 8,
+        "final_novel": 40,
+        "original_indices_preserved": true
+      }
+    },
+    {
+      "group": "T3",
+      "name": "shared_parameter_initialization",
+      "status": "PASS",
+      "details": {
+        "three_initial_states_equal": true
+      }
+    },
+    {
+      "group": "T4",
+      "name": "phase_A_resource_gate",
+      "status": "PASS",
+      "details": {
+        "negative_routes_stop_without_training": true
+      }
+    },
+    {
+      "group": "T4",
+      "name": "budget_arithmetic",
+      "status": "PASS",
+      "details": {
+        "updates": 12000,
+        "nominal_train_forwards": 384000,
+        "max_real_proposals": 4608,
+        "fresh_scoring_rows": 168,
+        "regression_rows": 728
+      }
+    }
+  ],
+  "not_run": [
+    "repository integration",
+    "real frozen FC",
+    "real diagnosis",
+    "training",
+    "new confirmation",
+    "GitHub publication"
+  ]
+}

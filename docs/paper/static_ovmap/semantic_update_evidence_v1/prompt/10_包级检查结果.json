@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "scope": "PACKAGE_STATIC_CONSISTENCY_ONLY",
+  "checks": [
+    {
+      "check": "base_and_namespace",
+      "status": "PASS"
+    },
+    {
+      "check": "A_110_logical_candidates",
+      "status": "PASS"
+    },
+    {
+      "check": "B_3_arms_2_seeds",
+      "status": "PASS"
+    },
+    {
+      "check": "B_main_budget",
+      "status": "PASS"
+    },
+    {
+      "check": "fresh_GT_REAL_budget",
+      "status": "PASS"
+    },
+    {
+      "check": "known_REG_input_budget",
+      "status": "PASS"
+    },
+    {
+      "check": "class_partition",
+      "status": "PASS"
+    },
+    {
+      "check": "caps_and_scoring",
+      "status": "PASS"
+    },
+    {
+      "check": "projection_is_not_mislabelled",
+      "status": "PASS"
+    },
+    {
+      "check": "conditional_scope",
+      "status": "PASS"
+    },
+    {
+      "check": "00_给Codex的最终执行指令.md_codefences",
+      "status": "PASS"
+    },
+    {
+      "check": "01_源码证据与任务绑定.md_codefences",
+      "status": "PASS"
+    },
+    {
+      "check": "03_数学与选模精确定义.md_codefences",
+      "status": "PASS"
+    },
+    {
+      "check": "04_数据评分与发布接口.md_codefences",
+      "status": "PASS"
+    },
+    {
+      "check": "06_算子参考与合同自检.py_parse",
+      "status": "PASS"
+    },
+    {
+      "check": "09_包级一致性检查.py_parse",
+      "status": "PASS"
+    },
+    {
+      "check": "source_ids_unique",
+      "status": "PASS"
+    },
+    {
+      "check": "declared_shas_format",
+      "status": "PASS"
+    },
+    {
+      "check": "main_matches_updated_caps",
+      "status": "PASS"
+    },
+    {
+      "check": "static_profile_not_invented",
+      "status": "PASS"
+    }
+  ],
+  "check_count": 20,
+  "real_execution_validated": false
+}

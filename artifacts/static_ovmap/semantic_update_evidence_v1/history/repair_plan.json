@@ -1,0 +1,18 @@
+{
+  "affected_numerical_producers": [
+    "common",
+    "binding",
+    "readers",
+    "diagnostics"
+  ],
+  "first_repair_predictions_bitwise_equal": true,
+  "identity": "328812454d3aa6087d4bc88e439329701c41e1b2ed727b93f9a5d557d372dfb3",
+  "new_GPU_head_calls": 0,
+  "prior_A_executions": 2,
+  "prior_CPU_CAP_text_matmuls": 20,
+  "prior_CPU_candidate_predictions": 440,
+  "prior_original_NPZ_imports": 558,
+  "reason": "Primary review: exact public fallback key, explicit defined screening, retain the complete finite direct-input memo across resume",
+  "second_expected_actual_output_change": "NONE; memo-only lifecycle repair",
+  "status": "LOCKED"
+}

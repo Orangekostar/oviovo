@@ -1,0 +1,60 @@
+{
+  "OOF_independent_checks": [
+    {
+      "abstentions": 9,
+      "base_positive_classes": 59,
+      "independent_B_N_H": [
+        0.41458266709306046,
+        0.6444047619047619,
+        0.5045556492219592
+      ],
+      "novel_positive_classes": 20,
+      "originals": 279,
+      "seed": 17
+    },
+    {
+      "abstentions": 9,
+      "base_positive_classes": 59,
+      "independent_B_N_H": [
+        0.4686769356500728,
+        0.6664285714285715,
+        0.5503271700102121
+      ],
+      "novel_positive_classes": 20,
+      "originals": 279,
+      "seed": 29
+    }
+  ],
+  "all110_logical_candidates": true,
+  "identity": "e27a41592226b042eac044e69d8d42abae8308b84779c8d282cda91ea61ab68a",
+  "no_new_head_calls": true,
+  "primary_audit_metric_recalculations": 332,
+  "random_fold_checks": [
+    {
+      "both_seeds_same_recipe": true,
+      "candidate_id": "CAP|10|+0.025",
+      "family": "scene0108",
+      "held_originals": 34,
+      "selection_seed": 17,
+      "training_originals": 245
+    },
+    {
+      "both_seeds_same_recipe": true,
+      "candidate_id": "CAP|10|+0.025",
+      "family": "scene0158",
+      "held_originals": 33,
+      "selection_seed": 17,
+      "training_originals": 246
+    },
+    {
+      "both_seeds_same_recipe": true,
+      "candidate_id": "CAP|10|+0.025",
+      "family": "scene0628",
+      "held_originals": 22,
+      "selection_seed": 17,
+      "training_originals": 257
+    }
+  ],
+  "random_seed": 4817,
+  "status": "COMPLETE"
+}
