@@ -1,0 +1,377 @@
+{
+  "schema_version": 2,
+  "task_id": "ovmap-benchmark-completion-v2",
+  "repository": "Orangekostar/oviovo",
+  "base_commit": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+  "branch": "research/ovmap-benchmark-completion-v2",
+  "namespace": "src/static_ovmap/benchmark_completion_v2",
+  "entrypoint": "scripts/evaluation/run_ovmap_benchmark_completion_v2.py",
+  "docs_root": "docs/paper/static_ovmap/benchmark_completion_v2",
+  "artifacts_root": "artifacts/static_ovmap/benchmark_completion_v2",
+  "new_interfaces_are_planned_not_existing": true,
+  "phases": [
+    "bind",
+    "protocol",
+    "cache_post",
+    "method_lock",
+    "legacy_predict",
+    "legacy_score",
+    "benchmark_inputs",
+    "baselines",
+    "benchmark_predict",
+    "benchmark_score",
+    "statistics",
+    "tables",
+    "review",
+    "publish"
+  ],
+  "dependencies": {
+    "bind": [],
+    "protocol": [
+      "bind"
+    ],
+    "cache_post": [
+      "bind"
+    ],
+    "method_lock": [
+      "protocol",
+      "cache_post"
+    ],
+    "legacy_predict": [
+      "method_lock"
+    ],
+    "legacy_score": [
+      "legacy_predict"
+    ],
+    "benchmark_inputs": [
+      "method_lock"
+    ],
+    "baselines": [
+      "protocol"
+    ],
+    "benchmark_predict": [
+      "benchmark_inputs",
+      "method_lock"
+    ],
+    "benchmark_score": [
+      "benchmark_predict"
+    ],
+    "statistics": [
+      "cache_post"
+    ],
+    "tables": [
+      "bind"
+    ],
+    "review": [
+      "tables"
+    ],
+    "publish": [
+      "review"
+    ]
+  },
+  "join_policy": "tables/review summarize every phase including partial/blocked; no metric-based activation gate",
+  "model": {
+    "method": "MV_ATTN",
+    "profile": "matched1000",
+    "step": 1000,
+    "seeds": [
+      17,
+      29
+    ],
+    "prefix": 8,
+    "condition": "clean",
+    "export_folder": "artifacts/static_ovmap/structure_confirmation_v1",
+    "profile_key": "MV_ATTN:seed{seed}:matched1000",
+    "anchor": "B_FC same input fc_vectors/view_valid",
+    "training_updates": 0,
+    "new_architectures": 0
+  },
+  "cache": {
+    "public_folder": "artifacts/static_ovmap/semantic_update_evidence_v1",
+    "metadata": "A/import.json",
+    "scores": "A/source_scores.npz",
+    "vectors": "A/source_vectors.npz",
+    "candidate_metadata": "A/candidates.json.gz",
+    "candidate_predictions": "A/predictions.npz",
+    "primary_objects_expected": 279,
+    "families_expected": 12,
+    "unsupported_expected": 9,
+    "class_split": [
+      160,
+      40
+    ],
+    "primary_vector_scope": "clean,8V,matched1000 + static selected only",
+    "reuse_old_gate": false,
+    "parent_all_allowed": false
+  },
+  "calibration": {
+    "final": {
+      "kind": "CAP",
+      "tau_degrees": 10.0,
+      "gamma": 0.025
+    },
+    "score_domain": "unscaled cosine; subtract gamma on training-base mask before source temperature",
+    "alpha_grid": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "tau_grid": [
+      5.0,
+      10.0,
+      20.0,
+      30.0,
+      180.0
+    ],
+    "gamma_grid": [
+      -0.5,
+      -0.25,
+      -0.1,
+      -0.05,
+      -0.025,
+      0.0,
+      0.025,
+      0.05,
+      0.1,
+      0.25,
+      0.5
+    ],
+    "kinds": [
+      "MIX",
+      "CAP",
+      "NMIX"
+    ],
+    "methods": [
+      "S_LL",
+      "G_LL",
+      "V_LL",
+      "MV_ATTN"
+    ],
+    "logical_per_method_seed": 165,
+    "static_gamma_candidates": 11,
+    "total_logical_rows": 1331,
+    "lofo": {
+      "select_seed": 17,
+      "apply_seeds": [
+        17,
+        29
+      ],
+      "groups": "original physical family",
+      "sort": [
+        "H_macro",
+        "min(B_macro,N_macro)",
+        "B_macro",
+        "fewer_nonidentity_operations",
+        "candidate_id"
+      ],
+      "tie_tolerance": 1e-10,
+      "recompute_oof_macro": true,
+      "independent_confirmation": false
+    },
+    "numeric": {
+      "score_dtype": "float32 for A; preserve original scene text dtype for legacy",
+      "angle_geometry_dtype": "float64",
+      "vector_restore_dtype": "float32",
+      "text_renormalize": false,
+      "unit_vector_atol": 1e-05,
+      "score_reconstruct_atol": 1e-05,
+      "cap_antipodal_eps": 1e-10,
+      "nmix_zero_eps": 1e-12
+    },
+    "fixed_component_rows": [
+      {
+        "kind": "RAW",
+        "gamma": 0.0
+      },
+      {
+        "kind": "RAW",
+        "gamma": 0.025
+      },
+      {
+        "kind": "CAP",
+        "tau_degrees": 10.0,
+        "gamma": 0.0
+      },
+      {
+        "kind": "CAP",
+        "tau_degrees": 10.0,
+        "gamma": 0.025
+      }
+    ],
+    "equal_search_rows": [
+      "CAP",
+      "MIX",
+      "NMIX"
+    ],
+    "global_simple_lock": "seed17 entire exposed CONF12, separately best per kind; frozen before benchmark outputs; not novel-label-free"
+  },
+  "legacy": {
+    "expected_scenes": 26,
+    "expected_cohorts": {
+      "replica8": 8,
+      "scannet_cf18": 18
+    },
+    "scope": "EXPOSED_FIXED_ELIGIBLE_UPDATE_NOT_GLOBAL_SOURCE_ABLATION",
+    "variants": [
+      "L00",
+      "L10",
+      "L01",
+      "L11"
+    ],
+    "seeds": [
+      17,
+      29
+    ],
+    "maximum_logical_scene_rows": 208,
+    "maximum_pools": 16,
+    "projection_and_rank": "unchanged parent OFFICIAL_CURRENT_CLASS",
+    "new_old_rgb_encodings": 0,
+    "noneligible_and_recovered_labels": "unchanged"
+  },
+  "benchmarks": {
+    "scannet200_val": {
+      "split_source": "pinned official ScanNet validation list",
+      "expected_scenes": 312,
+      "evaluation": "official instance valid IDs (198 instance classes); complete 200 text vocabulary where supported; no hand-deleted classes",
+      "clean_claim_requires": "no evaluation-label gradient training in MV/Q or any learned component, explicit calibration/exposure roles"
+    },
+    "replica48": {
+      "split_source": "Open3DIS/OpenMask3D 8-scene,48-class release",
+      "expected_scenes": 8,
+      "label_mapping": "official semantic labels, evaluation vertex ordering and fixed casefold-name/author alias map before GT labels",
+      "legacy51_scores_are_new48_results": false
+    }
+  },
+  "standard": {
+    "geometry": "original OVI native partition; no G1 recovery in new final system",
+    "complete_owner_domain": true,
+    "variants": [
+      "U00",
+      "U10",
+      "U01",
+      "U11"
+    ],
+    "seeds": [
+      17,
+      29
+    ],
+    "frame_rule": "uniform indices of finite-pose source frames, k=min(200,n), floor(j*(n-1)/(k-1)); k=1 selects0",
+    "F_views_max": 8,
+    "F_selection": "choose_views from parent, max-mask anchor then incremental visible-area",
+    "confidence": 1.0,
+    "class_prediction": "one top1 class per immutable predicted proposal; unknown0 retained in denominator but not exported as valid class",
+    "missing_F_when_MF_off": "abstain0, never N/Q fallback",
+    "missing_F_when_MF_on": "available N/Q grouped fusion, no invented F",
+    "F_fallback": "if any valid F view exists anchor b; MV undefined numerical failure is error, not silent fallback",
+    "gamma_mapping_unknown": "block full AC for affected target vocabulary; report CAP-only separately, never alias U11",
+    "max_own_scene_rows_if_320_scenes": 2560,
+    "max_own_pools": 16,
+    "full_pipeline_note": "new final system identity, not old A1/A3 or complete original OVI reproduction"
+  },
+  "baselines": {
+    "core": [
+      "OVI-MAP",
+      "OpenMask3D",
+      "Open3DIS",
+      "MaskClustering"
+    ],
+    "repositories": {
+      "OVI-MAP": "OVI-MAP/OVI-MAP",
+      "OpenMask3D": "OpenMask3D/openmask3d",
+      "Open3DIS": "VinAIResearch/Open3DIS",
+      "MaskClustering": "PKU-EPIC/MaskClustering"
+    },
+    "OVI_branch": "origin_impl",
+    "Open3DIS_variant": "official ISBNet + Grounded-SAM + feature refinement",
+    "prefer_author_predictions": true,
+    "replica_maskclustering": "dataset adapter required; no claim of existing author Replica release",
+    "optional_literature_only": [
+      "OVIR-3D",
+      "Mosaic3D"
+    ],
+    "training_updates": 0,
+    "max_local_scene_method_jobs_if_320_scenes": 1280
+  },
+  "reporting": {
+    "main_tables": {
+      "T1": "external methods x standard benchmarks",
+      "T2": "GLOBAL all-owner MF x AC U00/U10/U01/U11",
+      "T3": "fixed MV calibration component ablation + equal-search simple controls"
+    },
+    "legacy_in_main_standard_table": false,
+    "main_seed_columns": false,
+    "supplement": [
+      "S1_protocol",
+      "S2_full_and_legacy",
+      "S3_sources",
+      "S4_structure",
+      "S5_perseed_calibration",
+      "S6_proposals",
+      "S7_errors",
+      "S8_cost"
+    ],
+    "unknown_value": null,
+    "unknown_display": "—",
+    "display_decimals": 2,
+    "mean_rule": "metric separately per seed, then arithmetic mean; static once"
+  },
+  "statistics": {
+    "bootstrap_draws": 1000,
+    "seed": 6173,
+    "unit": "physical family paired, all captures kept together",
+    "comparisons": [
+      "U11-U10",
+      "U11-U01"
+    ],
+    "cohorts": [
+      "scannet200_val",
+      "replica48"
+    ],
+    "family_draw_sets": 4000,
+    "reuse_draws_between_seeds": true,
+    "scene_AP_average_forbidden": true,
+    "undefined_group": "null with count, do not resample until positive",
+    "new_cache_expansion_cis_required": false
+  },
+  "runtime": {
+    "single_gpu_worker": true,
+    "cpu_scorers": 3,
+    "BLAS_threads": 1,
+    "total_gpu_hour_cap": null,
+    "resource_policy": "honor actual user/scheduler quota; otherwise finite frozen scene-method matrix, measured estimate, no invented 12-hour global cap",
+    "wall_time_claim": false,
+    "cloud_purchase_allowed": false,
+    "minimal_disk_reserve_GiB": 20,
+    "new_encoding_scope": "only absent content required by locked own/baseline runs, reusable across variants",
+    "reducing_resolution_views_scenes_to_fit_quota": false,
+    "pilot": "first listed formal scene per newly connected pipeline, reused as full result, not extra toy run",
+    "per_job_retry_max": 1,
+    "repeat_completed_scientific_job": false,
+    "check_groups": 4,
+    "max_new_commit_blobs_MiB": 40,
+    "max_git_scientific_export_MiB": 512,
+    "normal_push_attempts": 2
+  },
+  "completion": {
+    "separate": [
+      "software_complete",
+      "calibration_complete",
+      "legacy_complete",
+      "standard_coverage_complete",
+      "external_comparisons_complete",
+      "publication_complete",
+      "claim_supported"
+    ],
+    "missing_dependencies_are_negative_results": false,
+    "tables_with_gaps_means_all_experiments_complete": false,
+    "terminal_resume_zero": [
+      "GPU_workers",
+      "head_calls",
+      "image_encodings",
+      "scientific_writes",
+      "commits"
+    ]
+  }
+}

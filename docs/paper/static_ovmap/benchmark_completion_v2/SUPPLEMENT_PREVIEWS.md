@@ -1,0 +1,5 @@
+# Current supplementary previews
+
+All eight tables contain6033 rows across163 pages. S6 includes320 scenes:312 ScanNet and8 Replica. S7 retains5616 ScanNet intervention rows; Replica CAP interventions remain unavailable. Every displayed frozen row/cell sequence was checked in extracted PDF text. All pages preserve14mm horizontal margins and embedded fonts. Primary inspected all163 page contacts, all8 first-page samples, and S6/S7 final pages:10 full-page samples. This verifies standalone supplements; final manuscript layout remains unchecked.
+
+Render receipt: `3b2990be3f206b70d6f2999fc5d6dd7fcea21865ef6f6d742443219388e3c991`. Machine review: `d001559ef3919d8be0e0312e07d32b1feb490167af746b581281b1f25b951502`. Primary visual review: `1bc9690a09d6fdfa2aaf3a0cd76d2dfd1a634552cd7d84f1c2955e57f16b5bab`. Source tables: `d24eabd9ba073b866fc0d5b9a08af0a8b875d637234b1695d447bcf94788570d`. Rendering changed no scientific values. Replica RAW and four full baseline pools are present; unresolved CAP results remain blank. Historical previews and their reviews remain retained.

@@ -1,0 +1,40 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Logical candidates, new CPU work, GPU inference and training are distinct. Worker wall times include loading and CPU overhead; they are not isolated online module latencies or measured 30 FPS. NQ allocated memory is not the whole-pipeline peak. Standard/new baseline image encoding is counted.}
+\label{tab:benchmark-s8}
+\begin{tabular}{lrrr}
+\toprule
+Method / setting & Value & Unit & Scope \\
+\midrule
+antipodal\_fallback\_realizations & 0 & actual counter & CPU calibration \\
+degenerate\_nmix\_fallback\_realizations & 0 & actual counter & CPU calibration \\
+logical\_candidate\_rows & 1331 & actual counter & CPU calibration \\
+new\_GPU\_workers & 0 & actual counter & CPU calibration \\
+new\_head\_calls & 0 & actual counter & CPU calibration \\
+new\_image\_encodings & 0 & actual counter & CPU calibration \\
+new\_training\_updates & 0 & actual counter & CPU calibration \\
+physical\_CAP\_text\_matmuls & 30 & actual counter & CPU calibration \\
+physical\_CPU\_candidate\_predictions & 1111 & actual counter & CPU calibration \\
+physical\_NMIX\_text\_matmuls & 24 & actual counter & CPU calibration \\
+physical\_base\_score\_passes & 100 & actual counter & CPU calibration \\
+reused\_original\_MV\_predictions & 220 & actual counter & CPU calibration \\
+new\_training\_updates & 0 & physical calls & Completed real jobs \\
+calibration\_GPU\_head\_calls & 0 & physical calls & Completed real jobs \\
+calibration\_RGB\_encodings & 0 & physical calls & Completed real jobs \\
+standard\_CropFormer\_frames & 62400 & physical calls & Completed real jobs \\
+standard\_FC\_image\_encodings & 48308 & physical calls & Completed real jobs \\
+standard\_FC\_region\_poolings & 159436 & physical calls & Completed real jobs \\
+standard\_MV\_head\_calls & 43680 & physical calls & Completed real jobs \\
+standard\_N\_crop\_encodings & 1330152 & physical calls & Completed real jobs \\
+standard\_Q\_crop\_encodings & 373236 & physical calls & Completed real jobs \\
+engineering\_MV\_head\_calls & 8 & physical calls & Completed real jobs \\
+legacy\_new\_MV\_head\_calls & 2868 & physical calls & Completed real jobs \\
+cropformer worker wall (median) & 281.558 & seconds & 312 completed scene jobs \\
+native\_map worker wall (median) & 1170.254 & seconds & 312 completed scene jobs \\
+F\_MV1000 worker wall (median) & 160.339 & seconds & 312 completed scene jobs \\
+native\_query worker wall (median) & 300.126 & seconds & 312 completed scene jobs \\
+NQ peak allocated (max) & 2.609 & GiB & NQ worker only \\
+\bottomrule
+\end{tabular}
+\end{table*}

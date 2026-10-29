@@ -1,0 +1,95 @@
+{
+  "_description": "运行时填写或由已核实lineage解析的资产位置；null是未提供，不是成功占位。不得上传填入凭证的本地版本。",
+  "controller_python": null,
+  "fc_python": null,
+  "gpu_device": null,
+  "gpu_lock": null,
+  "semantic_root": null,
+  "structure_root": null,
+  "inherited_source_binding": null,
+  "path_map": {},
+  "source_assets": {
+    "native_siglip": null,
+    "native_texts": null,
+    "fc_model": null,
+    "fc_texts": null,
+    "q_gain_checkpoint": null,
+    "learned_components_role_manifest": null
+  },
+  "datasets": {
+    "scannet200_val": {
+      "raw_root": null,
+      "official_split_path": null,
+      "label_mapping_path": null,
+      "official_evaluator_path": null,
+      "evaluation_mesh_root": null,
+      "gt_root": null,
+      "license_already_authorized": null
+    },
+    "replica48": {
+      "preprocessed_root": null,
+      "official_eight_scene_list": null,
+      "class48_mapping_path": null,
+      "official_evaluator_path": null,
+      "evaluation_mesh_root": null,
+      "gt_root": null,
+      "license_already_authorized": null
+    }
+  },
+  "external": {
+    "OVI-MAP": {
+      "repository": "OVI-MAP/OVI-MAP",
+      "requested_branch": "origin_impl",
+      "checkout": null,
+      "locked_commit": null,
+      "reconstruction_python": null,
+      "perception_python": null,
+      "cropformer_checkpoint": null,
+      "original_config": null,
+      "author_predictions": null
+    },
+    "OpenMask3D": {
+      "repository": "OpenMask3D/openmask3d",
+      "checkout": null,
+      "locked_commit": null,
+      "python": null,
+      "mask_ckpt_scannet200": null,
+      "mask_ckpt_replica": null,
+      "sam_checkpoint": null,
+      "clip_assets": null,
+      "original_config": null,
+      "author_predictions": null
+    },
+    "Open3DIS": {
+      "repository": "VinAIResearch/Open3DIS",
+      "checkout": null,
+      "locked_commit": null,
+      "python": null,
+      "variant": "ISBNet-GSAM-refined",
+      "checkpoints": {},
+      "original_config": null,
+      "author_predictions": null,
+      "author_prediction_protocol": null
+    },
+    "MaskClustering": {
+      "repository": "PKU-EPIC/MaskClustering",
+      "checkout": null,
+      "locked_commit": null,
+      "python": null,
+      "cropformer_checkpoint": null,
+      "clip_assets": null,
+      "original_config": null,
+      "author_predictions": null
+    }
+  },
+  "actual_user_or_scheduler_quota": {
+    "gpu_hours": null,
+    "deadline": null,
+    "disk_limit_GiB": null,
+    "source_of_authorization": null
+  },
+  "publication": {
+    "use_existing_github_access": true,
+    "new_cloud_or_paid_service": false
+  }
+}

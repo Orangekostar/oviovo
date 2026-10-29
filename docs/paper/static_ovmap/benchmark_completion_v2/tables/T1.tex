@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Official ScanNet200 validation (312 scenes, 198 instance classes) and Replica48 (8 scenes), percentages. \textsuperscript{$\dagger$} Marks author-reported values; unmarked values are local. Local MaskClustering Replica results use the dataset port. OVI uses original native semantics and confidence on the common protocol. Ours requires complete coverage and reuses U11. Missing full results remain blank.}
+\label{tab:benchmark-t1}
+\begin{tabular}{lrrrrrr}
+\toprule
+Method / setting & ScanNet AP & AP50 & AP25 & Replica AP & AP50 & AP25 \\
+\midrule
+OVI-MAP (protocol port) & 8.85 & 16.96 & 24.52 & -- & -- & -- \\
+OpenMask3D & 15.40\textsuperscript{$\dagger$} & 19.90\textsuperscript{$\dagger$} & 23.10\textsuperscript{$\dagger$} & -- & -- & -- \\
+Open3DIS & 22.96 & 28.37 & 31.55 & -- & -- & -- \\
+MaskClustering & 12.00\textsuperscript{$\dagger$} & 23.30\textsuperscript{$\dagger$} & 30.10\textsuperscript{$\dagger$} & -- & -- & -- \\
+Ours & 10.96 & 20.97 & 30.58 & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}

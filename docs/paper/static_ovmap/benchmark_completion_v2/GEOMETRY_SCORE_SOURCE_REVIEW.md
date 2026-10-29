@@ -1,0 +1,15 @@
+# 几何、全owner导出及评分入口源码复核
+
+2026-10-24：主代理核对原合同03的D–F，逐段检查13份源码中的明确函数或完整文件，并关联8份既有首场景实测证据。主审 `review/G4_geometry_export_score_source_primary_review.json`，身份 `40948aaa58212c5b5f5f371c157722ef70fa5a4f3b216cf3e4fe3218ed599f53`。本轮是源码与旧证据绑定，没有重新建图、解码GT/预测数组、计算AP、调用模型或新增训练。
+
+`scene_bundle`按finite pose排序去重后使用冻结floor规则，最多200帧；`native_inputs`只读mesh坐标，保留全部正native owner，包括零F观测和投影支持为空者，F最多8视图。首场景scene0568_00的既有frame_plan记录1651个源帧、1650个finite pose和200个已选帧；bundle保留79个owner，F可用74、不可用5。
+
+投影沿用父实现的Open3D FP32 1NN和严格平方距离 `<0.05²`，与作者 `project_to_triangle_mesh` 的距离规则对应；类别和GT语义不参与搜索。首场景既有记录为232453个完整目标点、55369个未匹配点和28926个重复最近源行；未匹配点保持0，不从GT分母移除。此处检查规则和旧记录，没有新增投影复算，也没有新增CPU/CUDA等距tie一致性验证。
+
+`standard_export`保留独立CSR mask，允许跨owner重叠；每owner先在200类文本轴上竞争top1，再按198类实例合法列表过滤unknown/stuff。标准confidence为1，F不可用时MFoff输出unknown且从不调用N/Q加载器；MFon按各源温度先softmax，再对可用N/Q组与F组等权平均。CAP及原始cosine单位gamma发生在F温度之前。评分复用身份包含全部mask、labels与confidence，不能仅凭方法名复用。
+
+`standard_score.ground_truth`要求可用预测已冻结，ScanNet GT通过作者原始三个转换函数读取完整分段和aggregation。其既有实例重编号保持原样：group.id先加1，作者export再加1；没有自行删除group.id=0或根据预测support筛GT。完整目标点数与原mesh顺序长度核对。默认预测获取只包含sens、原mesh和场景txt，GT文件走单独score阶段入口。
+
+首场景既有G3证据核对四格共享mask、MFoff零N/Q访问和constant1；`U00_seed17`共同入口与原官方入口的APall/AP50/AP25逐项一致。OVI作者格式证据核对81个真实分类对象及作者mask/classes/confidence。辅助AR兼容只为无GT分支增加`ar_current=nan`；既有24组实际AP数组保持一致。这里没有独立重算这些指标，也没有宣称已全面审计官方AP算法。
+
+13份源码中包含7份本任务模块、3份精确父Git blob及3份作者函数来源。相关原文件、当前1960份稳定文件与93份冻结文件SHA/mtime不变。完整标准范围、Replica48真实连接、正式统计、最终17章审核、C1/C2及发布后实际resume均未由本复核完成；最终主审仍须复核本报告绑定的源码和最终结果身份。

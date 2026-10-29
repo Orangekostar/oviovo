@@ -1,0 +1,15 @@
+# Node7 Replica progress — full Open3DIS port, 2026-10-29
+
+Existing node7 Replica RGBD, author point clouds and meshes are reused; no Replica dataset was downloaded again. The complete office0 ISBNet run has 64 real proposals, full 589,517 x 32 dense features, 1,248 actual superpoints and all 582 checkpoint tensors strictly loaded.
+
+The actual frozen Open3DIS Grounded_Sam entry constructs SAM-HQ. Its INSTALL/config instead names ordinary SAM-H. The matching official SAM-HQ ViT-H checkpoint was acquired and all 619 tensors strictly loaded, including all 25 HQ decoder tensors. GroundingDINO strictly loads all 939 inference tensors, including 200 BERT tensors; its sole unused label_enc.weight is explicitly audited. Existing CLIP ViT-L/14@336px is reused. New author model checkpoint acquisitions now total three: ISBNet, GroundingDINO, SAM-HQ; the earlier v3 two-checkpoint snapshot remains historical.
+
+The declared method is **Open3DIS (Replica port, ISBNet + Grounded SAM-HQ + refinement, author SPP branch)**. The source/config inconsistency and selected SPP branch are frozen before target AP, with actual model identities; this is not a claim of the exact published configuration/numbers.
+
+The four-stage I/O adapter and local asset loader preserve original authored prediction, lifting, refinement and final classification functions. Reader serialization (7), complete offline DINO loading (2), and stage boundary/fallback rejection (8) tests passed. Complete real-input CPU preflight imports all four stages and verifies 400 selected frames, the full point axis, real superpoints, dense features and proposals, without GPU inference or target GT tensor loads. Its two earlier missing-dependency failures remain recorded. Only numba/llvmlite and author-pinned nltk were added to the isolated environment; existing numerical libraries were not upgraded.
+
+Office0 Grounded SAM-HQ is launched under the existing GPU0 resource lock. All 400 original selected frames are processed before 3D lifting, actual two-branch refinement and final classification. The exact immutable recipe and actual process/exit receipts determine completed stages. A running model is not a completed benchmark cell. Only final prediction freeze plus all 480 original-author/common evaluator G3 entries can gate the other seven full Open3DIS scenes.
+
+Native standard Replica coverage has reached at least 28/64 cells across seven scenes (U00/U10, seeds 17/29). OVI-MAP has at least 7/8 scored scenes. OpenMask3D/MaskClustering finish their remaining full inferences before scoring. The machine-readable v4 review gives the exact receipt-derived snapshot and current child state.
+
+The original full objective remains incomplete: remaining native/baseline scenes, full Open3DIS runtime/G3, 14 unresolved training roles for U01/U11, Replica bootstrap, pooled tables and complete publication provenance remain. No unmatched role is silently assigned novel, no target GT is used during inference, and publication remains disabled.

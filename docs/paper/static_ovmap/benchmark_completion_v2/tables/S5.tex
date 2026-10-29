@@ -1,0 +1,30 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Same165 candidates per learned method/seed; seed17 selects each fold on eleven other physical families. OOF predictions are stitched into original order before recomputing macro metrics. Static FC is measured once.}
+\label{tab:benchmark-s5}
+\begin{tabular}{lrrrrrr}
+\toprule
+Method / setting & Base & Novel & H & Base micro & Novel micro & H micro \\
+\midrule
+S\_LL RAW seed17 & 43.98 & 56.77 & 49.56 & 34.88 & 53.12 & 42.11 \\
+S\_LL RAW seed29 & 43.94 & 56.77 & 49.54 & 33.95 & 53.12 & 41.43 \\
+S\_LL LOFO\_POST seed17 & 43.93 & 56.42 & 49.39 & 35.35 & 51.56 & 41.94 \\
+S\_LL LOFO\_POST seed29 & 43.34 & 56.77 & 49.15 & 33.49 & 53.12 & 41.08 \\
+G\_LL RAW seed17 & 44.66 & 57.77 & 50.37 & 35.35 & 54.69 & 42.94 \\
+G\_LL RAW seed29 & 44.19 & 56.42 & 49.56 & 35.35 & 51.56 & 41.94 \\
+G\_LL LOFO\_POST seed17 & 44.66 & 57.77 & 50.37 & 35.35 & 54.69 & 42.94 \\
+G\_LL LOFO\_POST seed29 & 44.19 & 56.42 & 49.56 & 35.35 & 51.56 & 41.94 \\
+V\_LL RAW seed17 & 45.28 & 51.70 & 48.28 & 34.42 & 48.44 & 40.24 \\
+V\_LL RAW seed29 & 43.37 & 58.42 & 49.78 & 33.49 & 54.69 & 41.54 \\
+V\_LL LOFO\_POST seed17 & 38.74 & 54.44 & 45.27 & 27.91 & 56.25 & 37.31 \\
+V\_LL LOFO\_POST seed29 & 39.22 & 61.63 & 47.94 & 27.91 & 60.94 & 38.28 \\
+MV\_ATTN RAW seed17 & 34.00 & 5.00 & 8.72 & 53.49 & 1.56 & 3.04 \\
+MV\_ATTN RAW seed29 & 34.64 & 0.00 & 0.00 & 54.42 & 0.00 & 0.00 \\
+MV\_ATTN LOFO\_POST seed17 & 41.46 & 64.44 & 50.46 & 46.98 & 64.06 & 54.21 \\
+MV\_ATTN LOFO\_POST seed29 & 46.87 & 66.64 & 55.03 & 53.49 & 65.62 & 58.94 \\
+B\_FC RAW seedNone & 42.88 & 50.23 & 46.26 & 31.63 & 48.44 & 38.27 \\
+B\_FC LOFO\_POST seedNone & 42.88 & 50.23 & 46.26 & 31.63 & 48.44 & 38.27 \\
+\bottomrule
+\end{tabular}
+\end{table*}

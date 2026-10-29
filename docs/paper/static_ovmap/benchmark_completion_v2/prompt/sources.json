@@ -1,0 +1,373 @@
+[
+  {
+    "id": "E01",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/semantic_update_evidence_v1/readers.py",
+    "blob_sha": "ecdc3d5b92a80c7efde746d053c77a5fa28562eb",
+    "symbols": "column_index; import_originals",
+    "finding": "按key/列元信息连接；matched1000断言；FP32文本及真实向量一致性",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/semantic_update_evidence_v1/readers.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E02",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/semantic_update_evidence_v1/replay.py",
+    "blob_sha": "195e0fdc8eba1b421d6bd7edd810adf8387a5969",
+    "symbols": "restore_public_inputs",
+    "finding": "公开source_vectors只含clean8V；仅恢复到新OUT，不调用旧all",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/semantic_update_evidence_v1/replay.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E03",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/semantic_update_evidence_v1/metrics.py",
+    "blob_sha": "c16de920643420076f72dabde4e47d2e98509497",
+    "symbols": "predictions; recognition; harmonic",
+    "finding": "unknown0保留，macro按有正样本类；H逐seed算",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/semantic_update_evidence_v1/metrics.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E04",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/semantic_update_evidence_v1/diagnostics.py",
+    "blob_sha": "f70ebbab0893b68cba99a1e2caa793109600b46b",
+    "symbols": "run; rank_record",
+    "finding": "candidate_predictions轴(seed,candidate,object)；候选ID按排序；LOFO原件重拼",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/semantic_update_evidence_v1/diagnostics.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E05",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/semantic_update_evidence_v1/calibration.py",
+    "blob_sha": "78f1620e6262913b3cf26a828a17d6257ca9da91",
+    "symbols": "angle_cap; candidate_scores; best_candidate",
+    "finding": "角度FP64、输出dtype恢复；MIX不归一化；base偏置在cosine域",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/semantic_update_evidence_v1/calibration.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E06",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "configs/static_ovmap/semantic_update_evidence_v1.json",
+    "blob_sha": "20cdcec01c2cb06b2f516faeec3183700897a208",
+    "symbols": "A grids; B/C activation; runtime",
+    "finding": "读取固定5×11两族候选；不改旧gate或复用旧预算",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/configs/static_ovmap/semantic_update_evidence_v1.json",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E07",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/export.py",
+    "blob_sha": "2e1182f0bd3bc641dca6e0df97865574d3442e0c",
+    "symbols": "load_export; unpack_weights; export",
+    "finding": "可加载真实matched1000；public REG score可能FP64且无向量",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/export.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E08",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/registry.py",
+    "blob_sha": "ae848ccefa68398daf9838d382a0d5f0b1dc2f2d",
+    "symbols": "load_registry",
+    "finding": "map_only默认selected，不得用于锁定1000步的新地图",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/registry.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E09",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/mapping.py",
+    "blob_sha": "3cd758661af3072bb07239b53e36845a0505443d",
+    "symbols": "predict; score_scene; score",
+    "finding": "26场景、51/200词表、eligible过滤；572/44硬编码；新wrapper不直接调用",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/mapping.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E10",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/disagreement_query/outputs.py",
+    "blob_sha": "4e9e406ddc5b6c6633568ddb7ffcc51ed8491aa1",
+    "symbols": "build_payload",
+    "finding": "禁止改恢复/unknown/noneligible；不能伪装全局source-off",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/disagreement_query/outputs.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E11",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/data.py",
+    "blob_sha": "76d397de1ae4af201bea9751aebb15ffe059b9b1",
+    "symbols": "SparseInputs.load",
+    "finding": "精确七张量，缓存缺失仅重构张量而非重新编码RGB",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/data.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E12",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/frozen_fc_routing/common.py",
+    "blob_sha": "0b85a4357d2fcc7030143baff8ec2c521c474d8d",
+    "symbols": "FORWARD_KEYS; objects",
+    "finding": "七字段定义及LR split/data manifest入口",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/frozen_fc_routing/common.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E13",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/surface_bias_wave1_v2/data.py",
+    "blob_sha": "f645eaaa546a61ac1c206367b22d5290fb996381",
+    "symbols": "forward_array_schema; ObjectLoader.load",
+    "finding": "mask/uv/meta/valid输入与fc_vectors生成；raw1536/localunit768",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/surface_bias_wave1_v2/data.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E14",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/learned_object_readout/observations.py",
+    "blob_sha": "f6c5e9cd258940115720fa4b4aff874ba48b64b4",
+    "symbols": "choose_views; full_qualified; sample_raw",
+    "finding": "覆盖优先非时间前缀；半像素/resize/padding/grid_sample坐标约定",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/learned_object_readout/observations.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E15",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/paired_evidence_study/residuals.py",
+    "blob_sha": "8f77cb9bdaba0dd9c37069420ad575cbf3bc70ef",
+    "symbols": "pool; simple_dependence",
+    "finding": "每源温度softmax后分组融合，缺组重归一",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/paired_evidence_study/residuals.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E16",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/evaluation.py",
+    "blob_sha": "b43ef78ab3b741944cf19341e2587e7c8573c3d8",
+    "symbols": "proposal_manifest_entries; real_scene; real_score",
+    "finding": "旧REAL独立mask rank1；min100；420/35硬编码；不定义mIoU",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/evaluation.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E17",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/prediction.py",
+    "blob_sha": "4816d6ed86dd28d00324bcbac667388c06749cdb",
+    "symbols": "predict",
+    "finding": "REAL在GT前；原件key、embedding、defined、valid_ids均保存",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/prediction.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E18",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/features.py",
+    "blob_sha": "51ec5b84a7af16055a31e9b88170a4280bf954e6",
+    "symbols": "capture_frame; capture",
+    "finding": "原transform缓存；capture含1152硬上限；新任务只复用帧函数数值",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/features.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E19",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/confirmation.py",
+    "blob_sha": "eae22f0fe35f35b8e6eeec8f15d1c58db6a176a9",
+    "symbols": "geometry; real_inputs",
+    "finding": "旧4seed/48SAM/768提案是稀疏协议；仅复用无GT几何构造",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/confirmation.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E20",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/backbone_wave1/readouts.py",
+    "blob_sha": "38ce43ee5780f1d65b89e193e1db8e07cd24ea7a",
+    "symbols": "build_sources; fuse_readout",
+    "finding": "fresh capture构造NQF；依赖真实deferredmetadata/context，不是换scene列表即可",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/backbone_wave1/readouts.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E21",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/backbone_wave1/semantic_readout.py",
+    "blob_sha": "2629a3135fec349b5c7f171d264542fe99e82abd",
+    "symbols": "run_native_query; reconstruct_native",
+    "finding": "原生SigLIP+Q_GAIN同骨干；Q最多200逻辑预算；必须审计Q训练角色",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/backbone_wave1/semantic_readout.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E22",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/frozen_fc_routing/binding.py",
+    "blob_sha": "3ff10da20fab1a13ef467c9e3e6d2f4b9cebebca",
+    "symbols": "load_scene; bind",
+    "finding": "load_scene可数值复用；bind含旧分支/旧计数约束不能直接调用",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/frozen_fc_routing/binding.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E23",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/runner.py",
+    "blob_sha": "a47081d6a65962c38bc0721378c50a5da9328c37",
+    "symbols": "gpu_worker; phase; main",
+    "finding": "all含训练；新runner独立，GPU环境锁复用而非旧all",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/runner.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E24",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/common.py",
+    "blob_sha": "cf5c67ad96b48f11c9ea1b444b95328b3c72681f",
+    "symbols": "Budget; existing; workload_budget",
+    "finding": "按任务记录消费，旧预算及fixed_spec不可无修改重用",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/common.py",
+    "basis": "read in this task; repository code only, not server execution"
+  },
+  {
+    "id": "E25",
+    "repo": "Orangekostar/oviovo",
+    "ref": "9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a",
+    "path": "src/static_ovmap/structure_confirmation_v1/models.py",
+    "blob_sha": "32c13a50bae7952e8cb000f801f66cf78f559e2b",
+    "symbols": "MVReadout.forward; _base_result",
+    "finding": "MV只使用fc_vectors，不读取local feature数值；可验证region-only等价，避免无用局部phi；空局部形状需保持原API。",
+    "url": "https://github.com/Orangekostar/oviovo/blob/9bbe040570ecbaec854e6d8aa94ba82a3a1afa2a/src/static_ovmap/structure_confirmation_v1/models.py",
+    "basis": "read in this task; no real checkpoint run here"
+  },
+  {
+    "id": "X01",
+    "repo": "OVI-MAP/OVI-MAP",
+    "ref": "main as read on 2026-10-19; runtime lock exact commit before executing",
+    "path": "README.md",
+    "blob_sha": null,
+    "finding": "原版origin_impl与重构main区分；FAQ修正实际voxel0.01m；CropFormer+SigLIP与ROS双环境",
+    "url": "https://github.com/OVI-MAP/OVI-MAP/blob/main/README.md",
+    "basis": "official repository read, not full local reproduction"
+  },
+  {
+    "id": "X02",
+    "repo": "OpenMask3D/openmask3d",
+    "ref": "main as read on 2026-10-19; runtime lock exact commit before executing",
+    "path": "README.md",
+    "blob_sha": "1de216fce320b07cb43daefa3eb84a418576c322",
+    "finding": "NeurIPS2023；完整ScanNet val脚本不能以single-scene脚本替代；points×masks和特征格式",
+    "url": "https://github.com/OpenMask3D/openmask3d/blob/main/README.md",
+    "basis": "official repository read, not full local reproduction"
+  },
+  {
+    "id": "X03",
+    "repo": "VinAIResearch/Open3DIS",
+    "ref": "main as read on 2026-10-19; runtime lock exact commit before executing",
+    "path": "docs/RUN.md",
+    "blob_sha": "8293b315ae0d3e14a5f373ac22e0c7b12813fc87",
+    "finding": "grounding2D→3Dinstance→refine→再次3Dinstance；完整流程不省refine",
+    "url": "https://github.com/VinAIResearch/Open3DIS/blob/main/docs/RUN.md",
+    "basis": "official repository read, not full local reproduction"
+  },
+  {
+    "id": "X04",
+    "repo": "VinAIResearch/Open3DIS",
+    "ref": "main as read on 2026-10-19; runtime lock exact commit before executing",
+    "path": "docs/DATA.md",
+    "blob_sha": "4adff566740f01494ff3e28774b640c91ad40a76",
+    "finding": "作者ScanNet200预测可优先重评分；一个示例scene不等于全val；Replica预处理包需许可/访问",
+    "url": "https://github.com/VinAIResearch/Open3DIS/blob/main/docs/DATA.md",
+    "basis": "official repository read, not full local reproduction"
+  },
+  {
+    "id": "X05",
+    "repo": "PKU-EPIC/MaskClustering",
+    "ref": "main as read on 2026-10-19; runtime lock exact commit before executing",
+    "path": "README.md",
+    "blob_sha": "a91ceb060149f14a8c218f0091252f21536c7e98",
+    "finding": "完整CropFormer+CLIP-ViTH/14；官方ScanNet13.5h不是新host测时；无现成Replica文档",
+    "url": "https://github.com/PKU-EPIC/MaskClustering/blob/main/README.md",
+    "basis": "official repository read, not full local reproduction"
+  },
+  {
+    "id": "X06",
+    "repo": "VinAIResearch/Open3DIS",
+    "ref": "main as read on 2026-10-19; runtime lock exact commit before executing",
+    "path": "scripts/eval.sh",
+    "blob_sha": "4ea360af051a030a320b4ebc69f4a4c030346df8",
+    "finding": "调用open3dis/evaluation/eval.py；外层CUDA设备选择不照搬硬编码0",
+    "url": "https://github.com/VinAIResearch/Open3DIS/blob/main/scripts/eval.sh",
+    "basis": "official repository read, not full local reproduction"
+  },
+  {
+    "id": "K01",
+    "repo": "mikubaka88/CCFA-Skills",
+    "ref": "main",
+    "path": "ccf-humanization/references/experiment-discipline.md",
+    "url": "https://github.com/mikubaka88/CCFA-Skills/blob/main/ccf-humanization/references/experiment-discipline.md",
+    "basis": "K01 reread this task; K02-K04 full content retained in conversation",
+    "finding": "按证据设计、完整方法身份、无数值捏造、仅变化路径必要检查；正式表不塞内部审核标签"
+  },
+  {
+    "id": "K02",
+    "repo": "mikubaka88/CCFA-Skills",
+    "ref": "main",
+    "path": "ccf-experiment-designer/SKILL.md",
+    "url": "https://github.com/mikubaka88/CCFA-Skills/blob/main/ccf-experiment-designer/SKILL.md",
+    "basis": "K01 reread this task; K02-K04 full content retained in conversation",
+    "finding": "按证据设计、完整方法身份、无数值捏造、仅变化路径必要检查；正式表不塞内部审核标签"
+  },
+  {
+    "id": "K03",
+    "repo": "mikubaka88/CCFA-Skills",
+    "ref": "main",
+    "path": "ccf-experiment-designer/references/evidence-design.md",
+    "url": "https://github.com/mikubaka88/CCFA-Skills/blob/main/ccf-experiment-designer/references/evidence-design.md",
+    "basis": "K01 reread this task; K02-K04 full content retained in conversation",
+    "finding": "按证据设计、完整方法身份、无数值捏造、仅变化路径必要检查；正式表不塞内部审核标签"
+  },
+  {
+    "id": "K04",
+    "repo": "mikubaka88/CCFA-Skills",
+    "ref": "main",
+    "path": "ccf-experiment-designer/references/result-templates.md",
+    "url": "https://github.com/mikubaka88/CCFA-Skills/blob/main/ccf-experiment-designer/references/result-templates.md",
+    "basis": "K01 reread this task; K02-K04 full content retained in conversation",
+    "finding": "按证据设计、完整方法身份、无数值捏造、仅变化路径必要检查；正式表不塞内部审核标签"
+  }
+]

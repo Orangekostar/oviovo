@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{GLOBAL ablation over identical complete original-native instance masks. MFoff uses only F and leaves missing F unknown. AC is fixed CAP10 plus gamma 0.025 before F temperature. Two seeds are evaluated independently then averaged. Partial subsets and legacy eligible updates do not enter this table.}
+\label{tab:benchmark-t2}
+\begin{tabular}{lrrrrrr}
+\toprule
+Method / setting & MF & AC & ScanNet AP & AP50 & Replica AP & AP50 \\
+\midrule
+F only & No & No & 3.74 & 7.37 & -- & -- \\
+Multi-source & Yes & No & 5.99 & 11.49 & -- & -- \\
+Calibrated F & No & Yes & 9.76 & 18.46 & -- & -- \\
+Full system & Yes & Yes & 10.96 & 20.97 & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table*}
