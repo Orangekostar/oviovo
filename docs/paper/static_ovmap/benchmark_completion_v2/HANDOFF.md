@@ -105,3 +105,6 @@ Table-definition identity: `bda3f373528c4a01a13f406f22669217d6b52ace539f0a55972e
 The original deployment/N0 has not been replaced. The completed benchmark matrix does not establish CVPR novelty or unseen-class generalization.
 
 Replica training-role extension: see [replica_role_extension_v1.md](replica_role_extension_v1.md). The user-confirmed synonym policy, including any-base panel exposure, is explicit; it is not an author-original alias claim.
+
+Verified scientific commit C1: `529a8aa54cab0a9242eca420bc8b291bec50b5f4`. [Immutable results](https://github.com/Orangekostar/oviovo/blob/529a8aa54cab0a9242eca420bc8b291bec50b5f4/docs/paper/static_ovmap/benchmark_completion_v2/RESULTS.md).
+The C2 full SHA and actual post-publication resume receipt remain at $OUT/publication/final.json.
