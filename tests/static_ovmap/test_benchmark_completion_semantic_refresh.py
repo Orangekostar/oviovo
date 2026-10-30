@@ -9,15 +9,16 @@ from static_ovmap.benchmark_completion_v2.common import (
 )
 
 
-def fixture(tmp_path):
+def fixture(tmp_path, extra_taxonomy='', base_ids=None):
     from static_ovmap.benchmark_completion_v2.common import ConsumedInputs
     from static_ovmap.benchmark_completion_v2.protocol import _aliases, map_training_roles
     old = tmp_path / 'old.tsv'
     new = tmp_path / 'new.tsv'
     header = 'raw_category\tcategory\twnsynsetid\tid\n'
-    old.write_text(header + 'chair\tchair\tn1\t1\nseat\tunknown\t\t2\n')
-    new.write_text(header + 'chair\tchair\tn1\t1\nseat\tchair\tn1\t2\n')
-    classes = dict(official_ids=[1, 3], official_names=['chair', 'table'], base_ids=[1])
+    old.write_text(header + 'chair\tchair\tn1\t1\nseat\tunknown\t\t2\n' + extra_taxonomy)
+    new.write_text(header + 'chair\tchair\tn1\t1\nseat\tchair\tn1\t2\n' + extra_taxonomy)
+    base_ids = [1] if base_ids is None else base_ids
+    classes = dict(official_ids=[1, 3], official_names=['chair', 'table'], base_ids=base_ids)
     class_path = tmp_path / 'class_split.json'
     write(class_path, classes)
     index = ConsumedInputs(tmp_path)
@@ -25,9 +26,9 @@ def fixture(tmp_path):
     aliases, descriptor = _aliases(old, classes['official_ids'], classes['official_names'], index)
     scope = dict(status='DONE', scenes=['room0'], text_ids=[1], text_names=['seat'],
                  instance_ids=[1], instance_names=['seat'], full_AC_available=False,
-                 mapping=map_training_roles(['seat'], [1, 3], ['chair', 'table'], [1], aliases))
+                 mapping=map_training_roles(['seat'], [1, 3], ['chair', 'table'], base_ids, aliases))
     scan = dict(scope, scenes=['scene0'], text_ids=[1, 3], text_names=['chair', 'table'],
-                mapping=map_training_roles(['chair', 'table'], [1, 3], ['chair', 'table'], [1]),
+                mapping=map_training_roles(['chair', 'table'], [1, 3], ['chair', 'table'], base_ids),
                 full_AC_available=True)
     lock = write(tmp_path / 'protocol_lock.json', dict(status='DONE', producer=source_identity(('protocol',)),
         official_sources={}, semantic_alias_source=descriptor,
@@ -49,6 +50,103 @@ def test_alias_refresh_schedules_protocol_and_legacy_descendants():
     assert phases[0] == 'protocol'
     assert {'legacy_predict', 'legacy_score', 'benchmark_predict', 'benchmark_score'} <= set(phases)
     assert 'cache_post' not in phases and 'method_lock' not in phases
+
+
+def role_manifest(binding, tmp_path, ids, *, manual=False, base_ids=None):
+    """Explicit synthetic crosswalk; no benchmark labels or scores."""
+    csv_path = tmp_path / 'crosswalk.csv'
+    csv_path.write_text('id,replicaclass,replicaid\n' + ''.join(str(i) + ',seat,1\n' for i in ids))
+    taxonomy = Path(binding['asset_config']['datasets']['scannet200_val']['label_mapping_path'])
+    manifest = write(tmp_path / 'roles.json', dict(
+        policy='ANY_BASE_IN_CONFIRMED_SYNONYM_GROUP', GT_labels_used=False,
+        training_axis=dict(ids=[1, 3], base_ids=[1] if base_ids is None else base_ids),
+        taxonomy=dict(path=str(taxonomy), sha256=digest_file(taxonomy)),
+        crosswalk=dict(path=str(csv_path), sha256=digest_file(csv_path)),
+        user_confirmation='都为同义' if manual else None,
+        rows=[dict(target_name='seat', semantic_ids=ids,
+                   user_confirmed_synonyms=manual)]))
+    binding['asset_config']['datasets']['replica48'] = dict(training_role_aliases_path=str(tmp_path / 'roles.json'))
+    return verified(tmp_path / 'protocol_lock.json'), manifest
+
+
+@pytest.mark.parametrize('ids,manual,base_ids,expected', [([2], False, [1], False),
+    ([1], False, [1], True), ([1, 3], False, [1, 3], True), ([1, 3], True, [1], True)])
+def test_explicit_global_or_confirmed_synonym_roles_extend_without_changing_training_axis(tmp_path, ids, manual, base_ids, expected):
+    from static_ovmap.benchmark_completion_v2.semantic_refresh import prepare_protocol
+    binding, _, _, _ = fixture(tmp_path, 'table\ttable\t\t3\n', base_ids=base_ids)
+    lock, manifest = role_manifest(binding, tmp_path, ids, manual=manual, base_ids=base_ids)
+    # Keep the original alias unresolved so this tests the explicit manifest.
+    binding['asset_config']['datasets']['scannet200_val']['label_mapping_path'] = str(tmp_path / 'old.tsv')
+    manifest['taxonomy'] = dict(path=str(tmp_path / 'old.tsv'), sha256=digest_file(tmp_path / 'old.tsv'))
+    write(tmp_path / 'roles.json', manifest)
+    result = prepare_protocol(binding, lock, tmp_path / 'history/role_update')
+    assert result['scopes']['replica48']['mapping']['base_mask'] == [expected]
+    assert result['legacy']['replica51']['base_mask'] == [expected]
+    assert result['scopes']['scannet200_val'] == lock['scopes']['scannet200_val']
+    row = result['scopes']['replica48']['mapping']['rows'][0]
+    assert row['source_semantic_ids'] == ids
+    assert row['candidate_training_ids'] == [i for i in ids if i in (1, 3)]
+    assert row['role_evidence']['manual_synonym_group'] is manual
+    from static_ovmap.benchmark_completion_v2.semantic_refresh import check_alias
+    check_alias(binding, result)
+
+
+def test_a_declared_manifest_does_not_turn_an_unmatched_target_into_novel(tmp_path):
+    from static_ovmap.benchmark_completion_v2.semantic_refresh import prepare_protocol
+    binding, _, _, _ = fixture(tmp_path, 'table\ttable\t\t3\n')
+    lock, manifest = role_manifest(binding, tmp_path, [2])
+    manifest['rows'] = []
+    write(tmp_path / 'roles.json', manifest)
+    binding['asset_config']['datasets']['scannet200_val']['label_mapping_path'] = str(tmp_path / 'old.tsv')
+    manifest['taxonomy'] = dict(path=str(tmp_path / 'old.tsv'), sha256=digest_file(tmp_path / 'old.tsv'))
+    write(tmp_path / 'roles.json', manifest)
+    result = prepare_protocol(binding, lock, tmp_path / 'history/role_update')
+    assert result['scopes']['replica48']['mapping']['base_mask'] is None
+    assert result['scopes']['replica48']['mapping']['unresolved'] == ['seat']
+
+
+def test_crosswalk_can_identify_target_by_official_replica_id_when_name_is_blank(tmp_path):
+    from static_ovmap.benchmark_completion_v2.semantic_refresh import prepare_protocol
+    binding, _, _, _ = fixture(tmp_path, 'table\ttable\t\t3\n')
+    lock, manifest = role_manifest(binding, tmp_path, [2, 3])
+    path = Path(manifest['crosswalk']['path'])
+    # Raw Replica taxonomy IDs and the evaluator's reindexed text IDs differ.
+    path.write_text('id,replicaclass,replicaid\n2,"seat,other","65,99"\n3,,65\n1,other,99\n')
+    manifest['crosswalk']['sha256'] = digest_file(path)
+    binding['asset_config']['datasets']['scannet200_val']['label_mapping_path'] = str(tmp_path / 'old.tsv')
+    manifest['taxonomy'] = dict(path=str(tmp_path / 'old.tsv'), sha256=digest_file(tmp_path / 'old.tsv'))
+    write(tmp_path / 'roles.json', manifest)
+    result = prepare_protocol(binding, lock, tmp_path / 'history/role_update')
+    assert result['scopes']['replica48']['mapping']['base_mask'] == [False]
+
+
+def test_role_manifest_change_requires_explicit_refresh_even_when_tsv_is_identical(tmp_path):
+    from static_ovmap.benchmark_completion_v2.semantic_refresh import check_alias
+    binding, _, _, _ = fixture(tmp_path, 'table\ttable\t\t3\n')
+    lock, _ = role_manifest(binding, tmp_path, [2])
+    binding['asset_config']['datasets']['scannet200_val']['label_mapping_path'] = str(tmp_path / 'old.tsv')
+    with pytest.raises(ValueError, match='refresh-assets'):
+        check_alias(binding, lock)
+
+
+@pytest.mark.parametrize('invalid', ['source_bytes', 'unknown_id', 'unconfirmed_conflict', 'changed_axis'])
+def test_explicit_role_extension_fails_closed_on_invalid_evidence(tmp_path, invalid):
+    from static_ovmap.benchmark_completion_v2.semantic_refresh import prepare_protocol
+    binding, _, _, _ = fixture(tmp_path, 'table\ttable\t\t3\n')
+    lock, manifest = role_manifest(binding, tmp_path, [1, 3], manual=True)
+    if invalid == 'source_bytes':
+        Path(manifest['crosswalk']['path']).write_text('tampered')
+    elif invalid == 'unknown_id':
+        manifest['rows'][0]['semantic_ids'] = [999]
+    elif invalid == 'unconfirmed_conflict':
+        manifest['rows'][0]['user_confirmed_synonyms'] = False
+    else:
+        manifest['training_axis']['base_ids'] = [3]
+    write(tmp_path / 'roles.json', manifest)
+    before = digest_file(tmp_path / 'protocol_lock.json')
+    with pytest.raises(ValueError):
+        prepare_protocol(binding, lock, tmp_path / 'history/role_update')
+    assert digest_file(tmp_path / 'protocol_lock.json') == before
 
 
 def test_protocol_dispatch_rejects_undeclared_alias_change(tmp_path):

@@ -30,20 +30,20 @@ Full external method variants, assets and exact commands are in external/<method
 | MaskClustering | replica48 | LOCAL_FULL | 8/8 |
 | MaskClustering | scannet200_val | AUTHOR_REPORTED_COMPATIBLE | 0/312 |
 
-Remaining logical jobs: 65. Exact jobs and missing dependencies: `remaining_jobs.json`. Completed job costs and planning ranges: `resource_ledger.json`, `cost_estimate.json`. Training updates remain0; native reconstruction, CropFormer, SigLIP, FC encoding and frozen head inference are real new work.
+Remaining logical jobs: 0. Exact jobs and missing dependencies: `remaining_jobs.json`. Completed job costs and planning ranges: `resource_ledger.json`, `cost_estimate.json`. Training updates remain0; native reconstruction, CropFormer, SigLIP, FC encoding and frozen head inference are real new work.
 
 ## Recorded execution
 
 Counters below describe the named sealed receipts. Live jobs may have additional unsealed consumption.
 
-Resource ledger identity: `cae9a0342f204cac10ebb1ed265bfdd5c0e18992a64d0c9d4fd8731bd6c46de3`.
+Resource ledger identity: `17915fc7ca83a9319270af4ea1825e3b0247d73dcbf11c0acae3cece190d16ee`.
 
 | Counter | Recorded count |
 |---|---:|
 | `calibration_GPU_head_calls` | 0 |
 | `calibration_RGB_encodings` | 0 |
 | `engineering_MV_head_calls` | 8 |
-| `legacy_new_MV_head_calls` | 2868 |
+| `legacy_new_MV_head_calls` | 0 |
 | `new_training_updates` | 0 |
 | `standard_CropFormer_frames` | 64000 |
 | `standard_FC_image_encodings` | 49408 |
@@ -75,18 +75,18 @@ Successful standard scene scoring retained in the current coverage:
 
 | Scope | Logical result rows | Unique scene scorer inputs | Author-entry checks |
 |---|---:|---:|---:|
-| replica48 | 32 | 32 | 0 |
+| replica48 | 64 | 64 | 0 |
 | scannet200_val | 2496 | 2481 | 1 |
 
 Unique scene scorer inputs count successful per-scene evaluations after exact prediction aliases. Failed/interrupted attempts, pooled rescoring and engineering checks are excluded; this is not a total historical CPU-call count.
 
-Legacy coverage: 176/208 logical scene rows; 12/16 pools. Logical rows do not measure physical scorer calls.
+Legacy coverage: 208/208 logical scene rows; 16/16 pools. Logical rows do not measure physical scorer calls.
 
 ## Table fields
 
 Each table includes the Method / setting row label and the following data columns. Per-cell units, result keys and aggregation formulas are in `cell_provenance.jsonl`.
 
-Table-definition identity: `d24eabd9ba073b866fc0d5b9a08af0a8b875d637234b1695d447bcf94788570d`.
+Table-definition identity: `bda3f373528c4a01a13f406f22669217d6b52ace539f0a55972ee1dab88823cf`.
 
 | Table | Title | Data columns in order |
 |---|---|---|
@@ -102,11 +102,6 @@ Table-definition identity: `d24eabd9ba073b866fc0d5b9a08af0a8b875d637234b1695d447
 | S7 | Calibration corrections and damage on common geometric matches | Matched; Changed; Corrected; Harmed; Correct before; Correct after |
 | S8 | Measured execution and cache costs | Value; Unit; Scope |
 
-The original deployment/N0 has not been replaced. Current partial results cannot establish a complete benchmark win or a CVPR novelty claim.
+The original deployment/N0 has not been replaced. The completed benchmark matrix does not establish CVPR novelty or unseen-class generalization.
 
-Final publication preparation verified104 distinct source files, 207 software tests and17 subtests. Standard full-class score artifacts cover2528/2560 cells; legacy artifacts cover176/208. Execution evidence uses a validated, finite merged profile. Derived Git export is limited to512MiB and40MiB per blob; overflow remains intact under $OUT/publication/release_assets when existing same-repository release access is unavailable. artifact_index.json gives every part, encoding and hash; local_artifacts.json resolves original local paths.
-
-For publication use the original CLI with `--resume --phase publish --asset-config "$ASSET_CONFIG" --output-root "$OUT"`. For unchanged terminal recovery use the same interpreter and parameters with `--resume` and no phase override. Expected partial exit is20 and stdout must report `new_workers=0 scientific_imports=0 writes=0`. Resolve ASSET_CONFIG and interpreter from task_paths.json; retain existing explicit roots and GPU parameters. New sourced class-role mapping requires a new asset configuration and explicit `--refresh-assets`; ordinary unchanged resume does not retry blocked scientific jobs.
-
-Verified scientific commit C1: `dd82c2e0e795ab0becf2281431ff1ab8860870cd`. [Immutable results](https://github.com/Orangekostar/oviovo/blob/dd82c2e0e795ab0becf2281431ff1ab8860870cd/docs/paper/static_ovmap/benchmark_completion_v2/RESULTS.md).
-The C2 full SHA and actual post-publication resume receipt remain at $OUT/publication/final.json.
+Replica training-role extension: see [replica_role_extension_v1.md](replica_role_extension_v1.md). The user-confirmed synonym policy, including any-base panel exposure, is explicit; it is not an author-original alias claim.

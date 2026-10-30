@@ -29,7 +29,17 @@ def inventory(repo, files):
     result = []
     for name in sorted(set(files)):
         path = Path(repo)/name
-        if Path(name).is_absolute() or '..' in Path(name).parts or path.is_symlink() or not path.is_file():
+        if Path(name).is_absolute() or '..' in Path(name).parts or path.is_symlink():
+            raise ValueError('Publication requires scoped regular files: ' + name)
+        if not path.is_file():
+            if (not path.exists() and Path(name).parent == ARTIFACTS/'chunks'
+                    and Path(name).suffix == '.part'):
+                old = subprocess.run(['git', 'rev-parse', '--verify', 'HEAD:' + name],
+                                     cwd=repo, capture_output=True, text=True)
+                if old.returncode == 0:
+                    result.append(dict(path=name, deleted=True, previous_git_blob=old.stdout.strip(),
+                                       sha256=None, bytes=0))
+                    continue
             raise ValueError('Publication requires scoped regular files: ' + name)
         if path.stat().st_size > 40*2**20:
             raise ValueError('Single Git blob exceeds 40 MiB: ' + name)
@@ -144,6 +154,11 @@ def publish_transaction(*, repo, out, files, receipt, handoff, release_identity,
     for item in state['files']:
         if item['path']==handoff and state['stage'] in ('C1_REMOTE_VERIFIED','C2_LOCAL'):
             continue
+        if item.get('deleted'):
+            path = repo/item['path']
+            if path.exists() or path.is_symlink():
+                raise ValueError('Pending C1 deleted shard reappeared: ' + item['path'])
+            continue
         if digest_file(repo/item['path']) != item['sha256']:
             raise ValueError('Pending C1 scientific bytes changed: '+item['path'])
     c1_message='OVMap completion v2 C1 '+release_identity
@@ -235,6 +250,15 @@ def release_overflow(binding, index):
     return finalize_index(binding,index)
 
 
+def _new_result_files(repo, index):
+    from .publication_export import _is_remote_result_source
+    candidates = {part['path'] for row in index['files']
+        if _is_remote_result_source(row['source']) and len(row['parts']) == 1
+        for part in row['parts'] if part['distribution'] == 'GIT'}
+    return [name for name in sorted(candidates) if subprocess.run(
+        ['git', 'cat-file', '-e', 'HEAD:' + name], cwd=repo, capture_output=True).returncode != 0]
+
+
 def publish(binding, args):
     root=Path(binding['output_root'])
     pending=root/'publication/transaction.json'
@@ -255,7 +279,7 @@ def publish(binding, args):
     if (primary_record.get('reviewed_producer_identity') != producer_identity()
             or primary_record.get('result_store_identity') != verified(root/'result_store.json')['identity']):
         raise ValueError('Primary review does not bind the current source and numerical result store')
-    from .publication_export import export, _is_remote_result_source
+    from .publication_export import export
     index=release_overflow(binding,export(binding))
     files=[]
     for folder in ('src/static_ovmap/benchmark_completion_v2',str(DOCS),str(ARTIFACTS)):
@@ -271,11 +295,13 @@ def publish(binding, args):
         'docs/superpowers/plans/2026-10-23-ovmap-parallel-scenes.md',
         'docs/superpowers/plans/2026-10-22-ovmap-benchmark-completion-v2.md']
     files += [str(p.relative_to(REPO)) for p in (REPO/'tests/static_ovmap').glob('test_benchmark_completion_*.py')]
+    removed = git(REPO, 'diff', 'HEAD', '--name-only', '--diff-filter=D', '-z',
+                  '--', str(ARTIFACTS/'chunks'))
+    files += [name for name in removed.split('\0') if name and Path(name).suffix == '.part'
+              and Path(name).parent == ARTIFACTS/'chunks']
     identity=canonical_digest(dict(artifacts=index['identity'],source=inventory(REPO,files),
                                    primary_review=verified(primary)['identity']))
-    result_files=sorted({part['path'] for row in index['files']
-        if _is_remote_result_source(row['source']) and len(row['parts']) == 1
-        for part in row['parts'] if part['distribution'] == 'GIT'})
+    result_files = _new_result_files(REPO, index)
     if not result_files:
         raise StageFailure('Publication requires a complete numerical result in Git before C1',
                            missing=[str(ARTIFACTS/'artifact_index.json')])

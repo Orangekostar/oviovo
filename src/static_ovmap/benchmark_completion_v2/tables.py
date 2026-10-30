@@ -236,6 +236,9 @@ def build(binding, *, compile_previews=True):
 
     tables = []
     def add(name, title, headers, caption, rows):
+        if protocol.get('training_role_source') and name in ('T1', 'T2', 'T3', 'S2'):
+            caption += (' Replica calibration uses the disclosed user-confirmed synonym role extension '
+                        '(panel uses any-base exposure); see replica_role_extension_v1.md.')
         table = dict(id=name, title=title, headers=headers, caption=caption, rows=rows)
         if any(len(row['cells']) != len(headers) for row in rows):
             raise ValueError('Table row/column dimensions differ: ' + name)

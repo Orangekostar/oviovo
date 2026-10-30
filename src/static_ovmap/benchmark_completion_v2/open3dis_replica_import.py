@@ -46,11 +46,16 @@ def pool(binding):
              'successful original whole-pool execution required')
     protocol = verified(root / 'protocol_lock.json')
     scope = protocol['scopes']['replica48']
+    from .semantic_refresh import _ancestor, _same_scope
+    ancestor = _ancestor(protocol, row['protocol'])
+    _require(_same_scope(ancestor['scopes']['replica48'], scope, calibrated=False)
+             and ancestor.get('official_sources', {}) == protocol.get('official_sources', {}),
+             'retained protocol numerical scope or official source differs')
     scenes = scope['scenes']
     _require(len(scenes) == len(set(scenes)) == 8 and len(scope['instance_names']) == 48,
              'official eight-scene, 48-class scope required')
     _require(row['method'] == 'Open3DIS' and row['benchmark'] == 'replica48'
-             and row['variant'] == VARIANT and row['protocol'] == protocol['identity']
+             and row['variant'] == VARIANT
              and row['ordered_scenes'] == scenes and set(row['source_scenes']) == set(scenes)
              and row['completed_scenes'] == row['expected_scenes'] == 8 and not row['missing_scenes']
              and row['formal_G3_verified'] is True and row['locally_executed'] is True
@@ -72,7 +77,7 @@ def pool(binding):
                  and score['method'] == prediction['method'] == raw['method'] == 'Open3DIS'
                  and score['benchmark'] == prediction['benchmark'] == raw['benchmark'] == 'replica48'
                  and score['scene'] == prediction['scene'] == raw['scene'] == scene
-                 and score['protocol'] == protocol['identity'] and score['variant'] == VARIANT
+                 and score['protocol'] == row['protocol'] and score['variant'] == VARIANT
                  and score['identity'] == refs['score'] == raw['common_score']
                  and score['prediction'] == refs['prediction'] == prediction['identity'] == raw['prediction']
                  and score['prediction_identity'] == prediction['prediction_identity']

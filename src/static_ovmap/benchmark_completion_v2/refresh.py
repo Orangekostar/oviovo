@@ -13,6 +13,10 @@ def affected_phases(old, new, *, mapping_changed=False):
     new_alias = new.get('datasets', {}).get('scannet200_val', {}).get('label_mapping_path')
     if old_alias != new_alias:
         phases.update(('protocol','legacy_predict','legacy_score'))
+    role_key = 'training_role_aliases_path'
+    if (old.get('datasets', {}).get('replica48', {}).get(role_key)
+            != new.get('datasets', {}).get('replica48', {}).get(role_key)):
+        phases.update(('protocol','legacy_predict','legacy_score'))
     if old.get('external', {}) != new.get('external', {}):
         phases.update(('baselines','tables','review','publish'))
     if old.get('datasets', {}) != new.get('datasets', {}):

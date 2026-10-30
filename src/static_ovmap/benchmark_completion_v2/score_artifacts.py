@@ -41,6 +41,7 @@ def _arrays(descriptor):
 def prepare(binding, replay):
     """Materialize current frozen scene rows; no model, geometry or GT is loaded."""
     from .standard_export import score_F
+    from .semantic_refresh import _ancestor, _same_scope
     from static_ovmap.paired_evidence_study import residuals
     root = Path(binding['output_root'])
     locks = [verified(path) for path in sorted((root/'benchmark/predictions').glob('*/*/receipt.json'))]
@@ -72,9 +73,11 @@ def prepare(binding, replay):
                 raise ValueError('Frozen score method or seed differs from its scene key')
             mf, ac = variant in ('U10', 'U11'), variant in ('U01', 'U11')
             provenance = prediction['provenance']
-            if (provenance['F'] != f['identity'] or provenance['protocol'] != protocol['identity']
-                    or provenance['bundle'] != lock['bundle']):
+            if (provenance['F'] != f['identity'] or provenance['bundle'] != lock['bundle']):
                 raise ValueError('Frozen score source provenance differs')
+            ancestor = _ancestor(protocol, provenance['protocol'])
+            if not _same_scope(ancestor['scopes'][benchmark], scope, calibrated=ac):
+                raise ValueError('Frozen score numerical scope or calibration role changed')
             if mf and nq is None:
                 nq = verified(root/'benchmark/NQ'/benchmark/scene/'sources.json')
                 if nq['bundle'] != lock['bundle'] or not np.array_equal(nq['valid_ids'], ids):

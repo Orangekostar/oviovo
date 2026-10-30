@@ -19,6 +19,15 @@ def alias_path(binding, lock=None):
 
 def check_alias(binding, lock):
     """An ordinary resume cannot silently accept an unrefreshed alias source."""
+    from .training_roles import manifest_path
+    role_path = manifest_path(binding)
+    role_source = lock.get('training_role_source')
+    if role_path is not None or role_source is not None:
+        if (role_source is None or role_path is None or not role_path.is_file()
+                or str(role_path) != role_source['path'] or digest_file(role_path) != role_source['sha256']
+                or role_source['producer'] != source_identity(('training_roles',))
+                or any(digest_file(r['path']) != r['sha256'] for r in role_source['inputs'].values())):
+            raise ValueError('Semantic role input changed; use explicit --refresh-assets')
     path = alias_path(binding, lock)
     old = lock.get('semantic_alias_source')
     if old is None and (path is None or not path.is_file()):
@@ -113,13 +122,15 @@ def prepare_protocol(binding, lock, history):
             raise ValueError('A frozen training-class source identity is required independently of the ScanNet evaluator')
         index.identity(resolver.resolve(original_class_path), class_descriptor)
     aliases, descriptor = _aliases(path, ids, names, index)
+    from .training_roles import load, extend
+    role_rows, role_source = load(binding, ids, base_ids, descriptor, index)
     result = deepcopy(lock)
     changed = []
     for benchmark, scope in result['scopes'].items():
         if scope['status'] != 'DONE':
             continue
         before = scope['mapping']
-        scope['mapping'] = map_training_roles(scope['text_names'], ids, names, base_ids, aliases)
+        scope['mapping'] = extend(map_training_roles(scope['text_names'], ids, names, base_ids, aliases), role_rows)
         _monotonic(before, scope['mapping'])
         scope['full_AC_available'] = scope['mapping']['base_mask'] is not None
         if before['base_mask'] != scope['mapping']['base_mask']:
@@ -127,7 +138,7 @@ def prepare_protocol(binding, lock, history):
     legacy_changed = False
     if result.get('legacy', {}).get('replica51'):
         before = result['legacy']['replica51']
-        after = map_training_roles(result['legacy']['old51_text_names'], ids, names, base_ids, aliases)
+        after = extend(map_training_roles(result['legacy']['old51_text_names'], ids, names, base_ids, aliases), role_rows)
         _monotonic(before, after)
         result['legacy']['replica51'] = after
         legacy_changed = before['base_mask'] != after['base_mask']
@@ -135,8 +146,8 @@ def prepare_protocol(binding, lock, history):
     if previous.exists() and verified(previous)['identity'] != lock['identity']:
         raise ValueError('Refresh history already binds another protocol')
     write(previous, lock)
-    result.update(semantic_alias_source=descriptor, GT_semantic_labels_read=False,
-        input_identity=canonical_digest(dict(previous=lock['identity'], alias=descriptor)),
+    result.update(semantic_alias_source=descriptor, training_role_source=role_source, GT_semantic_labels_read=False,
+        input_identity=canonical_digest(dict(previous=lock['identity'], alias=descriptor, training_roles=role_source)),
         semantic_refresh=dict(producer=source_identity(('semantic_refresh',)),
             previous_protocol=dict(path=str(previous), identity=lock['identity'], sha256=digest_file(previous)),
             changed_scopes=sorted(changed), legacy_roles_changed=legacy_changed,

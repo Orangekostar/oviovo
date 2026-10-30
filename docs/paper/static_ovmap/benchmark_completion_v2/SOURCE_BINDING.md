@@ -35,5 +35,3 @@ The following frozen parent files were checked against exact Git blobs before ex
 
 External repositories, actual component training roles, class axes, source hashes and target point orders are sealed in protocol_lock.json.
 Original-native captures are reused for the OVI standard protocol port. Its triangle paint, canonical classifier, top10/last8 pooling and original confidence are preserved; it never consumes F/MV/Q scores.
-
-Current Node7 metadata integration source state: `a225c28284ffe14d817aa61559a3d24e1a77fa106e5593bd6ec4f1ccc8e5e3b8`. The original parent-source list above remains historical evidence. Its98 source files now have92 unchanged and6 explicitly reviewed changes (four production metadata modules and two existing tests), plus1 new execution module. Current execution boundary includes100 files; verification sources bring the distinct checked source set to104. Binding, protocol, model and retained scientific outputs are unchanged. See FINAL_REQUIREMENT_REVIEW.md and current source-transition receipts.
