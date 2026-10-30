@@ -1,0 +1,318 @@
+{
+  "Open3DIS_ScanNet_view_budget": "AUTHOR_ARCHIVE;200_FRAME_PARITY_UNVERIFIED",
+  "ablation": [
+    {
+      "benchmark": "replica48",
+      "method": "U00",
+      "metrics": {
+        "ap25": 0.1268329804963211,
+        "ap50": 0.09477819586977743,
+        "apall": 0.03872873017234045,
+        "macc": 0.15653865268747733,
+        "miou": 0.06598659018054351,
+        "oacc": 0.23563701608530258
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:U00_seed17",
+        "replica48:U00_seed29"
+      ]
+    },
+    {
+      "benchmark": "replica48",
+      "method": "U10",
+      "metrics": {
+        "ap25": 0.17269453002423368,
+        "ap50": 0.1325155852174856,
+        "apall": 0.05861064070234542,
+        "macc": 0.1970178077024391,
+        "miou": 0.10996064088900241,
+        "oacc": 0.299384056226329
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:U10_seed17",
+        "replica48:U10_seed29"
+      ]
+    },
+    {
+      "benchmark": "replica48",
+      "method": "U01",
+      "metrics": {
+        "ap25": 0.35207459145957654,
+        "ap50": 0.22844494027478857,
+        "apall": 0.11020842643607684,
+        "macc": 0.3482876933467486,
+        "miou": 0.25922352130625514,
+        "oacc": 0.5250615001643494
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:U01_seed17",
+        "replica48:U01_seed29"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "U00",
+      "metrics": {
+        "ap25": 0.14712403329706333,
+        "ap50": 0.11370304110646719,
+        "apall": 0.05689605920003811,
+        "macc": 0.16223711649858957,
+        "miou": 0.1078280405441635,
+        "oacc": 0.3002190483945124
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:U00_seed17",
+        "scannet200_val:U00_seed29"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "U10",
+      "metrics": {
+        "ap25": 0.18353951392995183,
+        "ap50": 0.13873357849880247,
+        "apall": 0.06316042541928225,
+        "macc": 0.19205812783636522,
+        "miou": 0.13773770778663147,
+        "oacc": 0.3258853001875196
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:U10_seed17",
+        "scannet200_val:U10_seed29"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "U01",
+      "metrics": {
+        "ap25": 0.286078920272007,
+        "ap50": 0.1922343951669739,
+        "apall": 0.08266339533350112,
+        "macc": 0.279993768747071,
+        "miou": 0.22740065105966234,
+        "oacc": 0.32360849476775544
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:U01_seed17",
+        "scannet200_val:U01_seed29"
+      ]
+    }
+  ],
+  "aggregation": "SUM_SCENE_CONFUSIONS_BEFORE_MACRO;OFFICIAL_MATCHES_POOLED_OVER_SAME_SCENE_LIST;OURS_MEAN_TWO_SEEDS",
+  "excluded_training_scenes": [
+    "scene0168_00",
+    "scene0168_01",
+    "scene0168_02"
+  ],
+  "full_per_class_and_point_confusions_in_source_result": true,
+  "historical_GT_and_training_role_limits_preserved": true,
+  "identity": "ce5bbfc1129d3fa4def3649826686bd73bf2a34a5411a10a9ba16dde74ce9a76",
+  "main": [
+    {
+      "benchmark": "replica48",
+      "method": "OVI-MAP",
+      "metrics": {
+        "ap25": 0.32668286991830225,
+        "ap50": 0.19966201193566482,
+        "apall": 0.08789315092794422,
+        "macc": 0.3285842628289164,
+        "miou": 0.2554433749896822,
+        "oacc": 0.43593368241001085
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:OVI-MAP"
+      ]
+    },
+    {
+      "benchmark": "replica48",
+      "method": "OpenMask3D",
+      "metrics": {
+        "ap25": 0.23416100576025597,
+        "ap50": 0.17427865973295528,
+        "apall": 0.123308659284102,
+        "macc": 0.32890155255658543,
+        "miou": 0.20856246975673942,
+        "oacc": 0.4236269499477641
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:OpenMask3D"
+      ]
+    },
+    {
+      "benchmark": "replica48",
+      "method": "Open3DIS",
+      "metrics": {
+        "ap25": 0.18183296359878567,
+        "ap50": 0.15746802571130603,
+        "apall": 0.11931463607706967,
+        "macc": 0.2631120752793685,
+        "miou": 0.18398511562519268,
+        "oacc": 0.4728375495403452
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:Open3DIS"
+      ]
+    },
+    {
+      "benchmark": "replica48",
+      "method": "MaskClustering",
+      "metrics": {
+        "ap25": 0.3448910123114055,
+        "ap50": 0.2470130959963416,
+        "apall": 0.12005190314900212,
+        "macc": 0.3167910855862633,
+        "miou": 0.23879756960841672,
+        "oacc": 0.3659970563666017
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:MaskClustering"
+      ]
+    },
+    {
+      "benchmark": "replica48",
+      "method": "Ours",
+      "metrics": {
+        "ap25": 0.41135231305153186,
+        "ap50": 0.25575341941501484,
+        "apall": 0.12383221005660623,
+        "macc": 0.37965715607938333,
+        "miou": 0.30161634122239817,
+        "oacc": 0.5608088501615229
+      },
+      "scenes": 8,
+      "source_groups": [
+        "replica48:U11_seed17",
+        "replica48:U11_seed29"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "OVI-MAP",
+      "metrics": {
+        "ap25": 0.23003116525643344,
+        "ap50": 0.16812538149989145,
+        "apall": 0.06988372521179202,
+        "macc": 0.2533019853432026,
+        "miou": 0.18818372026631533,
+        "oacc": 0.28311729496660093
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:OVI-MAP"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "OpenMask3D",
+      "metrics": {
+        "ap25": 0.12155672097220749,
+        "ap50": 0.1125416233460799,
+        "apall": 0.07854655805955861,
+        "macc": 0.15707721053168125,
+        "miou": 0.08826494243116927,
+        "oacc": 0.14632285823258923
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:OpenMask3D"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "Open3DIS",
+      "metrics": {
+        "ap25": 0.3608828836518941,
+        "ap50": 0.3165056748101549,
+        "apall": 0.25649663745846607,
+        "macc": 0.41871522909397485,
+        "miou": 0.2890943660973555,
+        "oacc": 0.41618092981084576
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:Open3DIS"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "MaskClustering",
+      "metrics": {
+        "ap25": 0.3217613440236979,
+        "ap50": 0.2673466705124094,
+        "apall": 0.14274564429541947,
+        "macc": 0.34425557179174476,
+        "miou": 0.2436167490219093,
+        "oacc": 0.3730979430388465
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:MaskClustering"
+      ]
+    },
+    {
+      "benchmark": "scannet200_val",
+      "method": "Ours",
+      "metrics": {
+        "ap25": 0.30133345121674376,
+        "ap50": 0.2006985680981516,
+        "apall": 0.08575139924029107,
+        "macc": 0.3026228149336686,
+        "miou": 0.2513206054017907,
+        "oacc": 0.3476520865002397
+      },
+      "scenes": 15,
+      "source_groups": [
+        "scannet200_val:U11_seed17",
+        "scannet200_val:U11_seed29"
+      ]
+    }
+  ],
+  "metric_scope": "COMMON_AP_OBJECT_CLASS_PROJECTION;REPLICA48_SCANNET198;NOT_NATIVE_51_200_SEMANTICS",
+  "scope": {
+    "replica48": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "scannet200_val": [
+      "scene0011_00",
+      "scene0011_01",
+      "scene0050_00",
+      "scene0050_01",
+      "scene0050_02",
+      "scene0084_00",
+      "scene0084_01",
+      "scene0084_02",
+      "scene0231_00",
+      "scene0231_01",
+      "scene0231_02",
+      "scene0378_00",
+      "scene0378_01",
+      "scene0378_02",
+      "scene0518_00"
+    ]
+  },
+  "source_identity": "34dafed86fc2e7d96e73ba8624fe5094ab8b76ac7cff83d618a7c32cd56a3e74",
+  "source_result": {
+    "bytes": 7782953,
+    "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/semantic_metrics_v1/controlled/comparison_complete_v1.json",
+    "sha256": "7830a86b5a57f18b8c46442ff92f54dc5ed325de351326f76ff0cd6f40546492"
+  },
+  "status": "DONE",
+  "units": "FRACTION;CSV_AND_MARKDOWN_PERCENT"
+}

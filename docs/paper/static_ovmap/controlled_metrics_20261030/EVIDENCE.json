@@ -1,0 +1,334 @@
+{
+  "author_source_files": {
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/configs/demo.json": "9e0b76892217395faf05e8d157390c66de5355d45ecb6651ebd6004762b018f1",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/configs/matterport3d.json": "14b92aaf36ce8613bf75e05ecfb13e8b354177dfa05fc25af4c2d0c253b65914",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/configs/scannet.json": "66d12adf7b291eed53507e3040a09384c64f9e079e8d7e2242e9d6e9dc898177",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/configs/scannetpp.json": "c846edafbb2374a7cb8ba094b81d80829a6df1e4cc2a803588ca42691647c9de",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/dataset/demo.py": "98d63716e7c3158429df8a6170e8d9aa00139bd1d262522a365192e8591e5758",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/dataset/matterport.py": "c065586a763ade4e74243db8c4ad33564a343e7b2f39ad604daa48d8d93327ad",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/dataset/scannet.py": "c18474525f7b3d1e46c680e5638668213d9e8481118e0b46990b2d22fef92841",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/dataset/scannetpp.py": "d47266fc07939213db75bd1d96503f3d628b246012a41ec28dd38de351d028db",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/demo.sh": "181903b22065b33894b5b2e6333c95fbc4a487a53be04d465458bc2bdcaa33db",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/evaluation/constants.py": "851914d7dff738d714c3c3aa3e4a7a9ea7060cf9c7f4fff2f6795ce71cec85c1",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/evaluation/evaluate.py": "4d490b932a05739511852aecd337d27364875c917a9eee60f40253f4409a03a4",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/evaluation/utils_3d.py": "51792ab0b2acb233a7291a3e6b089eda478d7cb3bad10915c08fdcb68d9f2bd2",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/graph/construction.py": "9578b8e9d6890eee64efce92ded59ed7908ccbf8af681d9ce250272f8ddb75e9",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/graph/iterative_clustering.py": "835508fa73f644be8fedaa2e4af1392eef9e5e00517822936a2ef722a99be4a5",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/graph/node.py": "56d8a00c7ad80cb72eeb71b4ec0ae181d59e1b4da5b595a4b17fa4645febe5dd",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/main.py": "30844e3cc6f6b3532fe3ff2ead16cc4a8571820161d5128ff8b64414dd0fab1f",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/mask_predict.py": "c76d1a9635a8fa6e27fd1e23e9cdbc24899cbd9620dd387fd447749706711463",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/preprocess/matterport3d/constants.py": "456fb945948ff3e171a5f5fdd66bc332c5cfdf26239b1af147eff5e57a797227",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/preprocess/matterport3d/process.py": "e4bdc04dd0fee9b4ec39aedffaa5e7102b91f4794e757ac8a4421ee15177ec82",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/preprocess/scannet/SensorData.py": "14a65ed643608a61c5831a6cd1d51b7918a8dfd3c548492a1da9a493af89ee6d",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/preprocess/scannet/prepare_gt.py": "13fc1d1332744eb936a2935a059bc730cb693fc3e017b8808c7740d9ae11dad7",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/preprocess/scannet/process_val.py": "c5f529ea0c419f925f4c6f1b3b6e9d971a7ae657113de2a2167a30357a37c579",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/preprocess/scannet/reader.py": "6b6464c71f6f269eb587f6887b2f45761925bc70169b38ebb4646aa37f7994c3",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/pyrightconfig.json": "fdc64500fe29fa85c10b2afe30038c38041f43f7aefcb47462ee7f52b0b29940",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/run.py": "4aebf494d283c0fce1c9ae05f29d604c2f34934af9d82de1dfcd24c46def0e46",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/semantics/extract_label_featrues.py": "d4324000eed8dda7f99f01da4ad1a89dea4c9903fd94cabaec2e7ca5ad619730",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/semantics/get_open-voc_features.py": "6286b5cc6440dde44d5db42073d5e108ec91f177c642b9b9eb8a7dee7dbab387",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/semantics/open-voc_query.py": "deeaad03692f1bc0913e124fafc55c45876373d5c2a2cbec2d8b10cc8f68728c",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/utils/clean_all_output.py": "056ba7559061f87c6c8da26070cacf6aef877ff1b9e21a6464c5f8c60f6179fe",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/utils/config.py": "1efee53529e54069f869085e300f43050f61cd9ae07df5f2277a3ed4a5bb2cfc",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/utils/geometry.py": "0a03443c2ba54ba566cf606eac0e1175bb64ce87e064b531791bab4fd00a2b1e",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/utils/mask_backprojection.py": "4b5b475dcbb7687eb325134d6dd0fee8f8cb03d5ad8f35db4a71cc39d94e06c0",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/utils/post_process.py": "474f9652108b3da15b16eacb042daff557d1cc0ccf92b5816154800ed5331f1d",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/visualize/vis_mask.py": "43a445ef24a7653f28a1b5062a3b6cde08aa097f08b7abf7bf85d044cce230c8",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/MaskClustering/visualize/vis_scene.py": "384be64b15b0a0352fa3b8e0bb24641cadf77137b790b26994d60ee7443e781d",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/install_requirements.sh": "30748a16a7927ae6ec1c142a2ed7636e103c9cbd842741c56ac3bbca6e429458",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/__init__.py": "ba0cae165884aad0304261f8b1395cd7a6172986c558399fca4f3b7c4ac1f3ef",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/benchmark/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/benchmark/evaluate_semantic_instance.py": "c9de19ca400c911de236016b4fd33654883897327b38d494fcc0234223ec9d19",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/benchmark/util.py": "deb7ec8744b5bffbdd1e8a969d1d09d7631cbe518e6bd2e0a485123dfe87b751",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/benchmark/util_3d.py": "bebc43f30c18e46b1a56c3d8dc6baa16052df0a7edfcc37b34910c2d048c920d",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/augmentation/albumentations_aug.yaml": "0ee794f06cfa1552423ea6e51cec64d905e32dd27e63cc48defba9b17753d587",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/augmentation/volumentations_aug.yaml": "1ff353485c25fb37cf89776a60921c40d257bf627d9f89f8665ef49cc1e85cd4",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/callbacks/callbacks_instance_segmentation.yaml": "8e2f549973ab2af88f5b958dda00e929db34905f8b93a2beca75a12f56d39dff",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/config_base_class_agn_masks_scannet200.yaml": "6d9fa0bf33f8df42c672ca606603f81a75cded8b650a63b6fbabc828f83a6d69",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/config_base_class_agn_masks_single_scene.yaml": "5f1836518aaf54f43d5d82bd5ed71e292c7465fc374a1dcdb0573c6d5b84c4bb",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/config_base_instance_segmentation.yaml": "e66633d1eeec19edc4642ec003ddcee6249cbf2c09a4aade8098c706b07252ac",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/data/collation_functions/voxelize_collate.yaml": "45cc1ed0514e5872f75783b0f2709a453b08268f85c2f64bd2e6c2adb3cfafcc",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/data/collation_functions/voxelize_collate_merge.yaml": "17c157426257bcf3d817193b75529e6fd775ebaa0ac9e17b2ffc0945d539cfdd",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/data/data_loaders/simple_loader.yaml": "acf546880a7be65f6ea4ce2f9f75c1225cff84b63343b9006dc7686ec4945775",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/data/data_loaders/simple_loader_save_memory.yaml": "49aa08881668d2ba8a4310d9512034d39937625d48811db30fefe81b4e93fdc9",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/data/datasets/scannet.yaml": "313f53d9b5c82ec82c7ec21e4f33cdd404331410432481fd672b29cf79152c7a",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/data/datasets/scannet200.yaml": "6703497008db4be8235ff626bd70699c45c7324dd0bfc8c0852ff3d9aebf4419",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/data/indoor.yaml": "c0bb2a375a63355cecaa29c5f3182e25e2e7e658ebac8a794e4c1e2a929e8688",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/logging/base.yaml": "9fa675a59749a6cde381285b873cdf9e5b9d8c67af9dc9963343576e30003343",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/logging/full.yaml": "90b8100e90f02144b3ef14cdf47c196eceb2d377166d332f7ec38ac417a01b98",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/logging/minimal.yaml": "4e9701558787bb83d7d90a82d1bca602473a38d588ef0ec85c8ff88c1fca00a3",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/logging/offline.yaml": "d9b36a6a9d1744dd0fa796b69874555be6ec6335f6a9717a0a7fd40b5f8eb47d",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/loss/cross_entropy.yaml": "7e2a59d11a45d53c7ae530b77bb0bc23d00234aef15f7ec7af1bda710fdcacaf",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/loss/set_criterion.yaml": "63fde1a26d43590d03b0d4d73c6bda44aaca8056e195ac83890158ab4da5645c",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/loss/set_criterion_custom_weights_1.yaml": "4f22e54a5c4eb9bfadb9943792f18e33802f23963bf4ca0cb1e1d6b9b213a9ec",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/matcher/hungarian_matcher.yaml": "5fca0add1d192feaf9d47e6ea4b3d56bf741830b3c1f061197e00549e8d3ac18",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/metrics/miou.yaml": "1bba7625a5b7aefb7563bee7569a8ee91dbd452159300452f4257f2eda8a2aae",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/model/mask3d.yaml": "e3f7501b620fbb3ed0314710ef013128c8b89f1c5e226ffa6f2b8121b0c5c30e",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/optimizer/adamw.yaml": "026524a8312d7955df1128cafd990512a9e225ece39a48e0fab80dee32c45da4",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/optimizer/adamw_lower.yaml": "c62e16538baee9bf70060619e83b71a31b6f8597ccff29ee4230136aa64354c5",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/scheduler/exponentiallr.yaml": "3fd421af6d0d78265a1be75751c94bdd36078d51ddf65d0b15f4d08b92cc48a6",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/scheduler/lambdalr.yaml": "9823c3f420e0855fa39e34a48ae2015a7aba46754c0e4fc8808465f5a3c56b78",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/scheduler/onecyclelr.yaml": "f457f7a45f6c366c26d42ae3577cb1f7c8500b5c5f08bc54718e831fa4961f10",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/trainer/trainer.yaml": "c87cb41cc651d0dff5013c57e6b948de06b6854f458efbc30c271880e8662ccd",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/conf/trainer/trainer600.yaml": "b65caab82afcf8ea427bf52b2a5f7ac802facf531dce218e3329ac9c00815345",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/outdoor_semseg.py": "5ef5a309d44b7138298c6359a7634a489e57803a4f953d467ee29237ed5dbde7",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/preprocessing/base_preprocessing.py": "82ef17da4c583e6fc289ccab219761cf0d146f896bd8b7eee6365d5cb28186cc",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/preprocessing/scannet_preprocessing.py": "c028db09e69325bd795e31f226ff2ce6761068a79969e9d8fe25a73c7fbf85c8",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/random_cuboid.py": "161498e1ffa84615822190d6ed88d73fdb3ee7a6b5a6c625f1cdbd7bd57eb556",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/scannet200/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/scannet200/scannet200_constants.py": "4a12c1b49471e9fee18e3eeb82c83fd44eb77eba1ff8b378feaf23d4cc167bc7",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/scannet200/scannet200_splits.py": "0e1775e983b99a46ae60e12f16b03147a7640ff68b21626c6a74d2b0380536e7",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/semseg.py": "5b221ebbc35327c48801f9decb245211f2395d9035608ba55acbc9faa0519e03",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/datasets/utils.py": "c258db71bbe42a184549dc4e1911df03a7ed31bcff02bb60f5531cfee656ab5f",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/get_masks_scannet200.py": "879d7f7fc9e2bf5959d10656dff687f40b43a93c65b9bca5cd1a7c05d171941d",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/get_masks_single_scene.py": "f23c9d8079e0d3bbec2083a9aa6334c921c1b47caeaa148eb3e37127abcb22e3",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/__init__.py": "ae3c822880a478c2e2e1558fe9c43c4ed93b219420c1ed793f43b561d051d32e",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/criterion.py": "9418ef86b1ce063e497227f6de4644303ff18375c433fcb7e9af12683fcc48d2",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/mask3d.py": "a8da0daf5f9cd617352d81448551ebfde52edd7533ed0909b3a42c6a388b49ae",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/matcher.py": "850f9d7dc747ba3aa075e78f1ba34822d9ca0f69ad5a2389595bc8ddeb060fae",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/metrics/__init__.py": "e5ae7d4ca28476d9eb83e13bbf4d238f21e4e3872662e9411dd96c866c5adf32",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/metrics/confusionmatrix.py": "de43c5e29510fe7d923734ed4e4c9fde3aca6128e4771d0b7ea5c24955dff3e1",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/metrics/metrics.py": "70bc323ebd575a7cd4e25be23980a78052cd9eda336374b05b91b8cb74edcb13",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/misc.py": "53fc8de4b8f5947fbba0f5a802219c0df1ca0b91133400b7da755cf6a328e672",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/model.py": "01c9961d60d5b1c6dcc9d5b6b29ea85d945aee974dfc914fc2d80cbd0c958c61",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/modules/3detr_helpers.py": "3e8f50dae02f9deaae9b06a7ce4983fee3effcc0f96d405250f88b148785110c",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/modules/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/modules/common.py": "f9e9aae23bd523aa57ce4ffe46589b8951b22844e9e60067f460cdd74e8d1a4f",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/modules/helpers_3detr.py": "3e8f50dae02f9deaae9b06a7ce4983fee3effcc0f96d405250f88b148785110c",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/modules/resnet_block.py": "3097554c94617b8810322fc15cb6294e555cb334e96164f312201f4cd2c93548",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/modules/senet_block.py": "ae34dfe4d324e52bc63114368a597f0c5e1c1833d10426d63bd62814d5a7b621",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/position_embedding.py": "246f3d13b59563ae97998ef3c90d32d6a85eb496cdd4dcfd28f129ca064778c2",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/res16unet.py": "b9e6e21c9bb178d93ac7dd9b6c79e1e6347d8a393ff84e11a2d95be0b82c7b9f",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/resnet.py": "7be770b2608c6d87a1c30ff7dc75c22bfe170bb9aaa73b0bf21fe8d9e382d85c",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/resunet.py": "46c8302928d56235c85eededd9413338fee898f7b93b140dcb94a2bf1cf97618",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/models/wrapper.py": "863b066f868fe0d459a90d3512afb286d4d9349ba304ff0fb187cbb8fc0513a3",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/scripts/scannet/scannet_benchmark.sh": "11c0a7671273d4dec01b3c4235ac82285d5c2296d406566934a57743b084726e",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/scripts/scannet/scannet_val.sh": "60fa8eaf88d7977f9795b4ad658137fceea4d5d8a900f9731f7b5aba2dae4c9a",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/scripts/scannet200/scannet200_benchmark.sh": "aecefce649e9216b2250da1ab348c814351ad64c662d26079a21c60338e6c49e",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/scripts/scannet200/scannet200_val.sh": "2b40516f0abd859b24091b2145af193392d50df4c51167c1d813ff4e2be39e77",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/third_party/pointnet2/pointnet2_modules.py": "a83c0fb9c8a270bf1bed996392efb3c80f3b2d6eb7016d6fcc25520445203b62",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/third_party/pointnet2/pointnet2_test.py": "0a810b8b850d04bf7669d7c5e4f79d8d4dfb569205e76cb165cc119934eaf188",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/third_party/pointnet2/pointnet2_utils.py": "de48767a68f0ef90b8ec22cffcdd4d51322c3d3e698a62885ad18a018ff86dde",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/third_party/pointnet2/pytorch_utils.py": "c984e4918aaca2ed18e540a15fe029ccbd2ffa3ff7233fd0c38471a2ab3bfac7",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/third_party/pointnet2/setup.py": "f5864b1229461a6d407be11d6113795672b40411a21818b7d0d5339ffe4ad9a7",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/trainer/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/trainer/trainer.py": "e93f219682ebd0291212b3fd5881acd8392d40200338e440a3dfc9fd93f4bd54",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/gradflow_check.py": "1650280870e3760d858a03bc93b6e2fcde337563cf64e3b273fef00ced428cf0",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/kfold.py": "b6fdf1dee9a0ad9b468b3ff1ac3641b196420ff8fadeb7eb795b52669ef4438a",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pc_visualizations.py": "4a701539d3aa8f04fea1ad37d2a0598d68acab837a5356f7d1f08b32d1025dbf",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/point_cloud_utils.py": "61d051440894a9dc99d736cdc9a55f09f82249d8f2f171e672da86b1774c39f9",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/pointops.py": "4b016ed9e9eaff24c248c1595941b92d9e06052ca49dbb4aa41be7cd1eb0cd24",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/pointops2.py": "536767522db8eab867bf7c4ad9a9b6e836ea870a1c072cbf0a316a578bd9553d",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/pointops_ablation.py": "92b9f5beb7a08d13a9bf1248889d27b44f74885322e7d889585783894a97ccba",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_attention_op_step1.py": "fb3f1894466ca3599423f64c9099ad9a50937f762718811d4f6e94f6d9ef0aaf",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_attention_op_step1_v2.py": "7cf7a75dc30d49ad909c204f8d060710f075fcdc0c6c9c292f0ee304d3e8f9a3",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_attention_op_step2.py": "75aa617633876caf5948df27a010425b390c84c4a4c57baccf426c794e1313c1",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_relative_pos_encoding_op_step1.py": "4516f6be8dbbb1e1c38bfbfb3214729c33dcf52ccb0959c900ccdcb8e8b8b3d7",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_relative_pos_encoding_op_step1_v2.py": "512c078a7df959e026c6926fd2f2296192f55fe6220a543af0d791eb5292dc0c",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_relative_pos_encoding_op_step1_v3.py": "80a7b5dc469ee7faed4b1aab1f1859297586d11384d146650f5005e0caca5eaa",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_relative_pos_encoding_op_step2.py": "b0e8fc04ae6c39bae20dbeef0d8a348c28c8144341a21023693afaf5b8b41b79",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/functions/test_relative_pos_encoding_op_step2_v2.py": "a1f25c3d7fce574761ea26796bd2f7d7d497d31c0088d469107349d6dc130e57",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/setup.py": "175c02773b24c0dcc9f26d92d84ef9cd1c473242dad273f9997dc7a47965d08b",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/pointops2/src/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/utils.py": "8ccc6f431f1bcc59f77923bb13a4df0cf46e382514468a5d33cf43e396398c73",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/box_util.py": "f0542a80fcdb1aba007bfb26677400e664f4c38cec5a174e4d793df92ac20f29",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/eval_det.py": "34de3c4d695f52c8812b8b3734eec99b2acde19188451360765035e8e654e694",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/metric_util.py": "08ae1dbdd0a9f8cae07b48e749ea6b300b6ddd73c1c9ed320b5c2d4678cc6661",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/nms.py": "ff5517945cfaf617efd1c5e7239ece95617ea792ba40baa7e16ae057634397c1",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/nn_distance.py": "994e325d053b7c80de2713221ae4f2c46bb60de9016fd54c5775ee10d9855843",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/pc_util.py": "0fe4f79b47a68ac765ed7d92da87bdabe12551e0eb569dc715e49f342cdaab58",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/tf_logger.py": "9ef6e8a6417e862cbfbcf990b0e1e88e7b5593c244215395f903fd213505ae9f",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/class_agnostic_mask_computation/utils/votenet_utils/tf_visualizer.py": "13dd5aa8db3b740d7f2232faf9f6d6c4335b446f1cb3bbf4abaf0574ede00bf6",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/compute_features_scannet200.py": "1c464d9bf64fdb74a194df1444d6d3285c2c1df1fc53dddb8024c1778c020881",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/compute_features_single_scene.py": "8635bf8f88f326dd9a5c2c5cc74bbef3ed942c1adf1ba3995445d9b09a8840f6",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/compute_masks_full_scannet200.sh": "c28f2667f50147bf530c8c19b8a3bdced47bc16e1e7d5af9d844f6517d8f98b3",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/compute_masks_single_scene.sh": "d4fbd70d40ad66f02feae8ca61ecf50be19e7448f0df1fb60164858df06d1b37",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/configs/openmask3d_inference.yaml": "cf653f468fad916e28c873dc235c59646e5a30e148173fd9ebb91cf61b3c97c0",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/configs/openmask3d_scannet200_eval.yaml": "7574f9e99be2b7670ba5e11fa1e04fbfdacfb0d66753b984a717386117329c55",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/data/load.py": "fb9d82ab29adbd9a09bf07669e54dd7c0046c9bee9a399d09e824bb62177a3d9",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/evaluation/eval_semantic_instance.py": "cf687483dee1cb58029c3131242db893d005cc5e3a0e782176783355a328b634",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/evaluation/run_eval_close_vocab_inst_seg.py": "1fd8ff56257911f9f844e8b86c79551cd745fccbfba190559ed617bba66348ac",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/evaluation/scannet_constants.py": "c4871fe4ac45332cb11f1f55b98a9a38f4ee5c16e704d7a5c03f51f79040f1f2",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/evaluation/util.py": "deb7ec8744b5bffbdd1e8a969d1d09d7631cbe518e6bd2e0a485123dfe87b751",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/evaluation/util_3d.py": "90db014674341bb4c8c04d791592f432a5d11f7eac8584272ebe4b8e09c3cb7c",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/mask_features_computation/features_extractor.py": "ef218853e872fed8308e2547704aefba7aa77b142cd7bcb3b5ef1fa33adbc017",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/mask_features_computation/utils.py": "097692a8dbe6c845671fd906476dda50f1ebda3eecf2a0310e2cdb93cabb8190",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/utils.py": "aa3f7d1a5fc6f894d7c064dcbbf384da0ebc138fc90a501821b89e0c4c072a48",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/visualization/constants.py": "f1a8d00e0e34f9b080eca6efdf052b95a78eb5fb534635f03d2fafcb42ac9322",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/openmask3d/visualization/viz_sim_score_export.py": "898817cb4ff035bd63d2f503565bb2aa6d4fc23e9439911fc674e55240f3bea6",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/run_openmask3d_scannet200_eval.sh": "065ed19cb6869b073fdabf29950d0e5085bd5f53da78af5825452db53d3299c5",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/external/OpenMask3D/run_openmask3d_single_scene.sh": "b66234dd486a048cf8451daa9f91fca91fa843bf13b235046dbcc7a33a650c9a"
+  },
+  "cached_inputs_validation": {
+    "bytes": 325,
+    "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/controlled_cached_inputs_validation_v3.json",
+    "sha256": "82229e24a3d4c42e04eb44b88e4b4c07824503b6cfbe9d001dd313d2143e05a8"
+  },
+  "complete_result": {
+    "bytes": 7782953,
+    "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/semantic_metrics_v1/controlled/comparison_complete_v1.json",
+    "sha256": "7830a86b5a57f18b8c46442ff92f54dc5ed325de351326f76ff0cd6f40546492"
+  },
+  "execution": {
+    "bytes": 977724,
+    "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/semantic_metrics_v1/controlled/execution_complete_v1.json",
+    "sha256": "db8d5fc3d72c8460af31f05cba57852257dfac0a449a8ec53f28dd0f8c5bce7c"
+  },
+  "failed_and_interrupted_attempts_excluded": true,
+  "final_verification": {
+    "bytes": 590,
+    "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/semantic_metrics_v1/controlled/final_verified_v1.json",
+    "sha256": "965140633f228c3f9a531719465ffc57ffd4dc4118c2d0d94ceac96c52f849df"
+  },
+  "finish_actual": {
+    "bytes": 1358,
+    "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/controlled_finish_v1_actual/actual_exit.json",
+    "sha256": "59b9f133cd21b7d73675729c200c7b4694c2accfc4b3b9c727a4ed2fa6d86734"
+  },
+  "identity": "3b58a3f7e7cad34089afe333a075e6740f5f1fd5bc62cbbf5591f4f925e69057",
+  "idle_gpu_auxiliary_actual": {
+    "bytes": 1500,
+    "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/OpenMask3D_stolen0518_v5_actual/actual_exit.json",
+    "sha256": "eca371844c97ed10df45ee41b5d3f7a3d4865e52d54a3a95cf0e2cc041e46607"
+  },
+  "idle_gpu_rebind": {
+    "bytes": 386,
+    "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/OpenMask3D_scene0518_idle_rebind_v5.json",
+    "sha256": "7410ac4ab313b6c13d6ef5ea603464971eecf441fe77ef9428d50a4daf4e2435"
+  },
+  "idle_gpu_rebind_complete": {
+    "bytes": 446,
+    "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/OpenMask3D_scene0518_idle_rebind_complete_v5.json",
+    "sha256": "7f8744e7ca52e9c948844233ae73c7da1df0c5724e880aa3017a6ed3a8724808"
+  },
+  "logical_stages": 107,
+  "new_predictions": 30,
+  "old_terminal_resume": {
+    "bytes": 3510,
+    "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/old_terminal_resume_after_metrics_v1.json",
+    "sha256": "1f1981fe6bb1d570425cb57dc7ca04fabc2771a0259eac11a15e69f8f43ee7ba"
+  },
+  "original_release_protected_files": {
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/model_lock.json": "adb6a2323d76ffea11bfe6419763585a69a63437aa8f4271312e45ae21a96139",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/protocol_lock.json": "3bb9f5678ae73ce7c11e56860654fdc5d1803ec48ad22e7c98dc63cc81650c72",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/publication/final.json": "ccf3f852bb93b8e7aa6b2b6ac9b51cd64121d96d76113a861cdae55c4385161b",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/result_store.json": "e7bd7bc5372d6d98bdbd6b41cc9520e79056d7924631200eb1dff255bc995bca",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/tables.json": "ec1a0b149ca623d0f79a164ef0c126b61139df6e4e4e6d84902e67f59400075f",
+    "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/terminal.json": "fdfbbd44f98fe0fa0f6522993b8104f48af0a10cd2e67702a60acdad69e835a2"
+  },
+  "phase_actual_exits": {
+    "freeze": {
+      "bytes": 1620,
+      "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/controlled_final_freeze_v1_actual/actual_exit.json",
+      "sha256": "5d6f7fb7c9a18b9f0fb730892e8174fb475787836846622c2dead3d6acbbd97a"
+    },
+    "pool": {
+      "bytes": 1616,
+      "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/controlled_final_pool_v1_actual/actual_exit.json",
+      "sha256": "2d29b4019f44a37344283a82845372343400ce17788074bac72ab7eeb2fe5649"
+    },
+    "score": {
+      "bytes": 1618,
+      "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/controlled_final_score_v1_actual/actual_exit.json",
+      "sha256": "6b7523ca8f0a74c65a2f7606586ca621e59d72c1081006d5ae2982c94862adbd"
+    }
+  },
+  "prediction_lock": {
+    "bytes": 24494,
+    "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/semantic_metrics_v1/controlled/missing_prediction_lock.json",
+    "sha256": "2d6eb38bb9a09667317fb2f5ff6aa1075c5fe2c3304e85157b86686293e21ea4"
+  },
+  "queues": {
+    "MaskClustering_queue_v1": {
+      "actual_exit": "966c0af82957f7a756ec7a3b3496288af88ae2e73eb535371cc1873d8264b154",
+      "complete": "dfb32336ebab52df4cb0c1586cd1dd0918d4d8114a8587683e9fc553257cfb9b",
+      "config": "b62169ffc17ea5f70d3a4c8a04be2ef06d89c9fd81aa2e0ef20173f70498f4c0",
+      "synchronized": "4b79ea571265a811577333e73ac557b6f90473dbb6a9a0004ca5ec6d71c21dc7"
+    },
+    "OpenMask3D_expanded0_v4": {
+      "actual_exit": "2ccee7e58b52cf7eeeaa66f9a5ab5fa9370baa6bd9a0160ccb96bf6ab9850479",
+      "complete": "36d44363f2cb18a85f3e508a00d935e019d080aef0314fc187bd6e8d318ca7f6",
+      "config": "961091ccd9b9a7bc54cf1a4eb6c3a9ea133221b1904fa5eb994487033d865654",
+      "synchronized": "d3b6fb2cd42ebbc2144a1426eec428bbb5ca062d542d28ee8f791801ecd87f87"
+    },
+    "OpenMask3D_expanded1_v4": {
+      "actual_exit": "adc67e775c07cd7ca56731b7003b16fb9e74723b3e07d91b26c8bd59c380465e",
+      "complete": "00fff6c09f813987e0040b63a4d392433cc04f06c4f8e4962dd960e314023618",
+      "config": "bd8a31f1b3a2e327162d3951b7cb1e58c6dd85072c8fd24f347c272b4e58c6b9",
+      "synchronized": "d8fb14d6f375108753a07644e5af502352ff1048c24cae39cdc2312c6ccb7598"
+    },
+    "OpenMask3D_expanded2_v4": {
+      "actual_exit": "d67b7334e619fb9675c31569fcf05f59b8c40636c5e277efab8702007785b64a",
+      "complete": "3ac3b1f2b797e5da4b4e4413d8affd3169dd294f43bdf69a46e6908f81b52011",
+      "config": "0d256735901cd20c08514f394c012dc9b492c4dbddb775b91a7770116bed2ebf",
+      "synchronized": "a56f2f7b346dd97bcec82740235f84907d81a7618192466a9717ecb344947caa"
+    },
+    "OpenMask3D_expanded3_v4": {
+      "actual_exit": "0717104a517de374911e68babafe7fe9db0ef964b331f3942f2729bd43ebbbca",
+      "complete": "be314b1424fbafc7ee9b9f26bfc8f2c6252435ecf5585209e8fcf6fe01fd5d7c",
+      "config": "07864213a854e594c33791cc81db29205a601fdd074b69ce6104d7e10284b94c",
+      "synchronized": "2e5cae254dc09eebc5276f74999378cddb562de9dc7c512014c95e0b52af99b3"
+    },
+    "OpenMask3D_expanded4_v4": {
+      "actual_exit": "638c5b7d55f39f55353cb924d8a359a7716e85133f92ee58338ed9742b877903",
+      "complete": "008ee359c4c87f4931f1a0ea043837b3e1a9846fe903f7250c3f5025a77339b2",
+      "config": "8b44a061e5bfedceb54e13ed72879e2b9867abdd9cbc4f89cc170288c1b1c0ab",
+      "synchronized": "a6b3a17ce5675765a20ff96e8a2178f2b31bf79de2baef34a091c63c97d2931a"
+    },
+    "OpenMask3D_expanded5_v4": {
+      "actual_exit": "5fa580607d282b9e2dc3006703c3e79c13df51f65873aee780add31212f8aafe",
+      "complete": "9219caa1dd1e5b84fb4703056ade734fd6a37e8e3b40958a2f00c850bdcbdbfc",
+      "config": "bb30c0b56358b6048d54e2f4cc22bbb26610daf5ea077bba7bd14f520bb4cfd5",
+      "synchronized": "7603948a2b7eda9dec50175a7f77607a9b742ada52640d312c21c1af10a5dfe2"
+    }
+  },
+  "scope": {
+    "bytes": 4016890,
+    "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/semantic_metrics_v1/controlled/scope_v6.json",
+    "sha256": "7b3048a87141b3bbed4849dd62fca54a3e5ad4eb38dbacf84aae9894d40e2562"
+  },
+  "source_files": {
+    "/home/ww/crove/ovmap-benchmark-completion-v2/worktree/scripts/evaluation/compute_controlled_comparison.py": "9f247955c72b266dad42aef9a54654757d400efb7daf79d5db14dc374c48411a",
+    "/home/ww/crove/ovmap-benchmark-completion-v2/worktree/scripts/evaluation/compute_ovmap_point_metrics.py": "38bf74b2a4035e439510d3055835398349f37b1958422ece5a0e8023d3488305",
+    "/home/ww/crove/ovmap-benchmark-completion-v2/worktree/scripts/evaluation/run_controlled_baseline_queue.py": "5a02015db72fcac623230dfd889fbdf4e0f3b8c83de008ca1306ad2ba3a81a10",
+    "/home/ww/crove/ovmap-benchmark-completion-v2/worktree/src/static_ovmap/benchmark_point_metrics.py": "727924b78232407336c7999e73f8a7c6a3c5a32bcc97fb0bd31e3ef7f2bc5c0d",
+    "/home/ww/crove/ovmap-benchmark-completion-v2/worktree/src/static_ovmap/controlled_baselines.py": "ef5c8692ab865c6699262ec33b7ebea7b673c79ee0074874731da6e2c8e3fc50"
+  },
+  "status": "DONE",
+  "targeted_test_log": {
+    "bytes": 99,
+    "path": "/home/ww/crove/ovmap-benchmark-completion-v2/recovery/semantic_metrics_20261030/all_metrics_tests_v6.log",
+    "sha256": "8e3338ae5f30cd4f331e40faba25f2cccbf23a81056f10ae650f7b6e175bf73d"
+  },
+  "weights": {
+    "clip_mc": {
+      "bytes": 3944692325,
+      "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/weights/MaskClustering/open_clip_pytorch_model.bin",
+      "sha256": "9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4"
+    },
+    "clip_om": {
+      "bytes": 934088680,
+      "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/weights/OpenMask3D/ViT-L-14-336px.pt",
+      "sha256": "3035c92b350959924f9f00213499208652fc7ea050643e8b385c2dac08641f02"
+    },
+    "cropformer": {
+      "bytes": 882672879,
+      "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/acquisition_20261026/Mask2Former_hornet_3x_576d0b.pth",
+      "sha256": "08c637c3e9f26c4ee3f264ce867f8aa953c57273bb2c86180deb441311b634c5"
+    },
+    "mask3d": {
+      "bytes": 158873495,
+      "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/semantic_metrics_v1/assets/scannet200_val.ckpt",
+      "sha256": "6a0c4347616a27348bed32ff1ae225cab0087e0a0148f36d1023ca2d46f82534"
+    },
+    "sam": {
+      "bytes": 2564550879,
+      "path": "/mnt/shared/capacity/node101/ww/ovmap-benchmark-completion-v2/attempt_001/assets/weights/OpenMask3D/sam_vit_h_4b8939.pth",
+      "sha256": "a7bf3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e"
+    }
+  }
+}
